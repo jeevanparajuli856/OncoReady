@@ -20,6 +20,7 @@
     "frontend/src/types/index.ts",
     "frontend/src/state/workflowState.ts",
     "frontend/src/components/Header.tsx",
+    "frontend/src/components/PortalAuthScreen.tsx",
     "frontend/src/components/PatientTreatmentHome.tsx",
     "frontend/src/components/ReadinessCheckModal.tsx",
     "frontend/src/components/StaffExceptionQueue.tsx",

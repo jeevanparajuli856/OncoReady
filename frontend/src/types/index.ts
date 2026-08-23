@@ -22,6 +22,7 @@ export interface TaskOwner {
   role: string;
   department: string;
   badge: string;
+  avatarUrl: string;
 }
 
 export interface ClinicalReviewDetails {
@@ -82,9 +83,13 @@ export interface PatientProfile {
   age: number;
   gender: string;
   diagnosis: string;
+  stage: string;
   oncologist: string;
   phone: string;
   address: string;
+  avatarUrl: string;
+  ecogStatus: number;
+  bodySurfaceArea: string;
 }
 
 export interface CaregiverProfile {
@@ -94,18 +99,50 @@ export interface CaregiverProfile {
   phone: string;
   permissionScope: 'TRANSPORTATION_ONLY';
   authorizedBy: string;
+  avatarUrl: string;
+}
+
+export interface LabResult {
+  name: string;
+  value: string;
+  unit: string;
+  referenceRange: string;
+  status: 'NORMAL' | 'EVALUATED' | 'CRITICAL';
+  collectedAt: string;
+}
+
+export interface VitalSign {
+  name: string;
+  value: string;
+  unit: string;
+  status: 'NORMAL' | 'ATTENTION';
+  collectedAt: string;
+}
+
+export interface ChemoDrug {
+  name: string;
+  dosage: string;
+  route: string;
+  schedule: string;
+  indication: string;
 }
 
 export interface AppointmentDetails {
   id: string;
   protocol: string;
   cycleNumber: number;
+  totalCycles: number;
   treatmentName: string;
   scheduledTime: string;
   location: string;
   room: string;
+  infusionChair: string;
   infusionDuration: string;
   oncologist: string;
+  oncologistAvatar: string;
+  nurseTeam: string;
+  drugs: ChemoDrug[];
+  premeds: string[];
 }
 
 export interface ReadinessSubmission {
@@ -134,7 +171,7 @@ export interface CaregiverProjection {
   privacyBoundaryNotice: string;
 }
 
-export type Perspective = 'PATIENT' | 'STAFF' | 'CAREGIVER' | 'SYSTEM';
+export type Perspective = 'PORTAL_AUTH' | 'PATIENT' | 'STAFF' | 'CAREGIVER' | 'SYSTEM';
 
 export interface ContextualQueueCase {
   id: string;
@@ -148,12 +185,15 @@ export interface ContextualQueueCase {
   ownerRole: string;
   status: 'PENDING' | 'IN_REVIEW';
   priority: TaskPriority;
+  avatarUrl: string;
 }
 
 export interface WorkflowState {
   patient: PatientProfile;
   caregiver: CaregiverProfile;
   appointment: AppointmentDetails;
+  labs: LabResult[];
+  vitals: VitalSign[];
   overallReadiness: ReadinessStatus;
   readinessCheckCompleted: boolean;
   readinessSubmission: ReadinessSubmission;

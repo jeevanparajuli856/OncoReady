@@ -1,17 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { 
   RotateCcw, 
-  User, 
-  Users, 
-  HeartHandshake, 
-  Network, 
-  ShieldAlert, 
-  CheckCircle2, 
-  Clock, 
-  Sparkles,
-  EyeOff
+  ChevronDown, 
+  Activity, 
+  LogOut, 
+  EyeOff, 
+  Eye,
+  CheckCircle2,
+  AlertTriangle,
+  Clock,
+  Layers,
+  Network
 } from 'lucide-react';
-import { Perspective, ReadinessStatus } from '../types';
+import { Perspective, ReadinessStatus, WorkflowState } from '../types';
 
 interface HeaderProps {
   currentPerspective: Perspective;
@@ -20,7 +21,7 @@ interface HeaderProps {
   onReset: () => void;
   reducedMotion: boolean;
   onToggleReducedMotion: () => void;
-  taskCount: number;
+  state: WorkflowState;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -30,163 +31,292 @@ export const Header: React.FC<HeaderProps> = ({
   onReset,
   reducedMotion,
   onToggleReducedMotion,
-  taskCount,
+  state,
 }) => {
-  const getReadinessBadge = () => {
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+
+  const getActiveUser = () => {
+    switch (currentPerspective) {
+      case 'PATIENT':
+        return {
+          name: state.patient.name,
+          role: 'Patient (MyChart)',
+          avatar: state.patient.avatarUrl,
+        };
+      case 'STAFF':
+        return {
+          name: 'Sarah Jenkins, RN',
+          role: 'Oncology Triage Team',
+          avatar: 'https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256',
+        };
+      case 'CAREGIVER':
+        return {
+          name: state.caregiver.name,
+          role: 'Caregiver Proxy',
+          avatar: state.caregiver.avatarUrl,
+        };
+      case 'SYSTEM':
+        return {
+          name: 'Continuity Telemetry',
+          role: 'Graph & Audit Engine',
+          avatar: '',
+        };
+      default:
+        return null;
+    }
+  };
+
+  const activeUser = getActiveUser();
+
+  const getStatusPill = () => {
     switch (overallReadiness) {
       case 'PLAN_CONFIRMED':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            Treatment Plan Confirmed
-          </span>
+            <span>Ready for Tomorrow</span>
+          </div>
         );
       case 'AT_RISK':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-700 border border-amber-200 animate-pulse-subtle">
-            <ShieldAlert className="w-3.5 h-3.5 text-amber-600" />
-            2 Active Blockers Detected
-          </span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-amber-50 text-amber-800 border border-amber-200">
+            <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+            <span>2 Blockers Active</span>
+          </div>
         );
       case 'IN_PROGRESS':
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-700 border border-sky-200">
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
             <Clock className="w-3.5 h-3.5 text-sky-600" />
-            Staff Action Recorded • Awaiting Patient Confirmation
-          </span>
+            <span>Triage Cleared • Review Ready</span>
+          </div>
         );
       default:
         return (
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 border border-slate-200">
-            <Clock className="w-3.5 h-3.5 text-slate-500" />
-            Readiness Screening Pending
-          </span>
+          <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-800 border border-indigo-200">
+            <Clock className="w-3.5 h-3.5 text-indigo-600" />
+            <span>Screening Pending</span>
+          </div>
         );
     }
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-      {/* Synthetic Demonstration Disclosure Banner */}
-      <div className="bg-slate-900 text-slate-200 px-4 py-1.5 text-xs flex flex-wrap items-center justify-between gap-2 border-b border-slate-800">
-        <div className="flex items-center gap-2">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
-          <span className="font-semibold text-white">Demonstration Environment</span>
-          <span className="text-slate-400">|</span>
-          <span className="text-slate-300">Synthetic patient fixtures & simulated clinical/transport workflows. No real PHI or live EHR connection.</span>
+    <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-2xs">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
+        
+        {/* Brand Logo */}
+        <div 
+          onClick={() => onSetPerspective('PORTAL_AUTH')}
+          className="flex items-center gap-3 cursor-pointer group select-none"
+          title="Return to Portal Gateway"
+        >
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-700 via-indigo-600 to-sky-500 text-white flex items-center justify-center shadow-md shadow-indigo-500/20 group-hover:scale-105 transition-transform">
+            <Activity className="w-5 h-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-base tracking-tight text-slate-900 font-sans">
+                OncoReady
+              </span>
+              <span className="text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-50 text-indigo-700 border border-indigo-100 uppercase tracking-wide">
+                Benson
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-500 font-medium">
+              Clinical Continuity & Barrier Detection
+            </p>
+          </div>
         </div>
-        <div className="flex items-center gap-3">
+
+        {/* Center: Live Treatment Status Capsule (Hidden on small mobile) */}
+        <div className="hidden md:flex items-center gap-3">
+          <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-700 font-medium">
+            <span className="font-bold text-slate-900">{state.patient.name}</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-600">mFOLFOX6 Cycle 4</span>
+            <span className="text-slate-300">•</span>
+            <span className="text-slate-500">Tomorrow 8:30 AM</span>
+          </div>
+
+          {getStatusPill()}
+        </div>
+
+        {/* Right: Active Profile & Switcher Menu */}
+        <div className="flex items-center gap-2.5">
+          
+          {/* Reduced Motion Toggle */}
           <button
             onClick={onToggleReducedMotion}
-            className="text-xs text-slate-400 hover:text-white transition flex items-center gap-1 focus:outline-none focus:ring-2 focus:ring-indigo-400 rounded px-1.5 py-0.5"
-            title="Toggle reduced motion simulation"
-          >
-            {reducedMotion ? '⚡ Motion: Reduced (Accessible)' : '✨ Motion: Smooth Spring'}
-          </button>
-          <span className="text-slate-500">•</span>
-          <span className="text-slate-400 text-xs font-mono">CORE-001 Golden Path</span>
-        </div>
-      </div>
-
-      {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex flex-col md:flex-row items-center justify-between gap-4">
-        {/* Brand & Signature Status */}
-        <div className="flex items-center gap-4 w-full md:w-auto justify-between md:justify-start">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-sky-600 flex items-center justify-center text-white shadow-md shadow-indigo-100">
-              <Sparkles className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-bold text-lg text-slate-900 tracking-tight">OncoReady</span>
-                <span className="text-xs font-medium px-2 py-0.5 rounded-md bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  Continuity Loop
-                </span>
-              </div>
-              <p className="text-xs text-slate-500 hidden sm:block">
-                Ochsner Benson Cancer Center • Treatment Readiness System
-              </p>
-            </div>
-          </div>
-          <div className="md:hidden">
-            {getReadinessBadge()}
-          </div>
-        </div>
-
-        {/* Perspective Switcher */}
-        <nav aria-label="Perspective Switcher" className="flex items-center bg-slate-100/80 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full">
-          <button
-            onClick={() => onSetPerspective('PATIENT')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-              currentPerspective === 'PATIENT'
-                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80 font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
+            aria-label="Toggle reduced motion"
+            title={reducedMotion ? 'Reduced motion active' : 'Smooth animations active'}
+            className={`p-2 rounded-xl border text-xs transition ${
+              reducedMotion
+                ? 'bg-amber-50 text-amber-700 border-amber-200'
+                : 'bg-slate-50 text-slate-500 border-slate-200 hover:text-slate-900 hover:bg-slate-100'
             }`}
           >
-            <User className="w-3.5 h-3.5 text-indigo-600" />
-            <span>Patient (Maria)</span>
+            {reducedMotion ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
 
-          <button
-            onClick={() => onSetPerspective('STAFF')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-              currentPerspective === 'STAFF'
-                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80 font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-          >
-            <Users className="w-3.5 h-3.5 text-sky-600" />
-            <span>Staff Exception Queue</span>
-            {taskCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-amber-500 text-white text-[10px] flex items-center justify-center font-bold">
-                {taskCount}
-              </span>
-            )}
-          </button>
-
-          <button
-            onClick={() => onSetPerspective('CAREGIVER')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-              currentPerspective === 'CAREGIVER'
-                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80 font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-          >
-            <HeartHandshake className="w-3.5 h-3.5 text-teal-600" />
-            <span>Caregiver (Ana)</span>
-            <span className="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] bg-slate-200 text-slate-700">
-              <EyeOff className="w-2.5 h-2.5 mr-0.5" />
-              Private
-            </span>
-          </button>
-
-          <button
-            onClick={() => onSetPerspective('SYSTEM')}
-            className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
-              currentPerspective === 'SYSTEM'
-                ? 'bg-white text-slate-900 shadow-sm border border-slate-200/80 font-semibold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
-            }`}
-          >
-            <Network className="w-3.5 h-3.5 text-indigo-500" />
-            <span>Readiness Graph & Audit</span>
-          </button>
-        </nav>
-
-        {/* Right Tools & Reset */}
-        <div className="flex items-center gap-3 w-full md:w-auto justify-end">
-          <div className="hidden md:block">
-            {getReadinessBadge()}
-          </div>
+          {/* Reset State Button */}
           <button
             onClick={onReset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-rose-50 text-rose-700 hover:bg-rose-100 hover:text-rose-800 border border-rose-200 transition focus:outline-none focus:ring-2 focus:ring-rose-500 shadow-2xs"
-            title="Reset journey back to opening deterministic state"
+            title="Reset Workflow State"
+            className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition text-xs"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset Journey</span>
+            <RotateCcw className="w-4 h-4" />
           </button>
+
+          {/* User Profile Pill / Switcher */}
+          {activeUser ? (
+            <div className="relative">
+              <button
+                onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 hover:border-slate-300 shadow-2xs transition"
+              >
+                {activeUser.avatar ? (
+                  <img
+                    src={activeUser.avatar}
+                    alt={activeUser.name}
+                    className="w-7 h-7 rounded-lg object-cover border border-slate-200"
+                  />
+                ) : (
+                  <div className="w-7 h-7 rounded-lg bg-slate-900 text-white flex items-center justify-center">
+                    <Layers className="w-3.5 h-3.5 text-indigo-400" />
+                  </div>
+                )}
+
+                <div className="text-left hidden sm:block">
+                  <div className="text-xs font-bold text-slate-900 leading-tight">
+                    {activeUser.name}
+                  </div>
+                  <div className="text-[10px] text-slate-500 font-medium">
+                    {activeUser.role}
+                  </div>
+                </div>
+
+                <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
+              </button>
+
+              {/* Dropdown Menu */}
+              {isDropdownOpen && (
+                <div 
+                  className="absolute right-0 mt-2 w-64 bg-white rounded-2xl border border-slate-200 shadow-xl py-2 z-50 animate-slide-up"
+                  onMouseLeave={() => setIsDropdownOpen(false)}
+                >
+                  <div className="px-3.5 py-2 border-b border-slate-100">
+                    <div className="text-[11px] font-mono text-slate-400 uppercase tracking-wider">
+                      SWITCH CLINICAL PORTAL
+                    </div>
+                  </div>
+
+                  <div className="py-1">
+                    <button
+                      onClick={() => {
+                        onSetPerspective('PATIENT');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-slate-50 transition ${
+                        currentPerspective === 'PATIENT' ? 'bg-indigo-50/70 font-bold text-indigo-900' : 'text-slate-700'
+                      }`}
+                    >
+                      <img
+                        src={state.patient.avatarUrl}
+                        alt="Maria"
+                        className="w-6 h-6 rounded-md object-cover"
+                      />
+                      <div>
+                        <div>Patient Portal (Maria Hernandez)</div>
+                        <div className="text-[10px] text-slate-400 font-normal">MyChart Readiness View</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onSetPerspective('STAFF');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-slate-50 transition ${
+                        currentPerspective === 'STAFF' ? 'bg-sky-50/70 font-bold text-sky-900' : 'text-slate-700'
+                      }`}
+                    >
+                      <img
+                        src="https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256"
+                        alt="Nurse Sarah"
+                        className="w-6 h-6 rounded-md object-cover"
+                      />
+                      <div>
+                        <div>Staff Hub (Sarah Jenkins, RN)</div>
+                        <div className="text-[10px] text-slate-400 font-normal">Triage & Exception Workbench</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onSetPerspective('CAREGIVER');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-slate-50 transition ${
+                        currentPerspective === 'CAREGIVER' ? 'bg-teal-50/70 font-bold text-teal-900' : 'text-slate-700'
+                      }`}
+                    >
+                      <img
+                        src={state.caregiver.avatarUrl}
+                        alt="Ana"
+                        className="w-6 h-6 rounded-md object-cover"
+                      />
+                      <div>
+                        <div>Caregiver Portal (Ana Hernandez)</div>
+                        <div className="text-[10px] text-slate-400 font-normal">Transit Status Only</div>
+                      </div>
+                    </button>
+
+                    <button
+                      onClick={() => {
+                        onSetPerspective('SYSTEM');
+                        setIsDropdownOpen(false);
+                      }}
+                      className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-slate-50 transition ${
+                        currentPerspective === 'SYSTEM' ? 'bg-slate-100 font-bold text-slate-900' : 'text-slate-700'
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded-md bg-slate-900 text-white flex items-center justify-center">
+                        <Network className="w-3.5 h-3.5 text-indigo-400" />
+                      </div>
+                      <div>
+                        <div>Readiness Graph & Audit Log</div>
+                        <div className="text-[10px] text-slate-400 font-normal">Engine Architecture</div>
+                      </div>
+                    </button>
+                  </div>
+
+                  <div className="pt-1 mt-1 border-t border-slate-100">
+                    <button
+                      onClick={() => {
+                        onSetPerspective('PORTAL_AUTH');
+                        setIsDropdownOpen(false);
+                      }}
+                      className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-semibold text-rose-700 hover:bg-rose-50 transition"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      <span>Sign Out to Gateway</span>
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <button
+              onClick={() => onSetPerspective('PATIENT')}
+              className="px-3.5 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs transition shadow-xs"
+            >
+              Sign In
+            </button>
+          )}
+
         </div>
+
       </div>
     </header>
   );

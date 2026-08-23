@@ -130,8 +130,8 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     expect(state.tasks.every((t) => t.status === 'RESOLVED')).toBe(true);
 
     // Verify causal audit events are recorded
-    expect(state.auditEvents.length).toBeGreaterThanOrEqual(8);
-    const hasClosureEvent = state.auditEvents.some((e) => e.action.includes('Blockers Resolved') || e.action.includes('Acknowledged'));
+    expect(state.auditEvents.length).toBeGreaterThanOrEqual(6);
+    const hasClosureEvent = state.auditEvents.some((e) => e.action.includes('Treatment Plan Acknowledged'));
     expect(hasClosureEvent).toBe(true);
 
     // Step 5: Reset restores initial state

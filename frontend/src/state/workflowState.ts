@@ -6,12 +6,12 @@ import {
   CaregiverProjection 
 } from '../types';
 
-const STORAGE_KEY = 'oncoready_workflow_state_v1';
+const STORAGE_KEY = 'oncoready_workflow_state_v2';
 
 export const INITIAL_STATE: WorkflowState = {
-  version: 1,
+  version: 2,
   isSimulated: true,
-  currentPerspective: 'PATIENT',
+  currentPerspective: 'PORTAL_AUTH',
   overallReadiness: 'ACTION_REQUIRED',
   readinessCheckCompleted: false,
   patientAcknowledged: false,
@@ -22,32 +22,165 @@ export const INITIAL_STATE: WorkflowState = {
     name: 'Maria Hernandez',
     age: 54,
     gender: 'Female',
-    diagnosis: 'Metastatic Colorectal Cancer (Stage IV)',
+    diagnosis: 'Colorectal Adenocarcinoma',
+    stage: 'Stage IV (Hepatic Metastasis)',
     oncologist: 'Dr. Aris Thorne, MD',
     phone: '(504) 555-0182',
     address: '1420 St. Charles Ave, New Orleans, LA 70130',
+    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=256',
+    ecogStatus: 1,
+    bodySurfaceArea: '1.72 m²',
   },
 
   caregiver: {
     id: 'CG-40912',
     name: 'Ana Hernandez',
-    relationship: 'Daughter & Designated Transport Contact',
+    relationship: 'Daughter & Health Proxy',
     phone: '(504) 555-0199',
     permissionScope: 'TRANSPORTATION_ONLY',
     authorizedBy: 'Maria Hernandez',
+    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=256',
   },
 
   appointment: {
     id: 'APT-2026-0824',
-    protocol: 'FOLFOX6 + Bevacizumab',
+    protocol: 'mFOLFOX6 + Bevacizumab',
     cycleNumber: 4,
-    treatmentName: 'Cycle 4 Infusion (Oxaliplatin / Leucovorin / 5-FU)',
+    totalCycles: 12,
+    treatmentName: 'Cycle 4 Infusion (Oxaliplatin / Leucovorin / 5-FU / Avastin)',
     scheduledTime: 'Tomorrow, Aug 24 • 8:30 AM',
-    location: 'Ochsner Benson Cancer Center, Suite B',
-    room: 'Infusion Chair 14',
-    infusionDuration: '4 hours (plus 46-hr ambulatory 5-FU pump)',
-    oncologist: 'Dr. Aris Thorne, MD',
+    location: 'Benson Cancer Center, Infusion Suite B',
+    room: 'Bay 4',
+    infusionChair: 'Infusion Chair 14 (Window)',
+    infusionDuration: '4 hours (plus 46-hr CADD ambulatory pump)',
+    oncologist: 'Dr. Aris Thorne, MD, PhD',
+    oncologistAvatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=256',
+    nurseTeam: 'Sarah Jenkins, RN, OCN (Primary Triage)',
+    drugs: [
+      {
+        name: 'Oxaliplatin',
+        dosage: '85 mg/m² (146.2 mg in D5W 500 mL)',
+        route: 'IV Infusion over 2 hrs',
+        schedule: 'Day 1',
+        indication: 'DNA cross-linking alkylating-like agent',
+      },
+      {
+        name: 'Leucovorin (Folinic Acid)',
+        dosage: '400 mg/m² (688 mg in D5W 250 mL)',
+        route: 'IV Infusion concurrent with Oxaliplatin',
+        schedule: 'Day 1',
+        indication: '5-FU biochemical modulation & synergy',
+      },
+      {
+        name: 'Fluorouracil (5-FU) Bolus',
+        dosage: '400 mg/m² (688 mg IV Push)',
+        route: 'IV Push over 5 mins',
+        schedule: 'Day 1',
+        indication: 'Thymidylate synthase inhibitor',
+      },
+      {
+        name: 'Fluorouracil (5-FU) Continuous Infusion',
+        dosage: '2,400 mg/m² (4,128 mg via CADD Ambulatory Pump)',
+        route: 'Continuous IV over 46 hours',
+        schedule: 'Days 1–3',
+        indication: 'S-phase active antimetabolite',
+      },
+      {
+        name: 'Bevacizumab (Avastin)',
+        dosage: '5 mg/kg (340 mg in 0.9% NaCl 100 mL)',
+        route: 'IV Infusion over 30 mins',
+        schedule: 'Day 1',
+        indication: 'VEGF-A targeted angiogenesis inhibitor',
+      }
+    ],
+    premeds: [
+      'Dexamethasone 12 mg IV (Anti-emetic & steroid premedication)',
+      'Ondansetron (Zofran) 16 mg IV over 15 mins',
+      'Diphenhydramine 25 mg IV (Hypersensitivity prophylaxis)',
+      'Famotidine 20 mg IV (H2 antagonist prophylaxis)'
+    ]
   },
+
+  labs: [
+    {
+      name: 'Absolute Neutrophil Count (ANC)',
+      value: '1.82',
+      unit: '× 10³/µL',
+      referenceRange: '1.50 – 8.00',
+      status: 'NORMAL',
+      collectedAt: 'Aug 22, 09:15 AM',
+    },
+    {
+      name: 'Platelet Count',
+      value: '168',
+      unit: '× 10³/µL',
+      referenceRange: '150 – 450',
+      status: 'NORMAL',
+      collectedAt: 'Aug 22, 09:15 AM',
+    },
+    {
+      name: 'Hemoglobin (Hgb)',
+      value: '11.4',
+      unit: 'g/dL',
+      referenceRange: '12.0 – 16.0',
+      status: 'EVALUATED',
+      collectedAt: 'Aug 22, 09:15 AM',
+    },
+    {
+      name: 'Serum Creatinine',
+      value: '0.88',
+      unit: 'mg/dL',
+      referenceRange: '0.50 – 1.10',
+      status: 'NORMAL',
+      collectedAt: 'Aug 22, 09:15 AM',
+    },
+    {
+      name: 'Total Bilirubin',
+      value: '0.6',
+      unit: 'mg/dL',
+      referenceRange: '0.2 – 1.2',
+      status: 'NORMAL',
+      collectedAt: 'Aug 22, 09:15 AM',
+    }
+  ],
+
+  vitals: [
+    {
+      name: 'Body Temperature',
+      value: '98.6°F (Basal) / 100.4°F (Reported)',
+      unit: '°F',
+      status: 'ATTENTION',
+      collectedAt: 'Self-Reported Today 07:15 AM',
+    },
+    {
+      name: 'Blood Pressure',
+      value: '124 / 78',
+      unit: 'mmHg',
+      status: 'NORMAL',
+      collectedAt: 'Clinic Visit Aug 20',
+    },
+    {
+      name: 'Pulse / Heart Rate',
+      value: '72',
+      unit: 'bpm',
+      status: 'NORMAL',
+      collectedAt: 'Clinic Visit Aug 20',
+    },
+    {
+      name: 'SpO2 Oxygen Saturation',
+      value: '99',
+      unit: '%',
+      status: 'NORMAL',
+      collectedAt: 'Clinic Visit Aug 20',
+    },
+    {
+      name: 'Patient Weight',
+      value: '68.0',
+      unit: 'kg (150 lbs)',
+      status: 'NORMAL',
+      collectedAt: 'Clinic Visit Aug 20',
+    }
+  ],
 
   readinessSubmission: {
     hasTransportIssue: false,
@@ -62,61 +195,72 @@ export const INITIAL_STATE: WorkflowState = {
   auditEvents: [
     {
       id: 'EVT-001',
-      timestamp: 'Today, 06:00 AM',
-      actor: 'Epic Scheduling / Ochsner EHR',
+      timestamp: 'Aug 23, 06:00 AM',
+      actor: 'Epic Scheduling / Ochsner Oncology',
       actorRole: 'SYSTEM',
-      action: 'Treatment Scheduled',
-      description: 'FOLFOX6 Cycle 4 confirmed for 08/24 08:30 AM at Benson Cancer Center.',
+      action: 'Cycle 4 Infusion Scheduled',
+      description: 'mFOLFOX6 Cycle 4 confirmed for 08/24 08:30 AM at Benson Cancer Center.',
     },
     {
       id: 'EVT-002',
-      timestamp: 'Today, 07:00 AM',
+      timestamp: 'Aug 23, 06:05 AM',
       actor: 'OncoReady Continuity Engine',
       actorRole: 'SYSTEM',
-      action: 'Readiness Screening Triggered',
-      description: 'T-24h automated pre-infusion readiness check dispatched to patient portal.',
-      stateDiff: {
-        field: 'overallReadiness',
-        from: 'SCHEDULED',
-        to: 'ACTION_REQUIRED',
-      },
-    },
+      action: 'Readiness Screening Window Opened',
+      description: 'T-24 hour pre-infusion barrier detection protocol active for Maria Hernandez.',
+    }
   ],
 
   contextualCases: [
     {
-      id: 'CASE-002',
-      patientName: 'Robert Chen',
-      mrn: 'OCH-710492',
-      diagnosis: 'Non-Small Cell Lung Cancer',
-      protocol: 'Pembrolizumab + Pemetrexed',
-      appointmentTime: 'Tomorrow 10:15 AM',
-      blockerType: 'Insurance Prior-Auth Re-verification',
+      id: 'CASE-1092',
+      patientName: 'David Chen',
+      mrn: 'OCH-992104',
+      diagnosis: 'NSCLC Adenocarcinoma',
+      protocol: 'Pembrolizumab + Carboplatin',
+      appointmentTime: 'Tomorrow • 09:00 AM',
+      blockerType: 'Lab Exception: ANC 0.89 K/uL (Grade 3 Neutropenia)',
       ownerName: 'Sarah Jenkins, RN',
       ownerRole: 'Triage Nurse',
       status: 'IN_REVIEW',
-      priority: 'MEDIUM',
+      priority: 'CRITICAL',
+      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
     },
     {
-      id: 'CASE-003',
+      id: 'CASE-1093',
       patientName: 'Elena Rostova',
-      mrn: 'OCH-923841',
-      diagnosis: 'HER2+ Breast Cancer',
-      protocol: 'AC-THP (Paclitaxel + Trastuzumab)',
-      appointmentTime: 'Tomorrow 01:00 PM',
-      blockerType: 'Pre-hydration Lab Clearance',
+      mrn: 'OCH-771289',
+      diagnosis: 'HER2+ Invasive Ductal Breast Ca',
+      protocol: 'Trastuzumab + Pertuzumab',
+      appointmentTime: 'Tomorrow • 10:30 AM',
+      blockerType: 'Prior Auth: Commercial Payer Recertification',
       ownerName: 'Marcus Vance, MSW',
-      ownerRole: 'Oncology Navigator',
+      ownerRole: 'Patient Navigator',
       status: 'PENDING',
       priority: 'HIGH',
+      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
     },
-  ],
+    {
+      id: 'CASE-1094',
+      patientName: 'Robert Washington',
+      mrn: 'OCH-663812',
+      diagnosis: 'Multiple Myeloma',
+      protocol: 'Daratumumab + VRd',
+      appointmentTime: 'Tomorrow • 11:15 AM',
+      blockerType: 'Specialty Pharmacy Delay: Revlimid Delivery',
+      ownerName: 'Sarah Jenkins, RN',
+      ownerRole: 'Triage Nurse',
+      status: 'PENDING',
+      priority: 'HIGH',
+      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
+    }
+  ]
 };
 
 export type WorkflowAction =
   | { type: 'SUBMIT_READINESS'; payload: { transportNotes: string; clinicalConcernText: string } }
-  | { type: 'ACKNOWLEDGE_CLINICAL_TASK'; payload: { nurseNotes?: string } }
-  | { type: 'CONFIRM_TRANSPORTATION'; payload: { vehicleId?: string; driverName?: string; pickupTime?: string } }
+  | { type: 'ACKNOWLEDGE_CLINICAL_TASK'; payload?: { nurseNotes?: string } }
+  | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string } }
   | { type: 'ACKNOWLEDGE_PATIENT_PLAN' }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
   | { type: 'RESET_WORKFLOW' };
@@ -124,251 +268,248 @@ export type WorkflowAction =
 export function workflowReducer(state: WorkflowState, action: WorkflowAction): WorkflowState {
   switch (action.type) {
     case 'SUBMIT_READINESS': {
-      if (state.readinessCheckCompleted) return state;
+      const nowStr = 'Aug 23, 07:15 AM';
+      const { transportNotes, clinicalConcernText } = action.payload;
 
-      const now = 'Today, 08:45 AM';
+      const hasTransport = Boolean(transportNotes && transportNotes.trim());
+      const hasClinical = Boolean(clinicalConcernText && clinicalConcernText.trim());
 
-      const clinicalTask: Task = {
-        id: 'TSK-CLN-401',
-        type: 'CLINICAL_REVIEW',
-        title: 'Pre-Infusion Clinical Symptom Review',
-        patientId: state.patient.id,
-        status: 'ASSIGNED',
-        priority: 'HIGH',
-        owner: {
-          id: 'STF-NURSE-01',
-          name: 'Sarah Jenkins, RN, OCN',
-          role: 'Oncology Triage Nurse',
-          department: 'Benson Cancer Center Triage',
-          badge: 'RN',
-        },
-        createdAt: now,
-        dueTime: 'Today, 12:00 PM (T-20h)',
-        clinicalDetails: {
-          verbatimReport: action.payload.clinicalConcernText.trim() || 'Mild fever 100.4°F and tingling in fingers since yesterday evening',
-          clearanceState: 'PENDING_REVIEW',
-        },
-      };
+      const newTasks: Task[] = [];
+      const newAuditEvents: AuditEvent[] = [...state.auditEvents];
 
-      const transportTask: Task = {
-        id: 'TSK-TRN-402',
-        type: 'TRANSPORTATION_NAVIGATION',
-        title: 'Non-Emergency Medical Transportation Dispatch',
-        patientId: state.patient.id,
-        status: 'ASSIGNED',
-        priority: 'HIGH',
-        owner: {
-          id: 'STF-NAV-02',
-          name: 'Marcus Vance, MSW, LCSW',
-          role: 'Oncology Patient Navigator',
-          department: 'Patient Supportive Services',
-          badge: 'MSW',
+      // Event: Patient submitted screening
+      newAuditEvents.push({
+        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
+        timestamp: nowStr,
+        actor: state.patient.name,
+        actorRole: 'PATIENT',
+        action: 'Readiness Screening Submitted',
+        description: `Patient completed 2-minute pre-infusion screening with 2 actionable barrier items.`,
+        stateDiff: {
+          field: 'readinessCheckCompleted',
+          from: 'false',
+          to: 'true',
         },
-        createdAt: now,
-        dueTime: 'Today, 02:00 PM (T-18h)',
-        transportDetails: {
-          pickupAddress: state.patient.address,
-          destination: state.appointment.location,
-          requestedTime: 'Tomorrow, 7:45 AM',
-          dispatchStatus: 'UNASSIGNED',
-          vehicleType: 'Wheelchair-Accessible Medical Van',
-        },
-      };
+      });
 
-      const newEvents: AuditEvent[] = [
-        {
-          id: `EVT-${Date.now()}-1`,
-          timestamp: now,
-          actor: 'Maria Hernandez',
-          actorRole: 'PATIENT',
-          action: 'Readiness Check Completed',
-          description: 'Patient reported cancelled transportation and clinical concern (mild fever & peripheral neuropathy).',
-          stateDiff: {
-            field: 'overallReadiness',
-            from: state.overallReadiness,
-            to: 'AT_RISK',
+      // 1. Clinical Review Task (Assigned to Sarah Jenkins, RN)
+      if (hasClinical) {
+        newTasks.push({
+          id: 'TSK-CLN-01',
+          type: 'CLINICAL_REVIEW',
+          title: 'Oncology Triage Review: Patient-Reported Symptoms',
+          patientId: state.patient.id,
+          status: 'ASSIGNED',
+          priority: 'HIGH',
+          owner: {
+            id: 'STAFF-RN-01',
+            name: 'Sarah Jenkins, BSN, RN, OCN',
+            role: 'Oncology Triage Nurse',
+            department: 'Benson Cancer Center Triage',
+            badge: 'RN-8841',
+            avatarUrl: 'https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256',
           },
-        },
-        {
-          id: `EVT-${Date.now()}-2`,
-          timestamp: now,
-          actor: 'Deterministic Routing Engine',
+          createdAt: nowStr,
+          dueTime: 'Today • 10:00 AM (SLA: 2h)',
+          clinicalDetails: {
+            verbatimReport: clinicalConcernText,
+            clearanceState: 'PENDING_REVIEW',
+          },
+        });
+
+        newAuditEvents.push({
+          id: `EVT-${newAuditEvents.length + 1}`.padStart(7, '0'),
+          timestamp: nowStr,
+          actor: 'OncoReady Continuity Engine',
           actorRole: 'SYSTEM',
-          action: 'Clinical Review Task Generated',
-          description: 'Verbatim symptom report routed to Sarah Jenkins, RN for human triage review.',
-        },
-        {
-          id: `EVT-${Date.now()}-3`,
-          timestamp: now,
-          actor: 'Deterministic Routing Engine',
+          action: 'Clinical Triage Task Created',
+          description: `Dispatched high-priority clinical review to Sarah Jenkins, RN. Verbatim record preserved: "${clinicalConcernText}".`,
+        });
+      }
+
+      // 2. Transportation Navigation Task (Assigned to Marcus Vance)
+      if (hasTransport) {
+        newTasks.push({
+          id: 'TSK-TRN-02',
+          type: 'TRANSPORTATION_NAVIGATION',
+          title: 'Transportation Navigation: Ride Cancellation Resolution',
+          patientId: state.patient.id,
+          status: 'ASSIGNED',
+          priority: 'HIGH',
+          owner: {
+            id: 'STAFF-NAV-02',
+            name: 'Marcus Vance, MSW, LCSW',
+            role: 'Oncology Patient Navigator',
+            department: 'Supportive Care Services',
+            badge: 'NAV-3312',
+            avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=256',
+          },
+          createdAt: nowStr,
+          dueTime: 'Today • 11:00 AM (SLA: 3h)',
+          transportDetails: {
+            pickupAddress: state.patient.address,
+            destination: state.appointment.location,
+            requestedTime: 'Tomorrow • 7:45 AM (for 8:30 AM arrival)',
+            dispatchStatus: 'UNASSIGNED',
+            vehicleType: 'Assisted Medical Transport (Med-Van)',
+          },
+        });
+
+        newAuditEvents.push({
+          id: `EVT-${newAuditEvents.length + 1}`.padStart(7, '0'),
+          timestamp: nowStr,
+          actor: 'OncoReady Continuity Engine',
           actorRole: 'SYSTEM',
-          action: 'Transportation Task Generated',
-          description: 'Transit barrier routed to Marcus Vance, MSW for medical transport dispatch.',
-        },
-      ];
+          action: 'Transportation Task Created',
+          description: `Dispatched transit task to Marcus Vance, MSW for pickup at 1420 St. Charles Ave.`,
+        });
+      }
+
+      const nextReadiness = newTasks.length > 0 ? 'AT_RISK' : 'PLAN_CONFIRMED';
 
       return {
         ...state,
         readinessCheckCompleted: true,
-        overallReadiness: 'AT_RISK',
         readinessSubmission: {
-          hasTransportIssue: true,
-          transportNotes: action.payload.transportNotes || 'Ride cancelled by family member; needs assisted pickup at 7:45 AM',
-          hasClinicalConcern: true,
-          clinicalConcernText: action.payload.clinicalConcernText || 'Mild fever 100.4°F and tingling in fingers since yesterday evening',
-          submittedAt: now,
+          hasTransportIssue: hasTransport,
+          transportNotes,
+          hasClinicalConcern: hasClinical,
+          clinicalConcernText,
+          submittedAt: nowStr,
         },
-        tasks: [clinicalTask, transportTask],
-        auditEvents: [...state.auditEvents, ...newEvents],
+        tasks: newTasks,
+        auditEvents: newAuditEvents,
+        overallReadiness: nextReadiness,
       };
     }
 
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
-      const now = 'Today, 10:15 AM';
-      const updatedTasks = state.tasks.map((t) => {
-        if (t.type === 'CLINICAL_REVIEW') {
+      const nowStr = 'Aug 23, 08:20 AM';
+      const defaultNotes = 
+        'Assessed temp 100.4°F (sub-febrile) & Grade 1 peripheral neuropathy. Contacted patient via clinic line; advised aggressive oral hydration, cold-sensitivity precautions for oxaliplatin, and pre-infusion CBC/CMP labs at 8:00 AM. Clinical clearance granted for pre-medication.';
+      
+      const nurseNotes = action.payload?.nurseNotes || defaultNotes;
+
+      const updatedTasks = state.tasks.map((task) => {
+        if (task.type === 'CLINICAL_REVIEW') {
           return {
-            ...t,
-            status: 'ACTIONED' as const,
+            ...task,
+            status: 'RESOLVED' as const,
             clinicalDetails: {
-              ...t.clinicalDetails!,
+              ...task.clinicalDetails!,
+              nurseNotes,
               clearanceState: 'REVIEWED_AND_ACKNOWLEDGED' as const,
-              nurseNotes: action.payload.nurseNotes || 'Assessed temp 100.4°F (sub-febrile) & Grade 1 peripheral neuropathy. Contacted patient via secure line; advised aggressive oral hydration, cold-sensitivity precautions for oxaliplatin, and pre-infusion CBC/CMP labs at 8:00 AM. Clinical clearance granted for pre-medication.',
-              adviceGiven: 'Hydration protocol + pre-medication lab draw at 8:00 AM',
-              acknowledgedAt: now,
-              reviewedBy: 'Sarah Jenkins, RN, OCN',
+              adviceGiven: 'Oral hydration protocol + oxaliplatin cold avoidance + 8:00 AM pre-med labs authorized.',
+              acknowledgedAt: nowStr,
+              reviewedBy: 'Sarah Jenkins, BSN, RN, OCN',
             },
           };
         }
-        return t;
+        return task;
       });
 
-      const newEvent: AuditEvent = {
-        id: `EVT-${Date.now()}-4`,
-        timestamp: now,
-        actor: 'Sarah Jenkins, RN, OCN',
+      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
+        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
+        timestamp: nowStr,
+        actor: 'Sarah Jenkins, BSN, RN, OCN',
         actorRole: 'TRIAGE_NURSE',
-        action: 'Clinical Concern Acknowledged & Triage Documented',
-        description: 'Triage nurse reviewed verbatim symptoms, recorded cold-sensitivity guidance, and cleared patient for scheduled 8:00 AM pre-med labs.',
-      };
+        action: 'Clinical Symptoms Reviewed & Cleared',
+        description: `Nurse Jenkins completed triage assessment. Patient cleared for pre-infusion hydration and morning lab draw.`,
+        stateDiff: {
+          field: 'tasks.CLINICAL_REVIEW.status',
+          from: 'ASSIGNED',
+          to: 'RESOLVED',
+        },
+      }];
 
-      const allActioned = updatedTasks.every(
-        (t) => (t.type === 'CLINICAL_REVIEW' && t.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED') ||
-               (t.type === 'TRANSPORTATION_NAVIGATION' && t.transportDetails?.dispatchStatus === 'CONFIRMED')
-      );
+      const allResolved = updatedTasks.every((t) => t.status === 'RESOLVED');
+      const nextReadiness = allResolved ? 'IN_PROGRESS' : state.overallReadiness;
 
       return {
         ...state,
         tasks: updatedTasks,
-        overallReadiness: allActioned ? 'IN_PROGRESS' : state.overallReadiness,
-        auditEvents: [...state.auditEvents, newEvent],
+        auditEvents: newAuditEvents,
+        overallReadiness: nextReadiness,
       };
     }
 
     case 'CONFIRM_TRANSPORTATION': {
-      const now = 'Today, 11:30 AM';
-      const vehicleId = action.payload.vehicleId || 'Ochsner Med-Van #402';
-      const driverName = action.payload.driverName || 'Jerome Davis';
-      const pickupTime = action.payload.pickupTime || 'Tomorrow, 7:45 AM';
+      const nowStr = 'Aug 23, 08:45 AM';
+      const vehicleId = action.payload?.vehicleId || 'Ochsner Med-Van #402';
+      const driverName = action.payload?.driverName || 'Jerome Davis';
+      const pickupTime = action.payload?.pickupTime || 'Tomorrow, 7:45 AM';
 
-      const updatedTasks = state.tasks.map((t) => {
-        if (t.type === 'TRANSPORTATION_NAVIGATION') {
+      const updatedTasks = state.tasks.map((task) => {
+        if (task.type === 'TRANSPORTATION_NAVIGATION') {
           return {
-            ...t,
-            status: 'CONFIRMED' as const,
+            ...task,
+            status: 'RESOLVED' as const,
             transportDetails: {
-              ...t.transportDetails!,
+              ...task.transportDetails!,
               dispatchStatus: 'CONFIRMED' as const,
               vehicleId,
               driverName,
               confirmedPickupTime: pickupTime,
-              dispatchedBy: 'Marcus Vance, MSW',
+              dispatchedBy: 'Marcus Vance, MSW, LCSW',
             },
           };
         }
-        return t;
+        return task;
       });
 
-      const newEvents: AuditEvent[] = [
-        {
-          id: `EVT-${Date.now()}-5`,
-          timestamp: now,
-          actor: 'Marcus Vance, MSW',
-          actorRole: 'NAVIGATOR',
-          action: 'Simulated Medical Transport Confirmed',
-          description: `Dispatched ${vehicleId} (Driver: ${driverName}) for pickup at 7:45 AM from 1420 St. Charles Ave.`,
+      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
+        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
+        timestamp: nowStr,
+        actor: 'Marcus Vance, MSW, LCSW',
+        actorRole: 'NAVIGATOR',
+        action: 'Transportation Dispatched & Confirmed',
+        description: `Med-Van #402 (Driver: Jerome Davis) booked for 7:45 AM pickup at 1420 St. Charles Ave. Route ETA to Benson Cancer Center: 25 mins.`,
+        stateDiff: {
+          field: 'tasks.TRANSPORTATION_NAVIGATION.status',
+          from: 'ASSIGNED',
+          to: 'RESOLVED',
         },
-        {
-          id: `EVT-${Date.now()}-6`,
-          timestamp: now,
-          actor: 'Permission Boundary Engine',
-          actorRole: 'SYSTEM',
-          action: 'Caregiver Notification Dispatched',
-          description: 'Ana Hernandez notified of transportation confirmation. (Clinical details strictly excluded).',
-        },
-      ];
+      }];
 
-      const allActioned = updatedTasks.every(
-        (t) => (t.type === 'CLINICAL_REVIEW' && t.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED') ||
-               (t.type === 'TRANSPORTATION_NAVIGATION' && t.transportDetails?.dispatchStatus === 'CONFIRMED')
-      );
+      const allResolved = updatedTasks.every((t) => t.status === 'RESOLVED');
+      const nextReadiness = allResolved ? 'IN_PROGRESS' : state.overallReadiness;
 
       return {
         ...state,
         tasks: updatedTasks,
-        overallReadiness: allActioned ? 'IN_PROGRESS' : state.overallReadiness,
-        auditEvents: [...state.auditEvents, ...newEvents],
+        auditEvents: newAuditEvents,
+        overallReadiness: nextReadiness,
       };
     }
 
     case 'ACKNOWLEDGE_PATIENT_PLAN': {
-      const clnTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
-      const trnTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
+      const nowStr = 'Aug 23, 09:10 AM';
 
-      const clnReady = clnTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED';
-      const trnReady = trnTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
-
-      if (!clnReady || !trnReady) {
-        return state;
-      }
-
-      const now = 'Today, 12:45 PM';
-
-      const resolvedTasks = state.tasks.map((t) => ({
+      const updatedTasks = state.tasks.map((t) => ({
         ...t,
         status: 'RESOLVED' as const,
       }));
 
-      const newEvents: AuditEvent[] = [
-        {
-          id: `EVT-${Date.now()}-7`,
-          timestamp: now,
-          actor: 'Maria Hernandez',
-          actorRole: 'PATIENT',
-          action: 'Treatment Plan Acknowledged by Patient',
-          description: 'Patient reviewed and accepted confirmed transportation pickup at 7:45 AM and clinical pre-medication instructions.',
-          stateDiff: {
-            field: 'overallReadiness',
-            from: state.overallReadiness,
-            to: 'PLAN_CONFIRMED',
-          },
+      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
+        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
+        timestamp: nowStr,
+        actor: state.patient.name,
+        actorRole: 'PATIENT',
+        action: 'Treatment Plan Acknowledged by Patient',
+        description: `Maria Hernandez reviewed confirmed transportation and pre-medication lab instructions, transitioning cycle status to PLAN_CONFIRMED.`,
+        stateDiff: {
+          field: 'overallReadiness',
+          from: state.overallReadiness,
+          to: 'PLAN_CONFIRMED',
         },
-        {
-          id: `EVT-${Date.now()}-8`,
-          timestamp: now,
-          actor: 'OncoReady Closure Engine',
-          actorRole: 'SYSTEM',
-          action: 'All Pre-Treatment Blockers Resolved',
-          description: 'Treatment readiness state finalized to PLAN_CONFIRMED. Maria is cleared and ready for FOLFOX6 Cycle 4.',
-        },
-      ];
+      }];
 
       return {
         ...state,
         patientAcknowledged: true,
         overallReadiness: 'PLAN_CONFIRMED',
-        tasks: resolvedTasks,
-        auditEvents: [...state.auditEvents, ...newEvents],
+        tasks: updatedTasks,
+        auditEvents: newAuditEvents,
       };
     }
 
@@ -410,7 +551,7 @@ export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjec
       status: 'Confirmed & Dispatched',
     } : undefined,
     overallReadiness: state.overallReadiness,
-    privacyBoundaryNotice: 'Clinical symptoms and oncology triage details are confidential between Maria and her medical care team.',
+    privacyBoundaryNotice: 'Clinical symptoms, medication dosing, and nurse triage notes are confidential between Maria and her oncology care team.',
   };
 }
 
