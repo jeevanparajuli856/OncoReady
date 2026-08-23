@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "frontend-design-report.schema.json",
+  "title": "Frontend Design Report",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "task_id",
+    "agent",
+    "status",
+    "summary",
+    "existing_design_system",
+    "design_system_action",
+    "visual_direction",
+    "motion",
+    "responsive",
+    "application_states",
+    "accessibility",
+    "assets_or_dependencies",
+    "design_system_changes",
+    "blockers",
+    "notes_for_codex"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+    "task_id": {
+      "type": "string"
+    },
+    "agent": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PARTIAL",
+        "DESIGN_READY",
+        "BLOCKED",
+        "CHANGES_REQUIRED"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "existing_design_system": {
+      "type": "string"
+    },
+    "design_system_action": {
+      "type": "string",
+      "enum": [
+        "NONE",
+        "REUSE",
+        "EXTEND",
+        "ESTABLISH"
+      ]
+    },
+    "visual_direction": {
+      "type": "object",
+      "required": [
+        "layout",
+        "color",
+        "typography",
+        "spacing_and_shape",
+        "component_presentation"
+      ],
+      "properties": {
+        "layout": {
+          "type": "string"
+        },
+        "color": {
+          "type": "string"
+        },
+        "typography": {
+          "type": "string"
+        },
+        "spacing_and_shape": {
+          "type": "string"
+        },
+        "component_presentation": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "motion": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "transitions",
+        "microinteractions",
+        "reduced_motion"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string"
+        },
+        "transitions": {
+          "type": "string"
+        },
+        "microinteractions": {
+          "type": "string"
+        },
+        "reduced_motion": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "responsive": {
+      "type": "object",
+      "required": [
+        "strategy",
+        "notes"
+      ],
+      "properties": {
+        "strategy": {
+          "type": "string"
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false
+    },
+    "application_states": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "accessibility": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "assets_or_dependencies": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "design_system_changes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "blockers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "type",
+          "description"
+        ],
+        "properties": {
+          "type": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "suggestion": {
+            "type": "string"
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "notes_for_codex": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

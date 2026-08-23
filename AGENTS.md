@@ -1,0 +1,358 @@
+# Project Agent Constitution
+
+Universal rules for all coding agents working in this repository.
+
+## 1. Mission: rapid product development
+
+This repository is optimized for building polished, technically credible, end-to-end software products rapidly.
+
+Priority order:
+1. strong product idea and clear user value
+2. memorable product experience and visual quality
+3. working end-to-end behavior
+4. reliable primary demonstration journey
+5. technical credibility and understandable code
+6. risk-appropriate testing/security
+7. deeper production hardening only when the product actually requires it
+
+Speed does not permit fake core behavior, hidden breakage, invented interfaces, exposed secrets, or misleading product claims. Avoid unnecessary infrastructure, abstraction, documentation, tests, and security ceremony that do not improve the product, its critical journey, or a material risk.
+
+Prefer a few vertical product slices that each deliver UI + logic + data/integration together over many horizontal infrastructure tasks.
+
+## 2. Product presentation boundary
+
+Rapid-delivery strategy is internal. User-facing product surfaces and normal product descriptions must present the software according to the real problem it solves and capabilities it actually provides.
+
+Do not characterize the product to users as a prototype, resume project, portfolio project, toy, practice app, cheap demo, or similar label that lowers perceived product quality.
+
+Also do not falsely claim production scale, compliance, security guarantees, customers, data, integrations, or capabilities that are not real. Accurate limitations may be documented where technically relevant without cheapening the product identity.
+
+## 3. Source of truth by concern
+
+Use the authoritative artifact for the question being answered:
+
+- product purpose, users, signature experience, scope, delivery priorities → `docs/PROJECT.md`
+- deterministic project configuration → `.ai/project.json`
+- feature requirements and acceptance criteria → `docs/features/<TASK-ID>.md` and `.ai/tasks/<TASK-ID>/task.json`
+- architecture/trust boundaries → approved ADRs, then `docs/architecture/SYSTEM.md`, then `architecture-report.json`
+- component interfaces when a contract is required → `contracts/`
+- task state, ownership, write permissions → `.ai/tasks/<TASK-ID>/task.json`
+- implementation behavior → code, when it does not conflict with approved upstream artifacts
+- temporary discussion → chat history
+
+If authoritative artifacts conflict, stop the affected work and let the orchestrator reconcile the upstream artifact. Never silently invent missing API behavior, requirements, schema behavior, or security policy.
+
+## 4. Agent ownership
+
+### Codex orchestrator
+Owns:
+- project/task orchestration
+- lifecycle state
+- integration
+- source-of-truth reconciliation
+- selecting specialists from architecture evidence
+- keeping scope small enough for rapid delivery
+
+### Codex specialists
+- architect → minimum sufficient architecture plus machine-readable execution controls
+- database → schema/migrations only when persistence materially helps the product
+- backend → APIs/services/business logic actually required by the product journey
+- tester → independent tests only when architecture selects TARGETED or FULL depth
+- security → independent review only when architecture requires it
+- reviewer → independent final product/engineering review
+
+### Gemini
+Gemini is the frontend design and implementation authority.
+
+Gemini owns:
+- visual identity and design-system expression
+- color, typography, spacing, radius, borders, shadows, hierarchy
+- page/component composition and responsive presentation
+- animation, transitions, easing, and microinteractions
+- loading/error/empty/disabled/success presentation
+- frontend accessibility and reduced-motion behavior
+- frontend state/browser behavior
+- product storytelling through the interface and data visualization presentation
+
+Codex/architecture define functional requirements, interfaces, trust boundaries, accessibility/performance constraints, and required capabilities. They must not prescribe aesthetics unless an explicit human/brand/approved design-system requirement already makes that choice authoritative.
+
+For `frontend_design_required=true`, Gemini performs design Phase A before production frontend coding; Codex performs compatibility-only review; approval is bound to the exact design report through `reviewed_design_sha256`; Gemini then implements the approved design. Codex must not restyle Gemini's approved frontend as a second design pass.
+
+Gemini is manually started by the human in V1. Codex may prepare worktrees and handoffs but must not claim it spawned Gemini.
+
+## 5. Public control plane
+
+Agents use:
+
+```bash
+python scripts/agentctl.py ...
+```
+
+Important commands:
+
+```bash
+python scripts/agentctl.py bootstrap
+python scripts/agentctl.py project validate
+python scripts/agentctl.py task create <TASK-ID> "<TITLE>"
+python scripts/agentctl.py git prepare <TASK-ID>
+python scripts/agentctl.py task advance <TASK-ID>
+python scripts/agentctl.py task validate <TASK-ID>
+python scripts/agentctl.py worktree create <TASK-ID> backend
+python scripts/agentctl.py worktree create <TASK-ID> frontend
+python scripts/agentctl.py worktree sync <TASK-ID> frontend
+python scripts/agentctl.py frontend design-digest <TASK-ID> --ref agent/<TASK-ID>-frontend
+python scripts/agentctl.py frontend design-gate <TASK-ID>
+python scripts/agentctl.py scope check <TASK-ID> <ROLE>
+python scripts/agentctl.py verify <TASK-ID>
+```
+
+`task status` is recovery/administrative only. Normal progress uses `task advance`.
+
+## 6. Brand-new project inception
+
+Use `.agents/skills/project-inception/SKILL.md`.
+
+Inception must define enough to start quickly without inventing unnecessary complexity. Required outputs:
+- `docs/PROJECT.md`
+- `docs/architecture/SYSTEM.md`
+- `.ai/project.json`
+- relevant standards only when decisions are known
+- ADRs only for meaningful long-lived decisions
+- a small dependency-aware backlog organized around vertical product slices
+
+`docs/PROJECT.md` must identify:
+- real problem and intended users
+- primary/hero user journey
+- first-impression/visual/interaction/data storytelling hooks
+- core technical credibility hook
+- minimum real backend/data/integration needed
+- explicit non-goals and overengineering to avoid
+- demo-critical reliability path
+- a small initial slice backlog
+
+Clearly distinguish Confirmed, Assumption, Recommendation, and Open question.
+
+At `INCEPTION_READY`, backend/frontend/database enabled flags must be true/false; enabled backend/frontend components must name technology; enabled database must name provider and migration path. `.ai/project.json.delivery.mode` remains `RAPID_PRODUCT` and production hardening is risk-based.
+
+Do not implement code or create tasks during inception.
+
+## 7. Feature lifecycle
+
+Normal lifecycle:
+
+```text
+PROPOSED
+  ↓
+PLANNING
+  ↓
+BUILD_READY
+  ↓
+IMPLEMENTATION
+  ↓
+INTEGRATION
+  ↓
+REVIEW
+  ↓
+DONE
+```
+
+`BLOCKED` and `CANCELLED` are side states.
+
+### Planning and BUILD_READY
+
+The architect defines only what this slice needs and completes:
+
+`impacts`:
+- `database`
+- `backend`
+- `frontend`
+- `frontend_design_required`
+- `infrastructure`
+
+`execution`:
+- `contract_required`
+- `test_depth`: `NONE | SMOKE | TARGETED | FULL`
+- `security_risk`: `LOW | STANDARD | HIGH`
+- `security_review_required`
+
+Rules:
+- `frontend_design_required=true` requires `frontend=true`.
+- `HIGH` security risk requires dedicated security review.
+- `contract_required=true` requires explicit task contracts and contract validation before `BUILD_READY`.
+- TARGETED/FULL testing requires an independent tester after integration.
+- NONE/SMOKE does not require a separate tester; repository verification and worker checks provide the lightweight gate.
+- Use STANDARD/HIGH risk and a dedicated security reviewer when meaningful auth/authorization, sensitive data, dangerous file/input handling, privileged operations, or consequential external actions justify it.
+- A public/synthetic-data product with no meaningful trust boundary should normally be LOW risk.
+
+### Implementation
+
+Spawn only impacted workers:
+- database only if `impacts.database=true`
+- backend only if `impacts.backend=true`
+- Gemini frontend only if `impacts.frontend=true`
+
+Prefer one vertical slice to produce a demonstrable user outcome rather than creating separate tasks for database, API, and UI layers unless independent sequencing is genuinely necessary.
+
+For design-required frontend work, the design digest gate remains mandatory.
+
+### Integration
+
+Integrate worker branches deliberately. Do not silently change contracts, architecture, or Gemini's approved visual direction.
+
+Run independent tester only for TARGETED/FULL.
+
+Commit the integrated feature revision, then run:
+
+```bash
+python scripts/agentctl.py verify <TASK-ID>
+```
+
+Verification must pass on the current commit.
+
+If `security_review_required=true`, run the security specialist against that exact verified commit while the task remains in `INTEGRATION`; security must approve before advancing to `REVIEW`.
+
+### Review and closure
+
+The final reviewer checks the exact current integrated revision for:
+- acceptance criteria and primary user journey
+- broken/placeholder product behavior
+- architecture/interface compatibility
+- technical credibility of core functionality
+- demo-critical reliability
+- code quality proportional to the project
+- current verification evidence
+- security evidence only when architecture required a dedicated review
+- visual handoff/design consistency when frontend is involved
+
+After APPROVED final review and human merge, close with:
+
+```bash
+python scripts/agentctl.py task advance <TASK-ID> --merged
+```
+
+## 8. Contracts: conditional, authoritative when used
+
+`contracts/` is authoritative only for interfaces the task declares as contracts.
+
+Use a formal contract when independently implemented components need a stable boundary, especially frontend/backend or external API/schema integration.
+
+Do not create/update contracts for purely local implementation details just to satisfy process.
+
+When `execution.contract_required=true`:
+- task `contracts` must be non-empty
+- frontend must not invent endpoints
+- backend must implement the approved contract
+- implementation agents must not silently edit contracts
+- validate contracts before BUILD_READY
+
+When false, skip the contract gate.
+
+## 9. Testing depth
+
+Choose the smallest depth that protects the product journey:
+
+- `NONE` — trivial/non-behavioral change; no independent tester
+- `SMOKE` — build/lint/typecheck/basic happy-path or implementation-owned checks; no independent tester
+- `TARGETED` — independent tests for important logic/integration/critical journey
+- `FULL` — broader regression/security-sensitive/release-level test work when justified
+
+Do not maximize test count. Protect the functionality a user or evaluator will actually exercise and important failure boundaries.
+
+## 10. Security: baseline guardrails + risk-triggered review
+
+Security is not a mandatory feature phase, but baseline rules always apply.
+
+Never commit/expose:
+- API keys, passwords, access tokens, private keys, production credentials
+- real sensitive `.env` files
+
+Never knowingly introduce:
+- frontend-only authorization for protected actions
+- obvious injection/command execution paths
+- unrestricted destructive endpoints
+- unsafe secret logging
+- disabled TLS verification without explicit justification
+- unsafe production database/tool access
+
+Use a dedicated security specialist when architecture marks `security_review_required=true`. Scope the review to actual trust boundaries rather than a generic checklist.
+
+## 11. Task state, reports, and permissions
+
+Only the orchestrator modifies `task.json`.
+
+Workers write only their assigned report and permitted implementation/test paths. The task workspace contains architecture, DB/backend/frontend, frontend design/review, test, verification, security, and final review reports; unused conditional reports may remain in template state.
+
+Before completion, workers run:
+
+```bash
+python scripts/agentctl.py scope check <TASK-ID> <ROLE>
+```
+
+Out-of-scope work becomes a structured blocker rather than a silent edit.
+
+## 12. Git/worktrees
+
+- never implement directly on `main`/`master`
+- one feature branch per task: `feature/<TASK-ID>-<slug>`
+- optional parallel branches: `agent/<TASK-ID>-backend`, `agent/<TASK-ID>-frontend`
+- workers branch from the task feature branch, never from another worker branch
+- create implementation worktrees only after committed state reaches `IMPLEMENTATION`
+- use worktrees only when parallelism actually saves time
+- do not rewrite shared history without explicit approval
+
+Human/CI production deployment remains deliberate after review/merge.
+
+## 13. Database and infrastructure restraint
+
+A database, cache, queue, container platform, IaC layer, microservice boundary, or other infrastructure must earn its place through product behavior, data persistence, integration requirements, deployment needs, or a meaningful technical objective.
+
+Do not add technology solely because a "real app" might use it.
+
+Database changes must still be represented by Git-tracked schema/migration artifacts. For Supabase, use development/test projects, timestamped migrations, scoped MCP inspection, synthetic/de-identified data, and deliberate production promotion.
+
+## 14. Verification and evidence freshness
+
+`verification-report.json` is commit-bound durable evidence. Changes to implementation, requirements, architecture, implementation/test reports, contracts, or design evidence invalidate downstream evidence. Status-only task updates and expected downstream verification/security/review report changes do not.
+
+Verification includes framework/schema tests, baseline repository safety checks, and project-specific checks configured in `.ai/project.json`. Required unavailable/skipped checks fail.
+
+## 15. Definition of done
+
+Done means:
+- primary user-visible outcome works end to end
+- core behavior is genuinely implemented, not a fake façade when real implementation is practical
+- no obvious placeholder or unfinished product surface remains in the intended journey
+- Gemini design gate passed when required and implementation remains coherent with it
+- required backend/database/integration work is complete
+- selected testing depth is satisfied
+- verification passes on the reviewed revision
+- dedicated security review passes only when required by architecture
+- final review approves the current revision
+- setup/README documentation is sufficient to understand and run the product
+- human merge is complete
+
+Done does **not** mean every imaginable production hardening task has been implemented. Once the intended experience is polished, technically credible, reliable for its important journey, and risk-appropriate, stop and move to the next planned slice/project.
+
+## 16. Deterministic chat output
+
+Worker final response:
+
+```text
+STATUS: <COMPLETE | BLOCKED | CHANGES_REQUIRED>
+TASK: <TASK-ID>
+RESULT: <one concise sentence>
+REPORT: <assigned report path>
+NEXT: <one concrete next action>
+```
+
+Orchestrator progress response:
+
+```text
+STATUS: <TASK STATUS>
+TASK: <TASK-ID>
+RESULT: <one concise sentence>
+NEXT_MODE: <AUTOMATIC | HUMAN_ACTION_REQUIRED | COMPLETE>
+NEXT: <next action>
+```
+
+Use `HUMAN_ACTION_REQUIRED` only for genuine human decisions/actions, external credentials/access, sensitive/destructive approval, manually starting Gemini, and final merge approval.

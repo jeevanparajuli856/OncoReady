@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "status": "UNCONFIGURED",
+  "delivery": {
+    "mode": "RAPID_PRODUCT",
+    "priorities": [
+      "product_experience",
+      "end_to_end_functionality",
+      "demo_reliability",
+      "technical_credibility",
+      "delivery_speed"
+    ],
+    "production_hardening": "RISK_BASED"
+  },
+  "components": {
+    "backend": {
+      "enabled": null,
+      "path": "backend",
+      "technology": null
+    },
+    "frontend": {
+      "enabled": null,
+      "path": "frontend",
+      "technology": null
+    },
+    "database": {
+      "enabled": null,
+      "provider": null,
+      "migration_path": "supabase/migrations"
+    }
+  },
+  "verification": {
+    "checks": []
+  },
+  "security": {
+    "checks": []
+  }
+}
