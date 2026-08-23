@@ -3,39 +3,27 @@
   "task_id": "CORE-001",
   "agent": "codex-orchestrator",
   "status": "CHANGES_REQUIRED",
-  "summary": "Gemini's new Phase A blueprint substantively resolves the enterprise information architecture, anti-generic visual-system, clinical-authority, synthetic-data, privacy, and bounded-motion requirements. Approval cannot yet be bound because the committed frontend-design-report.json is schema-invalid: it replaced required report fields with unsupported blueprint keys. The same Phase A commit also contains generated Vite cache files. Preserve the approved design direction and make the small handoff corrections below before a fresh exact-digest review.",
+  "summary": "Gemini's corrected Phase A report is schema-valid and substantively compatible across enterprise information architecture, architecture, clinical authority, privacy, accessibility, performance, scope, and visual-system direction. One narrow explicit human brand constraint remains: the blueprint specifies diminishing user-facing 'Sandbox' and 'Demo' labels. Preserve the design and replace only that presentation language before exact-digest approval.",
   "review_scope": "Compatibility only. Do not substitute Codex aesthetic preferences for Gemini design authority.",
   "reviewed_design_sha256": "",
   "checks": {
-    "requirements": "FAIL",
+    "requirements": "PASS",
     "architecture_and_contracts": "PASS",
     "security_and_authorization": "PASS",
-    "accessibility": "FAIL",
+    "accessibility": "PASS",
     "performance": "PASS",
-    "scope": "FAIL",
-    "human_brand_design_system_constraints": "PASS"
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "FAIL"
   },
   "required_changes": [
     {
-      "category": "requirements",
-      "description": "Restore frontend-design-report.json to the repository schema while preserving the new blueprint. The report must contain existing_design_system, design_system_action, visual_direction, motion, responsive, application_states, accessibility, assets_or_dependencies, design_system_changes, blockers, and notes_for_codex, and it may not contain unsupported top-level keys. Move the detailed screen-by-screen blueprint into a clearly named section of docs/design/DESIGN_SYSTEM.md; summarize/reference it through the schema-supported report fields. Run `python scripts/agentctl.py task validate CORE-001` before committing."
-    },
-    {
-      "category": "requirements",
-      "description": "In the preserved public blueprint, name the exact persistent header navigation and destinations/anchors for the consolidated Platform, Solutions, Interoperability, Trust, Sign-in, and Enter Sandbox story. Keep the current deadline-feasible consolidation rather than creating unnecessary pages. Describe FHIR material as sandbox mappings/proposed data flows rather than 'simulated standards'."
-    },
-    {
-      "category": "accessibility",
-      "description": "Restore the schema-required accessibility and application_states evidence in frontend-design-report.json. Preserve the design system's keyboard focus, touch-target, non-color, human-authority, caregiver DOM/ARIA exclusion, stable countdown, and reduced-motion constraints."
-    },
-    {
-      "category": "scope",
-      "description": "Remove the generated frontend/.vite/deps/_metadata.json and frontend/.vite/deps/package.json files accidentally committed with Phase A. The refreshed handoff must contain design evidence and necessary generated-cache cleanup only; do not begin or modify Phase B implementation."
+      "category": "human_brand_design_system",
+      "description": "Remove diminishing user-facing framing from the blueprint: do not label OncoReady or its ordinary surfaces Prototype, Demo, Dummy, Mock, or Toy. Replace 'Enter Sandbox' with 'Explore Workspace', 'Sandbox Entry' with 'Workspace Access', 'Reset Demo' with 'Reset Workspace', and 'Local demo' tooltips with neutral read-only explanations. Replace repeated 'Synthetic Data'/'Simulated Event' badges with one discreet professional 'Training environment' indicator plus contextual 'Illustrative records' or 'Mapping preview' language only where material. Internal engineering documentation may still use demo/synthetic terminology. Preserve truthful non-production and no-live-integration boundaries without making the application look unfinished."
     }
   ],
   "notes_for_gemini": [
-    "Do not redesign the approved direction. The current blueprint and revised DESIGN_SYSTEM.md are substantively compatible; preserve their enterprise IA, restrained visual grammar, causal-path motif, clinical terminology, sandbox framing, and bounded motion.",
-    "Do not begin Phase B. Correct the report schema, preserve the detailed blueprint in DESIGN_SYSTEM.md, remove generated Vite cache files, validate, commit, and stop for the final exact-digest review.",
-    "The rejected candidate digest was c96581d5672c75bd9916d2b18475ae64167e78a2368cd5e72278a7d9522e48ad. reviewed_design_sha256 remains empty because a schema-invalid report cannot be approved."
+    "Do not redesign the approved direction and do not begin Phase B. Make only the professional product-language correction, update the report if its summaries reference the changed labels, validate, commit, and stop for exact-digest approval.",
+    "Keep truthful boundaries subtle: a normal enterprise environment indicator and contextual mapping/status language are enough; do not cover every screen or record with disclaimers.",
+    "The rejected candidate digest was 869d8cb36a529f7f68004538439919b7629d6574eca7a70bc7151cf72dab560d. reviewed_design_sha256 remains empty until this explicit human brand constraint is reflected in the exact design evidence."
   ]
 }

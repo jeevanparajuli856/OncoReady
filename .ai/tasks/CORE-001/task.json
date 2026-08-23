@@ -233,7 +233,7 @@
     "Synthetic Insights, sandbox/proposed Integrations, and local/read-only Admin remain coherent with Maria's current workflow and make no server-enforcement or production-connectivity claims.",
     "Refresh safely restores compatible progress or reinitializes, and reset restores workflow, permissions, search/filters, and sandbox perspective to one known opening state.",
     "Applicable public, staff, patient, and caregiver surfaces are complete at mobile and presentation-laptop sizes, keyboard operable, visibly focused, semantic, non-color-dependent, and equivalent under reduced motion.",
-    "No primary navigation is dead and no surface contains starter content, real PHI, exposed secrets, real credential collection, or unsupported compliance, certification, production-scale, clinical-validation, measured-outcome, or live-vendor claims.",
+    "No primary navigation is dead and no surface contains starter content, real PHI, exposed secrets, real credential collection, or unsupported compliance, certification, production-scale, clinical-validation, measured-outcome, or live-vendor claims. Normal product surfaces do not describe OncoReady as a prototype, demo, dummy, mock, or toy; non-production context is disclosed discreetly with professional environment language such as Training environment or Illustrative records only where materially necessary.",
     "The frontend runs without live network services after installation; build and smoke checks cover entry, primary route reachability, search/filter recovery, reset-to-confirmed Maria completion, and caregiver clinical-data exclusion."
   ],
   "created_by": "human"
