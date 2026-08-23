@@ -3,7 +3,7 @@
   "task_id": "CORE-001",
   "title": "Treatment Readiness Enterprise Experience",
   "type": "feature",
-  "status": "IMPLEMENTATION",
+  "status": "INTEGRATION",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
