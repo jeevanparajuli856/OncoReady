@@ -114,7 +114,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
             <div className="p-4 bg-emerald-50/70 border border-emerald-200 rounded-xl space-y-2 text-xs">
               <div className="font-bold text-emerald-900 flex items-center gap-1.5">
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Simulated Medical Transport Confirmed</span>
+                <span>Transportation Coordination Confirmed</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1 text-slate-800">

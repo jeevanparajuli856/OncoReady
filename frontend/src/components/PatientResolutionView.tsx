@@ -115,14 +115,14 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
                 <Stethoscope className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-sm font-bold text-slate-900">Clinical Symptom Clearance & Advice</h2>
+                <h2 className="text-sm font-bold text-slate-900">Clinical Review &amp; Disposition</h2>
                 <p className="text-[11px] text-slate-500">Reviewed by Sarah Jenkins, RN, OCN</p>
               </div>
             </div>
 
             <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              Triage Cleared
+              Review Acknowledged
             </span>
           </div>
 
@@ -139,7 +139,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
               </div>
               <p className="text-slate-800 leading-relaxed">
                 {clinicalTask?.clinicalDetails?.nurseNotes || 
-                  'Assessed temp 100.4°F (sub-febrile) & Grade 1 peripheral neuropathy. Contacted patient via secure line; advised aggressive oral hydration, cold-sensitivity precautions for oxaliplatin, and pre-infusion CBC/CMP labs at 8:00 AM. Clinical clearance granted for pre-medication.'}
+                  'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.'}
               </p>
             </div>
           </div>

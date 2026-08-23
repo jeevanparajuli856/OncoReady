@@ -157,7 +157,7 @@ export const App: React.FC = () => {
                       <div className="text-3xl font-bold text-amber-900">3</div>
                     </div>
                     <div className="p-4 rounded-lg bg-emerald-50 border border-emerald-100">
-                      <div className="text-emerald-700 text-sm font-medium mb-1">Cleared for Today</div>
+                      <div className="text-emerald-700 text-sm font-medium mb-1">Ready for Review</div>
                       <div className="text-3xl font-bold text-emerald-900">18</div>
                     </div>
                   </div>
@@ -373,11 +373,11 @@ export const App: React.FC = () => {
             <Building2 className="w-4 h-4 text-indigo-600 shrink-0" />
             <span className="font-bold text-slate-800">OncoReady Enterprise</span>
             <span className="text-slate-300 hidden sm:inline">•</span>
-            <span>Ochsner Health Oncology Network</span>
+            <span>Benson Cancer Center</span>
           </div>
 
           <div className="flex items-center gap-4 text-[11px] font-mono text-slate-400">
-            <span>HIPAA Compliant &amp; BAA</span>
+            <span>Enterprise privacy controls</span>
             <span>•</span>
             <span>HL7 FHIR R4 &amp; USCDI v3 Aligned</span>
           </div>

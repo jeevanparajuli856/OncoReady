@@ -95,7 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
         return (
           <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-sky-50 text-sky-800 border border-sky-200">
             <Clock className="w-3.5 h-3.5 text-sky-600" />
-            <span>Triage Cleared • Review Ready</span>
+            <span>Review Acknowledged • Disposition Ready</span>
           </div>
         );
       default:
@@ -146,7 +146,7 @@ export const Header: React.FC<HeaderProps> = ({
               }}
               className="hover:text-slate-900 transition"
             >
-              Subscription Plans
+              Deployment Models
             </button>
             <button 
               onClick={onOpenAuthModal}
@@ -188,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onOpenAuthModal}
               className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md shadow-indigo-500/20 cursor-pointer"
             >
-              Launch Portal
+              Explore Workspace
             </button>
           </div>
 
@@ -259,7 +259,7 @@ export const Header: React.FC<HeaderProps> = ({
           {/* Reset State Button */}
           <button
             onClick={onReset}
-            title="Reset Workflow State"
+            title="Reset Workspace"
             className="p-2 rounded-xl border border-slate-200 bg-slate-50 text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition text-xs"
           >
             <RotateCcw className="w-4 h-4" />

@@ -251,7 +251,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             <span>Ochsner Health • Benson Cancer Center</span>
           </div>
           <span className="text-slate-400 font-mono text-[11px]">
-            HIPAA &amp; SOC-2 Type II Certified
+            Enterprise access controls • Training environment
           </span>
         </div>
 

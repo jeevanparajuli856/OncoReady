@@ -195,7 +195,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
                         }`}>
                           <Stethoscope className="w-3 h-3" />
                           {clinicalTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED'
-                            ? 'Clinical Triage Cleared'
+                            ? 'Clinical Review Acknowledged'
                             : 'Symptom Review Pending'}
                         </span>
 

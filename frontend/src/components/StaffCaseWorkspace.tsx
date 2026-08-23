@@ -31,7 +31,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
 
   // Task 1: Clinical Review State
   const [nurseNotes, setNurseNotes] = useState<string>(
-    'Assessed temp 100.4°F (sub-febrile) & Grade 1 peripheral neuropathy. Contacted patient via clinic line; advised aggressive oral hydration, cold-sensitivity precautions for oxaliplatin, and pre-infusion CBC/CMP labs at 8:00 AM. Clinical clearance granted for pre-medication.'
+    'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.'
   );
 
   // Task 2: Transport Coordination State
@@ -196,7 +196,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
                     ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                     : 'bg-sky-50 text-sky-700 border border-sky-200'
                 }`}>
-                  {isClinicalDone ? 'Cleared' : 'Pending Review'}
+                  {isClinicalDone ? 'Reviewed' : 'Pending Review'}
                 </span>
               </div>
 
@@ -235,14 +235,14 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
                     className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-sky-200"
                   >
                     <CheckCircle2 className="w-4 h-4" />
-                    <span>Acknowledge Concern & Authorize Pre-Med Labs</span>
+                    <span>Acknowledge Review &amp; Record Disposition</span>
                   </button>
                 </div>
               ) : (
                 <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
                   <div className="font-bold text-emerald-950 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Clinical Clearance & Advice Recorded</span>
+                    <span>Clinical Review &amp; Disposition Recorded</span>
                   </div>
                   <p className="text-slate-800 leading-relaxed">
                     {clinicalTask?.clinicalDetails?.nurseNotes}
@@ -340,7 +340,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
                 <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
                   <div className="font-bold text-emerald-950 flex items-center gap-1.5">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Simulated Medical Transport Dispatched</span>
+                    <span>Transportation Coordination Confirmed</span>
                   </div>
                   <div className="text-slate-800">
                     <span className="font-semibold">{transportTask?.transportDetails?.vehicleId}</span> • Driver: {transportTask?.transportDetails?.driverName} • Pickup: {transportTask?.transportDetails?.confirmedPickupTime}

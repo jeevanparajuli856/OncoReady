@@ -49,13 +49,13 @@ test.describe('OncoReady Treatment Readiness Golden Path E2E', () => {
     const ackClinicalBtn = page.getByRole('button', { name: /Acknowledge Concern & Authorize Pre-Med Labs/i });
     await expect(ackClinicalBtn).toBeVisible();
     await ackClinicalBtn.click();
-    await expect(page.locator('text=Clinical Clearance & Advice Recorded')).toBeVisible();
+    await expect(page.locator('text=Clinical Review & Disposition Recorded')).toBeVisible();
 
     // 5. Staff Action 2: Confirm Transportation Dispatch (Navigator Marcus)
     const confirmTransportBtn = page.getByRole('button', { name: /Confirm & Dispatch Med-Van/i });
     await expect(confirmTransportBtn).toBeVisible();
     await confirmTransportBtn.click();
-    await expect(page.locator('text=Simulated Medical Transport Dispatched')).toBeVisible();
+    await expect(page.locator('text=Transportation Coordination Confirmed')).toBeVisible();
 
     // 6. Caregiver Perspective & Strict Privacy Check
     const caregiverNavBtn = page.getByRole('button', { name: /Caregiver \(Ana\)/i });

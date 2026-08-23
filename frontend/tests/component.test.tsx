@@ -12,12 +12,12 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     localStorage.clear();
   });
 
-  it('renders initial OncoReady Commercial SaaS Landing Page with hero and pricing', () => {
+  it('renders the OncoReady enterprise landing page and workspace entry', () => {
     render(<App />);
 
     expect(screen.getByText(/Zero Day-Of Chemotherapy/i)).toBeDefined();
     expect(screen.getByText(/Next-Generation Oncology Clinical Continuity/i)).toBeDefined();
-    expect(screen.getAllByText(/Launch Live Clinical Demo/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Community Cancer Center/i)).toBeDefined();
     expect(screen.getByText(/Enterprise Cancer Center/i)).toBeDefined();
     expect(screen.getByText(/National Network/i)).toBeDefined();
@@ -27,8 +27,8 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     render(<App />);
 
     // 1. Open Auth Modal from Landing CTA
-    const launchDemoBtn = screen.getAllByText(/Launch Live Clinical Demo/i)[0];
-    fireEvent.click(launchDemoBtn);
+    const exploreWorkspaceBtn = screen.getAllByText(/Explore Workspace/i)[0];
+    fireEvent.click(exploreWorkspaceBtn);
 
     expect(screen.getByText(/Select Your Clinical Workspace/i)).toBeDefined();
 
@@ -56,6 +56,9 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     const staffBtn = screen.getByRole('button', { name: /View Staff Workbench/i });
     fireEvent.click(staffBtn);
 
+    const exceptionsNav = screen.getByRole('button', { name: /^Exceptions$/i });
+    fireEvent.click(exceptionsNav);
+
     expect(screen.getByText(/Pre-Treatment Exception Queue/i)).toBeDefined();
     expect(screen.getAllByText(/Maria Hernandez/i).length).toBeGreaterThan(0);
 
@@ -67,16 +70,16 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Task 2: Transportation Navigation/i)).toBeDefined();
 
     // 7. Staff Action 1: Nurse Acknowledges Clinical Task
-    const ackClinicalBtn = screen.getByRole('button', { name: /Acknowledge Concern & Authorize Pre-Med Labs/i });
+    const ackClinicalBtn = screen.getByRole('button', { name: /Acknowledge Review & Record Disposition/i });
     fireEvent.click(ackClinicalBtn);
 
-    expect(screen.getByText(/Clinical Clearance & Advice Recorded/i)).toBeDefined();
+    expect(screen.getByText(/Clinical Review & Disposition Recorded/i)).toBeDefined();
 
     // 8. Staff Action 2: Navigator Confirms Transportation Dispatch
     const confirmTransportBtn = screen.getByRole('button', { name: /Confirm & Dispatch Med-Van/i });
     fireEvent.click(confirmTransportBtn);
 
-    expect(screen.getByText(/Simulated Medical Transport Dispatched/i)).toBeDefined();
+    expect(screen.getByText(/Transportation Coordination Confirmed/i)).toBeDefined();
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
     const switcherBtn = screen.getByText(/Sarah Jenkins, RN/i);
@@ -121,7 +124,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     });
 
     // 11. Reset Journey
-    const resetBtn = screen.getByTitle(/Reset Workflow State/i);
+    const resetBtn = screen.getByTitle(/Reset Workspace/i);
     fireEvent.click(resetBtn);
 
     expect(screen.getByText(/Zero Day-Of Chemotherapy/i)).toBeDefined();

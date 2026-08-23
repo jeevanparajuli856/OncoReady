@@ -388,7 +388,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
       const nowStr = 'Aug 23, 08:20 AM';
       const defaultNotes = 
-        'Assessed temp 100.4°F (sub-febrile) & Grade 1 peripheral neuropathy. Contacted patient via clinic line; advised aggressive oral hydration, cold-sensitivity precautions for oxaliplatin, and pre-infusion CBC/CMP labs at 8:00 AM. Clinical clearance granted for pre-medication.';
+        'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.';
       
       const nurseNotes = action.payload?.nurseNotes || defaultNotes;
 
@@ -415,8 +415,8 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         timestamp: nowStr,
         actor: 'Sarah Jenkins, BSN, RN, OCN',
         actorRole: 'TRIAGE_NURSE',
-        action: 'Clinical Symptoms Reviewed & Cleared',
-        description: `Nurse Jenkins completed triage assessment. Patient cleared for pre-infusion hydration and morning lab draw.`,
+        action: 'Clinical Review Acknowledged',
+        description: `Nurse Jenkins reviewed the patient report and recorded a disposition for the treatment team.`,
         stateDiff: {
           field: 'tasks.CLINICAL_REVIEW.status',
           from: 'ASSIGNED',

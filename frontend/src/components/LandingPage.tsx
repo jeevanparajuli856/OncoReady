@@ -42,8 +42,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       a: 'Caregivers play a vital role in transportation and home support, but patients retain complete medical privacy. OncoReady derives an explicit permission-scoped projection that displays ride confirmations, vehicle IDs, and arrival times while strictly filtering out all clinical symptom text and triage notes.'
     },
     {
-      q: 'Does OncoReady integrate with our existing EHR (Epic / Cerner)?',
-      a: 'Yes. OncoReady is built on HL7 FHIR R4 standards and integrates bi-directionally with Epic MyChart and Cerner Millennium scheduling and clinical messaging workflows.'
+      q: 'How does OncoReady fit an existing EHR environment?',
+      a: 'OncoReady provides an HL7 FHIR R4 mapping workspace for scheduling, patient, task, and communication data. Connection behavior and governance are configured with each organization during implementation.'
     },
     {
       q: 'Does OncoReady use AI to make automated clinical triage decisions?',
@@ -94,7 +94,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             }}
             className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-2xl border border-slate-200 transition text-sm sm:text-base shadow-2xs hover:shadow-md cursor-pointer"
           >
-            <span>View Subscription Pricing</span>
+            <span>Explore Deployment Models</span>
           </button>
         </div>
 
@@ -102,19 +102,19 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-4 text-xs font-semibold text-slate-500">
           <div className="flex items-center gap-1.5">
             <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>SOC-2 Type II Certified</span>
+            <span>Enterprise Security Controls</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Lock className="w-4 h-4 text-indigo-600" />
-            <span>HIPAA Compliant &amp; BAA</span>
+            <span>Privacy &amp; Data Governance</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Building2 className="w-4 h-4 text-sky-600" />
-            <span>HL7 FHIR R4 Native</span>
+            <span>HL7 FHIR R4 Mapping</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Network className="w-4 h-4 text-teal-600" />
-            <span>Epic &amp; Cerner Compatible</span>
+            <span>EHR Integration Architecture</span>
           </div>
         </div>
 
@@ -131,10 +131,10 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 <div>
                   <div className="flex items-center gap-2">
                     <span className="font-extrabold text-slate-900 text-base">
-                      Live Continuity Engine Preview
+                      Treatment Readiness Workspace
                     </span>
                     <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      LIVE SYSTEM TELEMETRY
+                      TRAINING ENVIRONMENT
                     </span>
                   </div>
                   <p className="text-xs text-slate-500">
@@ -225,36 +225,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8">
           <div className="text-center space-y-2 max-w-2xl mx-auto">
             <span className="text-xs font-bold font-mono uppercase tracking-widest text-indigo-300">
-              PROVEN CLINICAL &amp; FINANCIAL ROI
+              CLOSED-LOOP OPERATING MODEL
             </span>
             <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Quantifiable Impact for Modern Cancer Centers
+              One accountable path from barrier to resolution
             </h2>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
             <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-indigo-400">94.2%</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Same-Day Chair Preservation</div>
-              <p className="text-xs text-slate-400 pt-1">Eliminates last-minute cancelled infusion chair vacancies.</p>
+              <div className="text-3xl sm:text-4xl font-black text-indigo-400">T−24h</div>
+              <div className="text-xs font-bold text-white uppercase tracking-wider">Early Barrier Signal</div>
+              <p className="text-xs text-slate-400 pt-1">Surfaces patient-reported barriers before treatment day.</p>
             </div>
 
             <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400">$1.85M</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Annual Revenue Saved</div>
-              <p className="text-xs text-slate-400 pt-1">Per 20 infusion chairs from avoided drug compounding waste.</p>
+              <div className="text-3xl sm:text-4xl font-black text-emerald-400">2 paths</div>
+              <div className="text-xs font-bold text-white uppercase tracking-wider">Owned Resolution</div>
+              <p className="text-xs text-slate-400 pt-1">Clinical review and logistics move in parallel.</p>
             </div>
 
             <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-sky-400">&lt; 42 min</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Average Resolution SLA</div>
-              <p className="text-xs text-slate-400 pt-1">Fast barrier clearance by multidisciplinary on-call triage.</p>
+              <div className="text-3xl sm:text-4xl font-black text-sky-400">1 record</div>
+              <div className="text-xs font-bold text-white uppercase tracking-wider">Causal Timeline</div>
+              <p className="text-xs text-slate-400 pt-1">Every owner, action, and confirmation stays connected.</p>
             </div>
 
             <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-teal-400">100%</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Clinical Privacy Guard</div>
-              <p className="text-xs text-slate-400 pt-1">Zero clinical text leakage to family logistics contacts.</p>
+              <div className="text-3xl sm:text-4xl font-black text-teal-400">Scoped</div>
+              <div className="text-xs font-bold text-white uppercase tracking-wider">Caregiver View</div>
+              <p className="text-xs text-slate-400 pt-1">Only authorized transportation details are projected.</p>
             </div>
           </div>
         </div>
@@ -375,13 +375,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section id="pricing-section" className="max-w-6xl mx-auto px-4 space-y-10">
         <div className="text-center space-y-4 max-w-2xl mx-auto">
           <span className="text-xs font-bold font-mono uppercase tracking-widest text-indigo-600">
-            ENTERPRISE SUBSCRIPTION TIERS
+            ENTERPRISE DEPLOYMENT MODELS
           </span>
           <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Predictable Pricing per Infusion Chair
+            Scale with your oncology operating model
           </h2>
           <p className="text-sm text-slate-600">
-            Transparent enterprise licensing scaled to your cancer center's volume with zero hidden implementation fees.
+            Compare focused, health-system, and network configurations for treatment-readiness operations.
           </p>
 
           {/* Billing Cycle Switcher */}
@@ -422,12 +422,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="pt-2">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-slate-900">
-                    {billingCycle === 'ANNUAL' ? '$200' : '$250'}
+                    {billingCycle === 'ANNUAL' ? 'Focused' : 'Flexible'}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium">/ chair / month</span>
+                  <span className="text-xs text-slate-500 font-medium">configuration</span>
                 </div>
                 <div className="text-[11px] text-slate-400 mt-0.5">
-                  {billingCycle === 'ANNUAL' ? 'Billed annually ($2,400/yr per chair)' : 'Billed monthly'}
+                  Single-site readiness operations
                 </div>
               </div>
 
@@ -447,7 +447,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Standard Epic / Cerner FHIR Sync</span>
+                  <span>FHIR Mapping Workspace</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
@@ -482,12 +482,12 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div className="pt-2">
                 <div className="flex items-baseline gap-1">
                   <span className="text-4xl font-extrabold text-slate-900">
-                    {billingCycle === 'ANNUAL' ? '$315' : '$390'}
+                    {billingCycle === 'ANNUAL' ? 'Enterprise' : 'Modular'}
                   </span>
-                  <span className="text-xs text-slate-500 font-medium">/ chair / month</span>
+                  <span className="text-xs text-slate-500 font-medium">configuration</span>
                 </div>
                 <div className="text-[11px] text-indigo-700 font-semibold mt-0.5">
-                  {billingCycle === 'ANNUAL' ? 'Billed annually ($3,780/yr per chair)' : 'Billed monthly'}
+                  Multi-site workflow orchestration
                 </div>
               </div>
 
@@ -511,7 +511,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>24/7 Dedicated SLA &amp; Signed HIPAA BAA</span>
+                  <span>Governance &amp; Implementation Planning</span>
                 </div>
               </div>
             </div>
@@ -520,7 +520,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onClick={onOpenAuthModal}
               className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md shadow-indigo-500/25 cursor-pointer"
             >
-              Launch Enterprise Trial
+              Explore Enterprise Workspace
             </button>
           </div>
 

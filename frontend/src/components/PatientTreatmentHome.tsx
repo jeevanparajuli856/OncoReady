@@ -124,7 +124,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
             <div className="text-[10px] font-mono text-slate-400 uppercase">ABSOLUTE NEUTROPHILS</div>
             <div className="font-bold text-emerald-700 text-sm mt-0.5">1.82 × 10³/µL</div>
-            <div className="text-[10px] text-emerald-600">Cleared for Chemo</div>
+            <div className="text-[10px] text-emerald-600">Plan Confirmed</div>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
