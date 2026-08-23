@@ -2,27 +2,52 @@
   "schema_version": "1.0",
   "task_id": "CORE-001",
   "agent": "codex-orchestrator",
-  "status": "APPROVED",
-  "summary": "Gemini's Phase A design is compatible with CORE-001 requirements and the frontend-only architecture. It establishes a coherent design system, makes the Treatment Readiness Graph the signature experience, covers all required responsive surfaces and states, and preserves human clinical authority and caregiver data minimization.",
+  "status": "CHANGES_REQUIRED",
+  "summary": "Gemini's revised Phase A direction is substantially closer to the intended enterprise product, but it is not implementation-ready against the expanded CORE-001 scope. The route map and visual principles are still too abstract to guarantee a compelling buyer journey and complete application experience, and the design-system source of truth contradicts several of the report's anti-generic constraints. Phase B must remain gated until one focused Phase A revision resolves the listed compatibility issues.",
   "review_scope": "Compatibility only. Do not substitute Codex aesthetic preferences for Gemini design authority.",
-  "reviewed_design_sha256": "04e1bd1872dfbba48e8475baeccd894a1a53dee76c85025d4b57993270a2d983",
+  "reviewed_design_sha256": "",
   "checks": {
-    "requirements": "PASS",
-    "architecture_and_contracts": "PASS",
-    "security_and_authorization": "PASS",
+    "requirements": "FAIL",
+    "architecture_and_contracts": "FAIL",
+    "security_and_authorization": "FAIL",
     "accessibility": "PASS",
-    "performance": "PASS",
-    "scope": "PASS",
-    "human_brand_design_system_constraints": "PASS"
+    "performance": "FAIL",
+    "scope": "FAIL",
+    "human_brand_design_system_constraints": "FAIL"
   },
-  "required_changes": [],
+  "required_changes": [
+    {
+      "category": "requirements",
+      "description": "Replace the high-level route list with a screen-by-screen product blueprint. Define the public buyer journey and exact public navigation; the staff sidebar and top-bar utilities; the Command Center, Exceptions, Patients/case workspace, Resources, Insights, Integrations, and Admin content hierarchy; focused patient/caregiver navigation; and each screen's primary CTA, key data story, working interactions, and static/read-only boundary. Include explicit loading, empty/no-result, validation, disabled, error/recovery, success, and reset presentation where relevant."
+    },
+    {
+      "category": "scope",
+      "description": "Cover the full expanded enterprise scope now defined by docs/features/CORE-001.md. The current report omits Patients from the route map, does not define a full buyer-facing platform/evidence story, and labels secondary modules only as synthetic presentation without enough specificity to implement credible complete screens. Keep Maria as the sole fully transactional patient while making navigation, sandbox entry, search/filters, privacy filtering, routing, recovery, and reset functional."
+    },
+    {
+      "category": "human_brand_design_system",
+      "description": "Reconcile docs/design/DESIGN_SYSTEM.md with the approved anti-generic direction. It currently reintroduces glassmorphism, glow shadows, 12/16/24px card radii, rounded-full badges/avatars, repeated elevated cards, a persistent perspective/demo switcher, and generalized slide-up/pulse motion while the design report promises crisp borders, 4/8px geometry, minimal pills, and motion reserved for causal workflow meaning. Establish one internally consistent, distinctive enterprise visual grammar and explain how public storytelling differs from staff operational density without falling back to generic feature grids or dashboard-card mosaics."
+    },
+    {
+      "category": "architecture_contract",
+      "description": "Align clinical and state language with the authoritative boundary: replace 'Clinical Symptom Clearance', 'Triage Cleared', 'Cleared for Chemo', or equivalent product-controlled clearance concepts with human review requested/acknowledged and disposition recorded. The application may record completion evidence but cannot decide that treatment is medically cleared. Ensure Maria-derived signals across Command Center, queue, case, graph, patient, caregiver, and relevant insight headline come from the shared deterministic state rather than independent mock values."
+    },
+    {
+      "category": "security_authorization",
+      "description": "Specify truthful presentation for sandbox sign-in, roles, Trust, Integrations, and Admin. Local perspective selection is not secure authentication or production authorization; integrations are sandbox/proposed rather than connected; compliance/security material may describe designed controls or standards mapping but cannot display earned-certification, live-vendor, production-enforcement, customer, or measured-outcome claims. Define how material synthetic/sandbox context is disclosed without covering the interface in repetitive demo badges."
+    },
+    {
+      "category": "performance",
+      "description": "Turn 'perfect UI animation', kinetic typography, scroll-driven reveals, organic morphing, and indefinite blocker pulses into a bounded motion plan appropriate for a deadline-critical static build. Name the few signature sequences, use CSS/browser-native motion where practical, avoid animation that delays content or harms laptop/mobile performance, prevent countdown announcements/tick-driven rerenders, and define reduced-motion equivalents for every meaning-bearing transition."
+    }
+  ],
   "notes_for_gemini": [
-    "Gemini retains full frontend visual and interaction authority within task scope: frontend/**, tests/frontend/**, docs/design/**, frontend-design-report.json, and frontend-report.json.",
-    "In production UI copy, represent the clinical branch as human clinical review/acknowledgment or disposition recorded; do not imply OncoReady medically cleared treatment, decided that treatment should proceed, or performed automated triage.",
-    "Keep the caregiver projection allowlisted to transportation status and assert that Maria's clinical concern and clinical-task details never enter Ana's rendered view or accessible name/description content.",
-    "Use aria-live for discrete workflow changes only; do not announce every countdown tick. Preserve stable semantic text for treatment proximity and status.",
-    "Treat stated WCAG conformance as an implementation target that must be verified, not a user-facing compliance claim. Preserve keyboard operation, visible focus, 44px touch targets, non-color state cues, and reduced-motion equivalence.",
-    "Any FHIR codes, staff identities, resource/driver details, delivery events, clinical protocols, or outcomes shown remain synthetic/simulated and must not be presented as live Ochsner integration.",
-    "The optional celebration dependency must remain lightweight, non-blocking, respectful of reduced motion, and removable if it adds bundle or reliability risk. It is not required for acceptance."
+    "Do not begin Phase B. Revise Phase A only, update frontend-design-report.json and docs/design/DESIGN_SYSTEM.md, commit the exact design evidence on agent/CORE-001-frontend, and stop for another Codex compatibility review.",
+    "Gemini retains full visual and interaction authority. The required changes describe product, truthfulness, accessibility, performance, and explicit human anti-generic constraints; they do not prescribe a replacement aesthetic.",
+    "Optimize for a product that looks ready for an enterprise buyer: a persuasive commercial entry, a coherent operating model, a confident full application shell, and one undeniable end-to-end proof. Enterprise credibility comes from specificity, hierarchy, state coherence, and truthful controls—not from adding badges, vanity metrics, pricing, or more cards.",
+    "The public site may be more expressive and emotionally engaging; the authenticated workspace should be calmer, denser, and operational. Use a shared brand signature so they feel like one product.",
+    "Keep the Treatment Readiness Graph, owned action split, causal audit timeline, and caregiver permission boundary as OncoReady's distinctive product language. Avoid generic CRM/EHR duplication and avoid rebuilding MyChart-style appointments, billing, results, or medication surfaces.",
+    "Preserve caregiver allowlisting, inert clinical text, guarded transitions, stable treatment-proximity text, discrete aria-live announcements, visible focus, keyboard support, 44px touch targets where applicable, non-color state cues, and reduced-motion equivalence.",
+    "Stated WCAG conformance is an implementation target to verify, not a user-facing certification claim."
   ]
 }

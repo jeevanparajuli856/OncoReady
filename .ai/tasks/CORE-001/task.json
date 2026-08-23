@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "CORE-001",
-  "title": "Treatment Readiness Golden Path",
+  "title": "Treatment Readiness Enterprise Experience",
   "type": "feature",
   "status": "IMPLEMENTATION",
   "priority": "critical",
@@ -218,16 +218,23 @@
   },
   "dependencies": [],
   "acceptance_criteria": [
-    "The responsive patient home presents synthetic Maria's infusion tomorrow, its countdown or time proximity, current readiness state, and a clear action to begin the readiness check.",
-    "Completing the readiness check with a cancelled ride and patient-reported clinical concern creates exactly one navigation task and one clinical-review task from genuine local application state.",
-    "The clinical concern remains visible verbatim, routes to a named human-controlled pathway through deterministic logic, and is never presented as AI diagnosis, triage, or treatment advice.",
-    "The staff exception queue and Maria case workspace show treatment risk, reason, owner, due time, current state, next action, and prior activity without dead controls in the primary journey.",
-    "The Treatment Readiness Graph visibly anchors both blockers to the upcoming infusion and updates consistently as staff acknowledge the clinical task and confirm simulated transportation.",
-    "Ana's caregiver view receives only Maria-authorized transportation status and exposes no clinical-concern detail.",
-    "Maria can acknowledge the confirmed plan, after which both blockers have defined dispositions, the readiness state becomes plan confirmed, and the append-only event timeline reflects the complete causal sequence.",
-    "A one-click reset restores the deterministic opening state; refresh either restores current local state or safely reinitializes without breaking the scripted demonstration.",
-    "Every intended surface is visually complete at mobile and presentation-laptop sizes, keyboard operable, visibly focused, non-color-dependent, and equivalent under reduced motion.",
-    "All people, resources, delivery, protocols, outcomes, Ochsner/FHIR connections, and staff identities shown in the product are clearly synthetic or simulated, and the required frontend build and critical-path smoke commands pass."
+    "Visitors can navigate the public landing, sign-in, and trust surfaces, understand OncoReady's enterprise value, and encounter no unsupported deployment, customer, outcome, certification, compliance, or live-integration claims.",
+    "Clickable sandbox entry reaches staff, patient, and caregiver perspectives without accepting or implying verification of real credentials.",
+    "A persistent staff shell reaches Command Center, Exceptions, Patients, Resources, Insights, Integrations, and Admin with clear current-location and return behavior.",
+    "Every staff module contains complete, coherent synthetic enterprise content; secondary modules may be static/read-only but may not present dead consequential controls or misleading live state.",
+    "Staff search and exception/patient filters work against fixtures, combine predictably, provide useful no-result states, and can be cleared without resetting the workflow.",
+    "Maria's readiness submission with an unconfirmed ride and clinical concern creates exactly one navigation task and one human clinical-review task from deterministic local state.",
+    "Maria's clinical concern remains verbatim inert text and is never represented as automated triage, diagnosis, treatment advice, or medical clearance.",
+    "Command Center, Exceptions, Patients/Maria case, the Treatment Readiness Graph, patient status, and timeline derive Maria's risk, ownership, next action, and state from one source of truth.",
+    "Staff can acknowledge clinical review and confirm simulated transportation while guarded transitions prevent invalid, duplicate, or out-of-order advancement.",
+    "Resources supports Maria's simulated transport action while broader availability remains clearly synthetic rather than a live booking network.",
+    "Ana's caregiver portal exposes only Maria-authorized transportation information and excludes clinical content from visible and accessibility-specific output.",
+    "Maria's final acknowledgment is gated on required staff actions, supplies closure evidence exactly once, and moves the shared plan to confirmed.",
+    "Synthetic Insights, sandbox/proposed Integrations, and local/read-only Admin remain coherent with Maria's current workflow and make no server-enforcement or production-connectivity claims.",
+    "Refresh safely restores compatible progress or reinitializes, and reset restores workflow, permissions, search/filters, and sandbox perspective to one known opening state.",
+    "Applicable public, staff, patient, and caregiver surfaces are complete at mobile and presentation-laptop sizes, keyboard operable, visibly focused, semantic, non-color-dependent, and equivalent under reduced motion.",
+    "No primary navigation is dead and no surface contains starter content, real PHI, exposed secrets, real credential collection, or unsupported compliance, certification, production-scale, clinical-validation, measured-outcome, or live-vendor claims.",
+    "The frontend runs without live network services after installation; build and smoke checks cover entry, primary route reachability, search/filter recovery, reset-to-confirmed Maria completion, and caregiver clinical-data exclusion."
   ],
   "created_by": "human"
 }
