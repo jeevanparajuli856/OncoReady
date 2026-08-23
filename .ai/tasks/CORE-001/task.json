@@ -3,7 +3,7 @@
   "task_id": "CORE-001",
   "title": "Treatment Readiness Golden Path",
   "type": "feature",
-  "status": "PLANNING",
+  "status": "BUILD_READY",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
