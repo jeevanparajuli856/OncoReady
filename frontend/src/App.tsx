@@ -115,8 +115,8 @@ export const App: React.FC = () => {
         state.currentPerspective === 'LANDING'
           ? 'max-w-none px-0 py-0'
           : state.currentPerspective === 'STAFF'
-          ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-28'
-          : 'max-w-none px-3 sm:px-6 lg:px-10 py-4 sm:py-6 pb-28'
+          ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-0'
+          : 'max-w-none px-3 sm:px-6 lg:px-10 py-3 sm:py-4 pb-28 md:pb-6'
       }`}>
         
         {/* Perspective: LANDING (Commercial SaaS Showcase) */}
@@ -254,16 +254,16 @@ export const App: React.FC = () => {
                 OncoReady executes as a typed deterministic finite state machine. A single pre-treatment report containing a transportation failure and patient clinical symptoms triggers dual-path routing: preserving untrusted clinical text for human nurse review, and dispatching medical transit for navigation fulfillment. Caregiver views are derived through an explicit permission filter that guarantees clinical confidentiality.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-sm">
-                <div className="p-3.5 bg-cream rounded-xl border-2 border-ink">
-                  <div className="font-heading font-bold">1. Single Source of Truth</div>
+                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
+                  <div className="font-heading font-semibold">1. Single Source of Truth</div>
                   <div className="text-muted-fg mt-0.5">Unified workflow state drives patient, queue, graph, caregiver, and audit log synchronously.</div>
                 </div>
-                <div className="p-3.5 bg-cream rounded-xl border-2 border-ink">
-                  <div className="font-heading font-bold">2. Human Authority Guard</div>
+                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
+                  <div className="font-heading font-semibold">2. Human Authority Guard</div>
                   <div className="text-muted-fg mt-0.5">Clinical concerns are preserved verbatim and routed to named staff; zero automated AI diagnosis.</div>
                 </div>
-                <div className="p-3.5 bg-cream rounded-xl border-2 border-ink">
-                  <div className="font-heading font-bold">3. Deterministic Closure</div>
+                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
+                  <div className="font-heading font-semibold">3. Deterministic Closure</div>
                   <div className="text-muted-fg mt-0.5">Treatment readiness reaches PLAN_CONFIRMED only after dual staff actions + patient acknowledgment.</div>
                 </div>
               </div>
@@ -274,7 +274,7 @@ export const App: React.FC = () => {
       </main>
 
       {/* Clean Hospital Footer */}
-      <footer className="bg-white border-t-2 border-ink py-5 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
+      <footer className="bg-white/60 backdrop-blur-xl border-t border-white/80 py-5 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
           <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
             <button
               onClick={() => handleSetPerspective('LANDING')}
@@ -286,7 +286,7 @@ export const App: React.FC = () => {
             </button>
             <button
               onClick={() => setReducedMotion(!reducedMotion)}
-              className={`px-3 py-1.5 rounded-full border-2 border-ink font-heading font-bold ${reducedMotion ? 'bg-sun text-ink' : 'bg-white hover:bg-muted'}`}
+              className={`px-3 py-1.5 rounded-lg border border-line font-heading font-semibold ${reducedMotion ? 'bg-accent text-white' : 'bg-white/70 hover:bg-white'}`}
             >
               {reducedMotion ? 'Motion off' : 'Reduce motion'}
             </button>

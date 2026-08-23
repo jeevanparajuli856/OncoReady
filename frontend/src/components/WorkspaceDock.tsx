@@ -54,8 +54,8 @@ export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
   ];
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-2 z-[60] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]">
-      <div className="pointer-events-auto w-full max-w-[22rem] md:w-auto md:max-w-none">
+    <div className="pointer-events-none fixed inset-x-0 bottom-2 z-[60] flex justify-center px-3 pb-[env(safe-area-inset-bottom)] md:hidden">
+      <div className="pointer-events-auto w-full max-w-[22rem]">
         <FloatingDock items={items} />
       </div>
     </div>

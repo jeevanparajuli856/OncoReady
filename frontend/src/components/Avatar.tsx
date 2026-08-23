@@ -29,17 +29,17 @@ export const Avatar: React.FC<AvatarProps> = ({
   const getRoleColors = () => {
     switch (roleType) {
       case 'DOCTOR':
-        return 'bg-accent text-white border-ink';
+        return 'bg-accent text-white border-transparent';
       case 'NURSE':
-        return 'bg-sun text-ink border-ink';
+        return 'bg-clinical-teal text-white border-transparent';
       case 'NAVIGATOR':
-        return 'bg-mint text-ink border-ink';
+        return 'bg-mint text-white border-transparent';
       case 'CAREGIVER':
-        return 'bg-pop text-white border-ink';
+        return 'bg-pop text-white border-transparent';
       case 'SYSTEM':
-        return 'bg-ink text-sun border-ink';
+        return 'bg-ink text-white border-transparent';
       default: // PATIENT
-        return 'bg-accent text-white border-ink';
+        return 'bg-accent text-white border-transparent';
     }
   };
 
@@ -67,7 +67,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   if (!src || imgError) {
     return (
       <div
-        className={`${sizeClasses[size]} rounded-2xl flex items-center justify-center font-bold border shadow-xs select-none shrink-0 ${getRoleColors()} ${className}`}
+        className={`${sizeClasses[size]} rounded-full flex items-center justify-center font-bold border-2 border-ink select-none shrink-0 ${getRoleColors()} ${className}`}
         title={alt}
       >
         {initials ? initials : getRoleIcon()}
@@ -81,7 +81,7 @@ export const Avatar: React.FC<AvatarProps> = ({
         src={src}
         alt={alt}
         onError={() => setImgError(true)}
-        className={`${sizeClasses[size]} rounded-2xl object-cover border border-slate-200 shadow-xs`}
+        className={`${sizeClasses[size]} rounded-full object-cover border-2 border-ink`}
         loading="lazy"
       />
     </div>

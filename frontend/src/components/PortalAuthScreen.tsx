@@ -133,7 +133,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
   return (
     <div className="page-shell min-h-[80vh] flex flex-col justify-between py-4 sm:py-8 space-y-8 animate-pop">
       <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border-2 border-ink text-xs font-heading font-bold shadow-pop">
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-heading font-semibold shadow-glass">
           <Building2 className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
           Benson Cancer Center • Clinical Continuity System
         </div>
@@ -143,7 +143,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         <p className="text-sm sm:text-base text-muted-fg leading-relaxed max-w-2xl mx-auto">
           Select a workspace to coordinate pre-infusion barriers, owned clinical review, navigation tasks, and patient plan confirmation.
         </p>
-        <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-3 rounded-xl bg-white border-2 border-ink text-xs font-heading font-bold">
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-3 rounded-xl bg-white/70 border border-white/80 text-xs font-heading font-semibold">
           <span className="inline-flex items-center gap-1.5">
             <Activity className="w-4 h-4 text-accent" strokeWidth={2.5} />
             Target Patient: Maria Hernandez (54F)
@@ -175,7 +175,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective(card.key)}
             role="button"
             tabIndex={0}
-            className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer hover:-rotate-1 hover:scale-[1.01] transition-transform duration-300 ease-bouncey"
+            className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer hover:-translate-y-1 hover:shadow-glass-hover transition-all duration-300"
           >
             <div className="space-y-4">
               <div className="flex flex-col gap-3 min-w-0">

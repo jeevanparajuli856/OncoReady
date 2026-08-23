@@ -8,31 +8,20 @@ interface LogoProps {
   className?: string;
 }
 
-export const LogoMark: React.FC<{ size?: number; className?: string }> = ({
+const LOGO_SRC = '/logo.svg';
+
+export const LogoMark: React.FC<{ size?: number; className?: string; mono?: boolean }> = ({
   size = 40,
   className,
 }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 64 64"
+  <img
+    src={LOGO_SRC}
+    alt=""
     width={size}
     height={size}
     className={cn('shrink-0', className)}
     aria-hidden="true"
-  >
-    <circle cx="32" cy="32" r="29" fill="#8B5CF6" />
-    <circle cx="32" cy="32" r="20" fill="#FFFDF5" />
-    <circle cx="32" cy="32" r="20" fill="none" stroke="#1E293B" strokeWidth="3.5" />
-    <path
-      d="M23 32.5 L29 38.5 L42 24.5"
-      fill="none"
-      stroke="#1E293B"
-      strokeWidth="3.8"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    />
-    <circle cx="50" cy="18" r="6" fill="#34D399" stroke="#1E293B" strokeWidth="2.5" />
-  </svg>
+  />
 );
 
 export const Logo: React.FC<LogoProps> = ({
@@ -42,12 +31,12 @@ export const Logo: React.FC<LogoProps> = ({
   className,
 }) => {
   return (
-    <div className={cn('flex items-center gap-2.5 select-none', className)}>
+    <div className={cn('flex items-center gap-2 select-none', className)}>
       <LogoMark size={size} />
       {showWordmark && (
         <div className="leading-none text-left">
-          <div className="font-display font-extrabold tracking-tight text-ink text-[1.15rem]">
-            Onco<span className="text-accent">Ready</span>
+          <div className="font-display font-extrabold tracking-tight text-ink text-[1.05rem] sm:text-[1.2rem]">
+            OncoReady
           </div>
           {!compact && (
             <p className="text-[11px] font-medium text-muted-fg mt-0.5">

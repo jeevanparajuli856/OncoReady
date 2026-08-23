@@ -144,7 +144,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
           pickup={NEW_ORLEANS_PICKUP}
           destination={BENSON_CENTER}
           confirmed
-          height={220}
+          height={360}
         />
       )}
 

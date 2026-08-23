@@ -114,7 +114,7 @@ export const StaffResources: React.FC = () => (
       pickup={NEW_ORLEANS_PICKUP}
       destination={BENSON_CENTER}
       extras={LOUISIANA_SITES}
-      height={340}
+      height={420}
     />
   </div>
 );

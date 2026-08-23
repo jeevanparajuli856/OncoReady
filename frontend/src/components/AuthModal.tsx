@@ -41,17 +41,17 @@ export const AuthModal: React.FC<AuthModalProps> = ({
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="bg-cream rounded-lg max-w-2xl w-full border-2 border-ink shadow-pop-lg overflow-hidden animate-pop">
+      <div className="bg-white/90 backdrop-blur-xl rounded-2xl max-w-2xl w-full border border-white/80 shadow-glass-lg overflow-hidden animate-slide-up">
         
         {/* Modal Header */}
-        <div className="bg-accent text-white p-6 sm:p-7 flex items-center justify-between border-b-2 border-ink">
+        <div className="bg-ink text-white p-6 sm:p-7 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-full bg-sun border-2 border-ink text-ink flex items-center justify-center">
-              <Activity className="w-6 h-6" strokeWidth={2.5} />
+            <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center">
+              <Activity className="w-6 h-6" strokeWidth={2} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="chip bg-sun text-ink">Authentication Gateway</span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-heading font-semibold bg-white/10 text-white">Authentication Gateway</span>
                 <span className="text-xs text-white/70">Benson Cancer Center</span>
               </div>
               <h2 id="auth-modal-title" className="text-xl font-extrabold text-white mt-1">
@@ -79,7 +79,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('PATIENT')}
             role="button"
             tabIndex={0}
-            className="p-4 sm:p-5 rounded-xl border-2 border-ink bg-white hover:bg-sun/20 hover:-rotate-1 transition-transform duration-300 ease-bouncey cursor-pointer flex items-center justify-between gap-4 group shadow-pop-soft"
+            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
           >
             <div className="flex items-center gap-4">
               <Avatar
@@ -124,7 +124,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('CAREGIVER')}
             role="button"
             tabIndex={0}
-            className="p-4 sm:p-5 rounded-xl border-2 border-ink bg-white hover:bg-mint/20 hover:-rotate-1 transition-transform duration-300 ease-bouncey cursor-pointer flex items-center justify-between gap-4 group shadow-pop-soft"
+            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
           >
             <div className="flex items-center gap-4">
               <Avatar
@@ -163,7 +163,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('STAFF')}
             role="button"
             tabIndex={0}
-            className="p-4 sm:p-5 rounded-xl border-2 border-ink bg-white hover:bg-accent/10 hover:-rotate-1 transition-transform duration-300 ease-bouncey cursor-pointer flex items-center justify-between gap-4 group shadow-pop-soft"
+            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
           >
             <div className="flex items-center gap-4">
               <div className="flex -space-x-4 shrink-0">
@@ -213,7 +213,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('SYSTEM')}
             role="button"
             tabIndex={0}
-            className="p-4 sm:p-5 rounded-xl border-2 border-ink bg-white hover:bg-muted hover:-rotate-1 transition-transform duration-300 ease-bouncey cursor-pointer flex items-center justify-between gap-4 group shadow-pop-soft"
+            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
           >
             <div className="flex items-center gap-4">
               <Avatar
@@ -247,7 +247,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 sm:px-7 bg-sun/30 border-t-2 border-ink flex items-center justify-between text-xs">
+        <div className="p-4 sm:px-7 bg-muted/60 border-t border-line flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-accent" />
             <span>Benson Cancer Center • Training environment</span>

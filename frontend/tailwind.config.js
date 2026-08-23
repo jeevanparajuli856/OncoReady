@@ -7,28 +7,28 @@ export default {
   theme: {
     extend: {
       colors: {
-        cream: '#FFFDF5',
-        ink: '#1E293B',
+        cream: '#F4F7FB',
+        ink: '#0F172A',
         muted: {
-          DEFAULT: '#F1F5F9',
-          fg: '#64748B',
+          DEFAULT: '#EEF2F7',
+          fg: '#5B6576',
         },
         accent: {
-          DEFAULT: '#8B5CF6',
+          DEFAULT: '#4F46E5',
           fg: '#FFFFFF',
         },
-        pop: '#F472B6',
-        sun: '#FBBF24',
-        mint: '#34D399',
+        pop: '#F97316',
+        sun: '#F59E0B',
+        mint: '#059669',
         line: '#E2E8F0',
         brand: {
-          50: '#F5F3FF',
-          100: '#EDE9FE',
-          500: '#8B5CF6',
-          600: '#7C3AED',
-          700: '#6D28D9',
-          800: '#5B21B6',
-          900: '#4C1D95',
+          50: '#EEF2FF',
+          100: '#E0E7FF',
+          500: '#4F46E5',
+          600: '#4338CA',
+          700: '#3730A3',
+          800: '#312E81',
+          900: '#1E1B4B',
         },
         clinical: {
           teal: '#0D9488',
@@ -39,13 +39,13 @@ export default {
         }
       },
       fontFamily: {
-        display: ['Syne', 'Outfit', 'system-ui', 'sans-serif'],
-        heading: ['Outfit', 'Syne', 'system-ui', 'sans-serif'],
-        sans: ['Plus Jakarta Sans', 'system-ui', 'sans-serif'],
+        display: ['Syne', 'Outfit', 'Poppins', 'system-ui', 'sans-serif'],
+        heading: ['Poppins', 'Outfit', 'system-ui', 'sans-serif'],
+        sans: ['Poppins', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'SF Mono', 'Menlo', 'monospace'],
       },
       borderRadius: {
-        sm: '8px',
+        sm: '10px',
         md: '16px',
         lg: '24px',
       },
@@ -53,16 +53,19 @@ export default {
         3: '3px',
       },
       boxShadow: {
-        pop: '4px 4px 0 0 #1E293B',
-        'pop-lg': '8px 8px 0 0 #1E293B',
-        'pop-pink': '8px 8px 0 0 #F472B6',
-        'pop-sun': '8px 8px 0 0 #FBBF24',
-        'pop-mint': '8px 8px 0 0 #34D399',
-        'pop-soft': '8px 8px 0 0 #E2E8F0',
-        'pop-accent': '4px 4px 0 0 #8B5CF6',
-        'glow-emerald': '0 0 20px -3px rgba(52, 211, 153, 0.35)',
-        'glow-amber': '0 0 20px -3px rgba(251, 191, 36, 0.35)',
-        'glow-indigo': '0 0 20px -3px rgba(139, 92, 246, 0.35)',
+        glass: '0 8px 32px -12px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.05)',
+        'glass-hover': '0 18px 40px -16px rgba(15, 23, 42, 0.18), 0 4px 10px rgba(15, 23, 42, 0.06)',
+        'glass-lg': '0 28px 60px -22px rgba(15, 23, 42, 0.22)',
+        pop: '0 8px 32px -12px rgba(15, 23, 42, 0.14), 0 1px 3px rgba(15, 23, 42, 0.05)',
+        'pop-lg': '0 28px 60px -22px rgba(15, 23, 42, 0.22)',
+        'pop-pink': '0 18px 40px -16px rgba(249, 115, 22, 0.22)',
+        'pop-sun': '0 18px 40px -16px rgba(245, 158, 11, 0.18)',
+        'pop-mint': '0 18px 40px -16px rgba(5, 150, 105, 0.18)',
+        'pop-soft': '0 8px 32px -12px rgba(15, 23, 42, 0.10)',
+        'pop-accent': '0 12px 28px -10px rgba(79, 70, 229, 0.28)',
+        'glow-emerald': '0 0 20px -3px rgba(5, 150, 105, 0.28)',
+        'glow-amber': '0 0 20px -3px rgba(245, 158, 11, 0.28)',
+        'glow-indigo': '0 0 24px -4px rgba(79, 70, 229, 0.28)',
       },
       transitionTimingFunction: {
         bouncey: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
@@ -73,7 +76,7 @@ export default {
         'slide-up': 'slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         pop: 'popIn 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
         wiggle: 'wiggle 0.5s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        marquee: 'marquee 28s linear infinite',
+        marquee: 'marquee 48s linear infinite',
       },
       keyframes: {
         fadeIn: {
@@ -81,7 +84,7 @@ export default {
           '100%': { opacity: '1' },
         },
         slideUp: {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(12px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
         popIn: {
@@ -90,12 +93,12 @@ export default {
         },
         wiggle: {
           '0%, 100%': { transform: 'rotate(0deg)' },
-          '33%': { transform: 'rotate(3deg)' },
-          '66%': { transform: 'rotate(-3deg)' },
+          '33%': { transform: 'rotate(2deg)' },
+          '66%': { transform: 'rotate(-2deg)' },
         },
         marquee: {
-          '0%': { transform: 'translateX(0)' },
-          '100%': { transform: 'translateX(-50%)' },
+          '0%': { transform: 'translate3d(0,0,0)' },
+          '100%': { transform: 'translate3d(-50%,0,0)' },
         },
       }
     },

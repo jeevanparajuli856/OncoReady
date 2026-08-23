@@ -20,7 +20,7 @@ export default function WorldMap({
       radius: 0.22,
       color: '#1E293B40',
       shape: 'circle',
-      backgroundColor: '#FFFDF5',
+      backgroundColor: '#F4F7FB',
     });
   }, []);
 

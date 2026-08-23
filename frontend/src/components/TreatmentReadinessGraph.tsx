@@ -41,7 +41,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
 
   return (
     <div className="card-sticker p-5 sm:p-6 relative overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b-2 border-ink/10">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-line">
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-display font-extrabold tracking-tight">Treatment Readiness Graph</h2>
@@ -60,7 +60,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
       </div>
 
       {/* Interactive Visual Graph Canvas */}
-      <div className="relative min-h-0 md:min-h-[460px] bg-cream rounded-xl border-2 border-ink p-3 sm:p-4 flex flex-col justify-between gap-4">
+      <div className="relative min-h-0 md:min-h-[460px] bg-white/50 rounded-xl border border-line p-3 sm:p-4 flex flex-col justify-between gap-4">
         
         {/* SVG Bezier Dynamic Connectors */}
         <svg 
@@ -131,12 +131,12 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Clinical Symptom Review Node"
-              className={`p-4 rounded-xl border-2 transition-all cursor-pointer bg-white text-left focus:outline-none ${
+              className={`p-4 rounded-xl border transition-all cursor-pointer bg-white/90 text-left focus:outline-none ${
                 !readinessCheckCompleted
-                  ? 'border-ink/30 opacity-75'
+                  ? 'border-line opacity-75'
                   : clinicalResolved
-                  ? 'border-ink shadow-pop-mint'
-                  : 'border-ink pulse-amber-ring'
+                  ? 'border-mint/30 shadow-pop-mint'
+                  : 'border-sun/30 pulse-amber-ring'
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -190,12 +190,12 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Transportation Navigation Node"
-              className={`p-4 rounded-xl border-2 transition-all cursor-pointer bg-white text-left focus:outline-none ${
+              className={`p-4 rounded-xl border transition-all cursor-pointer bg-white/90 text-left focus:outline-none ${
                 !readinessCheckCompleted
-                  ? 'border-ink/30 opacity-75'
+                  ? 'border-line opacity-75'
                   : transportResolved
-                  ? 'border-ink shadow-pop-mint'
-                  : 'border-ink pulse-amber-ring'
+                  ? 'border-mint/30 shadow-pop-mint'
+                  : 'border-sun/30 pulse-amber-ring'
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -251,7 +251,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Upcoming Infusion Target Node"
-              className={`w-full max-w-sm p-5 rounded-xl border-2 border-ink transition-all cursor-pointer bg-white text-center focus:outline-none ${
+              className={`w-full max-w-sm p-5 rounded-xl border border-line transition-all cursor-pointer bg-white text-center focus:outline-none ${
                 overallReadiness === 'PLAN_CONFIRMED'
                   ? 'shadow-pop-mint'
                   : overallReadiness === 'AT_RISK'
@@ -259,7 +259,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   : 'shadow-pop-accent'
               }`}
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent text-white border-2 border-ink mb-3">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-accent text-white mb-3">
                 <Calendar className="w-6 h-6" />
               </div>
 
@@ -362,7 +362,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                     e.stopPropagation();
                     onNavigateToPatient();
                   }}
-                  className="mt-3 w-full py-2 px-3 bg-accent hover:bg-brand-600 text-white rounded-full text-xs font-heading font-bold border-2 border-ink shadow-pop flex items-center justify-center gap-1"
+                  className="mt-3 w-full py-2 px-3 bg-accent hover:bg-brand-600 text-white rounded-xl text-xs font-heading font-semibold flex items-center justify-center gap-1"
                 >
                   <span>Switch to Patient View & Confirm</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />

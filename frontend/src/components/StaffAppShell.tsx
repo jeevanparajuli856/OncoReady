@@ -52,7 +52,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
 
   return (
     <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full max-w-full overflow-x-clip min-h-[calc(100dvh-10rem)]">
-      <aside className="order-1 w-full md:w-56 bg-white border-b-2 md:border-b-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0 max-w-full">
+      <aside className="order-1 w-full md:w-56 bg-white/70 backdrop-blur-xl border-b md:border-b-0 md:border-r border-line flex flex-row md:flex-col shrink-0 max-w-full">
         <nav className="flex-1 flex flex-wrap md:flex-col px-2 py-2 md:py-4 gap-1">
           <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
             Staff tools
@@ -65,10 +65,10 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                 key={item.id}
                 aria-label={item.label}
                 onClick={() => onSetStaffRoute(item.id)}
-                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 min-w-0 flex-1 md:flex-none basis-[4.5rem] md:basis-auto px-1.5 md:px-3 py-2 md:py-2.5 text-[10px] md:text-sm rounded-xl md:rounded-full border-2 transition-colors ${
+                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 min-w-0 flex-1 md:flex-none basis-[4.5rem] md:basis-auto px-1.5 md:px-3 py-2 md:py-2.5 text-[10px] md:text-sm rounded-xl transition-colors ${
                   isActive
-                    ? 'bg-accent text-white border-ink font-heading font-bold'
-                    : 'text-ink border-transparent hover:bg-sun/40 hover:border-ink'
+                    ? 'bg-accent text-white font-heading font-semibold'
+                    : 'text-ink hover:bg-white'
                 }`}
               >
                 <Icon className="w-4 h-4" strokeWidth={2.5} />
@@ -78,7 +78,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             );
           })}
 
-          <div className="hidden md:block mt-4 pt-4 border-t-2 border-ink/10 px-1 space-y-1">
+          <div className="hidden md:block mt-4 pt-4 border-t border-line px-1 space-y-1">
             <div className="px-3 mb-2 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
               Leave staff
             </div>
@@ -88,7 +88,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                 <button
                   key={link.id}
                   onClick={() => onSetPerspective(link.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-full border-2 border-transparent hover:border-ink hover:bg-sun/40"
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-white"
                 >
                   <Icon className="w-4 h-4" strokeWidth={2.5} />
                   <span className="font-heading font-bold">{link.label}</span>
@@ -100,7 +100,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
       </aside>
 
       <div className="order-1 md:order-2 flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="px-3 sm:px-5 lg:px-6 py-3 border-b-2 border-ink/10 bg-cream/80 flex items-center justify-between gap-3 shrink-0">
+        <div className="px-3 sm:px-5 lg:px-6 py-3 border-b border-line bg-white/50 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
           <div>
             <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">Staff workspace</p>
             <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>

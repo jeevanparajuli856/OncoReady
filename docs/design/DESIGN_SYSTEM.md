@@ -4,19 +4,19 @@ Persistent human-readable frontend design source of truth.
 
 ## Status
 
-`ESTABLISHED` — Playful Geometric system, adapted for cancer-care trust.
+`ESTABLISHED` — Clinical Glass system for an all-ages, business-centric product.
 
 ---
 
 ## 1. Product Visual Direction
 
-OncoReady uses **Playful Geometric**: a stable content grid with tactile, high-energy decoration. The product must feel optimistic and clickable without becoming casual about cancer.
+OncoReady uses **Clinical Glass**: a calm SaaS surface with translucent cards, soft elevation, and restrained motion. The product must feel trustworthy to patients, families, clinicians, and hospital buyers.
 
-- **Landing / buyer surfaces**: Full expression — confetti shapes, hard shadows, Syne display type, sticker cards, marquee, star badges.
-- **Patient / caregiver**: Warm cream paper, candy buttons, clear one-action hierarchy. Friendly, not childish.
-- **Staff workspace**: Same tokens, denser rails, less floating decoration so triage stays fast.
+- **Landing / buyer surfaces**: Two-column SaaS hero, workspace cards, enterprise pricing, and a live readiness preview.
+- **Patient / caregiver**: Same glass cards and clear one-action hierarchy. Warm enough to use, never childish.
+- **Staff workspace**: Same tokens, denser rails, less decoration so triage stays fast.
 
-Brand motif: the **continuity loop** — a geometric O that becomes a ready-check, surrounded by three nodes (patient, nurse, navigator).
+Brand motif: the **continuity loop** — a ready-check inside a geometric O, with a small mint node for closed work.
 
 ---
 
@@ -24,15 +24,15 @@ Brand motif: the **continuity loop** — a geometric O that becomes a ready-chec
 
 | Token | Hex | Use |
 |---|---|---|
-| `cream` | `#FFFDF5` | App canvas (paper) |
-| `ink` | `#1E293B` | Text, borders, hard shadows |
-| `accent` | `#8B5CF6` | Primary actions, brand |
-| `pop` | `#F472B6` | Featured shadows, decorative |
-| `sun` | `#FBBF24` | Optimism, popular badge, hover fills |
-| `mint` | `#34D399` | Ready / resolved |
-| `muted` | `#F1F5F9` | Subtle fills |
-| `muted-fg` | `#64748B` | Secondary text |
-| `line` | `#E2E8F0` | Soft structural line |
+| `cream` | `#F4F7FB` | App canvas (cool clinical white) |
+| `ink` | `#0F172A` | Text |
+| `accent` | `#4F46E5` | Primary actions, brand |
+| `pop` | `#F97316` | Secondary CTA, emphasis |
+| `sun` | `#F59E0B` | Risk / warning only |
+| `mint` | `#059669` | Ready / resolved |
+| `muted` | `#EEF2F7` | Subtle fills |
+| `muted-fg` | `#5B6576` | Secondary text |
+| `line` | `#E2E8F0` | Structural line |
 
 Never rely on color alone. Pair status with icon + label.
 
@@ -40,42 +40,42 @@ Never rely on color alone. Pair status with icon + label.
 
 ## 3. Typography
 
-- **Display / logo / hero**: `Syne` ExtraBold
-- **Headings**: `Outfit` Bold / ExtraBold
-- **Body**: `Plus Jakarta Sans` Regular / Medium
+- **Display / hero**: `Syne` ExtraBold
+- **Headings**: `Poppins` Semibold
+- **Body**: `Poppins` Regular / Medium, with `Plus Jakarta Sans` fallback
 - **Mono**: `JetBrains Mono` for IDs and timestamps
 - Scale: Major Third (1.25)
+- Tracking: slightly tight on headings (`-0.02em`)
 
 ---
 
 ## 4. Geometry & Effects
 
-- Radii: 8 / 16 / 24 / full pill
-- Borders: 2px ink by default
-- **Pop shadow**: `4px 4px 0 #1E293B` (no blur)
-- Hover lift: translate −2px, shadow 6px
-- Press: translate +2px, shadow 2px
-- Easing: `cubic-bezier(0.34, 1.56, 0.64, 1)`
-- Icons: Lucide, 2.5px stroke, enclosed in a bubble
+- Radii: 10 / 16 / 24
+- Cards: `rgba(255,255,255,0.72)` + `backdrop-filter: blur(16px)` + 1px white border
+- Shadow: soft glass elevation, never hard offset blocks
+- Hover: lift 1–4px, deepen shadow
+- Easing: `cubic-bezier(0.22, 1, 0.36, 1)`
+- Icons: Lucide, 2px stroke, tinted rounded square
 
 ---
 
 ## 5. Components
 
-- **Candy button**: accent fill, pill, ink border, hard shadow, optional white arrow bubble
-- **Ghost button**: transparent, ink border, sun fill on hover
-- **Sticker card**: white, ink border, soft or pink hard shadow, slight hover wiggle
-- **Input**: white, 2px slate border, accent hard shadow on focus
-- **Logo**: geometric ready-ring with sun circle, mint node, pink triangle
+- **Primary button**: indigo fill, 12px radius, soft indigo shadow
+- **Ghost button**: translucent white, hairline border
+- **Glass card**: frosted white, soft shadow, lift on hover
+- **Input**: translucent white, indigo ring on focus
+- **Logo**: indigo ready-ring with mint node
 
 ---
 
 ## 6. Motion & Accessibility
 
-- Entrance: pop (scale 0.86 → 1) unless `prefers-reduced-motion`
+- Entrance: fade + slight rise unless `prefers-reduced-motion`
 - Respect the header reduced-motion toggle
 - 44px minimum tap targets on patient/public CTAs
-- High-contrast focus: 3px accent outline + offset
+- High-contrast focus: 2px accent outline + offset
 
 ---
 

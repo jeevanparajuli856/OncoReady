@@ -62,12 +62,12 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
   };
 
   const choiceClass = (on: boolean, tone: 'ok' | 'warn') =>
-    `p-3 rounded-xl border-2 text-left text-sm flex items-center gap-2.5 transition ${
+    `p-3 rounded-xl border text-left text-sm flex items-center gap-2.5 transition ${
       on
         ? tone === 'ok'
-          ? 'border-ink bg-mint/20 font-heading font-bold'
-          : 'border-ink bg-sun/40 font-heading font-bold'
-        : 'border-ink/15 bg-white hover:bg-cream'
+          ? 'border-mint/30 bg-mint/10 font-heading font-semibold'
+          : 'border-sun/30 bg-sun/10 font-heading font-semibold'
+        : 'border-line bg-white/70 hover:bg-white'
     }`;
 
   return (
@@ -77,11 +77,11 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
       aria-modal="true"
       aria-labelledby="readiness-check-title"
     >
-      <div className="bg-cream rounded-xl max-w-2xl w-full border-2 border-ink shadow-pop-lg overflow-hidden animate-pop">
-        <div className="bg-accent text-white p-5 sm:p-6 flex items-start justify-between gap-3 border-b-2 border-ink">
+      <div className="bg-white/90 backdrop-blur-xl rounded-2xl max-w-2xl w-full border border-white/80 shadow-glass-lg overflow-hidden animate-slide-up">
+        <div className="bg-ink text-white p-5 sm:p-6 flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
-            <span className="icon-bubble w-10 h-10 bg-sun text-ink">
-              <Sparkles className="w-5 h-5" strokeWidth={2.5} />
+            <span className="icon-bubble w-10 h-10 bg-white/10 text-white">
+              <Sparkles className="w-5 h-5" strokeWidth={2} />
             </span>
             <div>
               <h2 id="readiness-check-title" className="font-heading font-extrabold text-lg leading-snug">

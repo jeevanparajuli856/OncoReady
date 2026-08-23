@@ -19,19 +19,13 @@ export type DockItem = {
 
 export const FloatingDock = ({
   items,
-  desktopClassName,
   mobileClassName,
 }: {
   items: DockItem[];
   desktopClassName?: string;
   mobileClassName?: string;
 }) => {
-  return (
-    <>
-      <FloatingDockDesktop items={items} className={desktopClassName} />
-      <FloatingDockMobile items={items} className={mobileClassName} />
-    </>
-  );
+  return <FloatingDockMobile items={items} className={mobileClassName} />;
 };
 
 const DockTarget = ({
@@ -72,7 +66,7 @@ const FloatingDockMobile = ({
     <nav
       aria-label="Workspace dock"
       className={cn(
-        'flex w-full max-w-[22rem] md:hidden items-center justify-between gap-1 rounded-full border-2 border-ink bg-white/95 px-1.5 py-1.5 shadow-pop backdrop-blur',
+        'flex w-full max-w-[22rem] md:hidden items-center justify-between gap-1 rounded-2xl border border-white/80 bg-white/75 px-1.5 py-1.5 shadow-glass backdrop-blur-xl',
         className,
       )}
     >
@@ -83,8 +77,8 @@ const FloatingDockMobile = ({
           onClick={item.onClick}
           ariaLabel={item.title}
           className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink',
-            item.active ? 'bg-accent text-white' : 'bg-cream text-ink',
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+            item.active ? 'bg-accent text-white' : 'bg-white/80 text-ink',
           )}
         >
           <div className="h-4 w-4">{item.icon}</div>
@@ -94,7 +88,7 @@ const FloatingDockMobile = ({
   );
 };
 
-const FloatingDockDesktop = ({
+export const FloatingDockDesktop = ({
   items,
   className,
 }: {
@@ -108,7 +102,7 @@ const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        'mx-auto hidden h-16 items-end gap-3 rounded-full border-2 border-ink bg-white/95 px-4 pb-3 shadow-pop backdrop-blur md:flex',
+        'mx-auto hidden h-16 items-end gap-3 rounded-2xl border border-white/80 bg-white/75 px-4 pb-3 shadow-glass backdrop-blur-xl md:flex',
         className,
       )}
     >
@@ -161,8 +155,8 @@ function IconContainer({
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         className={cn(
-          'relative flex aspect-square items-center justify-center rounded-full border-2 border-ink',
-          active ? 'bg-accent text-white' : 'bg-cream text-ink',
+          'relative flex aspect-square items-center justify-center rounded-xl',
+          active ? 'bg-accent text-white' : 'bg-white/90 text-ink',
         )}
       >
         <AnimatePresence>
@@ -171,7 +165,7 @@ function IconContainer({
               initial={{ opacity: 0, y: 10, x: '-50%' }}
               animate={{ opacity: 1, y: 0, x: '-50%' }}
               exit={{ opacity: 0, y: 2, x: '-50%' }}
-              className="absolute -top-9 left-1/2 w-fit rounded-full border-2 border-ink bg-sun px-2.5 py-0.5 text-xs font-heading font-bold whitespace-nowrap text-ink"
+              className="absolute -top-9 left-1/2 w-fit rounded-lg bg-ink px-2.5 py-0.5 text-xs font-heading font-medium whitespace-nowrap text-white"
             >
               {title}
             </motion.div>

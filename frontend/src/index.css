@@ -3,12 +3,12 @@
 @tailwind utilities;
 
 :root {
-  --cream: #FFFDF5;
-  --ink: #1E293B;
-  --accent: #8B5CF6;
-  --pop: #F472B6;
-  --sun: #FBBF24;
-  --mint: #34D399;
+  --cream: #F4F7FB;
+  --ink: #0F172A;
+  --accent: #4F46E5;
+  --pop: #F97316;
+  --sun: #F59E0B;
+  --mint: #059669;
   --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -18,11 +18,15 @@ a:focus-visible,
 input:focus-visible,
 textarea:focus-visible,
 select:focus-visible {
-  outline: 3px solid #8B5CF6;
+  outline: 2px solid #4F46E5;
   outline-offset: 3px;
 }
 
 @layer base {
+  html {
+    font-size: 17px;
+  }
+
   html,
   body,
   #root {
@@ -31,11 +35,14 @@ select:focus-visible {
   }
 
   body {
-    @apply bg-cream text-ink antialiased;
-    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    @apply bg-cream text-ink antialiased text-[1.02rem] leading-relaxed;
+    font-family: 'Poppins', 'Plus Jakarta Sans', system-ui, sans-serif;
     font-feature-settings: "cv02", "cv03", "cv04", "ss01";
-    background-image: radial-gradient(#E2E8F0 1.15px, transparent 1.15px);
-    background-size: 22px 22px;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% -10%, rgba(79, 70, 229, 0.10), transparent 50%),
+      radial-gradient(ellipse 70% 40% at 90% 0%, rgba(249, 115, 22, 0.07), transparent 46%),
+      radial-gradient(ellipse 50% 30% at 50% 100%, rgba(5, 150, 105, 0.05), transparent 50%);
+    background-attachment: fixed;
   }
 
   img,
@@ -46,12 +53,13 @@ select:focus-visible {
     max-width: 100%;
   }
 
-  h1, h2, h3, .font-heading {
-    font-family: 'Outfit', 'Syne', system-ui, sans-serif;
+  h1, h2, h3, .font-display {
+    font-family: 'Syne', 'Outfit', 'Poppins', system-ui, sans-serif;
+    letter-spacing: -0.03em;
   }
 
-  .font-display {
-    font-family: 'Syne', 'Outfit', system-ui, sans-serif;
+  .font-heading {
+    font-family: 'Poppins', 'Outfit', system-ui, sans-serif;
   }
 }
 
@@ -61,11 +69,11 @@ select:focus-visible {
 
 @layer components {
   .card-sticker {
-    @apply bg-white border-2 border-ink rounded-xl shadow-pop-soft;
+    @apply bg-[#FFF4E8] border-2 border-ink rounded-2xl;
   }
 
   .card-sticker-featured {
-    @apply bg-white border-2 border-ink rounded-xl shadow-pop-pink;
+    @apply bg-[#FFE8D2] border-2 border-ink rounded-2xl;
   }
 
   .page-shell {
@@ -73,29 +81,30 @@ select:focus-visible {
   }
 
   .btn-candy {
-    @apply inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-full
-      bg-accent text-white font-heading font-bold text-sm leading-snug text-center
-      border-2 border-ink shadow-pop transition-all duration-300 ease-bouncey;
+    @apply inline-flex items-center justify-center gap-2 min-h-12 px-6 py-2.5 rounded-xl
+      bg-accent text-white font-heading font-semibold text-[0.95rem] leading-snug text-center
+      shadow-pop-accent transition-all duration-300 ease-bouncey;
   }
 
   .btn-candy:hover {
+    @apply bg-brand-600;
     transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 0 #1E293B;
+    box-shadow: 6px 6px 0 0 #0F172A;
   }
 
   .btn-candy:active {
     transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 0 #1E293B;
+    box-shadow: 2px 2px 0 0 #0F172A;
   }
 
   .btn-ghost {
-    @apply inline-flex items-center justify-center gap-2 min-h-11 px-5 py-2.5 rounded-full
-      bg-white text-ink font-heading font-bold text-sm leading-snug text-center
-      border-2 border-ink transition-all duration-300 ease-bouncey;
+    @apply inline-flex items-center justify-center gap-2 min-h-12 px-6 py-2.5 rounded-xl
+      bg-white/80 text-ink font-heading font-semibold text-[0.95rem] leading-snug text-center
+      border-2 border-ink/15 backdrop-blur-md transition-all duration-300 ease-bouncey;
   }
 
   .btn-ghost:hover {
-    @apply bg-sun;
+    @apply bg-white border-accent/30 text-accent;
   }
 
   .btn-compact {
@@ -103,58 +112,57 @@ select:focus-visible {
   }
 
   .chip {
-    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px]
+    @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs
       font-heading font-bold border-2 border-ink bg-white text-ink whitespace-nowrap;
   }
 
-  .chip-mint { @apply bg-mint/30; }
-  .chip-sun { @apply bg-sun/50; }
-  .chip-accent { @apply bg-accent/15; }
-  .chip-pop { @apply bg-pop/20; }
+  .chip-mint { @apply bg-mint/25 text-ink; }
+  .chip-sun { @apply bg-sun/60 text-ink; }
+  .chip-accent { @apply bg-accent/15 text-ink; }
+  .chip-pop { @apply bg-[#F4A261] text-ink; }
   .chip-ink { @apply bg-ink text-cream; }
 
   .filter-bar {
-    @apply flex items-center gap-1 p-1 rounded-full bg-white border-2 border-ink overflow-x-auto max-w-full;
+    @apply flex items-center gap-1 p-1 rounded-xl bg-white/70 border border-white/80 backdrop-blur-md overflow-x-auto max-w-full shadow-glass;
   }
 
   .filter-pill {
-    @apply px-3 py-1.5 rounded-full text-xs font-heading font-bold whitespace-nowrap shrink-0
-      text-muted-fg hover:text-ink hover:bg-sun/40;
+    @apply px-3 py-1.5 rounded-lg text-xs font-heading font-semibold whitespace-nowrap shrink-0
+      text-muted-fg hover:text-ink hover:bg-muted;
   }
 
   .filter-pill-active {
-    @apply bg-ink text-cream hover:bg-ink hover:text-cream;
+    @apply bg-accent text-white hover:bg-accent hover:text-white;
   }
 
   .metric-tile {
-    @apply p-3.5 rounded-xl bg-cream border-2 border-ink/10;
+    @apply p-3.5 rounded-xl bg-white/55 border border-white/70 backdrop-blur-md;
   }
 
   .input-pop {
-    @apply w-full bg-white border-2 border-slate-300 rounded-lg text-ink
-      px-3 py-2.5 transition-all duration-300;
-    box-shadow: 4px 4px 0 0 transparent;
+    @apply w-full bg-white/80 border border-line rounded-xl text-ink
+      px-3 py-2.5 transition-all duration-300 backdrop-blur-md;
   }
 
   .input-pop:focus {
     @apply outline-none border-accent;
-    box-shadow: 4px 4px 0 0 #8B5CF6;
+    box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
   }
 
   .label-caps {
-    @apply block text-[11px] font-heading font-bold uppercase tracking-wider text-ink;
+    @apply block text-[11px] font-heading font-semibold uppercase tracking-wider text-muted-fg;
   }
 
   .icon-bubble {
-    @apply inline-flex items-center justify-center rounded-full border-2 border-ink shrink-0;
+    @apply inline-flex items-center justify-center rounded-2xl border-2 border-ink shrink-0;
   }
 
   .squiggle-underline {
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='12' viewBox='0 0 120 12' fill='none'%3E%3Cpath d='M2 8 C 12 2, 22 14, 32 8 S 52 2, 62 8 82 14, 92 8 112 2, 118 8' stroke='%238B5CF6' stroke-width='3' stroke-linecap='round'/%3E%3C/svg%3E");
-    background-repeat: repeat-x;
+    background-image: linear-gradient(to right, #4F46E5, #4F46E5);
+    background-repeat: no-repeat;
     background-position: bottom;
-    background-size: 120px 12px;
-    padding-bottom: 8px;
+    background-size: 100% 2px;
+    padding-bottom: 4px;
   }
 }
 
@@ -171,10 +179,10 @@ select:focus-visible {
 
 @keyframes pulse-emerald {
   0%, 100% {
-    box-shadow: 4px 4px 0 0 #34D399;
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.35);
   }
   50% {
-    box-shadow: 6px 6px 0 0 #34D399;
+    box-shadow: 0 0 0 8px rgba(5, 150, 105, 0);
   }
 }
 
@@ -184,10 +192,10 @@ select:focus-visible {
 
 @keyframes pulse-amber {
   0%, 100% {
-    box-shadow: 4px 4px 0 0 #FBBF24;
+    box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.35);
   }
   50% {
-    box-shadow: 6px 6px 0 0 #FBBF24;
+    box-shadow: 0 0 0 8px rgba(245, 158, 11, 0);
   }
 }
 
@@ -196,26 +204,18 @@ select:focus-visible {
 }
 
 .leaflet-container {
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
-  border-radius: 16px;
-  z-index: 0;
-}
+    font-family: 'Poppins', system-ui, sans-serif;
+    border-radius: 16px;
+    z-index: 0;
+  }
 
 @media (max-width: 640px) {
   .chip {
     @apply whitespace-normal max-w-full;
   }
-  .btn-candy,
-  .btn-ghost {
-    box-shadow: 2px 2px 0 0 #1E293B;
-  }
   .btn-stack .btn-candy,
   .btn-stack .btn-ghost {
     @apply w-full;
-  }
-  .card-sticker,
-  .card-sticker-featured {
-    box-shadow: 2px 2px 0 0 #1E293B;
   }
 }
 
