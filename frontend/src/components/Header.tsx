@@ -385,7 +385,7 @@ export const Header: React.FC<HeaderProps> = ({
 
                     <button
                       onClick={() => {
-                        onSetPerspective('PORTAL_AUTH');
+                        onSetPerspective('SIGN_IN');
                         setIsDropdownOpen(false);
                       }}
                       className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-semibold text-rose-700 hover:bg-rose-50 transition"

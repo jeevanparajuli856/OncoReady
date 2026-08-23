@@ -3,7 +3,7 @@
   "task_id": "CORE-001",
   "agent": "gemini-frontend",
   "status": "COMPLETE",
-  "summary": "Implemented OncoReady's complete light-theme Treatment Readiness Golden Path (CORE-001). Built responsive React + TypeScript + Vite architecture with deterministic workflow engine, live Treatment Readiness Graph, multi-perspective views (Patient, Staff Triage, Navigator, Caregiver, System), and full caregiver privacy data-minimization projection.",
+  "summary": "Implemented OncoReady's complete Phase B enterprise frontend redesign. Restructured the architecture to a persistent staff application shell with discrete module routes (Command Center, Exceptions, Case Workspace, etc.) while preserving the deterministic Treatment Readiness Golden Path. Purged legacy generic templates and aligned terminology with the approved professional design system.",
   "files_changed": [
     "frontend/package.json",
     "frontend/package-lock.json",
@@ -35,7 +35,8 @@
     "frontend/tests/smoke.test.ts",
     "frontend/tests/component.test.tsx",
     "frontend/playwright.config.ts",
-    "frontend/tests/e2e.spec.ts"
+    "frontend/tests/e2e.spec.ts",
+    "frontend/src/components/StaffAppShell.tsx"
   ],
   "contracts_used": [],
   "tests": {

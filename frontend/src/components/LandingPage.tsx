@@ -83,7 +83,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             onClick={onOpenAuthModal}
             className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-extrabold rounded-2xl transition flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-500/25 text-sm sm:text-base cursor-pointer"
           >
-            <span>Launch Live Clinical Demo</span>
+            <span>Explore Workspace</span>
             <ArrowRight className="w-4 h-4" />
           </button>
 
@@ -624,7 +624,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             onClick={onOpenAuthModal}
             className="px-8 py-4 bg-white hover:bg-slate-100 text-slate-900 font-extrabold rounded-2xl text-sm transition shadow-lg cursor-pointer"
           >
-            Launch Interactive Clinical Demo →
+            Explore Workspace →
           </button>
         </div>
       </section>

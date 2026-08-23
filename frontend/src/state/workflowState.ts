@@ -12,6 +12,7 @@ export const INITIAL_STATE: WorkflowState = {
   version: 3,
   isSimulated: true,
   currentPerspective: 'LANDING',
+  staffRoute: 'COMMAND_CENTER',
   overallReadiness: 'ACTION_REQUIRED',
   readinessCheckCompleted: false,
   patientAcknowledged: false,
@@ -263,7 +264,8 @@ export type WorkflowAction =
   | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string } }
   | { type: 'ACKNOWLEDGE_PATIENT_PLAN' }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
-  | { type: 'RESET_WORKFLOW' };
+  | { type: 'RESET_WORKFLOW' }
+  | { type: 'SET_STAFF_ROUTE'; payload: any };
 
 export function workflowReducer(state: WorkflowState, action: WorkflowAction): WorkflowState {
   switch (action.type) {
@@ -516,7 +518,14 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     case 'SET_PERSPECTIVE': {
       return {
         ...state,
-        currentPerspective: action.payload,
+        currentPerspective: action.payload as any,
+      };
+    }
+    case 'SET_STAFF_ROUTE': {
+      return {
+        ...state,
+        currentPerspective: 'STAFF',
+        staffRoute: action.payload as any,
       };
     }
 

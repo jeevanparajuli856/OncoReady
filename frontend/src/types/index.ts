@@ -171,7 +171,8 @@ export interface CaregiverProjection {
   privacyBoundaryNotice: string;
 }
 
-export type Perspective = 'LANDING' | 'PORTAL_AUTH' | 'PATIENT' | 'STAFF' | 'CAREGIVER' | 'SYSTEM';
+export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'STAFF' | 'SYSTEM';
+export type StaffRoute = 'COMMAND_CENTER' | 'EXCEPTIONS' | 'PATIENTS' | 'CASE_WORKSPACE' | 'RESOURCES' | 'INSIGHTS' | 'INTEGRATIONS' | 'ADMIN';
 
 export interface ContextualQueueCase {
   id: string;
@@ -200,6 +201,7 @@ export interface WorkflowState {
   tasks: Task[];
   auditEvents: AuditEvent[];
   currentPerspective: Perspective;
+  staffRoute: StaffRoute;
   patientAcknowledged: boolean;
   contextualCases: ContextualQueueCase[];
   isSimulated: boolean;
