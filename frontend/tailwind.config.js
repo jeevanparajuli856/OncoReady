@@ -39,7 +39,7 @@ export default {
         }
       },
       fontFamily: {
-        display: ['Syne', 'Outfit', 'Poppins', 'system-ui', 'sans-serif'],
+        display: ['Outfit', 'Poppins', 'system-ui', 'sans-serif'],
         heading: ['Poppins', 'Outfit', 'system-ui', 'sans-serif'],
         sans: ['Poppins', 'Plus Jakarta Sans', 'system-ui', 'sans-serif'],
         mono: ['JetBrains Mono', 'SF Mono', 'Menlo', 'monospace'],

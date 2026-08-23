@@ -54,7 +54,7 @@ select:focus-visible {
   }
 
   h1, h2, h3, .font-display {
-    font-family: 'Syne', 'Outfit', 'Poppins', system-ui, sans-serif;
+    font-family: 'Outfit', 'Poppins', system-ui, sans-serif;
     letter-spacing: -0.03em;
   }
 
