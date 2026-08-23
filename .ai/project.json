@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "status": "UNCONFIGURED",
+  "status": "INCEPTION_READY",
   "delivery": {
     "mode": "RAPID_PRODUCT",
     "priorities": [
@@ -14,23 +14,44 @@
   },
   "components": {
     "backend": {
-      "enabled": null,
+      "enabled": false,
       "path": "backend",
       "technology": null
     },
     "frontend": {
-      "enabled": null,
+      "enabled": true,
       "path": "frontend",
-      "technology": null
+      "technology": "React + TypeScript + Vite"
     },
     "database": {
-      "enabled": null,
+      "enabled": false,
       "provider": null,
       "migration_path": "supabase/migrations"
     }
   },
   "verification": {
-    "checks": []
+    "checks": [
+      {
+        "name": "frontend build",
+        "command": [
+          "npm",
+          "run",
+          "build"
+        ],
+        "cwd": "frontend",
+        "required": true
+      },
+      {
+        "name": "frontend critical-path smoke",
+        "command": [
+          "npm",
+          "run",
+          "test:smoke"
+        ],
+        "cwd": "frontend",
+        "required": true
+      }
+    ]
   },
   "security": {
     "checks": []
