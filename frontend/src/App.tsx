@@ -25,6 +25,8 @@ export const App: React.FC = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
   const [isPatientResolutionOpen, setIsPatientResolutionOpen] = useState<boolean>(false);
+  const [patientSearch, setPatientSearch] = useState('');
+  const [patientStatus, setPatientStatus] = useState('ALL');
   
   const [reducedMotion, setReducedMotion] = useState<boolean>(false);
 
@@ -41,6 +43,8 @@ export const App: React.FC = () => {
     dispatch({ type: 'RESET_WORKFLOW' });
     setIsReadinessModalOpen(false);
     setIsPatientResolutionOpen(false);
+    setPatientSearch('');
+    setPatientStatus('ALL');
     
     setIsAuthModalOpen(false);
   };
@@ -69,6 +73,17 @@ export const App: React.FC = () => {
   const handleAcknowledgePlan = () => {
     dispatch({ type: 'ACKNOWLEDGE_PATIENT_PLAN' });
   };
+
+  const patientDirectory = [
+    { name: state.patient.name, mrn: state.patient.mrn, treatment: state.appointment.treatmentName, status: state.overallReadiness, interactive: true },
+    { name: 'James Wilson', mrn: 'BHC-992102', treatment: 'Pembrolizumab Infusion', status: 'READY', interactive: false },
+    { name: 'David Chen', mrn: 'BHC-992104', treatment: 'Carboplatin + Pembrolizumab', status: 'IN_REVIEW', interactive: false },
+    { name: 'Renee Sutton', mrn: 'BHC-992110', treatment: 'Paclitaxel Infusion', status: 'ACTION_REQUIRED', interactive: false },
+  ].filter((record) => {
+    const matchesSearch = `${record.name} ${record.mrn} ${record.treatment}`.toLowerCase().includes(patientSearch.toLowerCase());
+    const matchesStatus = patientStatus === 'ALL' || record.status === patientStatus;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className={`min-h-screen flex flex-col bg-slate-50 text-slate-900 ${reducedMotion ? 'motion-reduce' : ''}`}>
@@ -195,31 +210,44 @@ export const App: React.FC = () => {
               {state.staffRoute === 'PATIENTS' && (
                 <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
                   <h2 className="text-xl font-bold mb-4">Patient Directory</h2>
-                  <div className="space-y-2">
-                    <div 
-                      onClick={() => dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' })}
-                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer"
+                  <div className="flex flex-col sm:flex-row gap-3 mb-4">
+                    <input
+                      value={patientSearch}
+                      onChange={(event) => setPatientSearch(event.target.value)}
+                      placeholder="Search name, MRN, or treatment"
+                      aria-label="Search patients"
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    />
+                    <select
+                      value={patientStatus}
+                      onChange={(event) => setPatientStatus(event.target.value)}
+                      aria-label="Filter patients by status"
+                      className="px-3 py-2 border border-slate-300 rounded-md text-sm bg-white"
                     >
-                      <div className="flex items-center gap-3">
-                        <img src={state.patient.avatarUrl} alt={state.patient.name} className="w-10 h-10 rounded-full" />
-                        <div>
-                          <div className="font-medium text-slate-900">{state.patient.name}</div>
-                          <div className="text-xs text-slate-500">MRN: {state.patient.mrn}</div>
-                        </div>
-                      </div>
-                      <div className="text-sm text-slate-600">{state.appointment.treatmentName}</div>
-                    </div>
-                    {/* Mock additional patients */}
-                    <div className="flex items-center justify-between p-3 rounded-lg border border-slate-100 opacity-60">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-slate-200"></div>
-                        <div>
-                          <div className="font-medium text-slate-900">James Wilson</div>
-                          <div className="text-xs text-slate-500">MRN: OCH-992102</div>
-                        </div>
-                      </div>
-                      <div className="text-sm text-slate-600">Keytruda Infusion</div>
-                    </div>
+                      <option value="ALL">All states</option>
+                      <option value="ACTION_REQUIRED">Action required</option>
+                      <option value="IN_REVIEW">In review</option>
+                      <option value="READY">Ready</option>
+                    </select>
+                    {(patientSearch || patientStatus !== 'ALL') && (
+                      <button onClick={() => { setPatientSearch(''); setPatientStatus('ALL'); }} className="px-3 py-2 text-sm text-indigo-700 border border-indigo-200 rounded-md">
+                        Clear filters
+                      </button>
+                    )}
+                  </div>
+                  <div className="space-y-2">
+                    {patientDirectory.map((record) => (
+                      <button
+                        key={record.mrn}
+                        onClick={() => record.interactive && dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' })}
+                        disabled={!record.interactive}
+                        className="w-full flex items-center justify-between gap-4 p-3 rounded-lg border border-slate-200 text-left enabled:hover:bg-slate-50 disabled:cursor-default"
+                      >
+                        <div><div className="font-medium text-slate-900">{record.name}</div><div className="text-xs text-slate-500">MRN: {record.mrn}</div></div>
+                        <div className="text-right"><div className="text-sm text-slate-700">{record.treatment}</div><div className="text-xs text-slate-500">{record.status.replace('_', ' ')}</div></div>
+                      </button>
+                    ))}
+                    {patientDirectory.length === 0 && <div className="p-8 text-center text-sm text-slate-500">No patients match these filters.</div>}
                   </div>
                 </div>
               )}
@@ -239,17 +267,17 @@ export const App: React.FC = () => {
                   <h2 className="text-xl font-bold mb-4">Resource Directory</h2>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="p-4 rounded-lg border border-slate-200">
-                      <h3 className="font-bold text-slate-800">Ochsner Med-Van</h3>
-                      <p className="text-sm text-slate-600 mt-1">Internal non-emergency medical transport.</p>
+                      <h3 className="font-bold text-slate-800">CareLink Transportation</h3>
+                      <p className="text-sm text-slate-600 mt-1">Illustrative non-emergency transportation coordination.</p>
                       <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                        Available
+                        3 coordination windows
                       </div>
                     </div>
                     <div className="p-4 rounded-lg border border-slate-200">
-                      <h3 className="font-bold text-slate-800">RideHealth Partner Network</h3>
-                      <p className="text-sm text-slate-600 mt-1">External rideshare partnership.</p>
+                      <h3 className="font-bold text-slate-800">Community Mobility Network</h3>
+                      <p className="text-sm text-slate-600 mt-1">Illustrative community transportation directory.</p>
                       <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-emerald-100 text-emerald-800">
-                        Available
+                        Mapping preview
                       </div>
                     </div>
                   </div>
@@ -259,8 +287,16 @@ export const App: React.FC = () => {
               {state.staffRoute === 'INSIGHTS' && (
                 <div className="p-4 bg-white rounded-xl border border-slate-200 shadow-sm">
                   <h2 className="text-xl font-bold mb-4">Operational Insights</h2>
-                  <div className="h-64 bg-slate-50 border border-slate-200 rounded-lg flex items-center justify-center">
-                    <span className="text-slate-500">Exception Aging & Resolution Chart (Illustrative presentation)</span>
+                  <p className="text-sm text-slate-600 mb-5">Illustrative records showing ownership pressure and exception aging.</p>
+                  <div className="grid sm:grid-cols-3 gap-4 mb-6">
+                    {[['Open exceptions', '18'], ['Owned within 15 min', '14'], ['Awaiting patient confirmation', '4']].map(([label, value]) => (
+                      <div key={label} className="p-4 border border-slate-200 rounded-lg"><div className="text-2xl font-bold text-slate-900">{value}</div><div className="text-xs text-slate-600">{label}</div></div>
+                    ))}
+                  </div>
+                  <div className="space-y-3">
+                    {[['0–30 min', '72%'], ['31–60 min', '19%'], ['Over 60 min', '9%']].map(([label, width]) => (
+                      <div key={label}><div className="flex justify-between text-xs text-slate-600 mb-1"><span>{label}</span><span>{width}</span></div><div className="h-2 bg-slate-100 rounded"><div className="h-2 bg-indigo-500 rounded" style={{ width }} /></div></div>
+                    ))}
                   </div>
                 </div>
               )}
@@ -289,6 +325,9 @@ export const App: React.FC = () => {
 }`}
                       </pre>
                     </div>
+                    <div className="grid sm:grid-cols-3 gap-3">
+                      {['Patient + Appointment', 'Task + Owner', 'Communication + Audit'].map((mapping) => <div key={mapping} className="p-3 border border-slate-200 rounded-lg"><div className="text-sm font-medium">{mapping}</div><div className="text-xs text-slate-500 mt-1">Mapping preview • Not connected</div></div>)}
+                    </div>
                   </div>
                 </div>
               )}
@@ -302,6 +341,9 @@ export const App: React.FC = () => {
                       <div className="font-medium">Clinical Triage Routing</div>
                       <div className="text-sm text-slate-500">Route GI symptoms to: Sarah Jenkins, RN</div>
                     </div>
+                    <div className="p-3 border border-slate-200 rounded-lg"><div className="font-medium">Caregiver permissions</div><div className="text-sm text-slate-500">Transportation-only projection</div></div>
+                    <div className="p-3 border border-slate-200 rounded-lg"><div className="font-medium">Escalation window</div><div className="text-sm text-slate-500">30 minutes before ownership review</div></div>
+                    <div className="p-3 border border-slate-200 rounded-lg"><div className="font-medium">Communication channels</div><div className="text-sm text-slate-500">Patient portal and staff workspace</div></div>
                     <div className="p-3 border border-slate-200 rounded-lg">
                       <div className="font-medium">Navigator Assignment</div>
                       <div className="text-sm text-slate-500">Route SDOH/Transport to: Marcus Vance, MSW</div>

@@ -43,16 +43,16 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
   return (
     <div className="flex h-screen bg-slate-50 overflow-hidden text-slate-900">
       {/* Sidebar */}
-      <aside className="w-60 bg-white border-r border-slate-200 flex flex-col shrink-0">
-        <div className="h-16 flex items-center px-6 border-b border-slate-200">
+      <aside className="w-16 md:w-60 bg-white border-r border-slate-200 flex flex-col shrink-0">
+        <div className="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-slate-200">
           <div className="flex items-center gap-2">
             <Shield className="w-5 h-5 text-indigo-600" />
-            <span className="font-bold text-sm text-slate-800">OncoReady</span>
+            <span className="hidden md:inline font-bold text-sm text-slate-800">OncoReady</span>
           </div>
         </div>
         
         <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          <div className="mb-4 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <div className="hidden md:block mb-4 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
             Workspace
           </div>
           {navItems.map((item) => {
@@ -69,7 +69,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                 }`}
               >
                 <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                {item.label}
+                <span className="hidden md:inline">{item.label}</span>
               </button>
             );
           })}
@@ -81,7 +81,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-md transition-colors"
           >
             <LogOut className="w-4 h-4 text-slate-400" />
-            Switch Role
+            <span className="hidden md:inline">Switch Role</span>
           </button>
         </div>
       </aside>
@@ -89,7 +89,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <header className="h-16 bg-white border-b border-slate-200 flex items-center justify-between px-6 shrink-0">
+        <header className="min-h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-3 px-3 md:px-6 py-2 shrink-0">
           <div className="flex items-center gap-4">
             <h1 className="text-lg font-semibold text-slate-800">
               {navItems.find(i => i.id === currentRoute)?.label || 
@@ -98,7 +98,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
           </div>
           
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-600">
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-600">
               <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
               Training environment
             </div>
@@ -114,7 +114,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
 
         {/* Page Content */}
         <main className="flex-1 overflow-auto bg-slate-50 relative">
-          <div className="absolute inset-0 p-6 lg:p-8">
+          <div className="absolute inset-0 p-3 sm:p-6 lg:p-8">
             {children}
           </div>
         </main>

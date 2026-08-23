@@ -35,7 +35,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
   );
 
   // Task 2: Transport Coordination State
-  const [vehicleId, setVehicleId] = useState<string>('Ochsner Med-Van #402');
+  const [vehicleId, setVehicleId] = useState<string>('CareLink Vehicle #402');
   const [driverName, setDriverName] = useState<string>('Jerome Davis');
   const [pickupTime, setPickupTime] = useState<string>('Tomorrow, 7:45 AM');
 

@@ -90,7 +90,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
 
     expect(screen.getByText(/Caregiver Portal • Ana Hernandez/i)).toBeDefined();
     expect(screen.getByText(/Ride Confirmed/i)).toBeDefined();
-    expect(screen.getByText(/Ochsner Med-Van #402/i)).toBeDefined();
+    expect(screen.getByText(/CareLink Vehicle #402/i)).toBeDefined();
     expect(screen.getByText(/Patient Privacy Boundary Enforced/i)).toBeDefined();
 
     // Verify clinical symptoms are NOT rendered in Caregiver view

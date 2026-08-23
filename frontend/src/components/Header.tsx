@@ -43,7 +43,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'PATIENT':
         return {
           name: state.patient.name,
-          role: 'Patient (MyChart)',
+          role: 'Patient Workspace',
           avatar: state.patient.avatarUrl,
           roleType: 'PATIENT' as const,
         };
@@ -51,7 +51,7 @@ export const Header: React.FC<HeaderProps> = ({
         return {
           name: 'Sarah Jenkins, RN',
           role: 'Oncology Triage Team',
-          avatar: 'https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256',
+          avatar: '',
           roleType: 'NURSE' as const,
         };
       case 'CAREGIVER':
@@ -152,7 +152,7 @@ export const Header: React.FC<HeaderProps> = ({
               onClick={onOpenAuthModal}
               className="hover:text-slate-900 transition"
             >
-              Live Clinical Workspaces
+              Clinical Workspaces
             </button>
             <button 
               onClick={() => onSetPerspective('SYSTEM')}
@@ -316,7 +316,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <Avatar src={state.patient.avatarUrl} alt="Maria" size="xs" roleType="PATIENT" />
                       <div>
                         <div>Patient Portal (Maria Hernandez)</div>
-                        <div className="text-[10px] text-slate-400 font-normal">MyChart Readiness View</div>
+                        <div className="text-[10px] text-slate-400 font-normal">Patient Readiness View</div>
                       </div>
                     </button>
 

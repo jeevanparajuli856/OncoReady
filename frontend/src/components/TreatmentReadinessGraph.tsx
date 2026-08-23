@@ -159,7 +159,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                     <Stethoscope className="w-4 h-4" />
                   </div>
                   <div>
-                    <h3 className="text-xs font-bold text-slate-900">Clinical Symptom Clearance</h3>
+                    <h3 className="text-xs font-bold text-slate-900">Clinical Review &amp; Disposition</h3>
                     <p className="text-[11px] text-slate-500">Sarah Jenkins, RN (Triage)</p>
                   </div>
                 </div>
@@ -167,7 +167,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 {clinicalResolved ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <CheckCircle2 className="w-3 h-3" />
-                    Cleared
+                    Reviewed
                   </span>
                 ) : readinessCheckCompleted ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
@@ -189,7 +189,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   </p>
                   {clinicalResolved && (
                     <div className="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-emerald-800 font-medium">
-                      ✓ Nurse advice documented • 8:00 AM labs cleared
+                      ✓ Nurse review and disposition documented
                     </div>
                   )}
                 </div>

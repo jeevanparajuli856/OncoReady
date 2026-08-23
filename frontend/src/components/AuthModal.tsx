@@ -78,6 +78,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div 
             data-testid="auth-patient-card"
             onClick={() => handleSelect('PATIENT')}
+            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('PATIENT')}
+            role="button"
+            tabIndex={0}
             className="p-4 sm:p-5 rounded-2xl border-2 border-slate-200 hover:border-indigo-500 bg-white hover:bg-indigo-50/20 transition-all cursor-pointer flex items-center justify-between gap-4 group shadow-2xs hover:shadow-md"
           >
             <div className="flex items-center gap-4">
@@ -122,6 +125,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div 
             data-testid="auth-caregiver-card"
             onClick={() => handleSelect('CAREGIVER')}
+            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('CAREGIVER')}
+            role="button"
+            tabIndex={0}
             className="p-4 sm:p-5 rounded-2xl border-2 border-slate-200 hover:border-teal-500 bg-white hover:bg-teal-50/20 transition-all cursor-pointer flex items-center justify-between gap-4 group shadow-2xs hover:shadow-md"
           >
             <div className="flex items-center gap-4">
@@ -160,19 +166,22 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div 
             data-testid="auth-staff-card"
             onClick={() => handleSelect('STAFF')}
+            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('STAFF')}
+            role="button"
+            tabIndex={0}
             className="p-4 sm:p-5 rounded-2xl border-2 border-slate-200 hover:border-sky-500 bg-white hover:bg-sky-50/20 transition-all cursor-pointer flex items-center justify-between gap-4 group shadow-2xs hover:shadow-md"
           >
             <div className="flex items-center gap-4">
               <div className="flex -space-x-4 shrink-0">
                 <Avatar
-                  src="https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256"
+                  src=""
                   alt="Sarah Jenkins RN"
                   size="md"
                   roleType="NURSE"
                   className="ring-2 ring-white"
                 />
                 <Avatar
-                  src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=256"
+                  src=""
                   alt="Marcus Vance MSW"
                   size="md"
                   roleType="NAVIGATOR"
@@ -209,6 +218,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
           <div 
             data-testid="auth-system-card"
             onClick={() => handleSelect('SYSTEM')}
+            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('SYSTEM')}
+            role="button"
+            tabIndex={0}
             className="p-4 sm:p-5 rounded-2xl border-2 border-slate-200 hover:border-slate-900 bg-white hover:bg-slate-50 transition-all cursor-pointer flex items-center justify-between gap-4 group shadow-2xs hover:shadow-md"
           >
             <div className="flex items-center gap-4">
@@ -248,7 +260,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="p-4 sm:px-7 bg-slate-50 border-t border-slate-200 flex items-center justify-between text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-indigo-600" />
-            <span>Ochsner Health • Benson Cancer Center</span>
+            <span>Benson Cancer Center • Training environment</span>
           </div>
           <span className="text-slate-400 font-mono text-[11px]">
             Enterprise access controls • Training environment

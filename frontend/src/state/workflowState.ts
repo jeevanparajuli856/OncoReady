@@ -7,6 +7,8 @@ import {
 } from '../types';
 
 const STORAGE_KEY = 'oncoready_workflow_state_v2';
+const avatarData = (initials: string, color: string) =>
+  `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
 export const INITIAL_STATE: WorkflowState = {
   version: 3,
@@ -28,7 +30,7 @@ export const INITIAL_STATE: WorkflowState = {
     oncologist: 'Dr. Aris Thorne, MD',
     phone: '(504) 555-0182',
     address: '1420 St. Charles Ave, New Orleans, LA 70130',
-    avatarUrl: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&q=80&w=256',
+    avatarUrl: avatarData('MH', '#4f46e5'),
     ecogStatus: 1,
     bodySurfaceArea: '1.72 m²',
   },
@@ -40,7 +42,7 @@ export const INITIAL_STATE: WorkflowState = {
     phone: '(504) 555-0199',
     permissionScope: 'TRANSPORTATION_ONLY',
     authorizedBy: 'Maria Hernandez',
-    avatarUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&q=80&w=256',
+    avatarUrl: avatarData('AH', '#0d9488'),
   },
 
   appointment: {
@@ -55,7 +57,7 @@ export const INITIAL_STATE: WorkflowState = {
     infusionChair: 'Infusion Chair 14 (Window)',
     infusionDuration: '4 hours (plus 46-hr CADD ambulatory pump)',
     oncologist: 'Dr. Aris Thorne, MD, PhD',
-    oncologistAvatar: 'https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?auto=format&fit=crop&q=80&w=256',
+    oncologistAvatar: avatarData('AT', '#0369a1'),
     nurseTeam: 'Sarah Jenkins, RN, OCN (Primary Triage)',
     drugs: [
       {
@@ -197,7 +199,7 @@ export const INITIAL_STATE: WorkflowState = {
     {
       id: 'EVT-001',
       timestamp: 'Aug 23, 06:00 AM',
-      actor: 'Epic Scheduling / Ochsner Oncology',
+      actor: 'Scheduling Interface',
       actorRole: 'SYSTEM',
       action: 'Cycle 4 Infusion Scheduled',
       description: 'mFOLFOX6 Cycle 4 confirmed for 08/24 08:30 AM at Benson Cancer Center.',
@@ -225,7 +227,7 @@ export const INITIAL_STATE: WorkflowState = {
       ownerRole: 'Triage Nurse',
       status: 'IN_REVIEW',
       priority: 'CRITICAL',
-      avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=256',
+      avatarUrl: avatarData('DC', '#64748b'),
     },
     {
       id: 'CASE-1093',
@@ -239,7 +241,7 @@ export const INITIAL_STATE: WorkflowState = {
       ownerRole: 'Patient Navigator',
       status: 'PENDING',
       priority: 'HIGH',
-      avatarUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=256',
+      avatarUrl: avatarData('RS', '#64748b'),
     },
     {
       id: 'CASE-1094',
@@ -253,7 +255,7 @@ export const INITIAL_STATE: WorkflowState = {
       ownerRole: 'Triage Nurse',
       status: 'PENDING',
       priority: 'HIGH',
-      avatarUrl: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=256',
+      avatarUrl: avatarData('JW', '#64748b'),
     }
   ]
 };
@@ -309,7 +311,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
             role: 'Oncology Triage Nurse',
             department: 'Benson Cancer Center Triage',
             badge: 'RN-8841',
-            avatarUrl: 'https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256',
+            avatarUrl: avatarData('SJ', '#0284c7'),
           },
           createdAt: nowStr,
           dueTime: 'Today • 10:00 AM (SLA: 2h)',
@@ -344,7 +346,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
             role: 'Oncology Patient Navigator',
             department: 'Supportive Care Services',
             badge: 'NAV-3312',
-            avatarUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=256',
+            avatarUrl: avatarData('MV', '#0d9488'),
           },
           createdAt: nowStr,
           dueTime: 'Today • 11:00 AM (SLA: 3h)',
@@ -386,6 +388,9 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     }
 
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
+      const existingClinicalTask = state.tasks.find((task) => task.type === 'CLINICAL_REVIEW');
+      if (!existingClinicalTask || existingClinicalTask.status !== 'ASSIGNED') return state;
+
       const nowStr = 'Aug 23, 08:20 AM';
       const defaultNotes = 
         'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.';
@@ -436,8 +441,11 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     }
 
     case 'CONFIRM_TRANSPORTATION': {
+      const existingTransportTask = state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION');
+      if (!existingTransportTask || existingTransportTask.status !== 'ASSIGNED') return state;
+
       const nowStr = 'Aug 23, 08:45 AM';
-      const vehicleId = action.payload?.vehicleId || 'Ochsner Med-Van #402';
+      const vehicleId = action.payload?.vehicleId || 'CareLink Vehicle #402';
       const driverName = action.payload?.driverName || 'Jerome Davis';
       const pickupTime = action.payload?.pickupTime || 'Tomorrow, 7:45 AM';
 
@@ -465,7 +473,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         actor: 'Marcus Vance, MSW, LCSW',
         actorRole: 'NAVIGATOR',
         action: 'Transportation Dispatched & Confirmed',
-        description: `Med-Van #402 (Driver: Jerome Davis) booked for 7:45 AM pickup at 1420 St. Charles Ave. Route ETA to Benson Cancer Center: 25 mins.`,
+        description: `Transportation coordination recorded for a 7:45 AM pickup to Benson Cancer Center.`,
         stateDiff: {
           field: 'tasks.TRANSPORTATION_NAVIGATION.status',
           from: 'ASSIGNED',
@@ -485,12 +493,18 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     }
 
     case 'ACKNOWLEDGE_PATIENT_PLAN': {
+      const requiredTasks = state.tasks.filter((task) =>
+        task.type === 'CLINICAL_REVIEW' || task.type === 'TRANSPORTATION_NAVIGATION'
+      );
+      if (
+        state.patientAcknowledged ||
+        requiredTasks.length !== 2 ||
+        requiredTasks.some((task) => task.status !== 'RESOLVED')
+      ) return state;
+
       const nowStr = 'Aug 23, 09:10 AM';
 
-      const updatedTasks = state.tasks.map((t) => ({
-        ...t,
-        status: 'RESOLVED' as const,
-      }));
+      const updatedTasks = state.tasks;
 
       const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
         id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
@@ -555,7 +569,7 @@ export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjec
       pickupTime: trnTask.transportDetails.confirmedPickupTime || 'Tomorrow, 7:45 AM',
       pickupAddress: trnTask.transportDetails.pickupAddress,
       destination: trnTask.transportDetails.destination,
-      vehicleId: trnTask.transportDetails.vehicleId || 'Ochsner Med-Van #402',
+      vehicleId: trnTask.transportDetails.vehicleId || 'CareLink Vehicle #402',
       driverName: trnTask.transportDetails.driverName || 'Jerome Davis',
       status: 'Confirmed & Dispatched',
     } : undefined,

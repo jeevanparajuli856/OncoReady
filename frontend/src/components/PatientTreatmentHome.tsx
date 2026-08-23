@@ -458,7 +458,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
               <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
                 <div className="flex items-center gap-2.5">
                   <img
-                    src="https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect width='128' height='128' rx='24' fill='%230284c7'/%3E%3C/svg%3E"
                     alt="Sarah Jenkins RN"
                     className="w-10 h-10 rounded-lg object-cover border border-sky-200"
                   />

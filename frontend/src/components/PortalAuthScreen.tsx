@@ -40,7 +40,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
             OncoReady Gateway
           </h1>
           <p className="text-sm sm:text-base text-slate-600 leading-relaxed max-w-2xl mx-auto">
-            Select your clinical role or portal to experience pre-infusion barrier detection, dual-task nurse/navigation triage, and patient plan confirmation.
+            Select a workspace to coordinate pre-infusion barriers, owned clinical review, navigation tasks, and patient plan confirmation.
           </p>
         </div>
 
@@ -75,6 +75,9 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         {/* Card 1: Patient Portal (Maria Hernandez) */}
         <div 
           onClick={() => onSelectPerspective('PATIENT')}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective('PATIENT')}
+          role="button"
+          tabIndex={0}
           className="group relative bg-white rounded-2xl border-2 border-slate-200 hover:border-indigo-500 p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-6 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-50/60 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
@@ -125,7 +128,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
             <span className="text-xs text-slate-400 font-medium">
-              Ochsner MyChart OncoReady Experience
+              Patient Treatment Readiness
             </span>
             <span className="inline-flex items-center gap-1.5 text-xs font-bold text-indigo-600 group-hover:text-indigo-700 group-hover:translate-x-1 transition-transform">
               <span>Enter Patient View</span>
@@ -137,6 +140,9 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         {/* Card 2: Staff Exception Workspace */}
         <div 
           onClick={() => onSelectPerspective('STAFF')}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective('STAFF')}
+          role="button"
+          tabIndex={0}
           className="group relative bg-white rounded-2xl border-2 border-slate-200 hover:border-sky-500 p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-6 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-sky-50/60 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
@@ -146,13 +152,13 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
               <div className="flex items-center gap-3.5">
                 <div className="flex -space-x-3">
                   <img
-                    src="https://images.unsplash.com/photo-1594824813629-923c5e7b233a?auto=format&fit=crop&q=80&w=256"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect width='128' height='128' rx='24' fill='%230284c7'/%3E%3C/svg%3E"
                     alt="Sarah Jenkins RN"
                     className="w-13 h-13 rounded-2xl object-cover border-2 border-white shadow-sm ring-1 ring-sky-200"
                     title="Sarah Jenkins, BSN, RN, OCN"
                   />
                   <img
-                    src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&q=80&w=256"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect width='128' height='128' rx='24' fill='%230d9488'/%3E%3C/svg%3E"
                     alt="Marcus Vance MSW"
                     className="w-13 h-13 rounded-2xl object-cover border-2 border-white shadow-sm ring-1 ring-teal-200"
                     title="Marcus Vance, MSW, LCSW"
@@ -180,7 +186,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Triage exception queue with dual-task actions: Nurse clinical symptom clearance with pre-med lab orders, and Navigator Med-Van transit dispatch.
+              Exception operations with two owned actions: human clinical review and transportation coordination.
             </p>
           </div>
 
@@ -198,6 +204,9 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         {/* Card 3: Caregiver Portal (Ana Hernandez) */}
         <div 
           onClick={() => onSelectPerspective('CAREGIVER')}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective('CAREGIVER')}
+          role="button"
+          tabIndex={0}
           className="group relative bg-white rounded-2xl border-2 border-slate-200 hover:border-teal-500 p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-6 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-teal-50/60 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
@@ -250,6 +259,9 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         {/* Card 4: System Continuity & Dependency Graph */}
         <div 
           onClick={() => onSelectPerspective('SYSTEM')}
+          onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective('SYSTEM')}
+          role="button"
+          tabIndex={0}
           className="group relative bg-white rounded-2xl border-2 border-slate-200 hover:border-slate-800 p-6 sm:p-7 shadow-xs hover:shadow-xl transition-all duration-300 cursor-pointer flex flex-col justify-between space-y-6 overflow-hidden"
         >
           <div className="absolute top-0 right-0 w-32 h-32 bg-slate-100/60 rounded-bl-full pointer-events-none group-hover:scale-110 transition-transform"></div>
@@ -276,13 +288,13 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
               <div className="text-right">
                 <span className="inline-flex items-center gap-1 text-[11px] font-semibold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 border border-indigo-200">
                   <Activity className="w-3 h-3" />
-                  Live Graph
+                  Current Graph
                 </span>
               </div>
             </div>
 
             <p className="text-xs text-slate-600 leading-relaxed">
-              Explore the interactive SVG dependency graph connecting patient symptoms and transit to cycle clearance, alongside the append-only causal audit log.
+              Explore the dependency graph connecting patient reports and transportation to plan confirmation alongside the causal audit log.
             </p>
           </div>
 
@@ -303,7 +315,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
       <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pt-6 border-t border-slate-200 text-xs text-slate-500">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-indigo-600" />
-          <span>Ochsner Health Oncology Network • Benson Cancer Center</span>
+          <span>Benson Cancer Center • Training environment</span>
         </div>
 
         <button

@@ -68,7 +68,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     const stateAfterTransport = workflowReducer(stateWithTasks, {
       type: 'CONFIRM_TRANSPORTATION',
       payload: {
-        vehicleId: 'Ochsner Med-Van #402',
+        vehicleId: 'CareLink Vehicle #402',
         driverName: 'Jerome Davis',
         pickupTime: 'Tomorrow, 7:45 AM',
       },
@@ -76,7 +76,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
 
     const projectionAfterDispatch = deriveCaregiverProjection(stateAfterTransport);
     expect(projectionAfterDispatch.transportConfirmed).toBe(true);
-    expect(projectionAfterDispatch.transportInfo?.vehicleId).toBe('Ochsner Med-Van #402');
+    expect(projectionAfterDispatch.transportInfo?.vehicleId).toBe('CareLink Vehicle #402');
     expect(projectionAfterDispatch.transportInfo?.driverName).toBe('Jerome Davis');
     expect(projectionAfterDispatch.transportInfo?.pickupTime).toBe('Tomorrow, 7:45 AM');
 
@@ -112,7 +112,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     state = workflowReducer(state, {
       type: 'CONFIRM_TRANSPORTATION',
       payload: {
-        vehicleId: 'Ochsner Med-Van #402',
+        vehicleId: 'CareLink Vehicle #402',
         driverName: 'Jerome Davis',
         pickupTime: 'Tomorrow, 7:45 AM',
       },
@@ -139,5 +139,22 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     expect(resetState.overallReadiness).toBe('ACTION_REQUIRED');
     expect(resetState.readinessCheckCompleted).toBe(false);
     expect(resetState.tasks.length).toBe(0);
+  });
+
+  it('5. Invalid, duplicate, and out-of-order transitions are no-ops', () => {
+    expect(workflowReducer(INITIAL_STATE, { type: 'ACKNOWLEDGE_CLINICAL_TASK' })).toBe(INITIAL_STATE);
+    expect(workflowReducer(INITIAL_STATE, { type: 'CONFIRM_TRANSPORTATION' })).toBe(INITIAL_STATE);
+    expect(workflowReducer(INITIAL_STATE, { type: 'ACKNOWLEDGE_PATIENT_PLAN' })).toBe(INITIAL_STATE);
+    const submitted = workflowReducer(INITIAL_STATE, {
+      type: 'SUBMIT_READINESS',
+      payload: { clinicalConcernText: 'Patient report', transportNotes: 'Ride unavailable' },
+    });
+    expect(workflowReducer(submitted, { type: 'ACKNOWLEDGE_PATIENT_PLAN' })).toBe(submitted);
+    const reviewed = workflowReducer(submitted, { type: 'ACKNOWLEDGE_CLINICAL_TASK' });
+    expect(workflowReducer(reviewed, { type: 'ACKNOWLEDGE_CLINICAL_TASK' })).toBe(reviewed);
+    const transported = workflowReducer(reviewed, { type: 'CONFIRM_TRANSPORTATION' });
+    expect(workflowReducer(transported, { type: 'CONFIRM_TRANSPORTATION' })).toBe(transported);
+    const confirmed = workflowReducer(transported, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
+    expect(workflowReducer(confirmed, { type: 'ACKNOWLEDGE_PATIENT_PLAN' })).toBe(confirmed);
   });
 });

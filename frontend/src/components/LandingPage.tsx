@@ -354,7 +354,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               4. Treatment Readiness Graph &amp; Audit Engine
             </h3>
             <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              A directed acyclic graph anchors every infusion session to its prerequisite clearance nodes. Closed-loop transitions are permanently recorded in an append-only causal audit log.
+              A directed graph anchors every treatment session to its readiness dependencies. Closed-loop transitions are recorded in a causal audit timeline.
             </p>
             <ul className="text-xs text-slate-700 space-y-1.5 pt-2">
               <li className="flex items-center gap-2">

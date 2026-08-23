@@ -174,7 +174,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             <div>
               <span className="text-[11px] text-slate-500 block font-mono">VEHICLE & DRIVER</span>
               <span className="font-bold text-slate-900 text-sm">
-                {transportTask?.transportDetails?.vehicleId || 'Ochsner Med-Van #402'}
+                {transportTask?.transportDetails?.vehicleId || 'CareLink Vehicle #402'}
               </span>
               <span className="text-[11px] text-slate-500 block mt-0.5">
                 Driver: {transportTask?.transportDetails?.driverName || 'Jerome Davis'}
