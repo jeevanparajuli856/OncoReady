@@ -3,72 +3,167 @@
   "task_id": "CORE-001",
   "agent": "gemini-frontend",
   "status": "DESIGN_READY",
-  "summary": "Established a comprehensive enterprise design system and screen-by-screen information architecture for OncoReady's full product suite. Replaced generic SaaS patterns with operational specificity, a persistent staff application shell, and focused patient/caregiver portals centered around the deterministic state engine.",
-  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "ESTABLISH",
-  "information_architecture": {
-    "route_map": [
-      "/ (Public Website: catchy, powerful landing page with perfect UI motion and scroll-driven storytelling, explicitly avoiding SaaS ROI blocks or fake pricing)",
-      "/sign-in (Authentication: secure, enterprise identity, no role-cards)",
-      "/staff (Staff App Shell: persistent sidebar navigation)",
-      "/staff/command-center (Command Center: operational overview)",
-      "/staff/exceptions (Exceptions: working deterministic queue and case workspace)",
-      "/staff/insights (Insights: synthetic enterprise analytics)",
-      "/staff/integrations (Integration Studio: synthetic FHIR/EHR connections)",
-      "/staff/resources (Resources: synthetic operational assets)",
-      "/staff/administration (Administration: synthetic access/settings)",
-      "/patient (Patient Portal: Treatment Readiness focus, no generic EHR screens)",
-      "/caregiver (Caregiver Portal: Permission-filtered view)",
-      "/trust (Trust Center: synthetic security/compliance posture)"
-    ],
-    "navigation_model": "Persistent staff application shell with explicit left-rail navigation for operational depth. Contextual, minimalist top-bar for patient and caregiver portals to minimize cognitive load."
+  "summary": "Revised Phase A to establish a concrete, screen-by-screen enterprise implementation blueprint. Replaced generic SaaS visuals with a crisp, structured operational system that respects explicit terminology, synthetic boundaries, and performance constraints.",
+  "blueprint": {
+    "public_buyer_experience": {
+      "/": {
+        "name": "Landing & Product Story",
+        "user_purpose": "Communicate the core value: 'Keep tomorrow’s cancer treatment on track.'",
+        "main_content": "Hero statement, visual signature sequence (patient concern -> clinical/logistical paths -> accountable owners -> confirmed plan), and consolidated solution/interoperability sections.",
+        "primary_cta": "'Enter Sandbox'",
+        "key_synthetic_data": "None (pure product marketing).",
+        "working_interactions": "Scroll-based signature sequence (CSS only), navigation to Trust and Sign-in.",
+        "static_read_only": "Solution capability descriptions.",
+        "loading_empty_error": "Instant load static content. Disabled states not applicable.",
+        "responsive": "Single column on mobile, robust multi-column grid on presentation laptops."
+      },
+      "/trust": {
+        "name": "Trust Center",
+        "user_purpose": "Explain data minimization, workflow traceability, and simulated boundaries.",
+        "main_content": "Structured text sections detailing human clinical authority and sandbox architecture.",
+        "primary_cta": "None (informational).",
+        "key_synthetic_data": "Descriptions of simulated FHIR standards.",
+        "working_interactions": "Standard page navigation.",
+        "static_read_only": "All content. No fake certification badges.",
+        "loading_empty_error": "Instant static content.",
+        "responsive": "Readable long-form text layout."
+      },
+      "/sign-in": {
+        "name": "Sandbox Entry",
+        "user_purpose": "Provide local perspective selection into the product demo.",
+        "main_content": "Clean selector for 'Staff', 'Patient (Maria)', and 'Caregiver (Ana)'.",
+        "primary_cta": "Perspective selection buttons.",
+        "key_synthetic_data": "Simulated user personas.",
+        "working_interactions": "Clicking a persona immediately routes to their respective portal, establishing local session state.",
+        "static_read_only": "Explanatory text that this is a simulated local sandbox.",
+        "loading_empty_error": "Error: 'Please select a sandbox role to continue.'",
+        "responsive": "Centered column on all devices."
+      }
+    },
+    "enterprise_staff_application": {
+      "persistent_shell": {
+        "layout": "Fixed 240px left sidebar for routing. Top bar for current context and 'Reset Demo' utility. No hidden avatar menus for primary routing."
+      },
+      "/staff": {
+        "name": "Command Center",
+        "user_purpose": "Operational morning view prioritizing treatments approaching in 24-48 hours.",
+        "main_content": "Top rails of upcoming treatments, exception workload summary, and a prominent link to Maria's active case.",
+        "primary_cta": "'Review Case' for Maria.",
+        "key_synthetic_data": "Aggregated ownership and upcoming treatment counts (static context). Maria's headline state (dynamic).",
+        "working_interactions": "Routing to Exceptions or Case Workspace.",
+        "static_read_only": "Secondary charts or historical metrics.",
+        "loading_empty_error": "No-result state: 'No immediate treatments at risk.'",
+        "responsive": "Grid scales to stack on tablets; designed primarily for landscape presentation."
+      },
+      "/staff/exceptions": {
+        "name": "Exceptions",
+        "user_purpose": "Triage table for active blockers.",
+        "main_content": "Structured table/list showing urgency, blocker type, owner, and state.",
+        "primary_cta": "Row-click to open Maria's case.",
+        "key_synthetic_data": "Secondary static exception rows for context.",
+        "working_interactions": "Search input, column filters, clear filters, routing.",
+        "static_read_only": "Non-Maria rows.",
+        "loading_empty_error": "Empty: 'No matching exceptions.' Clear-filter recovery.",
+        "responsive": "Horizontal scrolling for table on narrow viewports."
+      },
+      "/staff/patients": {
+        "name": "Patients",
+        "user_purpose": "Directory of patient records.",
+        "main_content": "Searchable list with treatment proximity.",
+        "primary_cta": "Select 'Maria' to enter case.",
+        "key_synthetic_data": "Static patient directory context.",
+        "working_interactions": "Search, routing.",
+        "static_read_only": "Secondary profiles.",
+        "loading_empty_error": "Empty: 'No patients found.'",
+        "responsive": "Standard list scaling."
+      },
+      "/staff/case/maria": {
+        "name": "Maria Case Workspace",
+        "user_purpose": "Resolve Maria's treatment blockers.",
+        "main_content": "Treatment Readiness Graph, dual-action workspace (clinical and transportation), caregiver permission context, and Causal Audit Timeline.",
+        "primary_cta": "'Acknowledge Review' and 'Confirm Transportation'.",
+        "key_synthetic_data": "Maria's generated IDs, timestamps, and role assignments.",
+        "working_interactions": "Acknowledging the clinical task, confirming transportation, deriving timeline updates. Guards prevent out-of-order actions.",
+        "static_read_only": "Patient demographic headers.",
+        "loading_empty_error": "Disabled CTAs until preconditions met. Success state highlights graph path in emerald.",
+        "responsive": "Two-column desktop layout stacks to single column on narrow screens."
+      },
+      "/staff/resources": {
+        "name": "Resources",
+        "user_purpose": "View available transportation/support services.",
+        "main_content": "Catalog of synthetic providers.",
+        "primary_cta": "None (read-only directory context).",
+        "key_synthetic_data": "Simulated transport availability.",
+        "working_interactions": "Search/Filter.",
+        "static_read_only": "The entire catalog (action is taken within Maria's case).",
+        "loading_empty_error": "Empty: 'Resource not found.'",
+        "responsive": "Grid cards adapt to viewport width."
+      },
+      "/staff/insights": {
+        "name": "Insights",
+        "user_purpose": "View operational storytelling.",
+        "main_content": "Charts for exception aging and resolution.",
+        "primary_cta": "None.",
+        "key_synthetic_data": "Static historical trends; dynamic Maria summary.",
+        "working_interactions": "None.",
+        "static_read_only": "All charts.",
+        "loading_empty_error": "Immediate render.",
+        "responsive": "Responsive chart containers."
+      },
+      "/staff/integrations": {
+        "name": "Integrations",
+        "user_purpose": "View sandbox data flow mapping.",
+        "main_content": "FHIR sandbox resource mappings and proposed event history.",
+        "primary_cta": "None.",
+        "key_synthetic_data": "Proposed FHIR schemas.",
+        "working_interactions": "None.",
+        "static_read_only": "All content. Explicitly labeled 'Proposed/Sandbox' (no 'Live' tags).",
+        "loading_empty_error": "N/A",
+        "responsive": "Standard text/table layout."
+      },
+      "/staff/admin": {
+        "name": "Admin",
+        "user_purpose": "View local routing and role configuration.",
+        "main_content": "Read-only rules list.",
+        "primary_cta": "None.",
+        "key_synthetic_data": "Simulated organization rules.",
+        "working_interactions": "None.",
+        "static_read_only": "All fields rendered read-only or disabled with 'Local demo' tooltip.",
+        "loading_empty_error": "N/A",
+        "responsive": "Single column form structure."
+      }
+    },
+    "patient_and_caregiver_portals": {
+      "/patient": {
+        "name": "Patient Experience",
+        "user_purpose": "Report concerns and acknowledge plan.",
+        "main_content": "Treatment countdown, readiness check form, and status view.",
+        "primary_cta": "'Submit Readiness Check', 'Acknowledge Plan'.",
+        "key_synthetic_data": "Upcoming infusion details.",
+        "working_interactions": "Form submission (creates two tasks in shared state), final plan acknowledgment.",
+        "static_read_only": "Clinical instructions.",
+        "loading_empty_error": "Validation error if form incomplete. Success state upon confirmation.",
+        "responsive": "Mobile-first single column, 44px touch targets."
+      },
+      "/caregiver": {
+        "name": "Caregiver Experience",
+        "user_purpose": "View authorized transport updates.",
+        "main_content": "Transportation status timeline.",
+        "primary_cta": "None.",
+        "key_synthetic_data": "Transport updates.",
+        "working_interactions": "Live state reflection from staff actions.",
+        "static_read_only": "All content.",
+        "loading_empty_error": "Explicit boundary text ensuring clinical data is absent.",
+        "responsive": "Mobile-first."
+      }
+    }
   },
-  "visual_direction": {
-    "layout": "Enterprise-density layouts with explicit structural borders. Eradicated excessive rounded cards, gradients, and unstructured floating panels. Replaced with a crisp, persistent staff application shell and structured data tables. Patient/caregiver views use focused, linear single-column layouts for cognitive clarity.",
-    "color": "Light background direction maintained (Slate-50 canvases, White panels). Removed generic SaaS gradients and trust-badge rows. Strict, meaningful semantic color usage (Indigo for primary navigation, Amber for active blockers, Emerald for resolved states) with high-contrast text.",
-    "typography": "Standardized sizing. Eliminated tiny uppercase labels. Utilized robust headings for clear content hierarchy and tabular figures for clinical data, identifiers, and temporal metrics.",
-    "spacing_and_shape": "Sharp, intentional geometry (4px/8px radii maximum, no excessive pill shapes). Dense information packing for staff (4px grid), breathable pacing for patients (8px grid). Strong use of 1px borders instead of generic drop shadows.",
-    "component_presentation": "Signature elements: Treatment Readiness Graph (core workflow anchor), Owned Action Workflow panels, Caregiver Permission Boundaries, and the Causal Audit Timeline. Avoided repetitive feature grids, unverified Unsplash portraits, and artificial role-cards."
+  "terminology_and_boundaries": {
+    "clinical_authority": "Replaced 'Clearance' with 'Review requested', 'Review acknowledged', and 'Disposition recorded'.",
+    "privacy": "Caregiver view uses an explicit allowlist. No clinical text in DOM or ARIA."
   },
-  "motion": {
-    "strategy": "Perfect UI animation balancing visual flair with functional performance. Purposeful motion over decoration, utilizing 200-500ms optimal speeds to guide the user's eye and provide feedback without feeling sluggish.",
-    "landing_page_animations": "Powerful, catchy animations on the public website (/) using scroll-driven reveals, kinetic typography for key messages, and seamless page transitions to build enterprise credibility.",
-    "transitions": "Instant or 200ms structural transitions in the staff shell to feel powerful and responsive. Complex, organic morphing reserved exclusively for the Treatment Readiness Graph to highlight causal resolution.",
-    "microinteractions": "Clear, high-contrast focus states and instant feedback on deterministic state engine interactions. Subtle pulse effects on active blockers.",
-    "reduced_motion": "Full prefers-reduced-motion compliance with instant state toggles. Heavy animations fallback to simple opacity fades."
-  },
-  "responsive": {
-    "strategy": "True enterprise multi-viewport support.",
-    "notes": "Staff shell optimized for desktop/tablet landscape (1024px+) with dense data presentation. Public site, sign-in, patient, and caregiver portals are fully responsive, scaling down to 320px mobile viewports with no loss of critical actions."
-  },
-  "application_states": [
-    "Public/Unauthenticated: High-credibility public website with catchy animations, trust center, and sign-in.",
-    "Staff App Shell - Command Center: High-level operational synthetic overview.",
-    "Staff App Shell - Exceptions: Active deterministic state engine (Maria's case, dual-task split, triage, confirmation).",
-    "Staff App Shell - Secondary: Synthetic but complete presentation of Insights, Integrations, Resources, and Admin.",
-    "Patient Portal: Maria's active readiness check (Action Required -> Validation -> Plan Confirmed).",
-    "Caregiver Portal: Ana's permission-filtered view of confirmed ride without clinical exposure.",
-    "Deterministic Reset: Global state reset restoring Maria's baseline scenario."
-  ],
-  "accessibility": [
-    "WCAG 2.1 AA/AAA contrast ratios strictly enforced.",
-    "Explicit navigation labels and ARIA landmarks in the staff shell.",
-    "No reliance on color alone for readiness states or exceptions.",
-    "Visible focus indicators on all interactive elements without relying on generic SaaS glows."
-  ],
-  "assets_or_dependencies": [
-    "Lucide React (clinical and enterprise system icons)",
-    "Tailwind CSS (utility classes, structural layouts, strict enterprise tokens)"
-  ],
-  "design_system_changes": [
-    "Expanded docs/design/DESIGN_SYSTEM.md to define the persistent enterprise staff shell, distinct patient/caregiver portal containers, and public website structural tokens."
-  ],
-  "blockers": [],
-  "notes_for_codex": [
-    "Expanded scope incorporates a full enterprise product suite with a persistent staff application shell.",
-    "Generic SaaS patterns (gradients, tiny uppercase, role cards, fake pricing) have been explicitly banned.",
-    "Core interactive workflow (Exceptions, Patient, Caregiver) remains wired to the deterministic state engine; all new top-level destinations (Insights, integrations, etc.) will use credible synthetic presentation.",
-    "The Treatment Readiness Graph, owned action workflow, caregiver permission boundary, and causal audit timeline are established as the defining product language.",
-    "Ready for Codex compatibility review and canonical SHA256 digest binding."
-  ]
+  "motion_plan": {
+    "signature_sequences": "CSS-driven causal path on landing; 300ms layout transition for readiness split; 400ms color transition for graph resolution.",
+    "performance": "0ms structural navigation. No per-second tick re-renders for countdowns. Full prefers-reduced-motion fallback to 0ms instant state changes."
+  }
 }
