@@ -76,6 +76,11 @@ select:focus-visible {
     @apply bg-[#FFE8D2] border-2 border-ink rounded-2xl;
   }
 
+  .card-sticker-accent { background-color: #EEF2FF; }
+  .card-sticker-pop { background-color: #FFE8D6; }
+  .card-sticker-sun { background-color: #FFF6D4; }
+  .card-sticker-mint { background-color: #E6F5EE; }
+
   .page-shell {
     @apply w-full max-w-[1280px] mx-auto min-w-0;
   }

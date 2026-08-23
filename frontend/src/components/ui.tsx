@@ -35,15 +35,24 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
+const stickerWashes = {
+  accent: 'card-sticker-accent',
+  pop: 'card-sticker-pop',
+  sun: 'card-sticker-sun',
+  mint: 'card-sticker-mint',
+} as const;
+
 export const StickerCard: React.FC<{
   children: React.ReactNode;
   className?: string;
   featured?: boolean;
   hover?: boolean;
-}> = ({ children, className, featured = false, hover = true }) => (
+  tone?: keyof typeof stickerWashes;
+}> = ({ children, className, featured = false, hover = true, tone }) => (
   <div
     className={cn(
       featured ? 'card-sticker-featured' : 'card-sticker',
+      tone && stickerWashes[tone],
       hover && 'transition-transform duration-300 hover:-translate-y-0.5',
       className
     )}

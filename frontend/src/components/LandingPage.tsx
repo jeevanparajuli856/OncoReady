@@ -28,6 +28,7 @@ import {
 import { Button, FeatureMark, StickerCard } from './ui';
 import { ConfettiField, Marquee } from './Decorations';
 import { HeroStoryReel } from './HeroStoryReel';
+import { HowItWorksLoop } from './HowItWorksLoop';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 import { PointerHighlight } from './ui/pointer-highlight';
 
@@ -181,7 +182,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="grid md:grid-cols-3 gap-4">
           {specialties.map((card) => (
             <button key={card.title} onClick={card.go} className="text-left min-w-0 w-full">
-              <StickerCard className="overflow-hidden p-0 h-full">
+              <StickerCard tone={card.color} className="overflow-hidden p-0 h-full">
                 <img src={card.image} alt="" className="w-full h-36 sm:h-40 object-cover border-b-2 border-ink" />
                 <div className="p-4 sm:p-5 space-y-3">
                   <div className="flex items-start justify-between gap-3">
@@ -265,24 +266,16 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </StickerCard>
       </section>
 
-      <section id="how-it-works" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-5 items-start">
-        <div className="lg:col-span-5 space-y-3">
-          <span className="text-xs font-heading font-semibold uppercase tracking-widest text-accent">How it works</span>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight">
-            Treatments slip between visits, not in the chair.
-          </h2>
-          <p className="text-base sm:text-lg text-muted-fg leading-relaxed">
-            A cancelled ride or a new fever often lands in different inboxes. Patients do not know who is helping. OncoReady puts every blocker on one graph until someone owns it and the patient confirms.
-          </p>
-        </div>
-        <div className="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+      <section id="how-it-works" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-5 items-stretch">
+        <HowItWorksLoop className="lg:col-span-5" />
+        <div className="lg:col-span-7 h-full min-h-0 grid sm:grid-cols-2 sm:grid-rows-2 gap-4">
           {[
             { tone: 'accent' as const, icon: faClock, title: 'Detect at T-24h', copy: 'Text, voice, or web check-in. One report, two owned paths.' },
             { tone: 'pop' as const, icon: faCodeBranch, title: 'Split without guessing', copy: 'Clinical text stays verbatim for nursing. Logistics go to navigation.' },
             { tone: 'sun' as const, icon: faTriangleExclamation, title: 'Stay At Risk until closed', copy: 'A sent message is not success. The graph stays amber until both sides confirm.' },
             { tone: 'mint' as const, icon: faBuilding, title: 'Sell the operating system', copy: 'Health systems pay for protected chair time. Patients never get a bill from us.' },
           ].map((item) => (
-            <StickerCard key={item.title} className="p-5 space-y-3">
+            <StickerCard key={item.title} tone={item.tone} hover={false} className="p-5 space-y-3 h-full">
               <FeatureMark tone={item.tone}>
                 <FontAwesomeIcon icon={item.icon} />
               </FeatureMark>
@@ -310,7 +303,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             { icon: faUsers, tone: 'accent' as const, title: 'Why they buy', copy: 'Same-day cancellations waste drug, chair time, and nursing hours. This sells continuity.' },
             { icon: faLocationDot, tone: 'mint' as const, title: 'Where we land first', copy: 'Louisiana first. Rural parishes, medical transit, existing navigation teams.' },
           ].map((card) => (
-            <StickerCard key={card.title} className="p-6 space-y-3">
+            <StickerCard key={card.title} tone={card.tone} className="p-6 space-y-3">
               <FeatureMark tone={card.tone}>
                 <FontAwesomeIcon icon={card.icon} />
               </FeatureMark>
@@ -410,7 +403,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             { icon: faHandshake, tone: 'mint' as const, title: 'Caregiver view', copy: 'Pickup time and vehicle only. No diagnosis. No symptom notes.' },
             { icon: faDiagramProject, tone: 'sun' as const, title: 'Readiness graph', copy: 'Every blocker, owner, and close stays on one record.' },
           ].map((pillar) => (
-            <StickerCard key={pillar.title} className="p-5 space-y-3">
+            <StickerCard key={pillar.title} tone={pillar.tone} className="p-5 space-y-3">
               <FeatureMark tone={pillar.tone}>
                 <FontAwesomeIcon icon={pillar.icon} />
               </FeatureMark>
@@ -437,7 +430,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
-          <StickerCard className="p-8 space-y-6 flex flex-col justify-between">
+          <StickerCard tone="mint" className="p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <span className="chip">Community Clinic</span>
               <h3 className="font-display text-2xl font-semibold">Community Cancer Center</h3>
@@ -452,7 +445,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button onClick={onOpenAuthModal} className="btn-ghost w-full">Get Started with Community</button>
           </StickerCard>
 
-          <StickerCard featured className="p-6 sm:p-8 space-y-6 flex flex-col justify-between relative z-10">
+          <StickerCard featured tone="pop" className="p-6 sm:p-8 space-y-6 flex flex-col justify-between relative z-10">
             <div className="absolute top-4 right-4 chip chip-pop">
               MOST POPULAR
             </div>
@@ -470,7 +463,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button onClick={onOpenAuthModal} className="btn-candy w-full">Explore Enterprise Workspace</button>
           </StickerCard>
 
-          <StickerCard className="p-8 space-y-6 flex flex-col justify-between">
+          <StickerCard tone="accent" className="p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
               <span className="chip">Multi-Facility</span>
               <h3 className="font-display text-2xl font-semibold">National Network</h3>
@@ -495,7 +488,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
           <div className="space-y-3">
             {faqs.map((faq, idx) => (
-              <div key={idx} className="card-sticker overflow-hidden">
+              <div key={idx} className={`card-sticker overflow-hidden ${
+                ['card-sticker-accent', 'card-sticker-mint', 'card-sticker-sun', 'card-sticker-pop'][idx]
+              }`}>
                 <button
                   onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
                   className="w-full p-5 flex items-center justify-between text-left font-heading font-semibold text-sm hover:bg-white/50 transition"
