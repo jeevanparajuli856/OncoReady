@@ -108,3 +108,147 @@ Motion is strictly bounded to communicate causal meaning and state changes. No s
 - **Terminology**: The UI strictly uses human-centric verbs: "Clinical review requested", "Review acknowledged", "Disposition recorded". No AI or system claims to "medically clear" a patient.
 - **Consequential Controls**: Static/mock enterprise screens do not feature enabled, clickable primary buttons that do nothing. Inoperable controls must be visually read-only, disabled with explanation, or absent.
 - **Accessibility**: 44px minimum touch targets on mobile (patient/caregiver/public). Clear 2px focus rings for all keyboard navigation. No color-only status indicators. Stated WCAG conformance is an engineering target, not a public certification claim.
+
+---
+
+## 8. Screen-by-Screen Blueprint
+
+### 8.1 Public Buyer Experience
+
+**Persistent Header Navigation**: Platform, Solutions, Interoperability, Trust, Sign In, Enter Sandbox. (May link to consolidated landing-page sections).
+
+#### Landing & Product Story (`/`)
+- **User Purpose**: Communicate the core value: "Keep tomorrow’s cancer treatment on track."
+- **Main Content**: Hero statement, visual signature sequence (patient concern -> clinical/logistical paths -> accountable owners -> confirmed plan), and consolidated solution/interoperability sections.
+- **Primary CTA**: "Enter Sandbox"
+- **Key Synthetic Data**: None (pure product marketing).
+- **Working Interactions**: Scroll-based signature sequence (CSS only), navigation to Trust and Sign In.
+- **Static/Read-Only**: Solution capability descriptions.
+- **Loading/Empty/Error**: Instant load static content. Disabled states not applicable.
+- **Responsive**: Single column on mobile, robust multi-column grid on presentation laptops.
+
+#### Trust Center (`/trust`)
+- **User Purpose**: Explain data minimization, workflow traceability, and simulated boundaries.
+- **Main Content**: Structured text sections detailing human clinical authority and sandbox architecture.
+- **Primary CTA**: None (informational).
+- **Key Synthetic Data**: Descriptions of FHIR sandbox mappings and proposed data flows.
+- **Working Interactions**: Standard page navigation.
+- **Static/Read-Only**: All content. No fake certification badges.
+- **Loading/Empty/Error**: Instant static content.
+- **Responsive**: Readable long-form text layout.
+
+#### Sandbox Entry (`/sign-in`)
+- **User Purpose**: Provide local perspective selection into the product demo.
+- **Main Content**: Clean selector for "Staff", "Patient (Maria)", and "Caregiver (Ana)".
+- **Primary CTA**: Perspective selection buttons.
+- **Key Synthetic Data**: Simulated user personas.
+- **Working Interactions**: Clicking a persona immediately routes to their respective portal, establishing local session state.
+- **Static/Read-Only**: Explanatory text that this is a simulated local sandbox.
+- **Loading/Empty/Error**: Error: "Please select a sandbox role to continue."
+- **Responsive**: Centered column on all devices.
+
+### 8.2 Enterprise Staff Application
+
+**Persistent Shell Layout**: Fixed 240px left sidebar for routing. Top bar for current context and "Reset Demo" utility. No hidden avatar menus for primary routing.
+
+#### Command Center (`/staff`)
+- **User Purpose**: Operational morning view prioritizing treatments approaching in 24-48 hours.
+- **Main Content**: Top rails of upcoming treatments, exception workload summary, and a prominent link to Maria's active case.
+- **Primary CTA**: "Review Case" for Maria.
+- **Key Synthetic Data**: Aggregated ownership and upcoming treatment counts (static context). Maria's headline state (dynamic).
+- **Working Interactions**: Routing to Exceptions or Case Workspace.
+- **Static/Read-Only**: Secondary charts or historical metrics.
+- **Loading/Empty/Error**: No-result state: "No immediate treatments at risk."
+- **Responsive**: Grid scales to stack on tablets; designed primarily for landscape presentation.
+
+#### Exceptions (`/staff/exceptions`)
+- **User Purpose**: Triage table for active blockers.
+- **Main Content**: Structured table/list showing urgency, blocker type, owner, and state.
+- **Primary CTA**: Row-click to open Maria's case.
+- **Key Synthetic Data**: Secondary static exception rows for context.
+- **Working Interactions**: Search input, column filters, clear filters, routing.
+- **Static/Read-Only**: Non-Maria rows.
+- **Loading/Empty/Error**: Empty: "No matching exceptions." Clear-filter recovery.
+- **Responsive**: Horizontal scrolling for table on narrow viewports.
+
+#### Patients (`/staff/patients`)
+- **User Purpose**: Directory of patient records.
+- **Main Content**: Searchable list with treatment proximity.
+- **Primary CTA**: Select "Maria" to enter case.
+- **Key Synthetic Data**: Static patient directory context.
+- **Working Interactions**: Search, routing.
+- **Static/Read-Only**: Secondary profiles.
+- **Loading/Empty/Error**: Empty: "No patients found."
+- **Responsive**: Standard list scaling.
+
+#### Maria Case Workspace (`/staff/case/maria`)
+- **User Purpose**: Resolve Maria's treatment blockers.
+- **Main Content**: Treatment Readiness Graph, dual-action workspace (clinical and transportation), caregiver permission context, and Causal Audit Timeline.
+- **Primary CTA**: "Acknowledge Review" and "Confirm Transportation".
+- **Key Synthetic Data**: Maria's generated IDs, timestamps, and role assignments.
+- **Working Interactions**: Acknowledging the clinical task, confirming transportation, deriving timeline updates. Guards prevent out-of-order actions.
+- **Static/Read-Only**: Patient demographic headers.
+- **Loading/Empty/Error**: Disabled CTAs until preconditions met. Success state highlights graph path in emerald.
+- **Responsive**: Two-column desktop layout stacks to single column on narrow screens.
+
+#### Resources (`/staff/resources`)
+- **User Purpose**: View available transportation/support services.
+- **Main Content**: Catalog of synthetic providers.
+- **Primary CTA**: None (read-only directory context).
+- **Key Synthetic Data**: Simulated transport availability.
+- **Working Interactions**: Search/Filter.
+- **Static/Read-Only**: The entire catalog (action is taken within Maria's case).
+- **Loading/Empty/Error**: Empty: "Resource not found."
+- **Responsive**: Grid cards adapt to viewport width.
+
+#### Insights (`/staff/insights`)
+- **User Purpose**: View operational storytelling.
+- **Main Content**: Charts for exception aging and resolution.
+- **Primary CTA**: None.
+- **Key Synthetic Data**: Static historical trends; dynamic Maria summary.
+- **Working Interactions**: None.
+- **Static/Read-Only**: All charts.
+- **Loading/Empty/Error**: Immediate render.
+- **Responsive**: Responsive chart containers.
+
+#### Integrations (`/staff/integrations`)
+- **User Purpose**: View sandbox data flow mapping.
+- **Main Content**: FHIR sandbox mappings and proposed event history.
+- **Primary CTA**: None.
+- **Key Synthetic Data**: Proposed FHIR schemas and data flows.
+- **Working Interactions**: None.
+- **Static/Read-Only**: All content. Explicitly labeled "Proposed/Sandbox" (no "Live" tags).
+- **Loading/Empty/Error**: N/A
+- **Responsive**: Standard text/table layout.
+
+#### Admin (`/staff/admin`)
+- **User Purpose**: View local routing and role configuration.
+- **Main Content**: Read-only rules list.
+- **Primary CTA**: None.
+- **Key Synthetic Data**: Simulated organization rules.
+- **Working Interactions**: None.
+- **Static/Read-Only**: All fields rendered read-only or disabled with "Local demo" tooltip.
+- **Loading/Empty/Error**: N/A
+- **Responsive**: Single column form structure.
+
+### 8.3 Patient and Caregiver Portals
+
+#### Patient Experience (`/patient`)
+- **User Purpose**: Report concerns and acknowledge plan.
+- **Main Content**: Treatment countdown, readiness check form, and status view.
+- **Primary CTA**: "Submit Readiness Check", "Acknowledge Plan".
+- **Key Synthetic Data**: Upcoming infusion details.
+- **Working Interactions**: Form submission (creates two tasks in shared state), final plan acknowledgment.
+- **Static/Read-Only**: Clinical instructions.
+- **Loading/Empty/Error**: Validation error if form incomplete. Success state upon confirmation.
+- **Responsive**: Mobile-first single column, 44px touch targets.
+
+#### Caregiver Experience (`/caregiver`)
+- **User Purpose**: View authorized transport updates.
+- **Main Content**: Transportation status timeline.
+- **Primary CTA**: None.
+- **Key Synthetic Data**: Transport updates.
+- **Working Interactions**: Live state reflection from staff actions.
+- **Static/Read-Only**: All content.
+- **Loading/Empty/Error**: Explicit boundary text ensuring clinical data is absent.
+- **Responsive**: Mobile-first.
