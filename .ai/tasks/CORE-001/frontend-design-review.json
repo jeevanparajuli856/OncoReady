@@ -3,51 +3,39 @@
   "task_id": "CORE-001",
   "agent": "codex-orchestrator",
   "status": "CHANGES_REQUIRED",
-  "summary": "Gemini's revised Phase A direction is substantially closer to the intended enterprise product, but it is not implementation-ready against the expanded CORE-001 scope. The route map and visual principles are still too abstract to guarantee a compelling buyer journey and complete application experience, and the design-system source of truth contradicts several of the report's anti-generic constraints. Phase B must remain gated until one focused Phase A revision resolves the listed compatibility issues.",
+  "summary": "Gemini's new Phase A blueprint substantively resolves the enterprise information architecture, anti-generic visual-system, clinical-authority, synthetic-data, privacy, and bounded-motion requirements. Approval cannot yet be bound because the committed frontend-design-report.json is schema-invalid: it replaced required report fields with unsupported blueprint keys. The same Phase A commit also contains generated Vite cache files. Preserve the approved design direction and make the small handoff corrections below before a fresh exact-digest review.",
   "review_scope": "Compatibility only. Do not substitute Codex aesthetic preferences for Gemini design authority.",
   "reviewed_design_sha256": "",
   "checks": {
     "requirements": "FAIL",
-    "architecture_and_contracts": "FAIL",
-    "security_and_authorization": "FAIL",
-    "accessibility": "PASS",
-    "performance": "FAIL",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "FAIL",
+    "performance": "PASS",
     "scope": "FAIL",
-    "human_brand_design_system_constraints": "FAIL"
+    "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [
     {
       "category": "requirements",
-      "description": "Replace the high-level route list with a screen-by-screen product blueprint. Define the public buyer journey and exact public navigation; the staff sidebar and top-bar utilities; the Command Center, Exceptions, Patients/case workspace, Resources, Insights, Integrations, and Admin content hierarchy; focused patient/caregiver navigation; and each screen's primary CTA, key data story, working interactions, and static/read-only boundary. Include explicit loading, empty/no-result, validation, disabled, error/recovery, success, and reset presentation where relevant."
+      "description": "Restore frontend-design-report.json to the repository schema while preserving the new blueprint. The report must contain existing_design_system, design_system_action, visual_direction, motion, responsive, application_states, accessibility, assets_or_dependencies, design_system_changes, blockers, and notes_for_codex, and it may not contain unsupported top-level keys. Move the detailed screen-by-screen blueprint into a clearly named section of docs/design/DESIGN_SYSTEM.md; summarize/reference it through the schema-supported report fields. Run `python scripts/agentctl.py task validate CORE-001` before committing."
+    },
+    {
+      "category": "requirements",
+      "description": "In the preserved public blueprint, name the exact persistent header navigation and destinations/anchors for the consolidated Platform, Solutions, Interoperability, Trust, Sign-in, and Enter Sandbox story. Keep the current deadline-feasible consolidation rather than creating unnecessary pages. Describe FHIR material as sandbox mappings/proposed data flows rather than 'simulated standards'."
+    },
+    {
+      "category": "accessibility",
+      "description": "Restore the schema-required accessibility and application_states evidence in frontend-design-report.json. Preserve the design system's keyboard focus, touch-target, non-color, human-authority, caregiver DOM/ARIA exclusion, stable countdown, and reduced-motion constraints."
     },
     {
       "category": "scope",
-      "description": "Cover the full expanded enterprise scope now defined by docs/features/CORE-001.md. The current report omits Patients from the route map, does not define a full buyer-facing platform/evidence story, and labels secondary modules only as synthetic presentation without enough specificity to implement credible complete screens. Keep Maria as the sole fully transactional patient while making navigation, sandbox entry, search/filters, privacy filtering, routing, recovery, and reset functional."
-    },
-    {
-      "category": "human_brand_design_system",
-      "description": "Reconcile docs/design/DESIGN_SYSTEM.md with the approved anti-generic direction. It currently reintroduces glassmorphism, glow shadows, 12/16/24px card radii, rounded-full badges/avatars, repeated elevated cards, a persistent perspective/demo switcher, and generalized slide-up/pulse motion while the design report promises crisp borders, 4/8px geometry, minimal pills, and motion reserved for causal workflow meaning. Establish one internally consistent, distinctive enterprise visual grammar and explain how public storytelling differs from staff operational density without falling back to generic feature grids or dashboard-card mosaics."
-    },
-    {
-      "category": "architecture_contract",
-      "description": "Align clinical and state language with the authoritative boundary: replace 'Clinical Symptom Clearance', 'Triage Cleared', 'Cleared for Chemo', or equivalent product-controlled clearance concepts with human review requested/acknowledged and disposition recorded. The application may record completion evidence but cannot decide that treatment is medically cleared. Ensure Maria-derived signals across Command Center, queue, case, graph, patient, caregiver, and relevant insight headline come from the shared deterministic state rather than independent mock values."
-    },
-    {
-      "category": "security_authorization",
-      "description": "Specify truthful presentation for sandbox sign-in, roles, Trust, Integrations, and Admin. Local perspective selection is not secure authentication or production authorization; integrations are sandbox/proposed rather than connected; compliance/security material may describe designed controls or standards mapping but cannot display earned-certification, live-vendor, production-enforcement, customer, or measured-outcome claims. Define how material synthetic/sandbox context is disclosed without covering the interface in repetitive demo badges."
-    },
-    {
-      "category": "performance",
-      "description": "Turn 'perfect UI animation', kinetic typography, scroll-driven reveals, organic morphing, and indefinite blocker pulses into a bounded motion plan appropriate for a deadline-critical static build. Name the few signature sequences, use CSS/browser-native motion where practical, avoid animation that delays content or harms laptop/mobile performance, prevent countdown announcements/tick-driven rerenders, and define reduced-motion equivalents for every meaning-bearing transition."
+      "description": "Remove the generated frontend/.vite/deps/_metadata.json and frontend/.vite/deps/package.json files accidentally committed with Phase A. The refreshed handoff must contain design evidence and necessary generated-cache cleanup only; do not begin or modify Phase B implementation."
     }
   ],
   "notes_for_gemini": [
-    "Do not begin Phase B. Revise Phase A only, update frontend-design-report.json and docs/design/DESIGN_SYSTEM.md, commit the exact design evidence on agent/CORE-001-frontend, and stop for another Codex compatibility review.",
-    "Gemini retains full visual and interaction authority. The required changes describe product, truthfulness, accessibility, performance, and explicit human anti-generic constraints; they do not prescribe a replacement aesthetic.",
-    "Optimize for a product that looks ready for an enterprise buyer: a persuasive commercial entry, a coherent operating model, a confident full application shell, and one undeniable end-to-end proof. Enterprise credibility comes from specificity, hierarchy, state coherence, and truthful controls—not from adding badges, vanity metrics, pricing, or more cards.",
-    "The public site may be more expressive and emotionally engaging; the authenticated workspace should be calmer, denser, and operational. Use a shared brand signature so they feel like one product.",
-    "Keep the Treatment Readiness Graph, owned action split, causal audit timeline, and caregiver permission boundary as OncoReady's distinctive product language. Avoid generic CRM/EHR duplication and avoid rebuilding MyChart-style appointments, billing, results, or medication surfaces.",
-    "Preserve caregiver allowlisting, inert clinical text, guarded transitions, stable treatment-proximity text, discrete aria-live announcements, visible focus, keyboard support, 44px touch targets where applicable, non-color state cues, and reduced-motion equivalence.",
-    "Stated WCAG conformance is an implementation target to verify, not a user-facing certification claim."
+    "Do not redesign the approved direction. The current blueprint and revised DESIGN_SYSTEM.md are substantively compatible; preserve their enterprise IA, restrained visual grammar, causal-path motif, clinical terminology, sandbox framing, and bounded motion.",
+    "Do not begin Phase B. Correct the report schema, preserve the detailed blueprint in DESIGN_SYSTEM.md, remove generated Vite cache files, validate, commit, and stop for the final exact-digest review.",
+    "The rejected candidate digest was c96581d5672c75bd9916d2b18475ae64167e78a2368cd5e72278a7d9522e48ad. reviewed_design_sha256 remains empty because a schema-invalid report cannot be approved."
   ]
 }
