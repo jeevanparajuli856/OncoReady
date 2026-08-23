@@ -9,9 +9,9 @@ import {
 const STORAGE_KEY = 'oncoready_workflow_state_v2';
 
 export const INITIAL_STATE: WorkflowState = {
-  version: 2,
+  version: 3,
   isSimulated: true,
-  currentPerspective: 'PORTAL_AUTH',
+  currentPerspective: 'LANDING',
   overallReadiness: 'ACTION_REQUIRED',
   readinessCheckCompleted: false,
   patientAcknowledged: false,

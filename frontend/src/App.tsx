@@ -5,6 +5,8 @@ import {
   saveWorkflowState 
 } from './state/workflowState';
 import { Header } from './components/Header';
+import { LandingPage } from './components/LandingPage';
+import { AuthModal } from './components/AuthModal';
 import { PortalAuthScreen } from './components/PortalAuthScreen';
 import { PatientTreatmentHome } from './components/PatientTreatmentHome';
 import { ReadinessCheckModal } from './components/ReadinessCheckModal';
@@ -19,6 +21,7 @@ import { Perspective } from './types';
 
 export const App: React.FC = () => {
   const [state, dispatch] = useReducer(workflowReducer, null, loadSavedWorkflowState);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
   const [isPatientResolutionOpen, setIsPatientResolutionOpen] = useState<boolean>(false);
   const [selectedStaffCase, setSelectedStaffCase] = useState<string | null>(null);
@@ -38,6 +41,7 @@ export const App: React.FC = () => {
     setIsReadinessModalOpen(false);
     setIsPatientResolutionOpen(false);
     setSelectedStaffCase(null);
+    setIsAuthModalOpen(false);
   };
 
   const handleReadinessSubmit = (data: { transportNotes: string; clinicalConcernText: string }) => {
@@ -68,7 +72,7 @@ export const App: React.FC = () => {
   return (
     <div className={`min-h-screen flex flex-col bg-slate-50 text-slate-900 ${reducedMotion ? 'motion-reduce' : ''}`}>
       
-      {/* Universal Clinical Header */}
+      {/* Universal Clinical & Commercial Header */}
       <Header
         currentPerspective={state.currentPerspective}
         onSetPerspective={handleSetPerspective}
@@ -77,11 +81,21 @@ export const App: React.FC = () => {
         reducedMotion={reducedMotion}
         onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
         state={state}
+        onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
 
       {/* Main Workspace Canvas */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
+        {/* Perspective: LANDING (Commercial SaaS Showcase) */}
+        {state.currentPerspective === 'LANDING' && (
+          <LandingPage
+            state={state}
+            onOpenAuthModal={() => setIsAuthModalOpen(true)}
+            onSelectPerspective={handleSetPerspective}
+          />
+        )}
+
         {/* Perspective: PORTAL_AUTH (Gateway Role Selector) */}
         {state.currentPerspective === 'PORTAL_AUTH' && (
           <PortalAuthScreen
@@ -191,20 +205,30 @@ export const App: React.FC = () => {
       </main>
 
       {/* Clean Hospital Footer */}
-      <footer className="bg-white border-t border-slate-200 py-4 px-4 shadow-2xs text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <footer className="bg-white border-t border-slate-200 py-6 px-4 shadow-2xs text-xs text-slate-500">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-indigo-600 shrink-0" />
-            <span className="font-semibold text-slate-700">Ochsner Health • Benson Cancer Center</span>
+            <span className="font-bold text-slate-800">OncoReady Enterprise</span>
             <span className="text-slate-300 hidden sm:inline">•</span>
-            <span className="text-slate-500">Clinical Oncology Continuity System</span>
+            <span>Ochsner Health Oncology Network</span>
           </div>
 
-          <div className="text-[11px] font-mono text-slate-400">
-            Document Standard: HL7 FHIR R4 &amp; USCDI v3 Aligned
+          <div className="flex items-center gap-4 text-[11px] font-mono text-slate-400">
+            <span>HIPAA Compliant &amp; BAA</span>
+            <span>•</span>
+            <span>HL7 FHIR R4 &amp; USCDI v3 Aligned</span>
           </div>
         </div>
       </footer>
+
+      {/* Auth / Workspace Selector Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        state={state}
+        onSelectPerspective={handleSetPerspective}
+      />
 
       {/* Readiness Check Guided Modal */}
       <ReadinessCheckModal

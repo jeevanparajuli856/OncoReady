@@ -171,7 +171,7 @@ export interface CaregiverProjection {
   privacyBoundaryNotice: string;
 }
 
-export type Perspective = 'PORTAL_AUTH' | 'PATIENT' | 'STAFF' | 'CAREGIVER' | 'SYSTEM';
+export type Perspective = 'LANDING' | 'PORTAL_AUTH' | 'PATIENT' | 'STAFF' | 'CAREGIVER' | 'SYSTEM';
 
 export interface ContextualQueueCase {
   id: string;
