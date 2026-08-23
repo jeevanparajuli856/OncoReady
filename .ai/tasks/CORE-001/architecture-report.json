@@ -1,0 +1,64 @@
+{
+  "schema_version": "1.0",
+  "task_id": "CORE-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Defined the minimum frontend-only architecture for OncoReady's deterministic reset-to-closure treatment-readiness journey using synthetic browser state and no live services.",
+  "files_changed": [
+    "docs/features/CORE-001.md",
+    ".ai/tasks/CORE-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
+  },
+  "decisions": [
+    "Implement CORE-001 as one React + TypeScript + Vite browser application backed by typed synthetic fixtures and a deterministic reducer or equivalent state machine.",
+    "Use one workflow-event source of truth to derive the staff queue, Treatment Readiness Graph, timeline, patient status, and caregiver projection so demo surfaces cannot drift.",
+    "Keep routing and task transitions deterministic: one readiness submission creates separate clinical-review and transportation-navigation tasks, and treatment confirmation requires staff action plus patient acknowledgment.",
+    "Treat clinical text as preserved, untrusted input routed to human review; no AI or client heuristic may make a clinical decision or control workflow safety.",
+    "Enforce the caregiver demonstration boundary through an explicit local permission projection that excludes clinical concern and task details from Ana's view.",
+    "Use browser persistence with safe schema/version fallback and a universally available one-click reset to protect the primary demonstration journey.",
+    "Require Gemini Phase A because this task establishes the product's first design system and a new signature visible workflow; architecture specifies capabilities and constraints but no aesthetic treatment.",
+    "Do not create an API contract because there is no live external or independently implemented component boundary in this slice."
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "description": "Independently scripted screens could diverge and make the five-minute demonstration show contradictory ownership or completion state.",
+      "mitigation": "Derive every surface from one guarded workflow state and append-only event history, and cover the complete reset-to-confirmed path in the smoke check."
+    },
+    {
+      "severity": "medium",
+      "description": "A simulated clinical workflow or role switch could be mistaken for validated triage, production authorization, or a live Ochsner integration.",
+      "mitigation": "Use explicit synthetic/simulated disclosure, preserve original clinical text for named human review, and avoid production, compliance, or clinical-decision claims."
+    },
+    {
+      "severity": "medium",
+      "description": "Caregiver projection errors could expose Maria's synthetic clinical concern and undermine the intended data-minimization story.",
+      "mitigation": "Create the caregiver view from an allowlisted transportation permission projection and assert clinical-data exclusion in the critical-path smoke check."
+    },
+    {
+      "severity": "low",
+      "description": "Stale or malformed browser persistence could break a deadline-critical live demonstration.",
+      "mitigation": "Version persisted state, fall back to the deterministic opening fixture on incompatibility, make reset available from every main surface, and rehearse the offline build."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "Gemini must complete design Phase A and the design digest gate before production frontend coding because frontend_design_required=true.",
+    "Build the golden path and state model before static contextual cases or explanatory integration panels; only Maria's case needs full interactivity.",
+    "Internal TypeScript types are not a formal task contract. Do not invent endpoints or implement against the repository's empty OpenAPI placeholder.",
+    "Make reset, guarded transitions, caregiver clinical-data exclusion, reduced-motion equivalence, and truthful synthetic labeling demo-critical requirements.",
+    "SMOKE depth requires implementation-owned build and critical-path verification only; no independent tester or dedicated security reviewer is selected."
+  ],
+  "execution": {
+    "contract_required": false,
+    "test_depth": "SMOKE",
+    "security_risk": "LOW",
+    "security_review_required": false
+  }
+}
