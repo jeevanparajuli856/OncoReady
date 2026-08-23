@@ -60,7 +60,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   return (
-    <div className="space-y-12 pb-20 md:pb-12 animate-pop text-ink">
+    <div className="space-y-12 pb-28 animate-pop text-ink">
 
       <section className="relative pt-6 sm:pt-10 w-full px-5 sm:px-8 lg:px-12">
         <ConfettiField />
@@ -375,7 +375,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <button onClick={onOpenAuthModal} className="btn-ghost w-full">Get Started with Community</button>
           </StickerCard>
 
-          <StickerCard featured className="p-8 space-y-6 flex flex-col justify-between relative scale-100 lg:scale-105 z-10">
+          <StickerCard featured className="p-6 sm:p-8 space-y-6 flex flex-col justify-between relative z-10">
             <div className="absolute -top-4 -right-3 rotate-[15deg] bg-sun border-2 border-ink shadow-pop px-3 py-1 font-display font-extrabold text-xs">
               MOST POPULAR
             </div>

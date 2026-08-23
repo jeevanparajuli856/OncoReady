@@ -115,8 +115,8 @@ export const App: React.FC = () => {
         state.currentPerspective === 'LANDING'
           ? 'max-w-none px-0 py-0'
           : state.currentPerspective === 'STAFF'
-          ? 'max-w-none px-0 py-0 flex flex-col'
-          : 'max-w-none px-4 sm:px-6 lg:px-10 py-6 md:pb-8 pb-24'
+          ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-28'
+          : 'max-w-none px-3 sm:px-6 lg:px-10 py-4 sm:py-6 pb-28'
       }`}>
         
         {/* Perspective: LANDING (Commercial SaaS Showcase) */}

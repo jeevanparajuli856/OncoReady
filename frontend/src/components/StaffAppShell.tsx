@@ -51,8 +51,8 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
     (currentRoute === 'CASE_WORKSPACE' ? 'Case Workspace' : 'Staff');
 
   return (
-    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full min-h-[calc(100dvh-8.5rem)]">
-      <aside className="order-2 md:order-1 w-full md:w-56 bg-white border-t-2 md:border-t-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0">
+    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full min-h-[calc(100dvh-10rem)]">
+      <aside className="order-1 md:order-1 w-full md:w-56 bg-white border-b-2 md:border-b-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0">
         <nav className="flex-1 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto px-2 py-2 md:py-4 gap-1">
           <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
             Staff tools
@@ -106,7 +106,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>
           </div>
           <p className="hidden sm:block text-xs text-muted-fg text-right max-w-xs">
-            Use Patient, Caregiver, or Graph in the top bar, or click the logo to go home.
+            Use the bottom dock to move between Home, Patient, Caregiver, and Graph.
           </p>
         </div>
         <div className="flex-1 overflow-y-auto">

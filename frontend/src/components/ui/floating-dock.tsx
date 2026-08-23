@@ -1,5 +1,4 @@
 import { cn } from '@/lib/utils';
-import { IconLayoutNavbarCollapse } from '@tabler/icons-react';
 import {
   AnimatePresence,
   MotionValue,
@@ -15,6 +14,7 @@ export type DockItem = {
   icon: React.ReactNode;
   href?: string;
   onClick?: () => void;
+  active?: boolean;
 };
 
 export const FloatingDock = ({
@@ -68,53 +68,29 @@ const FloatingDockMobile = ({
   items: DockItem[];
   className?: string;
 }) => {
-  const [open, setOpen] = useState(false);
   return (
-    <div className={cn('relative block md:hidden', className)}>
-      <AnimatePresence>
-        {open && (
-          <motion.div
-            layoutId="nav"
-            className="absolute inset-x-0 bottom-full mb-2 flex flex-col gap-2"
-          >
-            {items.map((item, idx) => (
-              <motion.div
-                key={item.title}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{
-                  opacity: 0,
-                  y: 10,
-                  transition: { delay: idx * 0.05 },
-                }}
-                transition={{ delay: (items.length - 1 - idx) * 0.05 }}
-              >
-                <DockTarget
-                  href={item.href}
-                  onClick={() => {
-                    item.onClick?.();
-                    setOpen(false);
-                  }}
-                  ariaLabel={item.title}
-                  className="flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink bg-white shadow-pop"
-                >
-                  <div className="h-4 w-4 text-ink">{item.icon}</div>
-                </DockTarget>
-              </motion.div>
-            ))}
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <button
-        type="button"
-        onClick={() => setOpen(!open)}
-        aria-expanded={open}
-        aria-label="Open workspace dock"
-        className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-ink bg-accent text-white shadow-pop"
-      >
-        <IconLayoutNavbarCollapse className="h-5 w-5" />
-      </button>
-    </div>
+    <nav
+      aria-label="Workspace dock"
+      className={cn(
+        'flex md:hidden items-center gap-1.5 rounded-full border-2 border-ink bg-white/95 px-2 py-1.5 shadow-pop backdrop-blur',
+        className,
+      )}
+    >
+      {items.map((item) => (
+        <DockTarget
+          key={item.title}
+          href={item.href}
+          onClick={item.onClick}
+          ariaLabel={item.title}
+          className={cn(
+            'flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink',
+            item.active ? 'bg-accent text-white' : 'bg-cream text-ink',
+          )}
+        >
+          <div className="h-5 w-5">{item.icon}</div>
+        </DockTarget>
+      ))}
+    </nav>
   );
 };
 
@@ -127,18 +103,19 @@ const FloatingDockDesktop = ({
 }) => {
   const mouseX = useMotionValue(Infinity);
   return (
-    <motion.div
+    <motion.nav
+      aria-label="Workspace dock"
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        'mx-auto hidden h-16 items-end gap-4 rounded-full border-2 border-ink bg-white/95 px-4 pb-3 shadow-pop backdrop-blur md:flex',
+        'mx-auto hidden h-16 items-end gap-3 rounded-full border-2 border-ink bg-white/95 px-4 pb-3 shadow-pop backdrop-blur md:flex',
         className,
       )}
     >
       {items.map((item) => (
         <IconContainer mouseX={mouseX} key={item.title} {...item} />
       ))}
-    </motion.div>
+    </motion.nav>
   );
 };
 
@@ -148,12 +125,14 @@ function IconContainer({
   icon,
   href,
   onClick,
+  active,
 }: {
   mouseX: MotionValue<number>;
   title: string;
   icon: React.ReactNode;
   href?: string;
   onClick?: () => void;
+  active?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
 
@@ -181,7 +160,10 @@ function IconContainer({
         style={{ width, height }}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        className="relative flex aspect-square items-center justify-center rounded-full border-2 border-ink bg-cream"
+        className={cn(
+          'relative flex aspect-square items-center justify-center rounded-full border-2 border-ink',
+          active ? 'bg-accent text-white' : 'bg-cream text-ink',
+        )}
       >
         <AnimatePresence>
           {hovered && (
@@ -197,7 +179,7 @@ function IconContainer({
         </AnimatePresence>
         <motion.div
           style={{ width: widthIcon, height: heightIcon }}
-          className="flex items-center justify-center text-ink"
+          className="flex items-center justify-center"
         >
           {icon}
         </motion.div>

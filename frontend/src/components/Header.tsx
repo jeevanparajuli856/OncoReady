@@ -91,12 +91,12 @@ export const Header: React.FC<HeaderProps> = ({
   if (currentPerspective === 'LANDING') {
     return (
       <header className="sticky top-0 z-40 w-full bg-cream/95 backdrop-blur-md border-b-2 border-ink">
-        <div className="w-full px-5 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-3">
+        <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
           <button onClick={() => onSetPerspective('LANDING')} className="cursor-pointer shrink-0" aria-label="Go to OncoReady home" title="Home">
-            <Logo size={38} compact />
+            <Logo size={34} compact />
           </button>
 
-          <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-sm font-heading font-bold text-ink">
+          <nav className="hidden lg:flex items-center gap-1 lg:gap-2 text-sm font-heading font-bold text-ink">
             <button onClick={() => scrollTo('how-it-works')} className="px-2.5 py-1.5 rounded-full hover:bg-sun/40">How it works</button>
             <button onClick={() => scrollTo('access-map')} className="px-2.5 py-1.5 rounded-full hover:bg-sun/40">Access map</button>
             <button onClick={() => scrollTo('pricing-section')} className="px-2.5 py-1.5 rounded-full hover:bg-sun/40">Pricing</button>
@@ -110,7 +110,8 @@ export const Header: React.FC<HeaderProps> = ({
               Log In
             </button>
             <button onClick={onOpenAuthModal} className="btn-candy btn-compact">
-              Explore Workspace
+              <span className="sm:hidden">Enter</span>
+              <span className="hidden sm:inline">Explore Workspace</span>
             </button>
           </div>
         </div>
@@ -120,12 +121,12 @@ export const Header: React.FC<HeaderProps> = ({
 
   return (
     <header className="sticky top-0 z-40 w-full bg-cream/95 backdrop-blur-md border-b-2 border-ink">
-      <div className="w-full px-5 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-3">
+      <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
         <button onClick={() => onSetPerspective('LANDING')} aria-label="Go to OncoReady home" title="Home" className="shrink-0">
-          <Logo size={38} compact />
+          <Logo size={34} compact />
         </button>
 
-        <nav className="flex items-center gap-0.5 sm:gap-1 text-xs sm:text-sm font-heading font-bold overflow-x-auto max-w-[52vw] sm:max-w-none">
+        <nav className="hidden md:flex items-center gap-1 text-sm font-heading font-bold">
           {([
             ['PATIENT', 'Patient'],
             ['STAFF', 'Staff'],
@@ -157,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="relative">
               <button
                 onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                className="flex items-center gap-2.5 pl-1.5 pr-3 py-1 rounded-full border-2 border-ink bg-white hover:bg-sun/40"
+                className="flex items-center gap-2 pl-1 pr-1.5 sm:pr-3 py-1 rounded-full border-2 border-ink bg-white hover:bg-sun/40"
               >
                 <Avatar src={activeUser.avatar} alt={activeUser.name} size="sm" roleType={activeUser.roleType} />
                 <div className="text-left hidden sm:block">

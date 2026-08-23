@@ -21,50 +21,50 @@ export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
   onSelectPerspective,
   onOpenAuthModal,
 }) => {
-  if (currentPerspective === 'STAFF') return null;
-
   const iconClass = 'h-full w-full';
   const items = [
     {
       title: 'Home',
       icon: <IconHome className={iconClass} />,
       onClick: () => onSelectPerspective('LANDING'),
+      active: currentPerspective === 'LANDING',
     },
     {
       title: 'Patient',
       icon: <IconHeart className={iconClass} />,
       onClick: () => onSelectPerspective('PATIENT'),
+      active: currentPerspective === 'PATIENT',
     },
     {
       title: 'Staff',
       icon: <IconStethoscope className={iconClass} />,
       onClick: () => onSelectPerspective('STAFF'),
+      active: currentPerspective === 'STAFF',
     },
     {
       title: 'Caregiver',
       icon: <IconUsers className={iconClass} />,
       onClick: () => onSelectPerspective('CAREGIVER'),
+      active: currentPerspective === 'CAREGIVER',
     },
     {
       title: 'Graph',
       icon: <IconChartDots3 className={iconClass} />,
       onClick: () => onSelectPerspective('SYSTEM'),
+      active: currentPerspective === 'SYSTEM',
     },
     {
       title: 'Enter workspace',
       icon: <IconLogin2 className={iconClass} />,
       onClick: onOpenAuthModal,
+      active: currentPerspective === 'SIGN_IN',
     },
   ];
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-4 z-30 flex justify-end px-3 md:hidden">
-      <div className="pointer-events-auto">
-        <FloatingDock
-          items={items}
-          desktopClassName="!hidden"
-          mobileClassName="relative"
-        />
+    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex justify-center px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
+      <div className="pointer-events-auto max-w-full overflow-x-auto">
+        <FloatingDock items={items} />
       </div>
     </div>
   );

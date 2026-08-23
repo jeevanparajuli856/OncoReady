@@ -60,7 +60,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
       </div>
 
       {/* Interactive Visual Graph Canvas */}
-      <div className="relative min-h-[460px] bg-cream rounded-xl border-2 border-ink p-4 flex flex-col justify-between">
+      <div className="relative min-h-0 md:min-h-[460px] bg-cream rounded-xl border-2 border-ink p-3 sm:p-4 flex flex-col justify-between gap-4">
         
         {/* SVG Bezier Dynamic Connectors */}
         <svg 
