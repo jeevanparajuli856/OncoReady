@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "task_id": "CORE-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "6a0737913c190b632eea8861e8e6cef6e9fdccaf",
+  "reviewed_commit": "bd4482c3f2cf6d60ff92bfcf15d4f9e479a08bf2",
   "status": "APPROVED",
   "summary": "The corrected integrated revision resolves the prior release blockers: staff enterprise modules now provide credible read-only depth and patient filtering, the reducer enforces guarded idempotent transitions with smoke coverage, unsupported branded/live/clinical-clearance claims and remote portraits are removed, and role entry plus the staff shell provide keyboard and mobile-adaptive behavior. The verified Maria-to-staff-to-caregiver-to-patient closure journey, privacy projection, approved Gemini design direction, and LOW-risk frontend-only architecture are release-ready for the defined slice.",
   "findings": []
