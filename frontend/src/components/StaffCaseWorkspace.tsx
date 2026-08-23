@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { 
-  ArrowLeft, 
-  Stethoscope, 
-  Car, 
-  CheckCircle2, 
-  FlaskConical, 
-  Pill, 
-  HeartPulse, 
-  Network
+import {
+  ArrowLeft,
+  Stethoscope,
+  Car,
+  CheckCircle2,
+  FlaskConical,
+  Pill,
+  HeartPulse,
+  Network,
 } from 'lucide-react';
 import { WorkflowState } from '../types';
 import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
+import { BENSON_CENTER, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 
 interface StaffCaseWorkspaceProps {
   state: WorkflowState;
@@ -28,393 +29,264 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
   onSwitchPerspective,
 }) => {
   const [activeTab, setActiveTab] = useState<'ACTIONS' | 'REGIMEN' | 'LABS' | 'GRAPH'>('ACTIONS');
-
-  // Task 1: Clinical Review State
   const [nurseNotes, setNurseNotes] = useState<string>(
     'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.'
   );
-
-  // Task 2: Transport Coordination State
   const [vehicleId, setVehicleId] = useState<string>('CareLink Vehicle #402');
   const [driverName, setDriverName] = useState<string>('Jerome Davis');
   const [pickupTime, setPickupTime] = useState<string>('Tomorrow, 7:45 AM');
 
   const clinicalTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
-
   const isClinicalDone = clinicalTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED';
   const isTransportDone = transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
   const allResolved = (clinicalTask ? isClinicalDone : true) && (transportTask ? isTransportDone : true);
 
+  const tabs = [
+    ['ACTIONS', 'Triage Actions', state.tasks.length, Stethoscope],
+    ['REGIMEN', 'Chemo Protocol & Pre-Meds', null, Pill],
+    ['LABS', 'Labs & Vitals', state.labs.length, FlaskConical],
+    ['GRAPH', 'Readiness Graph', null, Network],
+  ] as const;
+
   return (
-    <div className="space-y-6 max-w-6xl mx-auto pb-12 animate-fade-in">
-      
-      {/* Top Breadcrumb & Quick Actions */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <div className="page-shell space-y-5 pb-8 animate-pop">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <button
           onClick={onBackToQueue}
-          className="inline-flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-slate-900 transition"
+          className="inline-flex items-center gap-1.5 text-sm font-heading font-bold hover:text-accent"
         >
-          <ArrowLeft className="w-4 h-4" />
-          <span>Back to Exception Queue</span>
+          <ArrowLeft className="w-4 h-4" strokeWidth={2.5} />
+          Back to Exception Queue
         </button>
-
-        <div className="flex items-center gap-2">
-          <span className="text-xs font-mono text-slate-400">
-            EHR Case Ref: ENC-2026-0824-914
-          </span>
-          <span className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-            allResolved
-              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-              : 'bg-amber-50 text-amber-700 border border-amber-200'
-          }`}>
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-xs font-mono text-muted-fg">EHR Case Ref: ENC-2026-0824-914</span>
+          <span className={`chip ${allResolved ? 'chip-mint' : 'chip-sun'}`}>
             {allResolved ? 'All Blockers Actioned' : 'Triage Action Required'}
           </span>
         </div>
       </div>
 
-      {/* Patient Clinical EHR Demographics Header */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-4">
+      <div className="card-sticker p-5 sm:p-6 space-y-4">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 pb-4 border-b-2 border-ink/10">
+          <div className="flex items-center gap-3 min-w-0">
             <img
               src={state.patient.avatarUrl}
               alt={state.patient.name}
-              className="w-16 h-16 rounded-2xl object-cover border-2 border-indigo-100 shadow-sm"
+              className="w-14 h-14 rounded-xl object-cover border-2 border-ink shrink-0"
             />
-            <div>
-              <div className="flex flex-wrap items-center gap-2.5">
-                <h1 className="text-xl font-extrabold text-slate-900 tracking-tight">
-                  {state.patient.name}
-                </h1>
-                <span className="text-xs font-mono px-2 py-0.5 bg-slate-100 text-slate-700 rounded-md font-semibold">
-                  MRN: {state.patient.mrn}
-                </span>
-                <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-semibold border border-indigo-100">
-                  {state.patient.diagnosis}
-                </span>
+            <div className="min-w-0">
+              <div className="flex flex-wrap items-center gap-2">
+                <h1 className="font-display text-xl font-extrabold">{state.patient.name}</h1>
+                <span className="chip font-mono">MRN: {state.patient.mrn}</span>
+                <span className="chip chip-accent">{state.patient.diagnosis}</span>
               </div>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-xs text-muted-fg mt-1">
                 {state.patient.age}F • {state.patient.stage} • BSA: {state.patient.bodySurfaceArea} • ECOG: {state.patient.ecogStatus}
               </p>
             </div>
           </div>
-
-          <div className="flex flex-wrap items-center gap-3 text-xs">
-            <div className="p-2.5 px-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-              <div className="text-[10px] font-mono text-slate-400 uppercase">ATTENDING ONCOLOGIST</div>
-              <div className="font-bold text-slate-900">{state.patient.oncologist}</div>
+          <div className="flex flex-wrap gap-2">
+            <div className="metric-tile">
+              <div className="label-caps text-muted-fg">Attending oncologist</div>
+              <div className="font-heading font-bold text-sm mt-0.5">{state.patient.oncologist}</div>
             </div>
-
-            <div className="p-2.5 px-3.5 bg-slate-50 rounded-xl border border-slate-200/80">
-              <div className="text-[10px] font-mono text-slate-400 uppercase">APPOINTMENT</div>
-              <div className="font-bold text-slate-900">{state.appointment.scheduledTime}</div>
+            <div className="metric-tile">
+              <div className="label-caps text-muted-fg">Appointment</div>
+              <div className="font-heading font-bold text-sm mt-0.5">{state.appointment.scheduledTime}</div>
             </div>
           </div>
         </div>
 
-        {/* Workspace Sub-Tabs */}
-        <div className="flex items-center gap-2 overflow-x-auto pt-1">
-          <button
-            onClick={() => setActiveTab('ACTIONS')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'ACTIONS'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-            }`}
-          >
-            <Stethoscope className="w-4 h-4" />
-            <span>Triage Actions ({state.tasks.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('REGIMEN')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'REGIMEN'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-            }`}
-          >
-            <Pill className="w-4 h-4" />
-            <span>Chemo Protocol & Pre-Meds</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('LABS')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'LABS'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-            }`}
-          >
-            <FlaskConical className="w-4 h-4" />
-            <span>Labs & Vitals ({state.labs.length})</span>
-          </button>
-
-          <button
-            onClick={() => setActiveTab('GRAPH')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition flex items-center gap-2 ${
-              activeTab === 'GRAPH'
-                ? 'bg-slate-900 text-white shadow-xs'
-                : 'bg-slate-100 text-slate-600 hover:text-slate-900 hover:bg-slate-200'
-            }`}
-          >
-            <Network className="w-4 h-4" />
-            <span>Readiness Graph</span>
-          </button>
+        <div className="filter-bar w-full">
+          {tabs.map(([id, label, count, Icon]) => (
+            <button
+              key={id}
+              onClick={() => setActiveTab(id)}
+              className={`filter-pill ${activeTab === id ? 'filter-pill-active' : ''}`}
+            >
+              <Icon className="w-3.5 h-3.5 inline mr-1" strokeWidth={2.5} />
+              {label}{count !== null ? ` (${count})` : ''}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* TAB 1: TRIAGE ACTIONS WORKBENCH */}
       {activeTab === 'ACTIONS' && (
-        <div className="space-y-6 animate-fade-in">
-          
-          {/* Dual Action Cards Container */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
-            {/* Action Card 1: Clinical Review (Sarah Jenkins RN) */}
-            <div className={`bg-white rounded-3xl border-2 p-6 shadow-xs space-y-4 transition-all ${
-              isClinicalDone ? 'border-emerald-300' : 'border-sky-300'
-            }`}>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+        <div className="space-y-5 animate-fade-in">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className={`card-sticker p-5 space-y-4 ${isClinicalDone ? 'bg-mint/10' : ''}`}>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b-2 border-ink/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-sky-100 text-sky-700 flex items-center justify-center">
-                    <Stethoscope className="w-5 h-5" />
-                  </div>
+                  <span className="icon-bubble w-10 h-10 bg-accent text-white">
+                    <Stethoscope className="w-4 h-4" strokeWidth={2.5} />
+                  </span>
                   <div>
-                    <h2 className="font-bold text-slate-900 text-sm">
-                      Task 1: Clinical Symptom Review
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Assigned: Sarah Jenkins, BSN, RN, OCN
-                    </p>
+                    <h2 className="font-heading font-bold">Task 1: Clinical Symptom Review</h2>
+                    <p className="text-xs text-muted-fg">Assigned: Sarah Jenkins, BSN, RN, OCN</p>
                   </div>
                 </div>
-
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                  isClinicalDone
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-sky-50 text-sky-700 border border-sky-200'
-                }`}>
+                <span className={`chip ${isClinicalDone ? 'chip-mint' : 'chip-sun'}`}>
                   {isClinicalDone ? 'Reviewed' : 'Pending Review'}
                 </span>
               </div>
 
-              {/* Patient Verbatim Report */}
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
-                <div className="flex items-center justify-between">
-                  <span className="font-mono text-[10px] text-slate-400 uppercase font-bold">
-                    PATIENT-REPORTED CLINICAL TEXT
-                  </span>
-                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-indigo-100 text-indigo-800 font-mono">
-                    UNALTERED RECORD
-                  </span>
+              <div className="metric-tile space-y-1.5">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="label-caps text-muted-fg">Patient-reported clinical text</span>
+                  <span className="chip chip-accent">UNALTERED RECORD</span>
                 </div>
-                <p className="font-medium text-slate-900 italic">
+                <p className="text-sm italic">
                   "{state.readinessSubmission.clinicalConcernText || 'Mild fever 100.4°F and tingling in fingers since yesterday evening'}"
                 </p>
               </div>
 
-              {/* Nurse Assessment Authoring */}
               {!isClinicalDone ? (
-                <div className="space-y-3 pt-1 text-xs">
-                  <div>
-                    <label className="block font-bold text-slate-700 mb-1">
-                      Triage Nurse Notes & Pre-Infusion Orders:
-                    </label>
-                    <textarea
-                      rows={3}
-                      value={nurseNotes}
-                      onChange={(e) => setNurseNotes(e.target.value)}
-                      className="w-full p-3 bg-white border border-slate-300 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-sky-500 leading-relaxed"
-                    />
-                  </div>
-
+                <div className="space-y-3 btn-stack">
+                  <label className="label-caps">Triage Nurse Notes & Pre-Infusion Orders:</label>
+                  <textarea
+                    rows={3}
+                    value={nurseNotes}
+                    onChange={(e) => setNurseNotes(e.target.value)}
+                    className="input-pop text-sm leading-relaxed"
+                  />
                   <button
                     onClick={() => onAcknowledgeClinical(nurseNotes)}
-                    className="w-full py-3 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-sky-200"
+                    className="btn-candy w-full"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Acknowledge Review &amp; Record Disposition</span>
+                    <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
+                    <span>Acknowledge Review & Record Disposition</span>
                   </button>
                 </div>
               ) : (
-                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
-                  <div className="font-bold text-emerald-950 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Clinical Review &amp; Disposition Recorded</span>
+                <div className="p-4 rounded-xl bg-mint/20 border-2 border-ink/10 space-y-2">
+                  <div className="font-heading font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
+                    Clinical Review & Disposition Recorded
                   </div>
-                  <p className="text-slate-800 leading-relaxed">
-                    {clinicalTask?.clinicalDetails?.nurseNotes}
-                  </p>
+                  <p className="text-sm leading-relaxed">{clinicalTask?.clinicalDetails?.nurseNotes}</p>
                 </div>
               )}
             </div>
 
-            {/* Action Card 2: Transportation Navigation (Marcus Vance MSW) */}
-            <div className={`bg-white rounded-3xl border-2 p-6 shadow-xs space-y-4 transition-all ${
-              isTransportDone ? 'border-emerald-300' : 'border-teal-300'
-            }`}>
-              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className={`card-sticker p-5 space-y-4 ${isTransportDone ? 'bg-mint/10' : ''}`}>
+              <div className="flex items-start justify-between gap-3 pb-3 border-b-2 border-ink/10">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center">
-                    <Car className="w-5 h-5" />
-                  </div>
+                  <span className="icon-bubble w-10 h-10 bg-sun text-ink">
+                    <Car className="w-4 h-4" strokeWidth={2.5} />
+                  </span>
                   <div>
-                    <h2 className="font-bold text-slate-900 text-sm">
-                      Task 2: Transportation Navigation
-                    </h2>
-                    <p className="text-xs text-slate-500">
-                      Assigned: Marcus Vance, MSW, LCSW
-                    </p>
+                    <h2 className="font-heading font-bold">Task 2: Transportation Navigation</h2>
+                    <p className="text-xs text-muted-fg">Assigned: Marcus Vance, MSW, LCSW</p>
                   </div>
                 </div>
-
-                <span className={`text-[11px] font-bold px-2.5 py-0.5 rounded-full ${
-                  isTransportDone
-                    ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                    : 'bg-teal-50 text-teal-700 border border-teal-200'
-                }`}>
+                <span className={`chip ${isTransportDone ? 'chip-mint' : 'chip-sun'}`}>
                   {isTransportDone ? 'Confirmed' : 'Unassigned'}
                 </span>
               </div>
 
-              {/* Patient Transport Note */}
-              <div className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200 space-y-1.5 text-xs">
-                <div className="font-mono text-[10px] text-slate-400 uppercase font-bold">
-                  REPORTED TRANSIT BARRIER
-                </div>
-                <p className="font-medium text-slate-900">
+              <div className="metric-tile space-y-1.5">
+                <div className="label-caps text-muted-fg">Reported transit barrier</div>
+                <p className="text-sm">
                   {state.readinessSubmission.transportNotes || 'Ride cancelled by family member; needs assisted pickup at 7:45 AM'}
                 </p>
               </div>
 
-              {/* Dispatch Form */}
               {!isTransportDone ? (
-                <div className="space-y-3 pt-1 text-xs">
+                <div className="space-y-3 btn-stack">
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                     <div>
-                      <label className="block font-medium text-slate-700 mb-1">
-                        Assigned Vehicle:
-                      </label>
-                      <input
-                        type="text"
-                        value={vehicleId}
-                        onChange={(e) => setVehicleId(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
-                      />
+                      <label className="label-caps mb-1">Assigned Vehicle:</label>
+                      <input type="text" value={vehicleId} onChange={(e) => setVehicleId(e.target.value)} className="input-pop text-sm font-heading font-bold" />
                     </div>
                     <div>
-                      <label className="block font-medium text-slate-700 mb-1">
-                        Driver Name:
-                      </label>
-                      <input
-                        type="text"
-                        value={driverName}
-                        onChange={(e) => setDriverName(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
-                      />
+                      <label className="label-caps mb-1">Driver Name:</label>
+                      <input type="text" value={driverName} onChange={(e) => setDriverName(e.target.value)} className="input-pop text-sm font-heading font-bold" />
                     </div>
                     <div>
-                      <label className="block font-medium text-slate-700 mb-1">
-                        Pickup Time:
-                      </label>
-                      <input
-                        type="text"
-                        value={pickupTime}
-                        onChange={(e) => setPickupTime(e.target.value)}
-                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-lg text-xs font-semibold"
-                      />
+                      <label className="label-caps mb-1">Pickup Time:</label>
+                      <input type="text" value={pickupTime} onChange={(e) => setPickupTime(e.target.value)} className="input-pop text-sm font-heading font-bold" />
                     </div>
                   </div>
-
                   <button
                     onClick={() => onConfirmTransportation({ vehicleId, driverName, pickupTime })}
-                    className="w-full py-3 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl transition flex items-center justify-center gap-2 shadow-md shadow-teal-200"
+                    className="btn-candy w-full"
                   >
-                    <CheckCircle2 className="w-4 h-4" />
+                    <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
                     <span>Confirm & Dispatch Med-Van</span>
                   </button>
                 </div>
               ) : (
-                <div className="p-4 bg-emerald-50 rounded-2xl border border-emerald-200 text-xs space-y-2">
-                  <div className="font-bold text-emerald-950 flex items-center gap-1.5">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    <span>Transportation Coordination Confirmed</span>
+                <div className="p-4 rounded-xl bg-mint/20 border-2 border-ink/10 space-y-3">
+                  <div className="font-heading font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4" strokeWidth={2.5} />
+                    Transportation Coordination Confirmed
                   </div>
-                  <div className="text-slate-800">
-                    <span className="font-semibold">{transportTask?.transportDetails?.vehicleId}</span> • Driver: {transportTask?.transportDetails?.driverName} • Pickup: {transportTask?.transportDetails?.confirmedPickupTime}
-                  </div>
+                  <p className="text-sm">
+                    <span className="font-heading font-bold">{transportTask?.transportDetails?.vehicleId}</span>
+                    {' • Driver: '}
+                    {transportTask?.transportDetails?.driverName}
+                    {' • Pickup: '}
+                    {transportTask?.transportDetails?.confirmedPickupTime}
+                  </p>
+                  <RideMap
+                    title="Confirmed pickup corridor"
+                    subtitle="St. Charles Ave to Benson Suite B"
+                    pickup={NEW_ORLEANS_PICKUP}
+                    destination={BENSON_CENTER}
+                    confirmed
+                    height={200}
+                  />
                 </div>
               )}
             </div>
-
           </div>
 
-          {/* Quick Handoff Banner */}
           {allResolved && (
-            <div className="p-6 bg-gradient-to-r from-emerald-900 to-slate-900 text-white rounded-3xl flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg">
-              <div className="space-y-1 text-center sm:text-left">
-                <div className="font-extrabold text-base flex items-center justify-center sm:justify-start gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                  <span>Clinical & Transport Triage Complete</span>
+            <div className="card-sticker p-5 sm:p-6 bg-ink text-cream btn-stack flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="space-y-1">
+                <div className="font-heading font-extrabold flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-mint" strokeWidth={2.5} />
+                  Clinical & Transport Triage Complete
                 </div>
-                <p className="text-xs text-slate-300">
+                <p className="text-sm text-cream/75">
                   Both blocker tasks resolved. The updated plan is ready for Maria to review and acknowledge in her Patient Portal.
                 </p>
               </div>
-
-              <button
-                onClick={() => onSwitchPerspective('PATIENT')}
-                className="px-5 py-2.5 bg-white text-slate-900 font-bold rounded-xl text-xs hover:bg-slate-100 transition shadow-xs shrink-0"
-              >
+              <button onClick={() => onSwitchPerspective('PATIENT')} className="btn-candy !bg-sun !text-ink shrink-0">
                 Switch to Patient Portal
               </button>
             </div>
           )}
-
         </div>
       )}
 
-      {/* TAB 2: CHEMO REGIMEN PROTOCOL */}
       {activeTab === 'REGIMEN' && (
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6 animate-fade-in text-xs">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-            <div className="space-y-1">
-              <h2 className="text-base font-bold text-slate-900">
-                mFOLFOX6 + Bevacizumab Protocol Order Set
-              </h2>
-              <p className="text-slate-500">
-                Cycle 4 of 12 • Standard Colorectal Adjuvant/Metastatic Regimen
-              </p>
+        <div className="card-sticker p-5 sm:p-6 space-y-4 animate-fade-in">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b-2 border-ink/10">
+            <div>
+              <h2 className="font-heading font-extrabold text-lg">mFOLFOX6 + Bevacizumab Protocol Order Set</h2>
+              <p className="text-sm text-muted-fg">Cycle 4 of 12 • Standard Colorectal Adjuvant/Metastatic Regimen</p>
             </div>
-            <span className="px-3 py-1 bg-indigo-50 text-indigo-700 font-mono font-bold rounded-lg">
-              Protocol ID: ONC-GI-COL-04
-            </span>
+            <span className="chip chip-accent font-mono">Protocol ID: ONC-GI-COL-04</span>
           </div>
-
           <div className="space-y-3">
             {state.appointment.drugs.map((drug, idx) => (
-              <div key={idx} className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
+              <div key={idx} className="metric-tile space-y-1">
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                  <span className="font-bold text-slate-900 text-sm">{drug.name}</span>
-                  <span className="font-mono text-indigo-700 font-bold bg-white px-2.5 py-0.5 rounded border border-slate-200">
-                    {drug.dosage}
-                  </span>
+                  <span className="font-heading font-bold">{drug.name}</span>
+                  <span className="chip chip-accent font-mono">{drug.dosage}</span>
                 </div>
-                <div className="text-slate-700">
-                  <span className="font-semibold">Administration:</span> {drug.route} ({drug.schedule})
-                </div>
-                <div className="text-slate-500 text-[11px]">
-                  Pharmacology: {drug.indication}
-                </div>
+                <p className="text-sm text-muted-fg">
+                  <span className="font-heading font-bold text-ink">Administration:</span> {drug.route} ({drug.schedule})
+                </p>
+                <p className="text-xs text-muted-fg">Pharmacology: {drug.indication}</p>
               </div>
             ))}
           </div>
-
-          <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200 space-y-2">
-            <div className="font-bold text-slate-900">Pre-Medication Authorization Protocol</div>
-            <ul className="list-disc list-inside text-slate-700 space-y-1">
+          <div className="metric-tile space-y-2">
+            <div className="font-heading font-bold">Pre-Medication Authorization Protocol</div>
+            <ul className="list-disc list-inside text-sm text-muted-fg space-y-1">
               {state.appointment.premeds.map((pre, idx) => (
                 <li key={idx}>{pre}</li>
               ))}
@@ -423,48 +295,35 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
         </div>
       )}
 
-      {/* TAB 3: LABS & VITALS */}
       {activeTab === 'LABS' && (
-        <div className="space-y-6 animate-fade-in">
-          {/* Lab Results Table */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <FlaskConical className="w-5 h-5 text-indigo-600" />
-                <h2 className="font-bold text-slate-900 text-base">
-                  Pre-Infusion Diagnostic Labs
-                </h2>
+        <div className="space-y-5 animate-fade-in">
+          <div className="card-sticker p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between gap-2 pb-3 border-b-2 border-ink/10">
+              <div className="flex items-center gap-2 font-heading font-bold">
+                <FlaskConical className="w-4 h-4 text-accent" strokeWidth={2.5} />
+                Pre-Infusion Diagnostic Labs
               </div>
-              <span className="text-xs text-slate-400 font-mono">Benson Pathology</span>
+              <span className="text-xs text-muted-fg">Benson Pathology</span>
             </div>
-
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-slate-200 text-[11px] font-mono text-slate-400 uppercase">
-                    <th className="py-2.5 font-semibold">Test Name</th>
-                    <th className="py-2.5 font-semibold">Result Value</th>
-                    <th className="py-2.5 font-semibold">Reference Range</th>
-                    <th className="py-2.5 font-semibold">Status</th>
-                    <th className="py-2.5 font-semibold">Collection</th>
+                  <tr className="border-b-2 border-ink/10">
+                    {['Test Name', 'Result Value', 'Reference Range', 'Status', 'Collection'].map((h) => (
+                      <th key={h} className="py-2.5 label-caps text-muted-fg">{h}</th>
+                    ))}
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-ink/10">
                   {state.labs.map((lab, idx) => (
-                    <tr key={idx} className="hover:bg-slate-50 transition">
-                      <td className="py-3 font-bold text-slate-900">{lab.name}</td>
-                      <td className="py-3 font-mono font-bold text-slate-800">{lab.value} {lab.unit}</td>
-                      <td className="py-3 text-slate-500 font-mono">{lab.referenceRange}</td>
+                    <tr key={idx}>
+                      <td className="py-3 font-heading font-bold">{lab.name}</td>
+                      <td className="py-3 font-mono">{lab.value} {lab.unit}</td>
+                      <td className="py-3 text-muted-fg font-mono text-xs">{lab.referenceRange}</td>
                       <td className="py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                          lab.status === 'NORMAL'
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                            : 'bg-amber-50 text-amber-700 border border-amber-200'
-                        }`}>
-                          {lab.status}
-                        </span>
+                        <span className={`chip ${lab.status === 'NORMAL' ? 'chip-mint' : 'chip-sun'}`}>{lab.status}</span>
                       </td>
-                      <td className="py-3 text-slate-400 text-[11px]">{lab.collectedAt}</td>
+                      <td className="py-3 text-xs text-muted-fg">{lab.collectedAt}</td>
                     </tr>
                   ))}
                 </tbody>
@@ -472,25 +331,17 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
             </div>
           </div>
 
-          {/* Vitals Summary Card */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-              <HeartPulse className="w-5 h-5 text-rose-600" />
-              <h2 className="font-bold text-slate-900 text-base">
-                Vital Signs & Clinical Monitoring
-              </h2>
+          <div className="card-sticker p-5 sm:p-6 space-y-4">
+            <div className="flex items-center gap-2 font-heading font-bold">
+              <HeartPulse className="w-4 h-4 text-pop" strokeWidth={2.5} />
+              Vital Signs & Clinical Monitoring
             </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               {state.vitals.map((vit, idx) => (
-                <div key={idx} className="p-3.5 bg-slate-50 rounded-2xl border border-slate-200/80 space-y-1">
-                  <div className="text-[10px] font-mono text-slate-400 uppercase font-semibold">{vit.name}</div>
-                  <div className={`text-base font-extrabold ${
-                    vit.status === 'ATTENTION' ? 'text-amber-700' : 'text-slate-900'
-                  }`}>
-                    {vit.value}
-                  </div>
-                  <div className="text-[10px] text-slate-500">{vit.collectedAt}</div>
+                <div key={idx} className="metric-tile">
+                  <div className="label-caps text-muted-fg">{vit.name}</div>
+                  <div className="font-display text-xl font-extrabold mt-1">{vit.value}</div>
+                  <div className="text-[11px] text-muted-fg">{vit.collectedAt}</div>
                 </div>
               ))}
             </div>
@@ -498,7 +349,6 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
         </div>
       )}
 
-      {/* TAB 4: LIVE READINESS GRAPH */}
       {activeTab === 'GRAPH' && (
         <div className="animate-fade-in">
           <TreatmentReadinessGraph
@@ -511,7 +361,6 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
           />
         </div>
       )}
-
     </div>
   );
 };

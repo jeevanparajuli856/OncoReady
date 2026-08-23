@@ -40,39 +40,27 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
   const allStaffResolved = clinicalResolved && transportResolved;
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 relative overflow-hidden">
-      {/* Graph Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-slate-100">
+    <div className="card-sticker p-5 sm:p-6 relative overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b-2 border-ink/10">
         <div>
-          <div className="flex items-center gap-2">
-            <h2 className="text-lg font-bold text-slate-900 tracking-tight">Treatment Readiness Graph</h2>
-            <span className="text-xs px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 font-mono font-medium border border-indigo-100">
-              Live Dependency Network
-            </span>
+          <div className="flex flex-wrap items-center gap-2">
+            <h2 className="text-lg font-display font-extrabold tracking-tight">Treatment Readiness Graph</h2>
+            <span className="chip chip-accent">Live Dependency Network</span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-sm text-muted-fg mt-1">
             Real-time multi-agent dependency mapping anchoring pre-treatment blockers to tomorrow's infusion.
           </p>
         </div>
 
-        <div className="flex items-center gap-3 text-xs">
-          <span className="flex items-center gap-1.5 text-slate-600 font-medium">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span>
-            Resolved
-          </span>
-          <span className="flex items-center gap-1.5 text-slate-600 font-medium">
-            <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span>
-            Active Blocker
-          </span>
-          <span className="flex items-center gap-1.5 text-slate-600 font-medium">
-            <span className="w-2.5 h-2.5 rounded-full bg-slate-300 inline-block"></span>
-            Unscreened
-          </span>
+        <div className="flex flex-wrap items-center gap-2 text-xs font-heading font-bold">
+          <span className="chip chip-mint">Resolved</span>
+          <span className="chip chip-sun">Active Blocker</span>
+          <span className="chip">Unscreened</span>
         </div>
       </div>
 
       {/* Interactive Visual Graph Canvas */}
-      <div className="relative min-h-[460px] bg-slate-50/70 rounded-xl border border-slate-200/80 p-4 flex flex-col justify-between">
+      <div className="relative min-h-[460px] bg-cream rounded-xl border-2 border-ink p-4 flex flex-col justify-between">
         
         {/* SVG Bezier Dynamic Connectors */}
         <svg 
@@ -143,12 +131,12 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Clinical Symptom Review Node"
-              className={`p-4 rounded-xl border transition-all cursor-pointer bg-white text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`p-4 rounded-xl border-2 transition-all cursor-pointer bg-white text-left focus:outline-none ${
                 !readinessCheckCompleted
-                  ? 'border-slate-200 opacity-75'
+                  ? 'border-ink/30 opacity-75'
                   : clinicalResolved
-                  ? 'border-emerald-300 shadow-sm shadow-emerald-50 hover:border-emerald-400'
-                  : 'border-amber-300 shadow-md shadow-amber-50 pulse-amber-ring hover:border-amber-400'
+                  ? 'border-ink shadow-pop-mint'
+                  : 'border-ink pulse-amber-ring'
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -202,12 +190,12 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Transportation Navigation Node"
-              className={`p-4 rounded-xl border transition-all cursor-pointer bg-white text-left focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`p-4 rounded-xl border-2 transition-all cursor-pointer bg-white text-left focus:outline-none ${
                 !readinessCheckCompleted
-                  ? 'border-slate-200 opacity-75'
+                  ? 'border-ink/30 opacity-75'
                   : transportResolved
-                  ? 'border-emerald-300 shadow-sm shadow-emerald-50 hover:border-emerald-400'
-                  : 'border-amber-300 shadow-md shadow-amber-50 pulse-amber-ring hover:border-amber-400'
+                  ? 'border-ink shadow-pop-mint'
+                  : 'border-ink pulse-amber-ring'
               }`}
             >
               <div className="flex items-center justify-between gap-2 mb-2">
@@ -263,15 +251,15 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               tabIndex={0}
               role="button"
               aria-label="Upcoming Infusion Target Node"
-              className={`w-full max-w-sm p-5 rounded-2xl border transition-all cursor-pointer bg-white text-center shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+              className={`w-full max-w-sm p-5 rounded-xl border-2 border-ink transition-all cursor-pointer bg-white text-center focus:outline-none ${
                 overallReadiness === 'PLAN_CONFIRMED'
-                  ? 'border-emerald-400 shadow-glow-emerald bg-gradient-to-b from-white to-emerald-50/40'
+                  ? 'shadow-pop-mint'
                   : overallReadiness === 'AT_RISK'
-                  ? 'border-amber-400 shadow-glow-amber bg-gradient-to-b from-white to-amber-50/40'
-                  : 'border-indigo-200 shadow-glow-indigo'
+                  ? 'shadow-pop-sun'
+                  : 'shadow-pop-accent'
               }`}
             >
-              <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-indigo-50 text-indigo-700 border border-indigo-100 mb-3">
+              <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-accent text-white border-2 border-ink mb-3">
                 <Calendar className="w-6 h-6" />
               </div>
 
@@ -374,7 +362,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                     e.stopPropagation();
                     onNavigateToPatient();
                   }}
-                  className="mt-3 w-full py-1.5 px-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition flex items-center justify-center gap-1 shadow-sm"
+                  className="mt-3 w-full py-2 px-3 bg-accent hover:bg-brand-600 text-white rounded-full text-xs font-heading font-bold border-2 border-ink shadow-pop flex items-center justify-center gap-1"
                 >
                   <span>Switch to Patient View & Confirm</span>
                   <ArrowUpRight className="w-3.5 h-3.5" />
@@ -389,13 +377,13 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
 
       {/* Node Detail Inspector Drawer */}
       {selectedNode && (
-        <div className="mt-4 p-4 bg-slate-900 text-white rounded-xl text-xs flex items-start justify-between gap-4 animate-fade-in">
+        <div className="mt-4 p-4 bg-ink text-cream rounded-xl text-xs flex items-start justify-between gap-4 animate-fade-in border-2 border-ink">
           <div className="space-y-1">
-            <div className="font-bold flex items-center gap-1.5 text-indigo-300">
+            <div className="font-heading font-bold flex items-center gap-1.5 text-sun">
               <Info className="w-4 h-4" />
               Node Inspector: {selectedNode}
             </div>
-            <p className="text-slate-300">
+            <p className="text-cream/80">
               {selectedNode === 'CLINICAL' && 'Deterministic Clinical Review Task assigned to Sarah Jenkins, RN. Triage protocol preserves patient symptom input verbatim without automated diagnosis.'}
               {selectedNode === 'TRANSPORT' && 'Simulated Non-Emergency Medical Transport Task assigned to Marcus Vance, MSW. Coordinates vehicle pickup at 7:45 AM.'}
               {selectedNode === 'CENTER' && 'Upcoming FOLFOX6 Cycle 4 treatment anchor. Evaluates dependency graph status before confirming readiness.'}
@@ -404,7 +392,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
           </div>
           <button
             onClick={() => setSelectedNode(null)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 rounded text-slate-300 text-xs transition"
+            className="btn-ghost btn-compact !bg-white shrink-0"
           >
             Close
           </button>

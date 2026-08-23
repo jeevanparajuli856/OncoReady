@@ -29,17 +29,17 @@ export const Avatar: React.FC<AvatarProps> = ({
   const getRoleColors = () => {
     switch (roleType) {
       case 'DOCTOR':
-        return 'bg-gradient-to-tr from-indigo-600 to-indigo-800 text-white border-indigo-200';
+        return 'bg-accent text-white border-ink';
       case 'NURSE':
-        return 'bg-gradient-to-tr from-sky-500 to-sky-700 text-white border-sky-200';
+        return 'bg-sun text-ink border-ink';
       case 'NAVIGATOR':
-        return 'bg-gradient-to-tr from-teal-500 to-teal-700 text-white border-teal-200';
+        return 'bg-mint text-ink border-ink';
       case 'CAREGIVER':
-        return 'bg-gradient-to-tr from-emerald-500 to-teal-600 text-white border-emerald-200';
+        return 'bg-pop text-white border-ink';
       case 'SYSTEM':
-        return 'bg-gradient-to-tr from-slate-700 to-slate-900 text-indigo-300 border-slate-600';
+        return 'bg-ink text-sun border-ink';
       default: // PATIENT
-        return 'bg-gradient-to-tr from-indigo-500 to-purple-600 text-white border-indigo-200';
+        return 'bg-accent text-white border-ink';
     }
   };
 

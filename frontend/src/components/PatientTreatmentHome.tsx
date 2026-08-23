@@ -1,28 +1,28 @@
 import React, { useState } from 'react';
-import { 
-  Calendar, 
-  Clock, 
-  MapPin, 
-  ArrowRight, 
-  ShieldAlert, 
-  CheckCircle2, 
-  HeartHandshake, 
-  Stethoscope, 
-  PhoneCall, 
+import {
+  Calendar,
+  Clock,
+  MapPin,
+  ArrowRight,
+  ShieldAlert,
+  CheckCircle2,
+  HeartHandshake,
+  Stethoscope,
+  PhoneCall,
   FileCheck2,
-  Sparkles, 
-  ChevronDown, 
-  ChevronUp, 
-  Pill, 
-  ShieldCheck
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Pill,
+  ShieldCheck,
 } from 'lucide-react';
-import { 
-  AppointmentDetails, 
-  PatientProfile, 
+import {
+  AppointmentDetails,
+  PatientProfile,
   CaregiverProfile,
   Task,
   LabResult,
-  VitalSign
+  VitalSign,
 } from '../types';
 
 interface PatientTreatmentHomeProps {
@@ -54,325 +54,246 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
 
   const clinicalTask = tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
-  
+
   const clinicalResolved = clinicalTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED';
   const transportResolved = transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
   const allStaffResolved = clinicalResolved && transportResolved;
+  const progress = Math.round((appointment.cycleNumber / appointment.totalCycles) * 100);
 
   return (
-    <div className="space-y-6 max-w-4xl mx-auto pb-12 animate-fade-in">
-      
-      {/* Patient Profile Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-7 shadow-xs">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 pb-6 border-b border-slate-100">
-          <div className="flex items-center gap-4">
-            <div className="relative">
+    <div className="page-shell space-y-5 pb-8 animate-pop">
+      <div className="card-sticker p-5 sm:p-6">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pb-5 border-b-2 border-ink/10">
+          <div className="flex items-center gap-4 min-w-0">
+            <div className="relative shrink-0">
               <img
                 src={patient.avatarUrl}
                 alt={patient.name}
-                className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl object-cover border-2 border-indigo-100 shadow-md ring-2 ring-indigo-50"
+                className="w-16 h-16 rounded-xl object-cover border-2 border-ink"
               />
-              <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-emerald-500 border-2 border-white flex items-center justify-center text-white" title="Active Patient Account">
-                <CheckCircle2 className="w-3 h-3" />
+              <span className="absolute -bottom-1 -right-1 w-5 h-5 rounded-full bg-mint border-2 border-ink flex items-center justify-center text-ink" title="Active Patient Account">
+                <CheckCircle2 className="w-3 h-3" strokeWidth={2.5} />
               </span>
             </div>
-
-            <div className="space-y-1">
+            <div className="min-w-0 space-y-1.5">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight">
+                <h1 className="font-display text-xl sm:text-2xl font-extrabold tracking-tight">
                   {patient.name}
                 </h1>
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-indigo-50 text-indigo-700 border border-indigo-100">
-                  {patient.diagnosis}
-                </span>
+                <span className="chip chip-accent">{patient.diagnosis}</span>
               </div>
-              <p className="text-xs text-slate-500 font-mono">
+              <p className="text-xs text-muted-fg font-mono">
                 MRN: {patient.mrn} • {patient.stage} • BSA: {patient.bodySurfaceArea}
               </p>
-              <div className="text-xs text-slate-600 font-medium">
-                Oncologist: <span className="text-slate-900 font-semibold">{patient.oncologist}</span>
-              </div>
+              <p className="text-xs text-muted-fg">
+                Oncologist: <span className="font-heading font-bold text-ink">{patient.oncologist}</span>
+              </p>
             </div>
           </div>
 
-          {/* Infusion Cycle Progress Bar */}
-          <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200/80 min-w-[200px] space-y-2">
+          <div className="metric-tile min-w-[220px] space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-mono text-slate-500 uppercase text-[10px] font-bold">Treatment Progress</span>
-              <span className="font-bold text-indigo-700">Cycle {appointment.cycleNumber} of {appointment.totalCycles}</span>
+              <span className="label-caps text-muted-fg">Treatment Progress</span>
+              <span className="font-heading font-bold">Cycle {appointment.cycleNumber} of {appointment.totalCycles}</span>
             </div>
-            <div className="w-full h-2.5 bg-slate-200 rounded-full overflow-hidden">
-              <div 
-                className="h-full bg-gradient-to-r from-indigo-600 to-sky-500 rounded-full transition-all duration-500"
-                style={{ width: `${(appointment.cycleNumber / appointment.totalCycles) * 100}%` }}
+            <div className="w-full h-2.5 bg-white rounded-full overflow-hidden border-2 border-ink">
+              <div
+                className="h-full bg-accent"
+                style={{ width: `${progress}%` }}
               />
             </div>
-            <div className="text-[11px] text-slate-500 text-right">
-              {Math.round((appointment.cycleNumber / appointment.totalCycles) * 100)}% Protocol Completed
-            </div>
+            <div className="text-[11px] text-muted-fg text-right">{progress}% Protocol Completed</div>
           </div>
         </div>
 
-        {/* Quick Vitals & Pre-Infusion Baseline Strip */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-5 text-xs">
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <div className="text-[10px] font-mono text-slate-400 uppercase">BLOOD PRESSURE</div>
-            <div className="font-bold text-slate-900 text-sm mt-0.5">124 / 78</div>
-            <div className="text-[10px] text-slate-500">Normal range</div>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <div className="text-[10px] font-mono text-slate-400 uppercase">ABSOLUTE NEUTROPHILS</div>
-            <div className="font-bold text-emerald-700 text-sm mt-0.5">1.82 × 10³/µL</div>
-            <div className="text-[10px] text-emerald-600">Plan Confirmed</div>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <div className="text-[10px] font-mono text-slate-400 uppercase">PLATELETS</div>
-            <div className="font-bold text-slate-900 text-sm mt-0.5">168 × 10³/µL</div>
-            <div className="text-[10px] text-slate-500">Normal baseline</div>
-          </div>
-
-          <div className="p-3 bg-slate-50 rounded-xl border border-slate-100">
-            <div className="text-[10px] font-mono text-slate-400 uppercase">ECOG PERFORMANCE</div>
-            <div className="font-bold text-slate-900 text-sm mt-0.5">Status 1</div>
-            <div className="text-[10px] text-slate-500">Fully ambulatory</div>
-          </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 pt-5">
+          {[
+            ['Blood pressure', '124 / 78', 'Normal range'],
+            ['Absolute neutrophils', '1.82 × 10³/µL', 'Plan Confirmed'],
+            ['Platelets', '168 × 10³/µL', 'Normal baseline'],
+            ['ECOG performance', 'Status 1', 'Fully ambulatory'],
+          ].map(([label, value, hint]) => (
+            <div key={label} className="metric-tile">
+              <div className="label-caps text-muted-fg">{label}</div>
+              <div className="font-heading font-bold text-sm mt-1">{value}</div>
+              <div className="text-[11px] text-muted-fg mt-0.5">{hint}</div>
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Hero Banner: Upcoming Infusion & Time Proximity */}
-      <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 rounded-3xl text-white p-6 sm:p-8 shadow-xl relative overflow-hidden">
-        <div className="absolute top-0 right-0 -mr-20 -mt-20 w-72 h-72 rounded-full bg-indigo-500/15 blur-3xl pointer-events-none"></div>
-        <div className="absolute bottom-0 left-1/4 -mb-20 w-72 h-72 rounded-full bg-sky-500/15 blur-3xl pointer-events-none"></div>
-
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="space-y-2.5">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30">
-                Scheduled Next Session
+      <div className="card-sticker p-5 sm:p-6 bg-ink text-cream overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-5">
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="chip bg-sun text-ink">Scheduled Next Session</span>
+              <span className="text-xs text-cream/70">Benson Suite B</span>
+            </div>
+            <h2 className="font-display text-2xl sm:text-3xl font-extrabold">{appointment.protocol}</h2>
+            <p className="text-sm text-cream/75">{appointment.treatmentName}</p>
+            <div className="flex flex-wrap gap-2 pt-1">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border-2 border-white/20 text-xs font-heading font-bold">
+                <Calendar className="w-3.5 h-3.5 text-sun" strokeWidth={2.5} />
+                {appointment.scheduledTime}
               </span>
-              <span className="text-xs text-indigo-300 font-mono">Benson Suite B</span>
-            </div>
-
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
-              {appointment.protocol}
-            </h2>
-            <p className="text-sm text-slate-300">
-              {appointment.treatmentName}
-            </p>
-
-            <div className="flex flex-wrap items-center gap-3 pt-2 text-xs text-slate-200">
-              <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/10">
-                <Calendar className="w-4 h-4 text-indigo-300" />
-                <span className="font-bold text-white">{appointment.scheduledTime}</span>
-              </div>
-              <div className="flex items-center gap-1.5 bg-white/10 backdrop-blur-xs px-3 py-1.5 rounded-xl border border-white/10">
-                <MapPin className="w-4 h-4 text-sky-300" />
-                <span>{appointment.infusionChair}</span>
-              </div>
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 border-2 border-white/20 text-xs font-heading font-bold">
+                <MapPin className="w-3.5 h-3.5 text-mint" strokeWidth={2.5} />
+                {appointment.infusionChair}
+              </span>
             </div>
           </div>
-
-          {/* Time Proximity Countdown Card */}
-          <div className="bg-white/10 backdrop-blur-md rounded-2xl p-5 border border-white/20 text-center min-w-[210px] shadow-lg">
-            <div className="text-[11px] font-mono text-indigo-200 uppercase tracking-wider mb-1 flex items-center justify-center gap-1.5 font-bold">
-              <Clock className="w-3.5 h-3.5 text-indigo-300" />
-              Time Proximity
+          <div className="bg-white/10 rounded-xl p-4 border-2 border-white/20 text-center min-w-[180px]">
+            <div className="label-caps text-cream/70 flex items-center justify-center gap-1.5">
+              <Clock className="w-3.5 h-3.5 text-sun" strokeWidth={2.5} />
+              Time proximity
             </div>
-            <div className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight tabular-nums mt-1">
-              23<span className="text-xs font-normal text-indigo-200 uppercase ml-0.5 mr-2">h</span>
-              45<span className="text-xs font-normal text-indigo-200 uppercase ml-0.5">m</span>
+            <div className="font-display text-3xl font-extrabold tabular-nums mt-1">
+              23<span className="text-sm font-heading font-bold text-cream/70 ml-0.5 mr-2">h</span>
+              45<span className="text-sm font-heading font-bold text-cream/70 ml-0.5">m</span>
             </div>
-            <div className="text-xs text-slate-300 mt-1 font-medium">
-              Until scheduled arrival (8:30 AM)
-            </div>
+            <div className="text-xs text-cream/70 mt-1">Until scheduled arrival (8:30 AM)</div>
           </div>
         </div>
       </div>
 
-      {/* Main Readiness Action Callout */}
       {!readinessCheckCompleted ? (
-        /* STATE 1: Readiness check pending */
-        <div className="bg-white rounded-3xl border-2 border-amber-300 p-6 sm:p-7 shadow-lg shadow-amber-500/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 shadow-xs">
-              <ShieldAlert className="w-7 h-7" />
-            </div>
+        <div className="card-sticker p-5 sm:p-6 shadow-pop-sun btn-stack flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="icon-bubble w-11 h-11 bg-sun text-ink">
+              <ShieldAlert className="w-5 h-5" strokeWidth={2.5} />
+            </span>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-amber-100 text-amber-900 uppercase">
-                  Action Required
-                </span>
-                <span className="text-xs text-slate-500 font-medium">Takes &lt; 2 minutes</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="chip chip-sun">Action Required</span>
+                <span className="text-xs text-muted-fg">Takes &lt; 2 minutes</span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="font-heading font-bold text-lg">
                 Complete Your Pre-Infusion Readiness Check
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-muted-fg leading-relaxed">
                 Confirm your transportation and let your oncology care team know if you have any new symptoms or concerns before tomorrow morning.
               </p>
             </div>
           </div>
-
-          <button
-            onClick={onStartReadinessCheck}
-            className="w-full sm:w-auto px-7 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
+          <button onClick={onStartReadinessCheck} className="btn-candy shrink-0">
             <span>Start Readiness Check</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>
       ) : !patientAcknowledged && allStaffResolved ? (
-        /* STATE 2: Staff resolved, awaiting Maria's acknowledgment */
-        <div className="bg-white rounded-3xl border-2 border-indigo-500 p-6 sm:p-7 shadow-xl shadow-indigo-500/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-indigo-100 text-indigo-700 flex items-center justify-center shrink-0 shadow-xs">
-              <Sparkles className="w-7 h-7" />
-            </div>
+        <div className="card-sticker p-5 sm:p-6 btn-stack flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="icon-bubble w-11 h-11 bg-accent text-white">
+              <Sparkles className="w-5 h-5" strokeWidth={2.5} />
+            </span>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-indigo-100 text-indigo-900 uppercase">
-                  Updated Plan Ready
-                </span>
-                <span className="text-xs text-emerald-600 font-bold flex items-center gap-1">
-                  <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="chip chip-accent">Updated Plan Ready</span>
+                <span className="chip chip-mint">
+                  <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
                   Nurse Sarah & Navigator Marcus Actioned
                 </span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="font-heading font-bold text-lg">
                 Your Updated Treatment Plan is Ready for Review
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-muted-fg leading-relaxed">
                 Sarah Jenkins, RN authorized your pre-medication labs and hydration plan, and Marcus Vance confirmed your 7:45 AM Med-Van pickup.
               </p>
             </div>
           </div>
-
-          <button
-            onClick={onOpenResolutionView}
-            className="w-full sm:w-auto px-7 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-bold rounded-2xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-500/25 shrink-0 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          >
-            <FileCheck2 className="w-4 h-4" />
+          <button onClick={onOpenResolutionView} className="btn-candy shrink-0">
+            <FileCheck2 className="w-4 h-4" strokeWidth={2.5} />
             <span>Review & Confirm Plan</span>
           </button>
         </div>
       ) : patientAcknowledged ? (
-        /* STATE 3: Plan Confirmed */
-        <div className="bg-emerald-50/90 rounded-3xl border-2 border-emerald-300 p-6 sm:p-7 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shrink-0 shadow-sm">
-              <CheckCircle2 className="w-7 h-7" />
-            </div>
+        <div className="card-sticker p-5 sm:p-6 bg-mint/20 btn-stack flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="icon-bubble w-11 h-11 bg-mint text-ink">
+              <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
+            </span>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-emerald-200 text-emerald-950 uppercase">
-                  Ready for Tomorrow
-                </span>
-                <span className="text-xs text-slate-600 font-mono">Plan Confirmed</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="chip chip-mint">Ready for Tomorrow</span>
+                <span className="text-xs text-muted-fg">Plan Confirmed</span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900">
-                Treatment Plan Confirmed & Ready
-              </h2>
-              <p className="text-xs sm:text-sm text-emerald-900 leading-relaxed">
+              <h2 className="font-heading font-bold text-lg">Treatment Plan Confirmed & Ready</h2>
+              <p className="text-sm text-muted-fg leading-relaxed">
                 Med-Van #402 scheduled for 7:45 AM pickup. Pre-medication labs scheduled at 8:00 AM at Benson Cancer Center Suite B.
               </p>
             </div>
           </div>
-
-          <button
-            onClick={onOpenResolutionView}
-            className="w-full sm:w-auto px-5 py-3 bg-white text-emerald-800 font-bold rounded-xl border border-emerald-300 hover:bg-emerald-100 transition text-xs shrink-0 shadow-xs"
-          >
+          <button onClick={onOpenResolutionView} className="btn-ghost shrink-0">
             View Confirmation Details
           </button>
         </div>
       ) : (
-        /* STATE 4: Readiness reported, staff triage in progress */
-        <div className="bg-white rounded-3xl border border-sky-200 p-6 sm:p-7 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div className="w-13 h-13 rounded-2xl bg-sky-100 text-sky-700 flex items-center justify-center shrink-0">
-              <Clock className="w-7 h-7" />
-            </div>
+        <div className="card-sticker p-5 sm:p-6 btn-stack flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="icon-bubble w-11 h-11 bg-accent/20 text-ink">
+              <Clock className="w-5 h-5" strokeWidth={2.5} />
+            </span>
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-sky-100 text-sky-900 uppercase">
-                  Under Triage Review
-                </span>
-                <span className="text-xs text-slate-500 font-medium">2 Actions Dispatched</span>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="chip chip-accent">Under Triage Review</span>
+                <span className="text-xs text-muted-fg">2 Actions Dispatched</span>
               </div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="font-heading font-bold text-lg">
                 Your Reported Barriers are Being Resolved
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              <p className="text-sm text-muted-fg leading-relaxed">
                 Sarah Jenkins, RN is evaluating your symptom report and Marcus Vance, MSW is scheduling your medical transportation.
               </p>
             </div>
           </div>
-
-          <button
-            onClick={() => onSwitchPerspective('STAFF')}
-            className="w-full sm:w-auto px-6 py-3.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-2xl transition text-xs flex items-center justify-center gap-2 shrink-0 shadow-sm"
-          >
+          <button onClick={() => onSwitchPerspective('STAFF')} className="btn-candy shrink-0">
             <span>View Staff Workbench</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>
       )}
 
-      {/* Expandable Protocol Drug Details Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-xs overflow-hidden">
+      <div className="card-sticker overflow-hidden">
         <button
           onClick={() => setIsDrugsExpanded(!isDrugsExpanded)}
-          className="w-full p-5 sm:p-6 flex items-center justify-between text-left hover:bg-slate-50/70 transition"
+          className="w-full p-5 flex items-center justify-between gap-3 text-left hover:bg-sun/10 transition"
         >
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
-              <Pill className="w-5 h-5" />
-            </div>
-            <div>
-              <div className="font-bold text-slate-900 text-sm sm:text-base">
-                Chemotherapy Regimen Specifications
-              </div>
-              <div className="text-xs text-slate-500">
-                mFOLFOX6 + Bevacizumab Protocol Breakdown & Doses
-              </div>
+          <div className="flex items-center gap-3 min-w-0">
+            <span className="icon-bubble w-10 h-10 bg-accent/15 text-ink">
+              <Pill className="w-4 h-4" strokeWidth={2.5} />
+            </span>
+            <div className="min-w-0">
+              <div className="font-heading font-bold">Chemotherapy Regimen Specifications</div>
+              <div className="text-xs text-muted-fg">mFOLFOX6 + Bevacizumab Protocol Breakdown & Doses</div>
             </div>
           </div>
-
-          <div className="flex items-center gap-2 text-xs font-semibold text-indigo-600">
+          <div className="flex items-center gap-1.5 text-xs font-heading font-bold shrink-0">
             <span>{isDrugsExpanded ? 'Hide Details' : 'View 5 Agents'}</span>
             {isDrugsExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
           </div>
         </button>
 
         {isDrugsExpanded && (
-          <div className="p-6 pt-0 border-t border-slate-100 space-y-4 animate-fade-in text-xs">
-            <div className="grid grid-cols-1 gap-3">
-              {appointment.drugs.map((drug, idx) => (
-                <div key={idx} className="p-3.5 bg-slate-50 rounded-xl border border-slate-200/80 space-y-1">
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
-                    <span className="font-bold text-slate-900 text-sm">{drug.name}</span>
-                    <span className="font-mono text-indigo-700 font-semibold bg-indigo-50 px-2 py-0.5 rounded">
-                      {drug.dosage}
-                    </span>
-                  </div>
-                  <div className="text-slate-600 flex items-center gap-2">
-                    <span className="font-semibold text-slate-800">Route:</span> {drug.route} • <span className="font-semibold text-slate-800">Schedule:</span> {drug.schedule}
-                  </div>
-                  <div className="text-slate-500 text-[11px]">
-                    Mechanism: {drug.indication}
-                  </div>
+          <div className="p-5 pt-0 border-t-2 border-ink/10 space-y-3 animate-fade-in">
+            {appointment.drugs.map((drug, idx) => (
+              <div key={idx} className="metric-tile space-y-1">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                  <span className="font-heading font-bold">{drug.name}</span>
+                  <span className="chip chip-accent font-mono">{drug.dosage}</span>
                 </div>
-              ))}
-            </div>
-
-            <div className="p-4 bg-indigo-50/70 rounded-xl border border-indigo-100 space-y-2">
-              <div className="font-bold text-indigo-950 flex items-center gap-1.5">
-                <ShieldCheck className="w-4 h-4 text-indigo-600" />
-                <span>Standard Pre-Medication Orders</span>
+                <p className="text-sm text-muted-fg">
+                  <span className="font-heading font-bold text-ink">Route:</span> {drug.route} • <span className="font-heading font-bold text-ink">Schedule:</span> {drug.schedule}
+                </p>
+                <p className="text-xs text-muted-fg">Mechanism: {drug.indication}</p>
               </div>
-              <ul className="list-disc list-inside text-slate-700 space-y-1 pl-1">
+            ))}
+            <div className="p-4 rounded-xl bg-accent/10 border-2 border-ink/10 space-y-2">
+              <div className="font-heading font-bold flex items-center gap-1.5">
+                <ShieldCheck className="w-4 h-4 text-accent" strokeWidth={2.5} />
+                Standard Pre-Medication Orders
+              </div>
+              <ul className="list-disc list-inside text-sm text-muted-fg space-y-1">
                 {appointment.premeds.map((pre, idx) => (
                   <li key={idx}>{pre}</li>
                 ))}
@@ -382,104 +303,79 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
         )}
       </div>
 
-      {/* Grid of Context Cards: Caregiver & Care Team */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
-        {/* Caregiver Access Card */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <HeartHandshake className="w-4 h-4 text-teal-600" />
-                <span>Authorized Caregiver</span>
-              </div>
-              <span className="text-[11px] px-2.5 py-0.5 rounded-full bg-teal-50 text-teal-700 border border-teal-200 font-semibold">
-                Transportation Scope
-              </span>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div className="card-sticker p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-heading font-bold">
+              <HeartHandshake className="w-4 h-4 text-mint" strokeWidth={2.5} />
+              Authorized Caregiver
             </div>
-
-            <div className="flex items-center gap-3.5 p-3.5 bg-slate-50 rounded-2xl border border-slate-100">
-              <img
-                src={caregiver.avatarUrl}
-                alt={caregiver.name}
-                className="w-12 h-12 rounded-xl object-cover border border-teal-200"
-              />
-              <div className="space-y-0.5">
-                <div className="font-bold text-slate-900 text-xs sm:text-sm">{caregiver.name}</div>
-                <div className="text-[11px] text-slate-500">{caregiver.relationship} • {caregiver.phone}</div>
-                <div className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1 pt-0.5">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                  <span>Authorized for Ride Tracking</span>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-xs text-slate-500 leading-relaxed">
-              Ana receives vehicle dispatch notices while your confidential clinical symptoms and triage notes remain strictly private.
-            </p>
+            <span className="chip chip-mint">Transportation Scope</span>
           </div>
-
+          <div className="flex items-center gap-3 p-3 rounded-xl bg-cream border-2 border-ink/10">
+            <img
+              src={caregiver.avatarUrl}
+              alt={caregiver.name}
+              className="w-12 h-12 rounded-xl object-cover border-2 border-ink"
+            />
+            <div>
+              <div className="font-heading font-bold text-sm">{caregiver.name}</div>
+              <div className="text-xs text-muted-fg">{caregiver.relationship} • {caregiver.phone}</div>
+              <div className="text-xs font-heading font-bold text-ink mt-0.5">Authorized for Ride Tracking</div>
+            </div>
+          </div>
+          <p className="text-sm text-muted-fg leading-relaxed">
+            Ana receives vehicle dispatch notices while your confidential clinical symptoms and triage notes remain strictly private.
+          </p>
           <button
             onClick={() => onSwitchPerspective('CAREGIVER')}
-            className="text-xs font-bold text-teal-700 hover:text-teal-800 flex items-center gap-1 self-start"
+            className="inline-flex items-center gap-1 text-sm font-heading font-bold hover:text-accent"
           >
-            <span>Preview Caregiver View</span>
-            <ArrowRight className="w-3.5 h-3.5" />
+            Preview Caregiver View
+            <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* Oncology Care Team Card */}
-        <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
-          <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2 text-slate-900 font-bold text-sm">
-                <Stethoscope className="w-4 h-4 text-indigo-600" />
-                <span>Oncology Care Team</span>
-              </div>
-              <span className="text-[11px] text-slate-500 font-mono">Benson Suite B</span>
+        <div className="card-sticker p-5 space-y-4">
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2 font-heading font-bold">
+              <Stethoscope className="w-4 h-4 text-accent" strokeWidth={2.5} />
+              Oncology Care Team
             </div>
-
-            <div className="space-y-2.5 text-xs">
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src={appointment.oncologistAvatar}
-                    alt={patient.oncologist}
-                    className="w-10 h-10 rounded-lg object-cover border border-indigo-200"
-                  />
-                  <div>
-                    <div className="font-bold text-slate-900">{patient.oncologist}</div>
-                    <div className="text-[11px] text-slate-500">Attending Medical Oncologist</div>
-                  </div>
+            <span className="text-xs text-muted-fg">Benson Suite B</span>
+          </div>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-cream border-2 border-ink/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <img
+                  src={appointment.oncologistAvatar}
+                  alt={patient.oncologist}
+                  className="w-10 h-10 rounded-lg object-cover border-2 border-ink"
+                />
+                <div className="min-w-0">
+                  <div className="font-heading font-bold text-sm truncate">{patient.oncologist}</div>
+                  <div className="text-xs text-muted-fg">Attending Medical Oncologist</div>
                 </div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-50 text-indigo-700 font-semibold">Physician</span>
               </div>
-
-              <div className="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 border border-slate-100">
-                <div className="flex items-center gap-2.5">
-                  <img
-                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='128' height='128'%3E%3Crect width='128' height='128' rx='24' fill='%230284c7'/%3E%3C/svg%3E"
-                    alt="Sarah Jenkins RN"
-                    className="w-10 h-10 rounded-lg object-cover border border-sky-200"
-                  />
-                  <div>
-                    <div className="font-bold text-slate-900">Sarah Jenkins, BSN, RN, OCN</div>
-                    <div className="text-[11px] text-slate-500">Oncology Triage Nurse</div>
-                  </div>
-                </div>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-sky-50 text-sky-700 font-semibold">Triage</span>
-              </div>
+              <span className="chip chip-accent shrink-0">Physician</span>
             </div>
-
-            <div className="flex items-center gap-2 text-[11px] text-slate-500 pt-1">
-              <PhoneCall className="w-3.5 h-3.5 text-indigo-600 shrink-0" />
-              <span>Benson Triage Direct: (504) 555-0100 (Mon–Fri 7am–6pm)</span>
+            <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-cream border-2 border-ink/10">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-accent border-2 border-ink" aria-hidden />
+                <div className="min-w-0">
+                  <div className="font-heading font-bold text-sm">Sarah Jenkins, BSN, RN, OCN</div>
+                  <div className="text-xs text-muted-fg">Oncology Triage Nurse</div>
+                </div>
+              </div>
+              <span className="chip chip-accent shrink-0">Triage</span>
             </div>
           </div>
+          <div className="flex items-center gap-2 text-xs text-muted-fg">
+            <PhoneCall className="w-3.5 h-3.5 text-accent shrink-0" strokeWidth={2.5} />
+            Benson Triage Direct: (504) 555-0100 (Mon-Fri 7am-6pm)
+          </div>
         </div>
-
       </div>
-
     </div>
   );
 };

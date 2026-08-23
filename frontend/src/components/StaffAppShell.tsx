@@ -1,15 +1,16 @@
 import React from 'react';
-import { 
-  LayoutDashboard, 
-  ListTodo, 
-  Users, 
-  Car, 
-  LineChart, 
-  Link as LinkIcon, 
+import {
+  LayoutDashboard,
+  ListTodo,
+  Users,
+  Car,
+  LineChart,
+  Link as LinkIcon,
   Settings,
-  Shield,
-  
-  LogOut
+  Home,
+  Heart,
+  Network,
+  HeartHandshake,
 } from 'lucide-react';
 import { WorkflowState, Perspective } from '../types';
 
@@ -21,39 +22,40 @@ interface StaffAppShellProps {
   children: React.ReactNode;
 }
 
-export const StaffAppShell: React.FC<StaffAppShellProps> = ({ 
-  state, 
-  onSetStaffRoute, 
+export const StaffAppShell: React.FC<StaffAppShellProps> = ({
+  state,
+  onSetStaffRoute,
   onSetPerspective,
-  onReset,
-  children 
+  children,
 }) => {
   const navItems = [
-    { id: 'COMMAND_CENTER', label: 'Command Center', icon: LayoutDashboard },
-    { id: 'EXCEPTIONS', label: 'Exceptions', icon: ListTodo },
-    { id: 'PATIENTS', label: 'Patients', icon: Users },
-    { id: 'RESOURCES', label: 'Resources', icon: Car },
-    { id: 'INSIGHTS', label: 'Insights', icon: LineChart },
-    { id: 'INTEGRATIONS', label: 'Integrations', icon: LinkIcon },
-    { id: 'ADMIN', label: 'Admin', icon: Settings },
+    { id: 'COMMAND_CENTER', label: 'Command Center', short: 'Command', icon: LayoutDashboard },
+    { id: 'EXCEPTIONS', label: 'Exceptions', short: 'Exceptions', icon: ListTodo },
+    { id: 'PATIENTS', label: 'Patients', short: 'Patients', icon: Users },
+    { id: 'RESOURCES', label: 'Resources', short: 'Rides', icon: Car },
+    { id: 'INSIGHTS', label: 'Insights', short: 'Insights', icon: LineChart },
+    { id: 'INTEGRATIONS', label: 'Integrations', short: 'Maps', icon: LinkIcon },
+    { id: 'ADMIN', label: 'Admin', short: 'Admin', icon: Settings },
+  ];
+
+  const siteLinks: Array<{ id: Perspective; label: string; icon: typeof Home }> = [
+    { id: 'LANDING', label: 'Home', icon: Home },
+    { id: 'PATIENT', label: 'Patient', icon: Heart },
+    { id: 'CAREGIVER', label: 'Caregiver', icon: HeartHandshake },
+    { id: 'SYSTEM', label: 'Graph', icon: Network },
   ];
 
   const currentRoute = state.staffRoute;
+  const pageTitle =
+    navItems.find((i) => i.id === currentRoute)?.label ||
+    (currentRoute === 'CASE_WORKSPACE' ? 'Case Workspace' : 'Staff');
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden text-slate-900">
-      {/* Sidebar */}
-      <aside className="w-16 md:w-60 bg-white border-r border-slate-200 flex flex-col shrink-0">
-        <div className="h-16 flex items-center justify-center md:justify-start md:px-6 border-b border-slate-200">
-          <div className="flex items-center gap-2">
-            <Shield className="w-5 h-5 text-indigo-600" />
-            <span className="hidden md:inline font-bold text-sm text-slate-800">OncoReady</span>
-          </div>
-        </div>
-        
-        <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
-          <div className="hidden md:block mb-4 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-            Workspace
+    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full min-h-[calc(100dvh-8.5rem)]">
+      <aside className="order-2 md:order-1 w-full md:w-56 bg-white border-t-2 md:border-t-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0">
+        <nav className="flex-1 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto px-2 py-2 md:py-4 gap-1">
+          <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
+            Staff tools
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -61,63 +63,57 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             return (
               <button
                 key={item.id}
+                aria-label={item.label}
                 onClick={() => onSetStaffRoute(item.id)}
-                className={`w-full flex items-center gap-3 px-3 py-2 text-sm rounded-md transition-colors ${
-                  isActive 
-                    ? 'bg-indigo-50 text-indigo-700 font-medium' 
-                    : 'text-slate-600 hover:bg-slate-100 hover:text-slate-900'
+                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 min-w-[4.25rem] md:min-w-0 px-2 md:px-3 py-2 md:py-2.5 text-[10px] md:text-sm rounded-xl md:rounded-full border-2 transition-colors ${
+                  isActive
+                    ? 'bg-accent text-white border-ink font-heading font-bold'
+                    : 'text-ink border-transparent hover:bg-sun/40 hover:border-ink'
                 }`}
               >
-                <Icon className={`w-4 h-4 ${isActive ? 'text-indigo-600' : 'text-slate-400'}`} />
-                <span className="hidden md:inline">{item.label}</span>
+                <Icon className="w-4 h-4" strokeWidth={2.5} />
+                <span aria-hidden="true" className="md:hidden font-heading font-bold">{item.short}</span>
+                <span aria-hidden="true" className="hidden md:inline">{item.label}</span>
               </button>
             );
           })}
-        </nav>
 
-        <div className="p-4 border-t border-slate-200">
-          <button
-            onClick={() => onSetPerspective('SIGN_IN')}
-            className="w-full flex items-center gap-3 px-3 py-2 text-sm text-slate-600 hover:bg-slate-100 hover:text-slate-900 rounded-md transition-colors"
-          >
-            <LogOut className="w-4 h-4 text-slate-400" />
-            <span className="hidden md:inline">Switch Role</span>
-          </button>
-        </div>
+          <div className="hidden md:block mt-4 pt-4 border-t-2 border-ink/10 px-1 space-y-1">
+            <div className="px-3 mb-2 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
+              Leave staff
+            </div>
+            {siteLinks.map((link) => {
+              const Icon = link.icon;
+              return (
+                <button
+                  key={link.id}
+                  onClick={() => onSetPerspective(link.id)}
+                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-full border-2 border-transparent hover:border-ink hover:bg-sun/40"
+                >
+                  <Icon className="w-4 h-4" strokeWidth={2.5} />
+                  <span className="font-heading font-bold">{link.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </nav>
       </aside>
 
-      {/* Main Content Area */}
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Top bar */}
-        <header className="min-h-16 bg-white border-b border-slate-200 flex items-center justify-between gap-3 px-3 md:px-6 py-2 shrink-0">
-          <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-slate-800">
-              {navItems.find(i => i.id === currentRoute)?.label || 
-               (currentRoute === 'CASE_WORKSPACE' ? 'Case Workspace' : '')}
-            </h1>
+      <div className="order-1 md:order-2 flex-1 flex flex-col min-w-0 overflow-hidden">
+        <div className="px-3 sm:px-5 lg:px-6 py-3 border-b-2 border-ink/10 bg-cream/80 flex items-center justify-between gap-3 shrink-0">
+          <div>
+            <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">Staff workspace</p>
+            <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>
           </div>
-          
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-slate-100 rounded-full text-xs font-medium text-slate-600">
-              <span className="w-2 h-2 rounded-full bg-indigo-500"></span>
-              Training environment
-            </div>
-            
-            <button
-              onClick={onReset}
-              className="text-xs font-medium text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-md border border-amber-200 transition-colors"
-            >
-              Reset Workspace
-            </button>
-          </div>
-        </header>
-
-        {/* Page Content */}
-        <main className="flex-1 overflow-auto bg-slate-50 relative">
-          <div className="absolute inset-0 p-3 sm:p-6 lg:p-8">
+          <p className="hidden sm:block text-xs text-muted-fg text-right max-w-xs">
+            Use Patient, Caregiver, or Graph in the top bar, or click the logo to go home.
+          </p>
+        </div>
+        <div className="flex-1 overflow-y-auto">
+          <div className="p-3 sm:p-5 lg:p-6 min-h-full">
             {children}
           </div>
-        </main>
+        </div>
       </div>
     </div>
   );

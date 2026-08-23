@@ -1,22 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  Activity, 
-  ArrowRight, 
-  CheckCircle2, 
-  Clock, 
-  Stethoscope, 
-  HeartHandshake, 
-  ShieldCheck, 
-  Network, 
-  Building2, 
-  Sparkles, 
-  ChevronDown, 
-  ChevronUp, 
-  Lock
+import {
+  CheckCircle2,
+  Clock,
+  Stethoscope,
+  HeartHandshake,
+  ShieldCheck,
+  Network,
+  Building2,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Lock,
+  Banknote,
+  MapPinned,
+  Users,
 } from 'lucide-react';
 import { WorkflowState, Perspective } from '../types';
 import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
 import { Avatar } from './Avatar';
+import { LogoMark } from './Logo';
+import { Button, IconBubble, StickerCard } from './ui';
+import { ConfettiField, Marquee, Squiggle } from './Decorations';
+import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
+import { PointerHighlight } from './ui/pointer-highlight';
+
+const WorldMap = React.lazy(() => import('./ui/world-map'));
 
 interface LandingPageProps {
   state: WorkflowState;
@@ -30,136 +38,114 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   onSelectPerspective,
 }) => {
   const [billingCycle, setBillingCycle] = useState<'ANNUAL' | 'MONTHLY'>('ANNUAL');
-  const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
   const faqs = [
     {
       q: 'How does OncoReady prevent same-day chemotherapy cancellations?',
-      a: 'OncoReady initiates an automated, 2-minute barrier screening window 24 hours prior to scheduled infusion. It detects non-clinical barriers (like sudden transit cancellations) and patient-reported clinical symptoms early, routing them simultaneously to patient navigators and oncology triage nurses before pharmacy compounding begins.'
+      a: 'A two-minute check-in opens 24 hours before infusion. Cancelled rides go to navigation. Symptoms go to a nurse. Both have owners before compounding starts.'
     },
     {
       q: 'How does the Caregiver Privacy & Data-Minimization projection work?',
-      a: 'Caregivers play a vital role in transportation and home support, but patients retain complete medical privacy. OncoReady derives an explicit permission-scoped projection that displays ride confirmations, vehicle IDs, and arrival times while strictly filtering out all clinical symptom text and triage notes.'
+      a: 'Ana only sees the ride: pickup time, vehicle, and driver. She never sees diagnosis, symptom text, or nurse notes.'
     },
     {
       q: 'How does OncoReady fit an existing EHR environment?',
-      a: 'OncoReady provides an HL7 FHIR R4 mapping workspace for scheduling, patient, task, and communication data. Connection behavior and governance are configured with each organization during implementation.'
+      a: 'We map schedule, patient, task, and communication data to FHIR R4. Connection details are set during implementation.'
     },
     {
       q: 'Does OncoReady use AI to make automated clinical triage decisions?',
-      a: 'No. OncoReady strictly preserves verbatim patient symptom reports and routes them directly to licensed human oncology nurses. OncoReady enforces zero automated clinical downgrade or diagnosis, ensuring 100% clinician authority.'
+      a: 'No. Patient words stay as written and go to a named nurse. OncoReady does not diagnose or downgrade urgency.'
     }
   ];
 
   return (
-    <div className="space-y-20 pb-20 animate-fade-in text-slate-900">
-      
-      {/* 1. HERO SECTION */}
-      <section className="relative pt-6 sm:pt-12 text-center max-w-5xl mx-auto px-4 space-y-8">
-        
-        {/* Top Floating Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-50 border border-indigo-200 text-indigo-800 text-xs font-bold shadow-2xs">
-          <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
-          <span>Next-Generation Oncology Clinical Continuity Platform</span>
-        </div>
+    <div className="space-y-12 pb-20 md:pb-12 animate-pop text-ink">
 
-        {/* Hero Headline */}
-        <div className="space-y-4 max-w-4xl mx-auto">
-          <h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.1]">
-            Zero Day-Of Chemotherapy <br className="hidden sm:inline" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 via-sky-600 to-teal-600">
-              Infusion Cancellations.
-            </span>
-          </h1>
+      <section className="relative pt-6 sm:pt-10 w-full px-5 sm:px-8 lg:px-12">
+        <ConfettiField />
+        <div className="absolute -top-6 left-8 w-64 h-64 rounded-full bg-sun/40 hidden md:block -z-10" />
 
-          <p className="text-base sm:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed font-normal">
-            Proactive T-24h barrier detection, dual-path clinical &amp; transportation triage, and privacy-guaranteed caregiver logistics for cancer centers.
-          </p>
-        </div>
-
-        {/* Hero CTA Group */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <button
-            onClick={onOpenAuthModal}
-            className="w-full sm:w-auto px-8 py-4 bg-indigo-600 hover:bg-indigo-700 active:scale-98 text-white font-extrabold rounded-2xl transition flex items-center justify-center gap-2.5 shadow-xl shadow-indigo-500/25 text-sm sm:text-base cursor-pointer"
-          >
-            <span>Explore Workspace</span>
-            <ArrowRight className="w-4 h-4" />
-          </button>
-
-          <button
-            onClick={() => {
-              const pricingEl = document.getElementById('pricing-section');
-              pricingEl?.scrollIntoView({ behavior: 'smooth' });
-            }}
-            className="w-full sm:w-auto px-8 py-4 bg-white hover:bg-slate-50 text-slate-800 font-bold rounded-2xl border border-slate-200 transition text-sm sm:text-base shadow-2xs hover:shadow-md cursor-pointer"
-          >
-            <span>Explore Deployment Models</span>
-          </button>
-        </div>
-
-        {/* Trust Badges Bar */}
-        <div className="flex flex-wrap items-center justify-center gap-6 sm:gap-10 pt-4 text-xs font-semibold text-slate-500">
-          <div className="flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-600" />
-            <span>Enterprise Security Controls</span>
+        <div className="text-center space-y-7 relative">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border-2 border-ink shadow-pop text-ink text-xs font-heading font-bold">
+            <Sparkles className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
+            <span>Next-Generation Oncology Clinical Continuity Platform</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Lock className="w-4 h-4 text-indigo-600" />
-            <span>Privacy &amp; Data Governance</span>
+
+          <div className="space-y-4 max-w-4xl mx-auto">
+            <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.05]">
+              Zero Day-Of Chemotherapy <br className="hidden sm:inline" />
+              <PointerHighlight
+                containerClassName="inline-block mx-auto mt-2"
+                rectangleClassName="border-accent"
+                pointerClassName="text-pop"
+              >
+                <span className="text-accent px-1">Infusion Cancellations.</span>
+              </PointerHighlight>
+            </h1>
+            <Squiggle className="mx-auto" />
+            <p className="text-base sm:text-lg text-muted-fg max-w-2xl mx-auto leading-relaxed">
+              Find the cancelled ride or new symptom before compounding starts. Then give it an owner, a deadline, and proof it is closed.
+            </p>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Building2 className="w-4 h-4 text-sky-600" />
-            <span>HL7 FHIR R4 Mapping</span>
+
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-1">
+            <Button onClick={onOpenAuthModal} showArrow>
+              Explore Workspace
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => document.getElementById('business-section')?.scrollIntoView({ behavior: 'smooth' })}
+            >
+              See the business model
+            </Button>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Network className="w-4 h-4 text-teal-600" />
-            <span>EHR Integration Architecture</span>
+
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2 text-xs font-heading font-bold">
+            {[
+              [ShieldCheck, 'Human clinical authority'],
+              [Lock, 'Caregiver data minimization'],
+              [Building2, 'HL7 FHIR R4 mapping'],
+              [Network, 'Closed-loop ownership'],
+            ].map(([Icon, label]) => (
+              <span key={String(label)} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white border-2 border-ink">
+                <Icon className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
+                {label as string}
+              </span>
+            ))}
           </div>
         </div>
 
-        {/* 2. LIVE INTERACTIVE PRODUCT PREVIEW CARD */}
-        <div className="pt-8 max-w-5xl mx-auto">
-          <div className="bg-white rounded-3xl border-2 border-slate-200 shadow-2xl p-6 sm:p-8 space-y-6 text-left relative overflow-hidden">
-            
-            {/* Top Preview Control Bar */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+        <div className="pt-10">
+          <StickerCard hover={false} featured className="p-5 sm:p-8 space-y-6 text-left relative overflow-hidden">
+            <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-mint/40 border-2 border-ink hidden sm:block" />
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b-2 border-ink/10">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center shadow-sm">
-                  <Activity className="w-5 h-5" />
-                </div>
+                <LogoMark size={44} />
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-extrabold text-slate-900 text-base">
+                    <span className="font-display font-extrabold text-ink text-base">
                       Treatment Readiness Workspace
                     </span>
-                    <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="text-[10px] font-heading font-bold px-2 py-0.5 rounded-full bg-mint/30 text-ink border-2 border-ink">
                       TRAINING ENVIRONMENT
                     </span>
                   </div>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-muted-fg">
                     Patient: Maria Hernandez (54F) • mFOLFOX6 Cycle 4 • Benson Cancer Center
                   </p>
                 </div>
               </div>
-
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => onSelectPerspective('PATIENT')}
-                  className="px-3.5 py-1.5 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold rounded-xl text-xs transition"
-                >
+                <button onClick={() => onSelectPerspective('PATIENT')} className="px-3.5 py-2 bg-white border-2 border-ink rounded-full font-heading font-bold text-xs hover:bg-sun transition">
                   Enter Patient View
                 </button>
-                <button
-                  onClick={() => onSelectPerspective('STAFF')}
-                  className="px-3.5 py-1.5 bg-slate-900 hover:bg-slate-800 text-white font-bold rounded-xl text-xs transition"
-                >
+                <button onClick={() => onSelectPerspective('STAFF')} className="px-3.5 py-2 bg-ink text-white border-2 border-ink rounded-full font-heading font-bold text-xs hover:bg-accent transition">
                   Enter Staff Hub
                 </button>
               </div>
             </div>
 
-            {/* Embedded Live Treatment Readiness Graph */}
             <TreatmentReadinessGraph
               appointment={state.appointment}
               tasks={state.tasks}
@@ -170,436 +156,277 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               onNavigateToStaff={() => onSelectPerspective('STAFF')}
             />
 
-            {/* 3 Interactive Quick Portal Triggers */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-              <div 
-                onClick={() => onSelectPerspective('PATIENT')}
-                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-indigo-50/40 hover:border-indigo-300 transition cursor-pointer space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-900">1. Patient Screening</span>
-                  <Avatar src={state.patient.avatarUrl} alt="Maria" size="xs" roleType="PATIENT" />
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  2-minute pre-infusion screening detecting cancelled rides and symptoms.
-                </p>
-              </div>
-
-              <div 
-                onClick={() => onSelectPerspective('STAFF')}
-                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-sky-50/40 hover:border-sky-300 transition cursor-pointer space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-900">2. Staff Exception Hub</span>
-                  <div className="flex -space-x-2">
-                    <Avatar alt="Sarah RN" size="xs" roleType="NURSE" />
-                    <Avatar alt="Marcus MSW" size="xs" roleType="NAVIGATOR" />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-1">
+              {[
+                { title: '1. Patient Screening', copy: '2-minute pre-infusion screening detecting cancelled rides and symptoms.', go: () => onSelectPerspective('PATIENT'), color: 'accent' as const, avatar: <Avatar src={state.patient.avatarUrl} alt="Maria" size="xs" roleType="PATIENT" /> },
+                { title: '2. Staff Exception Hub', copy: 'Dual-task nurse clinical triage and navigator Med-Van dispatch.', go: () => onSelectPerspective('STAFF'), color: 'sun' as const, avatar: <div className="flex -space-x-2"><Avatar alt="Sarah RN" size="xs" roleType="NURSE" /><Avatar alt="Marcus MSW" size="xs" roleType="NAVIGATOR" /></div> },
+                { title: '3. Caregiver Logistics', copy: 'Real-time ride tracking with 100% patient clinical privacy protection.', go: () => onSelectPerspective('CAREGIVER'), color: 'mint' as const, avatar: <Avatar src={state.caregiver.avatarUrl} alt="Ana" size="xs" roleType="CAREGIVER" /> },
+              ].map((card) => (
+                <button key={card.title} onClick={card.go} className="text-left p-4 rounded-xl border-2 border-ink bg-cream hover:-rotate-1 hover:scale-[1.02] transition-transform duration-300 ease-bouncey space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="font-heading font-bold text-sm text-ink">{card.title}</span>
+                    {card.avatar}
                   </div>
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Dual-task nurse clinical triage and navigator Med-Van dispatch.
-                </p>
-              </div>
-
-              <div 
-                onClick={() => onSelectPerspective('CAREGIVER')}
-                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/70 hover:bg-teal-50/40 hover:border-teal-300 transition cursor-pointer space-y-1.5"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="font-bold text-xs text-slate-900">3. Caregiver Logistics</span>
-                  <Avatar src={state.caregiver.avatarUrl} alt="Ana" size="xs" roleType="CAREGIVER" />
-                </div>
-                <p className="text-[11px] text-slate-500">
-                  Real-time ride tracking with 100% patient clinical privacy protection.
-                </p>
-              </div>
+                  <p className="text-[12px] text-muted-fg">{card.copy}</p>
+                </button>
+              ))}
             </div>
-
-          </div>
-        </div>
-
-      </section>
-
-      {/* 3. ENTERPRISE ROI & CLINICAL IMPACT METRICS */}
-      <section className="max-w-6xl mx-auto px-4">
-        <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-8 sm:p-12 shadow-2xl space-y-8">
-          <div className="text-center space-y-2 max-w-2xl mx-auto">
-            <span className="text-xs font-bold font-mono uppercase tracking-widest text-indigo-300">
-              CLOSED-LOOP OPERATING MODEL
-            </span>
-            <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              One accountable path from barrier to resolution
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-center">
-            <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-indigo-400">T−24h</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Early Barrier Signal</div>
-              <p className="text-xs text-slate-400 pt-1">Surfaces patient-reported barriers before treatment day.</p>
-            </div>
-
-            <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-emerald-400">2 paths</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Owned Resolution</div>
-              <p className="text-xs text-slate-400 pt-1">Clinical review and logistics move in parallel.</p>
-            </div>
-
-            <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-sky-400">1 record</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Causal Timeline</div>
-              <p className="text-xs text-slate-400 pt-1">Every owner, action, and confirmation stays connected.</p>
-            </div>
-
-            <div className="p-6 bg-white/5 backdrop-blur-xs rounded-2xl border border-white/10 space-y-1">
-              <div className="text-3xl sm:text-4xl font-black text-teal-400">Scoped</div>
-              <div className="text-xs font-bold text-white uppercase tracking-wider">Caregiver View</div>
-              <p className="text-xs text-slate-400 pt-1">Only authorized transportation details are projected.</p>
-            </div>
-          </div>
+          </StickerCard>
         </div>
       </section>
 
-      {/* 4. CORE PRODUCT PILLARS (DEEP DIVES) */}
-      <section className="max-w-6xl mx-auto px-4 space-y-12">
+      <Marquee items={[
+        'Cancelled ride',
+        'New fever',
+        'Insurance delay',
+        'Medication cost',
+        'Caregiver unavailable',
+        'Rural parish transit',
+        'Pharmacy compounding clock',
+        'Owned until confirmed',
+      ]} />
+
+      <section id="how-it-works" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-8 items-start">
+        <div className="lg:col-span-5 space-y-3">
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-accent">How it works</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight">
+            Treatments slip between visits, not in the chair.
+          </h2>
+          <p className="text-sm sm:text-base text-muted-fg leading-relaxed">
+            A cancelled ride or a new fever often lands in different inboxes. Patients do not know who is helping. OncoReady puts every blocker on one graph until someone owns it and the patient confirms.
+          </p>
+        </div>
+        <div className="lg:col-span-7 grid sm:grid-cols-2 gap-4">
+          {[
+            { color: 'accent' as const, title: 'Detect at T-24h', copy: 'Text, voice, or web check-in. One report, two owned paths.' },
+            { color: 'pop' as const, title: 'Split without guessing', copy: 'Clinical text stays verbatim for nursing. Logistics go to navigation.' },
+            { color: 'sun' as const, title: 'Stay At Risk until closed', copy: 'A sent message is not success. The graph stays amber until both sides confirm.' },
+            { color: 'mint' as const, title: 'Sell the operating system', copy: 'Health systems pay for protected chair time. Patients never get a bill from us.' },
+          ].map((item) => (
+            <StickerCard key={item.title} className="p-5 space-y-3">
+              <IconBubble color={item.color}>
+                <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
+              </IconBubble>
+              <h3 className="font-heading font-bold text-lg">{item.title}</h3>
+              <p className="text-sm text-muted-fg">{item.copy}</p>
+            </StickerCard>
+          ))}
+        </div>
+      </section>
+
+      <section id="business-section" className="w-full px-5 sm:px-8 lg:px-12 space-y-6">
         <div className="text-center space-y-3 max-w-2xl mx-auto">
-          <span className="text-xs font-bold font-mono uppercase tracking-widest text-indigo-600">
-            COMPREHENSIVE ARCHITECTURE
-          </span>
-          <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">
-            Engineered for Clinical Precision
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-pop">The business</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold">
+            Sold to the{' '}
+            <PointerHighlight rectangleClassName="border-sun" pointerClassName="text-accent">
+              <span className="px-1">cancer center</span>
+            </PointerHighlight>
+            . Built for the next treatment.
           </h2>
-          <p className="text-sm text-slate-600">
-            Four foundational pillars transforming fragmented pre-infusion tasks into a reliable, closed-loop workflow.
+          <p className="text-sm text-muted-fg">
+            Centers buy it. Patients, nurses, navigators, and caregivers use it.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          
-          {/* Pillar 1 */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-lg transition space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-700 flex items-center justify-center">
-              <Clock className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">
-              1. T-24h Proactive Barrier Detection
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Automated screening opens exactly 24 hours prior to appointment. Patients report transit viability and new symptoms in under 2 minutes, well before expensive antineoplastic drug preparation begins.
-            </p>
-            <ul className="text-xs text-slate-700 space-y-1.5 pt-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Catches transit cancellations &amp; vehicle lift requirements</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Captures neuropathy, fever, and acute gastrointestinal toxicities</span>
-              </li>
-            </ul>
-          </div>
+        <div className="grid md:grid-cols-3 gap-4">
+          {[
+            { icon: Banknote, color: 'sun' as const, title: 'Who pays', copy: 'Infusion centers, priced by site and chair volume. Implementation is a paid onboarding sprint.' },
+            { icon: Users, color: 'accent' as const, title: 'Why they buy', copy: 'Same-day cancellations waste drug, chair time, and nursing hours. This sells continuity.' },
+            { icon: MapPinned, color: 'mint' as const, title: 'Where we land first', copy: 'Louisiana first. Rural parishes, medical transit, existing navigation teams.' },
+          ].map((card) => (
+            <StickerCard key={card.title} className="p-6 space-y-3">
+              <IconBubble color={card.color}>
+                <card.icon className="w-5 h-5" strokeWidth={2.5} />
+              </IconBubble>
+              <h3 className="font-heading font-bold text-xl">{card.title}</h3>
+              <p className="text-sm text-muted-fg leading-relaxed">{card.copy}</p>
+            </StickerCard>
+          ))}
+        </div>
 
-          {/* Pillar 2 */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-lg transition space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-sky-50 text-sky-700 flex items-center justify-center">
-              <Stethoscope className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">
-              2. Dual-Path Clinical &amp; Navigation Triage
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Single patient submission splits automatically into concurrent streams: symptom text routes verbatim to licensed oncology triage nurses, while transportation needs route to patient navigators.
-            </p>
-            <ul className="text-xs text-slate-700 space-y-1.5 pt-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Preserves unaltered clinical text for human nurse review</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Direct dispatch to medical transit (Med-Van) services</span>
-              </li>
-            </ul>
+        <StickerCard hover={false} className="p-6 sm:p-8 bg-ink text-cream !shadow-pop-sun">
+          <div className="grid sm:grid-cols-4 gap-6 text-center">
+            {[
+              ['T-24h', 'Early barrier signal'],
+              ['2 paths', 'Owned resolution'],
+              ['1 record', 'Causal timeline'],
+              ['$0 patient', 'Center-funded product'],
+            ].map(([stat, label]) => (
+              <div key={label}>
+                <div className="font-display text-3xl sm:text-4xl font-extrabold text-sun">{stat}</div>
+                <div className="text-xs font-heading font-bold uppercase tracking-wider mt-1">{label}</div>
+              </div>
+            ))}
           </div>
+        </StickerCard>
+      </section>
 
-          {/* Pillar 3 */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-lg transition space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-teal-50 text-teal-700 flex items-center justify-center">
-              <HeartHandshake className="w-6 h-6" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">
-              3. Data-Minimized Caregiver Logistics
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              Family members and ride proxies receive vehicle pickup times and driver arrival links without exposing the patient's sensitive diagnosis, symptom complaints, or oncology triage advice.
-            </p>
-            <ul className="text-xs text-slate-700 space-y-1.5 pt-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Strict allowlist-only projection of transit coordinates</span>
+      <section className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-2 gap-6 items-stretch">
+        <div className="space-y-3">
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-mint">Tomorrow morning</span>
+          <h2 className="font-display text-3xl font-extrabold">Rural miles are a clinical risk.</h2>
+          <p className="text-sm text-muted-fg leading-relaxed">
+            Patients travel from Terrebonne, Monroe, and Lake Charles into infusion hubs. If the ride fails, the chair sits empty. Transit gets an owner and a live route. The caregiver sees the ride, never the fever.
+          </p>
+          <ul className="space-y-2 text-sm">
+            {['Illustrative Med-Van corridor from St. Charles Ave to Benson Suite B', 'Parish-level access nodes for a future Ochsner-shaped network', 'Caregiver sees the route. Caregiver never sees the fever.'].map((line) => (
+              <li key={line} className="flex items-start gap-2">
+                <CheckCircle2 className="w-4 h-4 text-accent mt-0.5" strokeWidth={2.5} />
+                <span>{line}</span>
               </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Zero clinical note exposure to unauthorized third parties</span>
-              </li>
-            </ul>
+            ))}
+          </ul>
+        </div>
+        <RideMap
+          title="Treatment-day corridor"
+          subtitle="Illustrative Louisiana routing • not a live dispatch feed"
+          pickup={NEW_ORLEANS_PICKUP}
+          destination={BENSON_CENTER}
+          extras={LOUISIANA_SITES}
+          height={320}
+        />
+      </section>
+
+      <section id="access-map" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-8 items-center">
+        <div className="lg:col-span-5 space-y-3">
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-accent">Network story</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold">
+            Rural{' '}
+            <PointerHighlight rectangleClassName="border-mint" pointerClassName="text-accent">
+              <span className="px-1">connectivity</span>
+            </PointerHighlight>
+            {' '}is the product, not a feature.
+          </h2>
+          <p className="text-sm text-muted-fg">
+            Louisiana is the beachhead. The same loop can grow across countries. Training map, not a live feed.
+          </p>
+        </div>
+        <div className="lg:col-span-7 flex justify-center lg:justify-end">
+          <div className="card-sticker p-3 w-full max-w-md overflow-hidden">
+            <React.Suspense fallback={<div className="aspect-[2/1] w-full rounded-xl bg-cream" aria-hidden="true" />}>
+              <WorldMap
+                lineColor="#8B5CF6"
+                dots={[
+                  { start: { lat: 64.2008, lng: -149.4937, label: 'Fairbanks' }, end: { lat: 34.0522, lng: -118.2437, label: 'Los Angeles' } },
+                  { start: { lat: 64.2008, lng: -149.4937, label: 'Fairbanks' }, end: { lat: -15.7975, lng: -47.8919, label: 'Brasilia' } },
+                  { start: { lat: -15.7975, lng: -47.8919, label: 'Brasilia' }, end: { lat: 38.7223, lng: -9.1393, label: 'Lisbon' } },
+                  { start: { lat: 51.5074, lng: -0.1278, label: 'London' }, end: { lat: 28.6139, lng: 77.209, label: 'New Delhi' } },
+                  { start: { lat: 28.6139, lng: 77.209, label: 'New Delhi' }, end: { lat: 43.1332, lng: 131.9113, label: 'Vladivostok' } },
+                  { start: { lat: 28.6139, lng: 77.209, label: 'New Delhi' }, end: { lat: -1.2921, lng: 36.8219, label: 'Nairobi' } },
+                ]}
+              />
+            </React.Suspense>
           </div>
-
-          {/* Pillar 4 */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-lg transition space-y-4">
-            <div className="w-12 h-12 rounded-2xl bg-slate-900 text-white flex items-center justify-center">
-              <Network className="w-6 h-6 text-indigo-400" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">
-              4. Treatment Readiness Graph &amp; Audit Engine
-            </h3>
-            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-              A directed graph anchors every treatment session to its readiness dependencies. Closed-loop transitions are recorded in a causal audit timeline.
-            </p>
-            <ul className="text-xs text-slate-700 space-y-1.5 pt-2">
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Real-time visual dependency graph with active blocker states</span>
-              </li>
-              <li className="flex items-center gap-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                <span>Immutable audit history tracking all human actions</span>
-              </li>
-            </ul>
-          </div>
-
         </div>
       </section>
 
-      {/* 5. SUBSCRIPTION & PRICING PLANS */}
-      <section id="pricing-section" className="max-w-6xl mx-auto px-4 space-y-10">
-        <div className="text-center space-y-4 max-w-2xl mx-auto">
-          <span className="text-xs font-bold font-mono uppercase tracking-widest text-indigo-600">
-            ENTERPRISE DEPLOYMENT MODELS
-          </span>
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
-            Scale with your oncology operating model
-          </h2>
-          <p className="text-sm text-slate-600">
-            Compare focused, health-system, and network configurations for treatment-readiness operations.
-          </p>
+      <section className="w-full px-5 sm:px-8 lg:px-12 space-y-6">
+        <div>
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-accent">What you get</span>
+          <h2 className="font-display text-3xl font-extrabold mt-1">Four pieces. One closed loop.</h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
+          {[
+            { icon: Clock, color: 'accent' as const, title: 'T-24h check-in', copy: 'Two minutes. Ride and symptoms, before compounding starts.' },
+            { icon: Stethoscope, color: 'pop' as const, title: 'Split routing', copy: 'Clinical text goes to nursing, unchanged. Transit goes to navigation.' },
+            { icon: HeartHandshake, color: 'mint' as const, title: 'Caregiver view', copy: 'Pickup time and vehicle only. No diagnosis. No symptom notes.' },
+            { icon: Network, color: 'sun' as const, title: 'Readiness graph', copy: 'Every blocker, owner, and close stays on one record.' },
+          ].map((pillar) => (
+            <StickerCard key={pillar.title} className="p-5 space-y-3">
+              <IconBubble color={pillar.color}>
+                <pillar.icon className="w-5 h-5" strokeWidth={2.5} />
+              </IconBubble>
+              <h3 className="font-heading font-bold text-lg">{pillar.title}</h3>
+              <p className="text-sm text-muted-fg">{pillar.copy}</p>
+            </StickerCard>
+          ))}
+        </div>
+      </section>
 
-          {/* Billing Cycle Switcher */}
-          <div className="inline-flex items-center p-1 rounded-2xl bg-slate-100 border border-slate-200 text-xs font-bold">
-            <button
-              onClick={() => setBillingCycle('ANNUAL')}
-              className={`px-4 py-2 rounded-xl transition ${
-                billingCycle === 'ANNUAL' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
-              Annual Billing <span className="text-[10px] text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded-full ml-1 font-mono">SAVE 20%</span>
+      <section id="pricing-section" className="w-full px-5 sm:px-8 lg:px-12 space-y-8">
+        <div className="text-center space-y-4 max-w-2xl mx-auto">
+          <span className="text-xs font-heading font-bold uppercase tracking-widest text-accent">ENTERPRISE DEPLOYMENT MODELS</span>
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold">Scale with your oncology operating model</h2>
+          <p className="text-sm text-muted-fg">Compare focused, health-system, and network configurations for treatment-readiness operations.</p>
+          <div className="inline-flex items-center p-1 rounded-full bg-white border-2 border-ink text-xs font-heading font-bold">
+            <button onClick={() => setBillingCycle('ANNUAL')} className={`px-4 py-2 rounded-full transition ${billingCycle === 'ANNUAL' ? 'bg-accent text-white' : 'text-ink'}`}>
+              Annual Billing <span className="text-[10px] bg-mint text-ink px-1.5 py-0.5 rounded-full ml-1">SAVE 20%</span>
             </button>
-            <button
-              onClick={() => setBillingCycle('MONTHLY')}
-              className={`px-4 py-2 rounded-xl transition ${
-                billingCycle === 'MONTHLY' ? 'bg-white text-slate-900 shadow-2xs' : 'text-slate-600 hover:text-slate-900'
-              }`}
-            >
+            <button onClick={() => setBillingCycle('MONTHLY')} className={`px-4 py-2 rounded-full transition ${billingCycle === 'MONTHLY' ? 'bg-accent text-white' : 'text-ink'}`}>
               Monthly Billing
             </button>
           </div>
         </div>
 
-        {/* Pricing Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          
-          {/* Plan 1: Community Cancer Center */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-xl transition space-y-6 flex flex-col justify-between">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
+          <StickerCard className="p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 uppercase tracking-wider font-mono">
-                Community Clinic
-              </span>
-              <h3 className="text-2xl font-bold text-slate-900">Community Cancer Center</h3>
-              <p className="text-xs text-slate-500">
-                Ideal for regional outpatient clinics and community infusion centers up to 15 chairs.
-              </p>
-
-              <div className="pt-2">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">
-                    {billingCycle === 'ANNUAL' ? 'Focused' : 'Flexible'}
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">configuration</span>
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5">
-                  Single-site readiness operations
-                </div>
-              </div>
-
-              <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700">
-                <div className="font-bold text-slate-900">Included Capabilities:</div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Up to 15 Infusion Chairs</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Automated T-24h Patient SMS Screening</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Oncology Nurse Triage Workbench</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>FHIR Mapping Workspace</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Standard 8x5 Email Support</span>
-                </div>
+              <span className="text-xs font-heading font-bold px-2.5 py-1 rounded-full bg-muted border-2 border-ink uppercase">Community Clinic</span>
+              <h3 className="font-display text-2xl font-extrabold">Community Cancer Center</h3>
+              <p className="text-sm text-muted-fg">Ideal for regional outpatient clinics and community infusion centers up to 15 chairs.</p>
+              <div className="font-display text-4xl font-extrabold">{billingCycle === 'ANNUAL' ? 'Focused' : 'Flexible'} <span className="text-sm font-sans font-medium text-muted-fg">configuration</span></div>
+              <div className="space-y-2.5 pt-2 text-sm">
+                {['Up to 15 Infusion Chairs', 'Automated T-24h Patient SMS Screening', 'Oncology Nurse Triage Workbench', 'FHIR Mapping Workspace', 'Standard 8x5 Email Support'].map((f) => (
+                  <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-mint" strokeWidth={2.5} />{f}</div>
+                ))}
               </div>
             </div>
+            <button onClick={onOpenAuthModal} className="btn-ghost w-full">Get Started with Community</button>
+          </StickerCard>
 
-            <button
-              onClick={onOpenAuthModal}
-              className="w-full py-3.5 rounded-xl border-2 border-slate-300 hover:border-slate-900 font-bold text-xs transition"
-            >
-              Get Started with Community
-            </button>
-          </div>
-
-          {/* Plan 2: Health System Enterprise (Featured) */}
-          <div className="bg-white rounded-3xl border-2 border-indigo-600 p-8 shadow-2xl space-y-6 flex flex-col justify-between relative overflow-hidden">
-            <div className="absolute top-0 right-0 bg-indigo-600 text-white text-[10px] font-bold px-4 py-1 rounded-bl-xl uppercase tracking-widest font-mono">
+          <StickerCard featured className="p-8 space-y-6 flex flex-col justify-between relative scale-100 lg:scale-105 z-10">
+            <div className="absolute -top-4 -right-3 rotate-[15deg] bg-sun border-2 border-ink shadow-pop px-3 py-1 font-display font-extrabold text-xs">
               MOST POPULAR
             </div>
-
             <div className="space-y-4">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-indigo-50 text-indigo-700 uppercase tracking-wider font-mono">
-                Health System
-              </span>
-              <h3 className="text-2xl font-bold text-slate-900">Enterprise Cancer Center</h3>
-              <p className="text-xs text-slate-500">
-                Full-scale clinical continuity and transit automation for hospital oncology departments.
-              </p>
-
-              <div className="pt-2">
-                <div className="flex items-baseline gap-1">
-                  <span className="text-4xl font-extrabold text-slate-900">
-                    {billingCycle === 'ANNUAL' ? 'Enterprise' : 'Modular'}
-                  </span>
-                  <span className="text-xs text-slate-500 font-medium">configuration</span>
-                </div>
-                <div className="text-[11px] text-indigo-700 font-semibold mt-0.5">
-                  Multi-site workflow orchestration
-                </div>
-              </div>
-
-              <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700">
-                <div className="font-bold text-slate-900">Everything in Community, plus:</div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Unlimited Infusion Chairs &amp; Suites</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Interactive Treatment Readiness Graph Engine</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Automated Medical Transit (Med-Van) API</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Caregiver Data-Minimization Logistics Portal</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-indigo-600 shrink-0" />
-                  <span>Governance &amp; Implementation Planning</span>
-                </div>
+              <span className="text-xs font-heading font-bold px-2.5 py-1 rounded-full bg-accent text-white border-2 border-ink uppercase">Health System</span>
+              <h3 className="font-display text-2xl font-extrabold">Enterprise Cancer Center</h3>
+              <p className="text-sm text-muted-fg">Full-scale clinical continuity and transit automation for hospital oncology departments.</p>
+              <div className="font-display text-4xl font-extrabold">{billingCycle === 'ANNUAL' ? 'Enterprise' : 'Modular'} <span className="text-sm font-sans font-medium text-muted-fg">configuration</span></div>
+              <div className="space-y-2.5 pt-2 text-sm">
+                {['Unlimited Infusion Chairs & Suites', 'Interactive Treatment Readiness Graph Engine', 'Automated Medical Transit (Med-Van) API', 'Caregiver Data-Minimization Logistics Portal', 'Governance & Implementation Planning'].map((f) => (
+                  <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-accent" strokeWidth={2.5} />{f}</div>
+                ))}
               </div>
             </div>
+            <button onClick={onOpenAuthModal} className="btn-candy w-full">Explore Enterprise Workspace</button>
+          </StickerCard>
 
-            <button
-              onClick={onOpenAuthModal}
-              className="w-full py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs transition shadow-md shadow-indigo-500/25 cursor-pointer"
-            >
-              Explore Enterprise Workspace
-            </button>
-          </div>
-
-          {/* Plan 3: National Oncology Network */}
-          <div className="bg-white rounded-3xl border border-slate-200 p-8 shadow-xs hover:shadow-xl transition space-y-6 flex flex-col justify-between">
+          <StickerCard className="p-8 space-y-6 flex flex-col justify-between">
             <div className="space-y-4">
-              <span className="text-xs font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 uppercase tracking-wider font-mono">
-                Multi-Facility
-              </span>
-              <h3 className="text-2xl font-bold text-slate-900">National Network</h3>
-              <p className="text-xs text-slate-500">
-                Custom federated architecture for multi-hospital oncology networks &amp; NCI comprehensive centers.
-              </p>
-
-              <div className="pt-2">
-                <div className="text-4xl font-extrabold text-slate-900">Custom</div>
-                <div className="text-[11px] text-slate-400 mt-0.5">
-                  Volume discounting &amp; multi-center SLA
-                </div>
-              </div>
-
-              <div className="space-y-2.5 pt-4 border-t border-slate-100 text-xs text-slate-700">
-                <div className="font-bold text-slate-900">Enterprise Capabilities:</div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Multi-Hospital Federated Architecture</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Cross-Center Chair Load Balancing</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Custom Bi-Directional Order Interfaces</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span>Dedicated Medical &amp; Technical Director</span>
-                </div>
+              <span className="text-xs font-heading font-bold px-2.5 py-1 rounded-full bg-muted border-2 border-ink uppercase">Multi-Facility</span>
+              <h3 className="font-display text-2xl font-extrabold">National Network</h3>
+              <p className="text-sm text-muted-fg">Custom federated architecture for multi-hospital oncology networks & NCI comprehensive centers.</p>
+              <div className="font-display text-4xl font-extrabold">Custom</div>
+              <div className="space-y-2.5 pt-2 text-sm">
+                {['Multi-Hospital Federated Architecture', 'Cross-Center Chair Load Balancing', 'Custom Bi-Directional Order Interfaces', 'Dedicated Medical & Technical Director'].map((f) => (
+                  <div key={f} className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-mint" strokeWidth={2.5} />{f}</div>
+                ))}
               </div>
             </div>
-
-            <button
-              onClick={onOpenAuthModal}
-              className="w-full py-3.5 rounded-xl border-2 border-slate-300 hover:border-slate-900 font-bold text-xs transition cursor-pointer"
-            >
-              Contact Sales &amp; Solution Architects
-            </button>
-          </div>
-
+            <button onClick={onOpenAuthModal} className="btn-ghost w-full">Contact Sales & Solution Architects</button>
+          </StickerCard>
         </div>
       </section>
 
-      {/* 6. INTERACTIVE FAQ ACCORDION */}
-      <section className="max-w-4xl mx-auto px-4 space-y-6">
+      <section className="w-full px-5 sm:px-8 lg:px-12 space-y-4">
         <div className="text-center space-y-2">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-xs text-slate-500">
-            Everything you need to know about OncoReady's barrier detection and hospital integration.
-          </p>
+          <h2 className="font-display text-3xl font-extrabold">Frequently Asked Questions</h2>
+          <p className="text-sm text-muted-fg">Everything you need to know about OncoReady's barrier detection and hospital integration.</p>
         </div>
-
         <div className="space-y-3">
           {faqs.map((faq, idx) => (
-            <div 
-              key={idx} 
-              className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-2xs"
-            >
+            <div key={idx} className="card-sticker overflow-hidden">
               <button
                 onClick={() => setActiveFaq(activeFaq === idx ? null : idx)}
-                className="w-full p-5 flex items-center justify-between text-left font-bold text-xs sm:text-sm text-slate-900 hover:bg-slate-50 transition"
+                className="w-full p-5 flex items-center justify-between text-left font-heading font-bold text-sm hover:bg-sun/20 transition"
               >
                 <span>{faq.q}</span>
-                {activeFaq === idx ? <ChevronUp className="w-4 h-4 text-indigo-600" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+                {activeFaq === idx ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
               </button>
               {activeFaq === idx && (
-                <div className="p-5 pt-0 text-xs text-slate-600 leading-relaxed border-t border-slate-100">
+                <div className="px-5 pb-5 text-sm text-muted-fg leading-relaxed border-t-2 border-ink/10 pt-4">
                   {faq.a}
                 </div>
               )}
@@ -608,27 +435,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      {/* 7. BOTTOM ENTERPRISE CTA BANNER */}
-      <section className="max-w-6xl mx-auto px-4">
-        <div className="bg-gradient-to-r from-indigo-900 via-slate-900 to-indigo-950 text-white rounded-3xl p-8 sm:p-12 text-center space-y-6 shadow-2xl relative overflow-hidden">
-          <div className="space-y-2 max-w-2xl mx-auto relative z-10">
-            <h2 className="text-3xl sm:text-4xl font-extrabold">
-              Ready to eliminate day-of infusion chair loss?
-            </h2>
-            <p className="text-xs sm:text-sm text-slate-300">
-              Experience the full treatment readiness golden path in our live clinical simulation workspace.
-            </p>
-          </div>
-
-          <button
-            onClick={onOpenAuthModal}
-            className="px-8 py-4 bg-white hover:bg-slate-100 text-slate-900 font-extrabold rounded-2xl text-sm transition shadow-lg cursor-pointer"
-          >
-            Explore Workspace →
-          </button>
+      <section className="w-full px-5 sm:px-8 lg:px-12">
+        <div className="relative overflow-hidden rounded-lg border-2 border-ink bg-accent text-white p-8 sm:p-12 text-center space-y-6 shadow-pop-lg">
+          <div className="absolute -left-8 -top-8 w-32 h-32 rounded-full bg-sun border-2 border-ink hidden sm:block" />
+          <div className="absolute -right-6 bottom-4 w-16 h-16 bg-pop border-2 border-ink rotate-12 hidden sm:block" />
+          <h2 className="font-display text-3xl sm:text-4xl font-extrabold relative z-10">
+            Ready to eliminate day-of infusion chair loss?
+          </h2>
+          <p className="text-sm text-white/90 relative z-10">
+            Experience the full treatment readiness golden path in our live clinical simulation workspace.
+          </p>
+          <Button variant="sun" onClick={onOpenAuthModal} showArrow className="relative z-10">
+            Explore Workspace
+          </Button>
         </div>
       </section>
-
     </div>
   );
 };
