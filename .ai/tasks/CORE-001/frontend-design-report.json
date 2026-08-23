@@ -27,7 +27,7 @@
     "Public/Unauthenticated: High-credibility public website with causal path story, trust center, and sign-in.",
     "Staff App Shell - Command Center: High-level operational view.",
     "Staff App Shell - Exceptions: Active deterministic state engine (Maria's case, dual-task split, triage, confirmation).",
-    "Staff App Shell - Secondary: Synthetic presentation of Insights, Integrations, Resources, and Admin.",
+    "Staff App Shell - Secondary: Illustrative presentation of Insights, Integrations, Resources, and Admin.",
     "Patient Portal: Maria's active readiness check.",
     "Caregiver Portal: Ana's permission-filtered view of confirmed ride without clinical exposure.",
     "Deterministic Reset: Global state reset restoring baseline scenario."
@@ -46,8 +46,8 @@
   ],
   "design_system_changes": [
     "Expanded docs/design/DESIGN_SYSTEM.md to define the persistent enterprise staff shell, distinct patient/caregiver portal containers, and public website structural tokens.",
-    "Appended a comprehensive Screen-by-Screen Blueprint detailing purpose, interactions, synthetic data, and states for all public and enterprise routes.",
-    "Updated terminology to reflect human clinical authority (e.g., 'Review requested' instead of 'Clearance') and explicitly framed integrations as 'FHIR sandbox mappings' or 'proposed data flows'."
+    "Appended a comprehensive Screen-by-Screen Blueprint detailing purpose, interactions, illustrative records, and states for all public and enterprise routes.",
+    "Updated terminology to reflect human clinical authority (e.g., 'Review requested' instead of 'Clearance') and explicitly framed integrations as 'FHIR mappings' or 'proposed data flows'."
   ],
   "blockers": [],
   "notes_for_codex": [
