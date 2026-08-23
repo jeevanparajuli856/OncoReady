@@ -1,8 +1,75 @@
 {
   "schema_version": "1.0",
   "task_id": "CORE-001",
-  "commit": "",
-  "status": "FAILED",
-  "generated_at": "",
-  "checks": []
+  "commit": "e79ddadf395f1aa27c1032b8458c1e4981027ff7",
+  "status": "PASSED",
+  "generated_at": "2026-08-23T09:09:25.136597+00:00",
+  "checks": [
+    {
+      "name": "project-schema",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/usr/bin/python3",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "task-schema-and-reports",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/usr/bin/python3",
+        "scripts/validate-task.py",
+        "CORE-001"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "agentic-framework-tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/usr/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/agentic"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend build",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend critical-path smoke",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "tracked-secret-file-baseline",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "git",
+        "ls-files"
+      ],
+      "notes": ""
+    }
+  ]
 }
