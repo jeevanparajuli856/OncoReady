@@ -3,55 +3,72 @@
   "task_id": "CORE-001",
   "agent": "gemini-frontend",
   "status": "DESIGN_READY",
-  "summary": "Established OncoReady's premier light-theme clinical design system and interactive Treatment Readiness Graph architecture. The visual language conveys calm clinical precision and empathetic clarity across five responsive surfaces: Patient Treatment Home, Guided Readiness Check, Staff Exception Queue, Maria Case Workspace with Live Readiness Graph, and Permission-Filtered Caregiver Resolution View.",
+  "summary": "Established a comprehensive enterprise design system and screen-by-screen information architecture for OncoReady's full product suite. Replaced generic SaaS patterns with operational specificity, a persistent staff application shell, and focused patient/caregiver portals centered around the deterministic state engine.",
   "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
   "design_system_action": "ESTABLISH",
+  "information_architecture": {
+    "route_map": [
+      "/ (Public Website: catchy, powerful landing page with perfect UI motion and scroll-driven storytelling, explicitly avoiding SaaS ROI blocks or fake pricing)",
+      "/sign-in (Authentication: secure, enterprise identity, no role-cards)",
+      "/staff (Staff App Shell: persistent sidebar navigation)",
+      "/staff/command-center (Command Center: operational overview)",
+      "/staff/exceptions (Exceptions: working deterministic queue and case workspace)",
+      "/staff/insights (Insights: synthetic enterprise analytics)",
+      "/staff/integrations (Integration Studio: synthetic FHIR/EHR connections)",
+      "/staff/resources (Resources: synthetic operational assets)",
+      "/staff/administration (Administration: synthetic access/settings)",
+      "/patient (Patient Portal: Treatment Readiness focus, no generic EHR screens)",
+      "/caregiver (Caregiver Portal: Permission-filtered view)",
+      "/trust (Trust Center: synthetic security/compliance posture)"
+    ],
+    "navigation_model": "Persistent staff application shell with explicit left-rail navigation for operational depth. Contextual, minimalist top-bar for patient and caregiver portals to minimize cognitive load."
+  },
   "visual_direction": {
-    "layout": "Airy, luminous layout with high-contrast surfaces (slate-50 background, white elevated cards, 1px precision slate-200 borders). Clean two-column workspace on desktop (320px queue rail, flexible graph canvas, 380px action/timeline drawer) and a focused, comfortable single-column mobile view (max-width 480px) optimized for high-anxiety patient interactions.",
-    "color": "High-clarity clinical light palette (WCAG AAA/AA+ compliant): Slate-50 app canvas (#F8FAFC), crisp white card surfaces (#FFFFFF), deep slate-900 primary typography (#0F172A), brand indigo-600 (#4F46E5), medical sky-600 (#0284C7), semantic amber-500 (#F59E0B) for active blockers, emerald-600 (#059669) for confirmed readiness, and rose-600 (#E11D48) for critical alerts. Zero dark-mode or generic AI dashboard styling.",
-    "typography": "Inter font family with strict typographic hierarchy: 32px display for the infusion proximity countdown, 24px h1 for primary view titles, 20px h2 for section/card headings, 14px body with 1.5 line height for high legibility, 12px uppercase medium caption pills for status indicators, and JetBrains Mono with tabular figures enabled (tabular-nums) for case IDs, FHIR codes, and real-time timers.",
-    "spacing_and_shape": "Strict 4px grid rhythm (4, 8, 12, 16, 20, 24, 32, 40, 48px). Refined smooth border radii (rounded-xl 16px for primary containers, rounded-lg 12px for interactive nodes/inputs, rounded-full for status pills). Soft slate-tinted layered shadows (shadow-sm, shadow-md, shadow-lg) providing physical depth without visual clutter.",
-    "component_presentation": "Key signature components: (1) Hero Treatment Card with live countdown proximity timer and high-visibility CTA; (2) Treatment Readiness Graph featuring a central infusion target node connected via animated SVG bezier curves to clinical symptom clearance and transportation fulfillment nodes; (3) Deterministic Dual-Task Split Card showcasing verbatim clinical text in a high-contrast quote well with explicit non-AI triage badge; (4) Staff Exception Queue with SLA indicators; (5) Caregiver Permission-Filtered Card strictly excluding clinical data; (6) Append-Only Audit Event Timeline with causal state diffs."
+    "layout": "Enterprise-density layouts with explicit structural borders. Eradicated excessive rounded cards, gradients, and unstructured floating panels. Replaced with a crisp, persistent staff application shell and structured data tables. Patient/caregiver views use focused, linear single-column layouts for cognitive clarity.",
+    "color": "Light background direction maintained (Slate-50 canvases, White panels). Removed generic SaaS gradients and trust-badge rows. Strict, meaningful semantic color usage (Indigo for primary navigation, Amber for active blockers, Emerald for resolved states) with high-contrast text.",
+    "typography": "Standardized sizing. Eliminated tiny uppercase labels. Utilized robust headings for clear content hierarchy and tabular figures for clinical data, identifiers, and temporal metrics.",
+    "spacing_and_shape": "Sharp, intentional geometry (4px/8px radii maximum, no excessive pill shapes). Dense information packing for staff (4px grid), breathable pacing for patients (8px grid). Strong use of 1px borders instead of generic drop shadows.",
+    "component_presentation": "Signature elements: Treatment Readiness Graph (core workflow anchor), Owned Action Workflow panels, Caregiver Permission Boundaries, and the Causal Audit Timeline. Avoided repetitive feature grids, unverified Unsplash portraits, and artificial role-cards."
   },
   "motion": {
-    "strategy": "Fluid, purposeful motion using natural spring physics (cubic-bezier(0.16, 1, 0.3, 1)) that enhances comprehension and guides attention during critical state transitions (such as Maria's single report visibly splitting into two distinct owned workflows).",
-    "transitions": "250ms slide-and-fade for view changes, 400ms organic SVG bezier path morphing and emerald glow burst when blockers are resolved, and 200ms smooth accordion expansions for task action panels.",
-    "microinteractions": "Subtle 100ms active scale-down (scale(0.98)) on button presses, smooth ring focus expansion, 2s gentle ambient pulse on active amber blocker nodes, and instant status pill badge flips.",
-    "reduced_motion": "Complete fallback for prefers-reduced-motion: reduce. All transforms, slide animations, and continuous pulses are replaced with instant or 100ms pure opacity changes, while state meaning is 100% preserved through text labels, distinct icons, and crisp border colors."
+    "strategy": "Perfect UI animation balancing visual flair with functional performance. Purposeful motion over decoration, utilizing 200-500ms optimal speeds to guide the user's eye and provide feedback without feeling sluggish.",
+    "landing_page_animations": "Powerful, catchy animations on the public website (/) using scroll-driven reveals, kinetic typography for key messages, and seamless page transitions to build enterprise credibility.",
+    "transitions": "Instant or 200ms structural transitions in the staff shell to feel powerful and responsive. Complex, organic morphing reserved exclusively for the Treatment Readiness Graph to highlight causal resolution.",
+    "microinteractions": "Clear, high-contrast focus states and instant feedback on deterministic state engine interactions. Subtle pulse effects on active blockers.",
+    "reduced_motion": "Full prefers-reduced-motion compliance with instant state toggles. Heavy animations fallback to simple opacity fades."
   },
   "responsive": {
-    "strategy": "Mobile-first patient experience combined with adaptive high-density desktop clinical workbench.",
-    "notes": "Patient treatment home and readiness check are optimized for 360px-480px touchscreens with sticky primary CTAs and min-44px touch targets. Staff workspace seamlessly reflows from a horizontal multi-column layout on >=1024px to a stacked drawer workflow on smaller screens."
+    "strategy": "True enterprise multi-viewport support.",
+    "notes": "Staff shell optimized for desktop/tablet landscape (1024px+) with dense data presentation. Public site, sign-in, patient, and caregiver portals are fully responsive, scaling down to 320px mobile viewports with no loss of critical actions."
   },
   "application_states": [
-    "Initial Opening State: Maria scheduled for tomorrow FOLFOX6 Cycle 4, readiness status: ACTION_REQUIRED",
-    "Readiness Check Active: Step-by-step validation with real-time field error messaging",
-    "Dual-Task Split: Deterministic generation of Nurse Clinical Review task and Navigator Transportation task",
-    "Staff Triage & Action: Live graph nodes pulsing amber -> staff acknowledgment/confirmation actions -> emerald resolution glow",
-    "Caregiver Update: Ana's permission-filtered view displaying confirmed ride details without clinical symptom exposure",
-    "Patient Confirmation: Maria acknowledges updated plan, overall state advances to PLAN_CONFIRMED",
-    "Deterministic Reset: 0ms instantaneous restoration of opening state from any screen"
+    "Public/Unauthenticated: High-credibility public website with catchy animations, trust center, and sign-in.",
+    "Staff App Shell - Command Center: High-level operational synthetic overview.",
+    "Staff App Shell - Exceptions: Active deterministic state engine (Maria's case, dual-task split, triage, confirmation).",
+    "Staff App Shell - Secondary: Synthetic but complete presentation of Insights, Integrations, Resources, and Admin.",
+    "Patient Portal: Maria's active readiness check (Action Required -> Validation -> Plan Confirmed).",
+    "Caregiver Portal: Ana's permission-filtered view of confirmed ride without clinical exposure.",
+    "Deterministic Reset: Global state reset restoring Maria's baseline scenario."
   ],
   "accessibility": [
-    "WCAG 2.1 AA/AAA compliance with minimum 4.5:1 text contrast on all surfaces",
-    "Non-color state cues: Every status combines distinct SVG icons (triangle, check, clock), semantic color, and plain English text badges",
-    "Complete keyboard navigability with visible 2px indigo focus rings (ring-2 ring-indigo-500 ring-offset-2)",
-    "ARIA live regions (aria-live='polite') for asynchronous state transitions and countdown updates",
-    "Semantic HTML landmark structure (<header>, <main>, <section>, <article>, <nav>, <time>)"
+    "WCAG 2.1 AA/AAA contrast ratios strictly enforced.",
+    "Explicit navigation labels and ARIA landmarks in the staff shell.",
+    "No reliance on color alone for readiness states or exceptions.",
+    "Visible focus indicators on all interactive elements without relying on generic SaaS glows."
   ],
   "assets_or_dependencies": [
-    "Lucide React for clean, clinical-grade icons (ShieldAlert, Clock, CheckCircle2, Car, Stethoscope, ArrowRight, RotateCcw, AlertTriangle)",
-    "Tailwind CSS for tokenized utility styling and custom bezier transition classes",
-    "Canvas-confetti / lightweight micro-particle emitter for patient plan-confirmed closure celebration (optional/lightweight)"
+    "Lucide React (clinical and enterprise system icons)",
+    "Tailwind CSS (utility classes, structural layouts, strict enterprise tokens)"
   ],
   "design_system_changes": [
-    "Established initial design system in docs/design/DESIGN_SYSTEM.md defining light clinical palette, typography, grid, graph component specs, and motion tokens"
+    "Expanded docs/design/DESIGN_SYSTEM.md to define the persistent enterprise staff shell, distinct patient/caregiver portal containers, and public website structural tokens."
   ],
   "blockers": [],
   "notes_for_codex": [
-    "The design is 100% light-theme with high clinical clarity, eliminating AI slop while providing advanced, smooth microinteractions.",
-    "The Treatment Readiness Graph visually connects the upcoming infusion to both blockers and updates dynamically upon staff and patient actions.",
-    "Caregiver data minimization is strictly enforced in the UI projection to protect patient clinical confidentiality.",
+    "Expanded scope incorporates a full enterprise product suite with a persistent staff application shell.",
+    "Generic SaaS patterns (gradients, tiny uppercase, role cards, fake pricing) have been explicitly banned.",
+    "Core interactive workflow (Exceptions, Patient, Caregiver) remains wired to the deterministic state engine; all new top-level destinations (Insights, integrations, etc.) will use credible synthetic presentation.",
+    "The Treatment Readiness Graph, owned action workflow, caregiver permission boundary, and causal audit timeline are established as the defining product language.",
     "Ready for Codex compatibility review and canonical SHA256 digest binding."
   ]
 }
