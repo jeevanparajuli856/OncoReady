@@ -91,7 +91,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
             </div>
           </div>
 
-          <div className="metric-tile min-w-[220px] space-y-2">
+          <div className="metric-tile w-full sm:w-auto sm:min-w-[220px] space-y-2">
             <div className="flex items-center justify-between text-xs">
               <span className="label-caps text-muted-fg">Treatment Progress</span>
               <span className="font-heading font-bold">Cycle {appointment.cycleNumber} of {appointment.totalCycles}</span>
@@ -142,7 +142,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
               </span>
             </div>
           </div>
-          <div className="bg-white/10 rounded-xl p-4 border-2 border-white/20 text-center min-w-[180px]">
+          <div className="bg-white/10 rounded-xl p-4 border-2 border-white/20 text-center w-full sm:w-auto sm:min-w-[180px]">
             <div className="label-caps text-cream/70 flex items-center justify-center gap-1.5">
               <Clock className="w-3.5 h-3.5 text-sun" strokeWidth={2.5} />
               Time proximity

@@ -93,7 +93,7 @@ export const Header: React.FC<HeaderProps> = ({
       <header className="sticky top-0 z-40 w-full bg-cream/95 backdrop-blur-md border-b-2 border-ink">
         <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
           <button onClick={() => onSetPerspective('LANDING')} className="cursor-pointer shrink-0" aria-label="Go to OncoReady home" title="Home">
-            <Logo size={34} compact />
+            <Logo size={32} compact className="[&>div:last-child]:hidden sm:[&>div:last-child]:block" />
           </button>
 
           <nav className="hidden lg:flex items-center gap-1 lg:gap-2 text-sm font-heading font-bold text-ink">
@@ -123,7 +123,7 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="sticky top-0 z-40 w-full bg-cream/95 backdrop-blur-md border-b-2 border-ink">
       <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
         <button onClick={() => onSetPerspective('LANDING')} aria-label="Go to OncoReady home" title="Home" className="shrink-0">
-          <Logo size={34} compact />
+          <Logo size={32} compact className="[&>div:last-child]:hidden sm:[&>div:last-child]:block" />
         </button>
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-heading font-bold">

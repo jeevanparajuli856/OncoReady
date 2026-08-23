@@ -5,7 +5,6 @@ import {
   IconUsers,
   IconHeart,
   IconChartDots3,
-  IconLogin2,
 } from '@tabler/icons-react';
 import { FloatingDock } from './ui/floating-dock';
 import { Perspective } from '../types';
@@ -19,7 +18,6 @@ interface WorkspaceDockProps {
 export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
   currentPerspective,
   onSelectPerspective,
-  onOpenAuthModal,
 }) => {
   const iconClass = 'h-full w-full';
   const items = [
@@ -27,7 +25,7 @@ export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
       title: 'Home',
       icon: <IconHome className={iconClass} />,
       onClick: () => onSelectPerspective('LANDING'),
-      active: currentPerspective === 'LANDING',
+      active: currentPerspective === 'LANDING' || currentPerspective === 'SIGN_IN',
     },
     {
       title: 'Patient',
@@ -53,17 +51,11 @@ export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
       onClick: () => onSelectPerspective('SYSTEM'),
       active: currentPerspective === 'SYSTEM',
     },
-    {
-      title: 'Enter workspace',
-      icon: <IconLogin2 className={iconClass} />,
-      onClick: onOpenAuthModal,
-      active: currentPerspective === 'SIGN_IN',
-    },
   ];
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-3 z-40 flex justify-center px-2 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
-      <div className="pointer-events-auto max-w-full overflow-x-auto">
+    <div className="pointer-events-none fixed inset-x-0 bottom-2 z-[60] flex justify-center px-3 pb-[env(safe-area-inset-bottom)]">
+      <div className="pointer-events-auto w-full max-w-[22rem] md:w-auto md:max-w-none">
         <FloatingDock items={items} />
       </div>
     </div>

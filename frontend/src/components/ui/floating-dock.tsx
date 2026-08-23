@@ -72,7 +72,7 @@ const FloatingDockMobile = ({
     <nav
       aria-label="Workspace dock"
       className={cn(
-        'flex md:hidden items-center gap-1.5 rounded-full border-2 border-ink bg-white/95 px-2 py-1.5 shadow-pop backdrop-blur',
+        'flex w-full max-w-[22rem] md:hidden items-center justify-between gap-1 rounded-full border-2 border-ink bg-white/95 px-1.5 py-1.5 shadow-pop backdrop-blur',
         className,
       )}
     >
@@ -83,11 +83,11 @@ const FloatingDockMobile = ({
           onClick={item.onClick}
           ariaLabel={item.title}
           className={cn(
-            'flex h-11 w-11 items-center justify-center rounded-full border-2 border-ink',
+            'flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 border-ink',
             item.active ? 'bg-accent text-white' : 'bg-cream text-ink',
           )}
         >
-          <div className="h-5 w-5">{item.icon}</div>
+          <div className="h-4 w-4">{item.icon}</div>
         </DockTarget>
       ))}
     </nav>

@@ -96,7 +96,7 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className={`min-h-screen flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
+    <div className={`min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
       
       {/* Universal Clinical & Commercial Header */}
       <Header
@@ -313,7 +313,7 @@ export const App: React.FC = () => {
         defaultAddress={state.patient.address}
       />
 
-      {!isAuthModalOpen && !isReadinessModalOpen && !isPatientResolutionOpen && (
+      {!isAuthModalOpen && !isReadinessModalOpen && (
         <WorkspaceDock
           currentPerspective={state.currentPerspective}
           onSelectPerspective={handleSetPerspective}

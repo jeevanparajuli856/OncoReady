@@ -232,7 +232,7 @@ export const StaffAdmin: React.FC<{
       <p className="text-sm text-muted-fg">
         Admin is not a separate site. It describes the loop you can walk right now.
       </p>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
         <button onClick={onOpenCase} className="btn-candy btn-compact">Open Maria's case</button>
         <button onClick={() => onSetPerspective('PATIENT')} className="btn-ghost btn-compact">Patient portal</button>
         <button onClick={() => onSetPerspective('CAREGIVER')} className="btn-ghost btn-compact">Caregiver view</button>

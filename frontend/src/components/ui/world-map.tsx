@@ -40,13 +40,11 @@ export default function WorldMap({
   };
 
   return (
-    <div className="relative w-full aspect-[2/1] rounded-xl bg-cream font-sans">
+    <div className="relative w-full max-w-full overflow-hidden aspect-[2/1] rounded-xl bg-cream font-sans">
       <img
         src={`data:image/svg+xml;utf8,${encodeURIComponent(svgMap)}`}
-        className="h-full w-full pointer-events-none select-none [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)]"
+        className="h-full w-full max-w-full pointer-events-none select-none [mask-image:linear-gradient(to_bottom,transparent,white_10%,white_90%,transparent)]"
         alt="World map of treatment-readiness corridors"
-        height="495"
-        width="1056"
         draggable={false}
       />
       <svg

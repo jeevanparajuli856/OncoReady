@@ -120,7 +120,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
         </svg>
 
         {/* 3-Column Node Layout */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative z-10 items-center min-h-[420px]">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 relative z-10 items-center min-h-0 md:min-h-[420px]">
           
           {/* LEFT COLUMN: The Two Upstream Blocker Nodes */}
           <div className="flex flex-col gap-5 justify-center">

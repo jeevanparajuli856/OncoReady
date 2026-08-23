@@ -178,16 +178,16 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
             className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer hover:-rotate-1 hover:scale-[1.01] transition-transform duration-300 ease-bouncey"
           >
             <div className="space-y-4">
-              <div className="flex items-start justify-between gap-3">
+              <div className="flex flex-col gap-3 min-w-0">
                 <div className="flex items-center gap-3 min-w-0">
                   {card.media}
                   <div className="min-w-0">
                     <span className="chip chip-accent">{card.eyebrow}</span>
-                    <h2 className="font-heading font-extrabold text-lg mt-1.5">{card.title}</h2>
-                    <p className="text-xs text-muted-fg">{card.subtitle}</p>
+                    <h2 className="font-heading font-extrabold text-lg mt-1.5 break-words">{card.title}</h2>
+                    <p className="text-xs text-muted-fg break-words">{card.subtitle}</p>
                   </div>
                 </div>
-                {card.status}
+                <div className="flex flex-wrap">{card.status}</div>
               </div>
               <p className="text-sm text-muted-fg leading-relaxed">{card.body}</p>
             </div>

@@ -37,7 +37,7 @@ export function PointerHighlight({
   }, []);
 
   return (
-    <div className={cn('relative w-fit', containerClassName)} ref={containerRef}>
+    <div className={cn('relative w-fit max-w-full overflow-hidden', containerClassName)} ref={containerRef}>
       {children}
       {dimensions.width > 0 && dimensions.height > 0 && (
         <motion.div

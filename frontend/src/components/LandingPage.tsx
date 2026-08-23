@@ -60,7 +60,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   return (
-    <div className="space-y-12 pb-28 animate-pop text-ink">
+    <div className="space-y-12 pb-28 animate-pop text-ink overflow-x-clip max-w-full">
 
       <section className="relative pt-6 sm:pt-10 w-full px-5 sm:px-8 lg:px-12">
         <ConfettiField />
@@ -73,7 +73,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="space-y-4 max-w-4xl mx-auto">
-            <h1 className="font-display text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.05]">
+            <h1 className="font-display text-3xl sm:text-6xl font-extrabold tracking-tight leading-[1.1] break-words">
               Zero Day-Of Chemotherapy <br className="hidden sm:inline" />
               <PointerHighlight
                 containerClassName="inline-block mx-auto mt-2"
@@ -117,7 +117,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="pt-10">
-          <StickerCard hover={false} featured className="p-5 sm:p-8 space-y-6 text-left relative overflow-hidden">
+          <StickerCard hover={false} featured className="p-4 sm:p-8 space-y-6 text-left relative overflow-hidden max-w-full">
             <div className="absolute -top-8 -right-8 w-32 h-32 rounded-full bg-mint/40 border-2 border-ink hidden sm:block" />
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b-2 border-ink/10">
               <div className="flex items-center gap-3">
@@ -376,7 +376,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </StickerCard>
 
           <StickerCard featured className="p-6 sm:p-8 space-y-6 flex flex-col justify-between relative z-10">
-            <div className="absolute -top-4 -right-3 rotate-[15deg] bg-sun border-2 border-ink shadow-pop px-3 py-1 font-display font-extrabold text-xs">
+            <div className="absolute top-3 right-3 sm:-top-4 sm:-right-3 sm:rotate-[15deg] bg-sun border-2 border-ink shadow-pop px-3 py-1 font-display font-extrabold text-xs">
               MOST POPULAR
             </div>
             <div className="space-y-4">

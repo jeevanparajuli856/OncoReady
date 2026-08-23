@@ -51,9 +51,9 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
     (currentRoute === 'CASE_WORKSPACE' ? 'Case Workspace' : 'Staff');
 
   return (
-    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full min-h-[calc(100dvh-10rem)]">
-      <aside className="order-1 md:order-1 w-full md:w-56 bg-white border-b-2 md:border-b-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0">
-        <nav className="flex-1 flex flex-row md:flex-col overflow-x-auto md:overflow-y-auto px-2 py-2 md:py-4 gap-1">
+    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full max-w-full overflow-x-clip min-h-[calc(100dvh-10rem)]">
+      <aside className="order-1 w-full md:w-56 bg-white border-b-2 md:border-b-0 md:border-r-2 border-ink flex flex-row md:flex-col shrink-0 max-w-full">
+        <nav className="flex-1 flex flex-wrap md:flex-col px-2 py-2 md:py-4 gap-1">
           <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
             Staff tools
           </div>
@@ -65,7 +65,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
                 key={item.id}
                 aria-label={item.label}
                 onClick={() => onSetStaffRoute(item.id)}
-                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 min-w-[4.25rem] md:min-w-0 px-2 md:px-3 py-2 md:py-2.5 text-[10px] md:text-sm rounded-xl md:rounded-full border-2 transition-colors ${
+                className={`flex flex-col md:flex-row items-center justify-center md:justify-start gap-1 md:gap-3 min-w-0 flex-1 md:flex-none basis-[4.5rem] md:basis-auto px-1.5 md:px-3 py-2 md:py-2.5 text-[10px] md:text-sm rounded-xl md:rounded-full border-2 transition-colors ${
                   isActive
                     ? 'bg-accent text-white border-ink font-heading font-bold'
                     : 'text-ink border-transparent hover:bg-sun/40 hover:border-ink'
