@@ -97,7 +97,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
   ];
 
   return (
-    <div className="space-y-8 sm:space-y-10 pb-24 md:pb-10 text-ink overflow-x-clip max-w-full">
+    <div className="space-y-6 sm:space-y-8 pb-24 md:pb-10 text-ink overflow-x-clip max-w-full">
 
       <section className="relative pt-5 sm:pt-8 w-full px-5 sm:px-8 lg:px-12">
         <ConfettiField />
@@ -265,7 +265,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </StickerCard>
       </section>
 
-      <section id="how-it-works" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-8 items-start">
+      <section id="how-it-works" className="w-full px-5 sm:px-8 lg:px-12 grid lg:grid-cols-12 gap-5 items-start">
         <div className="lg:col-span-5 space-y-3">
           <span className="text-xs font-heading font-semibold uppercase tracking-widest text-accent">How it works</span>
           <h2 className="font-display text-3xl sm:text-4xl font-extrabold leading-tight">
@@ -293,15 +293,11 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      <section id="business-section" className="w-full px-5 sm:px-8 lg:px-12 space-y-6">
-        <div className="text-center space-y-3 max-w-2xl mx-auto">
+      <section id="business-section" className="w-full px-5 sm:px-8 lg:px-12 space-y-4">
+        <div className="text-center space-y-2 max-w-4xl mx-auto">
           <span className="text-xs font-heading font-semibold uppercase tracking-widest text-pop">The business</span>
-          <h2 className="font-display text-3xl sm:text-4xl font-extrabold">
-            Sold to the{' '}
-            <PointerHighlight rectangleClassName="border-pop/40" pointerClassName="text-accent">
-              <span className="px-1">cancer center</span>
-            </PointerHighlight>
-            . Built for the next treatment.
+          <h2 className="font-display text-2xl sm:text-3xl lg:text-4xl font-extrabold leading-snug">
+            Sold to the <span className="px-1.5 border-2 border-ink bg-sun/40 whitespace-nowrap">cancer center</span>. Built for the next treatment.
           </h2>
           <p className="text-base text-muted-fg">
             Centers buy it. Patients, nurses, navigators, and caregivers use it.
