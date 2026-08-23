@@ -2,19 +2,27 @@
   "schema_version": "1.0",
   "task_id": "CORE-001",
   "agent": "codex-orchestrator",
-  "status": "PENDING",
-  "summary": "",
+  "status": "APPROVED",
+  "summary": "Gemini's Phase A design is compatible with CORE-001 requirements and the frontend-only architecture. It establishes a coherent design system, makes the Treatment Readiness Graph the signature experience, covers all required responsive surfaces and states, and preserves human clinical authority and caregiver data minimization.",
   "review_scope": "Compatibility only. Do not substitute Codex aesthetic preferences for Gemini design authority.",
-  "reviewed_design_sha256": "",
+  "reviewed_design_sha256": "04e1bd1872dfbba48e8475baeccd894a1a53dee76c85025d4b57993270a2d983",
   "checks": {
-    "requirements": "PENDING",
-    "architecture_and_contracts": "PENDING",
-    "security_and_authorization": "PENDING",
-    "accessibility": "PENDING",
-    "performance": "PENDING",
-    "scope": "PENDING",
-    "human_brand_design_system_constraints": "PENDING"
+    "requirements": "PASS",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "PASS",
+    "performance": "PASS",
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_gemini": []
+  "notes_for_gemini": [
+    "Gemini retains full frontend visual and interaction authority within task scope: frontend/**, tests/frontend/**, docs/design/**, frontend-design-report.json, and frontend-report.json.",
+    "In production UI copy, represent the clinical branch as human clinical review/acknowledgment or disposition recorded; do not imply OncoReady medically cleared treatment, decided that treatment should proceed, or performed automated triage.",
+    "Keep the caregiver projection allowlisted to transportation status and assert that Maria's clinical concern and clinical-task details never enter Ana's rendered view or accessible name/description content.",
+    "Use aria-live for discrete workflow changes only; do not announce every countdown tick. Preserve stable semantic text for treatment proximity and status.",
+    "Treat stated WCAG conformance as an implementation target that must be verified, not a user-facing compliance claim. Preserve keyboard operation, visible focus, 44px touch targets, non-color state cues, and reduced-motion equivalence.",
+    "Any FHIR codes, staff identities, resource/driver details, delivery events, clinical protocols, or outcomes shown remain synthetic/simulated and must not be presented as live Ochsner integration.",
+    "The optional celebration dependency must remain lightweight, non-blocking, respectful of reduced motion, and removable if it adds bundle or reliability risk. It is not required for acceptance."
+  ]
 }
