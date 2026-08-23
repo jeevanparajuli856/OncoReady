@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.0",
+  "task_id": "CORE-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Reconciled CORE-001 into a frontend-only enterprise product experience spanning public entry, persistent staff operations, patient and caregiver portals, and one fully deterministic Maria treatment-readiness journey.",
+  "files_changed": [
+    "docs/features/CORE-001.md",
+    ".ai/tasks/CORE-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
+  },
+  "decisions": [
+    "Implement CORE-001 as one React + TypeScript + Vite browser application with public entry, sandbox role/session entry, a persistent staff shell, and focused patient and caregiver portal contexts.",
+    "The staff shell must navigate to Command Center, Exceptions, Patients/case workspace, Resources, Insights, Integrations, and Admin; only the Maria path and demo-critical shared state require full transactional behavior.",
+    "Use typed synthetic enterprise fixtures for secondary patients, cases, resources, sites, metrics, integrations, and configuration, while a deterministic reducer or equivalent state machine owns Maria's workflow, permissions, persistence, and reset.",
+    "Use one workflow-event source of truth to derive Maria's queue/case state, Treatment Readiness Graph, timeline, command-center signal, patient status, and caregiver projection so the cross-surface demonstration cannot drift.",
+    "Make public calls to action, sandbox entry, primary staff navigation, patient/exception search and filters, the Maria golden path, the caregiver privacy filter, guarded routing, recovery, and reset functional; secondary enterprise content may be static/read-only when clearly represented.",
+    "Keep routing deterministic: one readiness submission creates separate clinical-review and transportation-navigation tasks, and treatment confirmation requires appropriate staff action plus Maria's acknowledgment.",
+    "Treat clinical and search text as untrusted inert content; no AI or client heuristic may make a clinical decision, downgrade urgency, clear treatment, or control workflow safety.",
+    "Enforce Ana's caregiver experience through an allowlisted data projection that excludes clinical concern and task details from visible, indexed, and accessibility-specific caregiver output.",
+    "Represent sign-in as local sandbox/session entry rather than authentication, and represent integrations, operational data, resources, configuration, protocols, and outcomes as synthetic, sandbox, simulated, proposed, or read-only where material.",
+    "Do not claim production deployment, live Ochsner/vendor connectivity, security/compliance certification, clinical validation, production-scale authorization, or measured outcomes.",
+    "Use versioned browser persistence with safe fallback and a broadly available one-click reset to protect the deadline-critical demonstration.",
+    "Keep the task contract-free because all behavior remains inside one frontend implementation with no live external or independently implemented component boundary."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "The expanded enterprise surface area could consume the deadline while weakening the only end-to-end proof judges need.",
+      "mitigation": "Implement the shared shell, navigation, fixtures, and Maria state model first; make secondary modules complete but static/read-only and stop adding depth once acceptance-critical navigation, search/filter, privacy, and golden-path behavior pass."
+    },
+    {
+      "severity": "medium",
+      "description": "Fixture-driven enterprise screens and independently presented metrics could contradict Maria's workflow and make the product feel staged.",
+      "mitigation": "Derive all Maria and current-treatment signals from one workflow/event source and keep unrelated historical metrics explicitly synthetic and stable."
+    },
+    {
+      "severity": "medium",
+      "description": "Sign-in, Integrations, Admin, Trust, or resource screens could imply real authentication, production policy enforcement, vendor connectivity, compliance, certification, or fulfillment.",
+      "mitigation": "Use local sandbox entry without real credentials, label material synthetic/sandbox/proposed states, remove unsupported badges or status claims, and render nonfunctional consequential controls read-only, disabled with a reason, or absent."
+    },
+    {
+      "severity": "medium",
+      "description": "Caregiver projection or shared search/index fixtures could expose Maria's synthetic clinical concern outside the patient/staff context.",
+      "mitigation": "Build caregiver data from an explicit transportation-only allowlist and assert that clinical data is absent from rendered, accessibility, and caregiver-specific searchable output."
+    },
+    {
+      "severity": "medium",
+      "description": "The wider route and local-state surface could make reset or refresh return different modules to contradictory states during the live demonstration.",
+      "mitigation": "Version persisted state, centralize initialization/reset, clear relevant navigation/search/filter/session state, and exercise public-entry-to-confirmed plus reset in the smoke check."
+    },
+    {
+      "severity": "low",
+      "description": "Broad synthetic datasets can create broken search/filter combinations or empty screens that appear unfinished.",
+      "mitigation": "Keep fixture volume small and coherent, implement predictable combination and clear-filter behavior, and design explicit no-result/unknown states."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "The human-approved scope now includes public landing/sign-in/trust, seven persistent staff modules, and patient/caregiver portals; the previous five-screen-only and no-marketing constraints no longer apply.",
+    "Because the approved architecture scope changed after earlier design evidence, Gemini design evidence and compatibility approval must be refreshed and bound to this exact expanded scope before Phase B production implementation.",
+    "Build in this order: route/shell and fixtures, Maria state/permissions/reset, public and portal entry, primary search/filters, golden path, then static enterprise breadth and polish.",
+    "Maria is the only required fully interactive patient. Secondary patients, metrics, resources, integrations, and Admin may be stable synthetic/read-only content when their navigation and states are complete and truthful.",
+    "Internal TypeScript types and fixture schemas are not a formal contract. Do not invent endpoints or implement against the repository's empty OpenAPI placeholder.",
+    "Make caregiver clinical-data exclusion, inert free-text rendering, sandbox sign-in truthfulness, integration/admin claim restraint, guarded transitions, reset, and reduced-motion equivalence acceptance-critical.",
+    "SMOKE depth remains implementation-owned: cover public/workspace entry, route reachability, search/filter recovery, the deterministic Maria flow, caregiver exclusion, and reset; no independent tester or dedicated security reviewer is selected."
+  ],
+  "execution": {
+    "contract_required": false,
+    "test_depth": "SMOKE",
+    "security_risk": "LOW",
+    "security_review_required": false
+  }
+}

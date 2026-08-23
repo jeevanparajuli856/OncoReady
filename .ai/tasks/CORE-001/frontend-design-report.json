@@ -1,0 +1,59 @@
+{
+  "schema_version": "1.0",
+  "task_id": "CORE-001",
+  "agent": "gemini-frontend",
+  "status": "DESIGN_READY",
+  "summary": "Revised Phase A to establish a concrete, screen-by-screen enterprise implementation blueprint, conforming strictly to the required reporting schema. Replaced generic SaaS visuals with a crisp, structured operational system.",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
+  "design_system_action": "ESTABLISH",
+  "visual_direction": {
+    "layout": "Enterprise-density layouts with explicit structural borders. Eradicated excessive rounded cards, gradients, and unstructured floating panels. Replaced with a crisp, persistent staff application shell and structured data tables. Patient/caregiver views use focused, linear single-column layouts.",
+    "color": "Light background direction maintained (Slate-50 canvases, White panels). Removed generic SaaS gradients. Strict semantic color usage (Indigo for primary navigation, Amber for active blockers, Emerald for resolved states) with high-contrast text.",
+    "typography": "Standardized sizing. Eliminated tiny uppercase labels. Utilized robust headings and tabular figures for clinical data, identifiers, and temporal metrics.",
+    "spacing_and_shape": "Sharp, intentional geometry (4px/8px radii maximum). Dense information packing for staff (4px grid), breathable pacing for patients (8px grid). Strong use of 1px borders instead of generic drop shadows.",
+    "component_presentation": "Signature elements: Treatment Readiness Graph, Owned Action Workflow panels, Caregiver Permission Boundaries, and Causal Audit Timeline. Avoided repetitive feature grids and unverified Unsplash portraits."
+  },
+  "motion": {
+    "strategy": "Motion is bounded to causal meaning and state changes. No ambient morphing or indefinite pulsing. CSS-driven causal path on landing to communicate the product story.",
+    "transitions": "0ms structural transitions in the staff shell for operational speed. 300ms layout transition for readiness split. 400ms color transition for graph resolution.",
+    "microinteractions": "Clear, high-contrast focus states. 100ms background color fades for buttons. No per-second tick re-renders for countdowns.",
+    "reduced_motion": "Full prefers-reduced-motion compliance with 0ms instant state changes. Meaning relies entirely on border colors, icons, and text labels."
+  },
+  "responsive": {
+    "strategy": "True enterprise multi-viewport support.",
+    "notes": "Staff shell optimized for desktop/tablet landscape (1024px+) with dense data presentation. Public site, sign-in, patient, and caregiver portals are fully responsive, scaling down to 320px mobile viewports with 44px touch targets."
+  },
+  "application_states": [
+    "Public/Unauthenticated: High-credibility public website with causal path story, trust center, and sign-in.",
+    "Staff App Shell - Command Center: High-level operational view.",
+    "Staff App Shell - Exceptions: Active deterministic state engine (Maria's case, dual-task split, triage, confirmation).",
+    "Staff App Shell - Secondary: Illustrative presentation of Insights, Integrations, Resources, and Admin.",
+    "Patient Portal: Maria's active readiness check.",
+    "Caregiver Portal: Ana's permission-filtered view of confirmed ride without clinical exposure.",
+    "Deterministic Reset: Global state reset restoring baseline scenario."
+  ],
+  "accessibility": [
+    "WCAG 2.1 AA/AAA contrast ratios strictly enforced.",
+    "Explicit navigation labels and ARIA landmarks in the staff shell.",
+    "No reliance on color alone for readiness states or exceptions.",
+    "Visible 2px focus indicators on all interactive elements without generic glows.",
+    "Caregiver DOM/ARIA exclusion of clinical text strictly enforced.",
+    "Minimum 44px touch targets on mobile viewports."
+  ],
+  "assets_or_dependencies": [
+    "Lucide React (clinical and enterprise system icons)",
+    "Tailwind CSS (utility classes, structural layouts, strict enterprise tokens)"
+  ],
+  "design_system_changes": [
+    "Expanded docs/design/DESIGN_SYSTEM.md to define the persistent enterprise staff shell, distinct patient/caregiver portal containers, and public website structural tokens.",
+    "Appended a comprehensive Screen-by-Screen Blueprint detailing purpose, interactions, illustrative records, and states for all public and enterprise routes.",
+    "Updated terminology to reflect human clinical authority (e.g., 'Review requested' instead of 'Clearance') and explicitly framed integrations as 'FHIR mappings' or 'proposed data flows'."
+  ],
+  "blockers": [],
+  "notes_for_codex": [
+    "The schema of this report has been strictly restored to conform to requirements.",
+    "The full Screen-by-Screen Blueprint has been migrated to docs/design/DESIGN_SYSTEM.md as requested.",
+    "Unwanted Vite cache files have been removed from the repository.",
+    "Ready for Codex compatibility review and canonical SHA256 digest binding."
+  ]
+}

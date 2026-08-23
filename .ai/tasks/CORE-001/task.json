@@ -1,0 +1,240 @@
+{
+  "schema_version": "1.0",
+  "task_id": "CORE-001",
+  "title": "Treatment Readiness Enterprise Experience",
+  "type": "feature",
+  "status": "REVIEW",
+  "priority": "critical",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "gemini",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/CORE-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "database/**",
+      "supabase/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/CORE-001/task.json",
+        "docs/features/CORE-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/CORE-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/CORE-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/CORE-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/CORE-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/CORE-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/CORE-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/CORE-001/task.json",
+        ".ai/tasks/CORE-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/CORE-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/CORE-001/task.json",
+        ".ai/tasks/CORE-001/architecture-report.json",
+        ".ai/tasks/CORE-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/CORE-001/frontend-design-report.json",
+        ".ai/tasks/CORE-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/CORE-001/task.json",
+        ".ai/tasks/CORE-001/architecture-report.json",
+        ".ai/tasks/CORE-001/database-report.json",
+        ".ai/tasks/CORE-001/backend-report.json",
+        ".ai/tasks/CORE-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/CORE-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/CORE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/CORE-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/CORE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/CORE-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/CORE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/CORE-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/CORE-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Visitors can navigate the public landing, sign-in, and trust surfaces, understand OncoReady's enterprise value, and encounter no unsupported deployment, customer, outcome, certification, compliance, or live-integration claims.",
+    "Clickable sandbox entry reaches staff, patient, and caregiver perspectives without accepting or implying verification of real credentials.",
+    "A persistent staff shell reaches Command Center, Exceptions, Patients, Resources, Insights, Integrations, and Admin with clear current-location and return behavior.",
+    "Every staff module contains complete, coherent synthetic enterprise content; secondary modules may be static/read-only but may not present dead consequential controls or misleading live state.",
+    "Staff search and exception/patient filters work against fixtures, combine predictably, provide useful no-result states, and can be cleared without resetting the workflow.",
+    "Maria's readiness submission with an unconfirmed ride and clinical concern creates exactly one navigation task and one human clinical-review task from deterministic local state.",
+    "Maria's clinical concern remains verbatim inert text and is never represented as automated triage, diagnosis, treatment advice, or medical clearance.",
+    "Command Center, Exceptions, Patients/Maria case, the Treatment Readiness Graph, patient status, and timeline derive Maria's risk, ownership, next action, and state from one source of truth.",
+    "Staff can acknowledge clinical review and confirm simulated transportation while guarded transitions prevent invalid, duplicate, or out-of-order advancement.",
+    "Resources supports Maria's simulated transport action while broader availability remains clearly synthetic rather than a live booking network.",
+    "Ana's caregiver portal exposes only Maria-authorized transportation information and excludes clinical content from visible and accessibility-specific output.",
+    "Maria's final acknowledgment is gated on required staff actions, supplies closure evidence exactly once, and moves the shared plan to confirmed.",
+    "Synthetic Insights, sandbox/proposed Integrations, and local/read-only Admin remain coherent with Maria's current workflow and make no server-enforcement or production-connectivity claims.",
+    "Refresh safely restores compatible progress or reinitializes, and reset restores workflow, permissions, search/filters, and sandbox perspective to one known opening state.",
+    "Applicable public, staff, patient, and caregiver surfaces are complete at mobile and presentation-laptop sizes, keyboard operable, visibly focused, semantic, non-color-dependent, and equivalent under reduced motion.",
+    "No primary navigation is dead and no surface contains starter content, real PHI, exposed secrets, real credential collection, or unsupported compliance, certification, production-scale, clinical-validation, measured-outcome, or live-vendor claims. Normal product surfaces do not describe OncoReady as a prototype, demo, dummy, mock, or toy; non-production context is disclosed discreetly with professional environment language such as Training environment or Illustrative records only where materially necessary.",
+    "The frontend runs without live network services after installation; build and smoke checks cover entry, primary route reachability, search/filter recovery, reset-to-confirmed Maria completion, and caregiver clinical-data exclusion."
+  ],
+  "created_by": "human"
+}
