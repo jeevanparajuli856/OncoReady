@@ -2,8 +2,41 @@
   "schema_version": "1.0",
   "task_id": "CORE-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "",
+  "reviewed_commit": "266e7dfc3e5eeb3c9592861e5633404d4c0c6dc2",
   "status": "CHANGES_REQUIRED",
-  "summary": "",
-  "findings": []
+  "summary": "The verified Maria workflow and caregiver allowlist are credible, but the integrated revision is not release-ready because required enterprise modules remain skeletal, guarded workflow invariants are not enforced by the state machine, several surfaces make unsupported live-health-system or clinical-clearance claims, and principal entry/staff surfaces do not meet the required keyboard and mobile behavior.",
+  "findings": [
+    {
+      "severity": "high",
+      "category": "enterprise-product-completeness",
+      "file": "frontend/src/App.tsx",
+      "description": "Blocking acceptance criteria 4, 5, 10, and 13. The seven staff destinations are reachable, but several are not complete enterprise surfaces. Patients (line 195) has no search or filters and contains only Maria plus one inert faded row; Resources (line 237) presents two providers as 'Available' without contextual illustrative/read-only framing; Insights (line 259) is a bordered box containing the literal placeholder text 'Exception Aging & Resolution Chart (Illustrative presentation)'; Integrations (line 268) contains one mapping snippet; and Admin contains only two configuration rows. This does not satisfy the required complete, coherent enterprise content or working patient search/filter behavior.",
+      "recommendation": "Complete the named enterprise modules to the approved Phase A blueprint. At minimum, implement patient search/filter/no-result recovery, replace the Insights placeholder with a credible illustrative operational view, give Integrations and Admin complete read-only information architecture, and clearly frame resource availability as illustrative while keeping Maria's transport action coherent.",
+      "blocking": true
+    },
+    {
+      "severity": "high",
+      "category": "workflow-correctness",
+      "file": "frontend/src/state/workflowState.ts",
+      "description": "The reducer does not enforce transition guards or idempotency. ACKNOWLEDGE_CLINICAL_TASK and CONFIRM_TRANSPORTATION append events even when their tasks do not exist or are already resolved, and ACKNOWLEDGE_PATIENT_PLAN sets PLAN_CONFIRMED and resolves every task even when required staff actions have not occurred. UI visibility hides some invalid actions, but the authoritative state machine itself permits out-of-order and duplicate advancement, contrary to the architecture and acceptance criteria.",
+      "recommendation": "At lines 388, 438, and 487, guard every transition in the reducer: require the matching task and expected state, make repeated actions no-ops, require both staff dispositions before patient acknowledgment, and add smoke assertions for invalid, duplicate, and out-of-order actions plus exactly-once audit events.",
+      "blocking": true
+    },
+    {
+      "severity": "high",
+      "category": "product-truthfulness-and-clinical-boundary",
+      "file": "frontend/src/components/PortalAuthScreen.tsx",
+      "description": "User-facing surfaces still imply real Ochsner/MyChart/Epic deployment and live fulfillment: 'Ochsner MyChart OncoReady Experience', 'Ochsner Health Oncology Network', 'Epic Scheduling / Ochsner Oncology', Ochsner Med-Van and RideHealth marked 'Available', and a live vehicle/driver booking narrative. The workspace entry also says 'clinical symptom clearance' and 'cycle clearance'. These conflict with the explicit prohibition on live Ochsner/vendor connectivity, live booking status, and medical-clearance language. A general Training environment badge does not neutralize specific branded connectivity and availability claims.",
+      "recommendation": "Remove the affiliation and clearance claims at PortalAuthScreen lines 128, 183, 285, and 306, AuthModal line 251, workflowState line 200, and App lines 242-252. Use fictional organization/provider names or explicit mapping-preview context, and present transport availability/confirmation as illustrative coordination rather than a live booking network.",
+      "blocking": true
+    },
+    {
+      "severity": "high",
+      "category": "accessibility-responsive-design-consistency",
+      "file": "frontend/src/components/StaffAppShell.tsx",
+      "description": "Principal workspace-entry cards in both AuthModal and PortalAuthScreen are clickable div elements without button semantics, tab stops, or keyboard handlers. The staff shell always reserves a fixed 15rem sidebar and has no mobile navigation/collapse behavior, despite the mobile acceptance criterion. The implementation also depends on numerous remote Unsplash portraits even though the approved design explicitly rejected stock healthcare portraits and the application is required to remain presentation-ready without live services.",
+      "recommendation": "Replace the clickable divs in AuthModal and PortalAuthScreen with semantic buttons/links with visible focus and keyboard activation, implement a usable mobile staff navigation pattern around StaffAppShell lines 44-46, and replace remote stock portraits with local or deterministic product-native identity assets/fallbacks consistent with the approved design.",
+      "blocking": true
+    }
+  ]
 }
