@@ -2,17 +2,8 @@
   "schema_version": "1.0",
   "task_id": "LAND-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "44f4224e0c40dbede1d0b618d62e0e6d6db2c55a",
-  "status": "CHANGES_REQUIRED",
-  "summary": "The landing refresh is visually cohesive, responsive, truthful, preserves the working Maria journey, uses the official logo geometry, and has current passing build and smoke evidence. Release approval is withheld because the signature canvas and programmatic scrolling do not honor the operating system reduced-motion preference required by the approved design and acceptance criteria.",
-  "findings": [
-    {
-      "severity": "medium",
-      "category": "accessibility",
-      "file": "frontend/src/components/ContinuityField.tsx",
-      "description": "The signature field only checks the in-app reducedMotion prop. With a browser context configured for prefers-reduced-motion: reduce, pointer movement still scheduled 43 requestAnimationFrame callbacks in 700ms. Header and hero scroll handlers also select smooth behavior from the app prop alone. This conflicts with the approved design requirement to honor both the OS preference and the in-product motion control with a stable still field and immediate navigation.",
-      "recommendation": "Derive one effective reduced-motion state from the app control and matchMedia('(prefers-reduced-motion: reduce)'), including preference changes, then use it for ContinuityField animation and explicit scroll behavior. Add a focused regression that emulates the OS preference and confirms the field stays static while content and navigation remain available.",
-      "blocking": true
-    }
-  ]
+  "reviewed_commit": "c3f8ca19e9597f6a482c458c02f3c87d710b474f",
+  "status": "APPROVED",
+  "summary": "The landing refresh is visually cohesive, responsive, truthful, preserves the working Maria journey, uses the official logo geometry, and has current passing build and smoke evidence. The prior reduced-motion blocker is resolved: App and ContinuityField track live operating-system preference changes, the resulting effective state controls canvas animation and explicit scrolling, and the focused regression confirms pointer activity schedules no additional animation frame after reduced motion is enabled.",
+  "findings": []
 }
