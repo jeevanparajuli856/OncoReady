@@ -34,7 +34,7 @@ describe('ScrollReveal progressive enhancement', () => {
 
   it('reveals once and unregisters the completed target', () => {
     vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
-    const { container, unmount } = render(
+    const { container, rerender, unmount } = render(
       <ScrollReveal variant="patient">
         <button type="button">Patient workspace</button>
       </ScrollReveal>,
@@ -49,12 +49,29 @@ describe('ScrollReveal progressive enhancement', () => {
 
     expect(reveal.dataset.revealState).toBe('revealed');
     expect(observer.unobserve).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <ScrollReveal variant="patient" reducedMotion>
+        <button type="button">Patient workspace</button>
+      </ScrollReveal>,
+    );
+    expect(reveal.dataset.revealState).toBe('revealed');
+
+    rerender(
+      <ScrollReveal variant="patient" reducedMotion={false}>
+        <button type="button">Patient workspace</button>
+      </ScrollReveal>,
+    );
+    expect(reveal.dataset.revealState).toBe('revealed');
+    expect(IntersectionObserverStub.instances).toHaveLength(1);
+    expect(observer.observe).toHaveBeenCalledTimes(1);
+    expect(observer.unobserve).toHaveBeenCalledTimes(1);
     unmount();
   });
 
   it('completes immediately when keyboard focus reaches pending content', () => {
     vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
-    const { container, getByRole, unmount } = render(
+    const { container, getByRole, rerender, unmount } = render(
       <ScrollReveal variant="caregiver">
         <button type="button">Caregiver workspace</button>
       </ScrollReveal>,
@@ -65,6 +82,21 @@ describe('ScrollReveal progressive enhancement', () => {
 
     expect(reveal.dataset.revealState).toBe('revealed');
     expect(IntersectionObserverStub.instances[0].unobserve).toHaveBeenCalledWith(reveal);
+
+    rerender(
+      <ScrollReveal variant="caregiver" reducedMotion>
+        <button type="button">Caregiver workspace</button>
+      </ScrollReveal>,
+    );
+    rerender(
+      <ScrollReveal variant="caregiver" reducedMotion={false}>
+        <button type="button">Caregiver workspace</button>
+      </ScrollReveal>,
+    );
+
+    expect(reveal.dataset.revealState).toBe('revealed');
+    expect(IntersectionObserverStub.instances).toHaveLength(1);
+    expect(IntersectionObserverStub.instances[0].observe).toHaveBeenCalledTimes(1);
     unmount();
   });
 
@@ -83,8 +115,19 @@ describe('ScrollReveal progressive enhancement', () => {
 
   it('skips pending motion when effective reduced motion is active', () => {
     vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
-    const { container } = render(
+    const { container, rerender } = render(
       <ScrollReveal variant="workflow" reducedMotion>
+        <article>Detect and route</article>
+      </ScrollReveal>,
+    );
+
+    expect(
+      container.querySelector('[data-reveal-variant="workflow"]')?.getAttribute('data-reveal-state'),
+    ).toBe('visible');
+    expect(IntersectionObserverStub.instances).toHaveLength(0);
+
+    rerender(
+      <ScrollReveal variant="workflow" reducedMotion={false}>
         <article>Detect and route</article>
       </ScrollReveal>,
     );

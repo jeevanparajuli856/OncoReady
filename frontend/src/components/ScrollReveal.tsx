@@ -64,17 +64,24 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   className,
 }) => {
   const elementRef = useRef<HTMLDivElement>(null);
+  const completedRef = useRef(false);
   const [state, setState] = useState<RevealState>('visible');
 
   useEffect(() => {
     const element = elementRef.current;
-    if (!element || reducedMotion || typeof window.IntersectionObserver !== 'function') {
+    if (!element || completedRef.current) return undefined;
+
+    if (reducedMotion || typeof window.IntersectionObserver !== 'function') {
+      completedRef.current = true;
       setState('visible');
       return undefined;
     }
 
     setState('pending');
-    observeReveal(element, () => setState('revealed'));
+    observeReveal(element, () => {
+      completedRef.current = true;
+      setState('revealed');
+    });
 
     return () => stopObservingReveal(element);
   }, [reducedMotion]);
@@ -82,6 +89,7 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
   const revealForFocus = () => {
     const element = elementRef.current;
     if (state !== 'pending' || !element) return;
+    completedRef.current = true;
     stopObservingReveal(element);
     setState('revealed');
   };
