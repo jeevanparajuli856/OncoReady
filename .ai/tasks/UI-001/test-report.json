@@ -3,7 +3,7 @@
   "task_id": "UI-001",
   "agent": "codex-tester",
   "status": "CHANGES_REQUIRED",
-  "summary": "Independent targeted testing of integrated commit c96d13f passed the reveal lifecycle, reduced-motion paths, finished-SaaS copy, build, responsive overflow, scroll-performance trace, all staff routes, and complete Maria/caregiver journey, but the visible mobile workspace-dock controls measure about 38.25 by 38.25 pixels at 320px and 390px viewports instead of the approved 44px minimum.",
+  "summary": "Independent focused retesting of corrected integrated commit 9c451f2 confirms all five mobile workspace-dock controls are exactly 44 by 44 CSS pixels with correct accessible names, visible keyboard focus, and no horizontal overflow at 320px and 390px; however, the enlarged fixed dock overlaps the lower edge of the focused footer motion control by about 8px at both widths, so the approved no-covered-control boundary still requires correction.",
   "files_changed": [
     ".ai/tasks/UI-001/test-report.json"
   ],
@@ -11,28 +11,27 @@
   "tests": {
     "passed": false,
     "commands": [
-      "cd frontend && npx vitest run tests/smoke.test.ts tests/component.test.tsx tests/continuity-field.test.tsx tests/scroll-reveal.test.tsx",
+      "git diff 55d82d9..9c451f2 -- frontend/src/components/ui/floating-dock.tsx frontend/tests/e2e.spec.ts .ai/tasks/UI-001/frontend-report.json",
       "cd frontend && npx tsc --noEmit",
-      "cd frontend && npm run build",
-      "cd frontend && PLAYWRIGHT_PORT=4174 npx playwright test tests/e2e.spec.ts",
-      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4175",
-      "cd frontend && node --input-type=module -e '<Playwright audit: 320x568, 390x844, 768x1024, and 1440x900 overflow/document-scroll, user reduced motion, FAQ, static map fallback, patient workspace reachability, and mobile dock geometry>'",
-      "cd frontend && node --input-type=module -e '<Playwright production scroll trace: full 1440x900 wheel pass with PerformanceObserver long-task collection>'",
+      "cd frontend && PLAYWRIGHT_PORT=4177 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4178",
+      "cd frontend && node --input-type=module -e '<Playwright 320x568 and 390x844 audit: exact dock geometry, accessible labels, keyboard focus outline, safe-area container placement, horizontal overflow, and footer-control overlap>'",
+      "cd frontend && node --input-type=module -e '<Playwright 320x568 and 390x844 hit-test: focus footer motion control and sample elementFromPoint at its lower edge>'",
       "python3 scripts/agentctl.py scope check UI-001 tester"
     ],
-    "notes": "Vitest passed 4 files and 14 tests with no skips. TypeScript passed. The production build passed after transforming 8,481 modules in 3m42s. Isolated-port Playwright passed 3/3: SaaS/reveal/overflow, OS reduced motion, and all eight staff destinations plus the complete Maria journey, caregiver DOM exclusion, and reset. Additional production-browser measurement found scrollWidth equal to clientWidth at 320, 390, 768, and 1440; document-owned workspace scrolling; immediate labeled map fallback; user motion-off final states with no pending reveal, transform, or smooth behavior; and no PerformanceObserver long tasks during a full 1440x900 landing wheel pass. The same measurement found every visible mobile dock control at approximately 38.25x38.25px at both mobile widths. A first default-port Playwright attempt reached an unrelated already-running stale preview and produced 2 failures/1 pass; the required isolated-port rerun against the freshly built c96d13f artifact passed 3/3."
+    "notes": "Reviewed exact integrated commit 9c451f2e8b09eb3572cfd9534d983eda3204e9f8. TypeScript passed. The isolated-port focused Playwright regression passed 1/1. Direct production-browser measurement confirmed Home, Patient, Staff, Caregiver, and Graph are each exactly 44x44 CSS px at 320x568 and 390x844; every control has its expected accessible name, becomes document.activeElement, and renders a 2px solid focus outline; document scrollWidth equals clientWidth at both widths; and the fixed wrapper retains bottom/safe-area placement. Coverage still fails: at 320x568 the footer Reduce motion control spans y=476.796875..508.546875 while the dock spans y=500.75..559.5 (7.796875px vertical overlap); at 390x844 the footer control spans y=753.109375..784.859375 while the dock spans y=776.75..835.5 (8.109375px overlap). With the footer control focused, elementFromPoint at its lower center returns the Workspace dock NAV at both widths, proving fixed chrome covers part of the focus target. Prior c96d13f evidence remains relevant for unaffected behavior: Vitest 14/14, production build, isolated full Playwright 3/3, complete Maria/caregiver journey, all staff routes, reduced motion, SaaS/reveal behavior, and full landing scroll trace all passed; the 9c451f2 diff changes only dock sizing, its focused regression, and the frontend report."
   },
   "blockers": [
     {
       "type": "ACCESSIBILITY_ACCEPTANCE",
-      "description": "At 320x568 and 390x844, Home, Patient, Staff, Caregiver, and Graph buttons in the fixed mobile Workspace dock each render at about 38.25x38.25px. UI-001 requires 44px minimum public/patient/mobile targets, so the dock misses the approved responsive-accessibility boundary.",
-      "suggestion": "Increase the mobile DockTarget hit area to an explicit minimum of 44x44px without changing the compact icon size, then rerun the responsive overflow/coverage audit and the full targeted suite."
+      "description": "At 320x568 and 390x844, the now-correct 44px fixed mobile dock overlaps the lower edge of the focused footer Reduce motion button by 7.796875px and 8.109375px respectively. Hit-testing that covered strip returns the Workspace dock NAV, contrary to UI-001's requirement that fixed chrome never cover focused content and that mobile bottom padding keep the last focusable control clear.",
+      "suggestion": "Add sufficient mobile bottom clearance to the footer or page flow, including safe-area behavior, so the footer motion control and focus outline remain entirely above the dock at both widths; preserve the exact 44px dock targets and zero horizontal overflow, then rerun the focused geometry/hit-test."
     }
   ],
   "notes_for_next_agent": [
-    "Retest the exact corrected integrated commit; do not carry forward this commit-bound result as passing evidence.",
-    "Preserve the current no-overflow result at 320 and 390 while enlarging all five mobile dock hit areas, and confirm the fixed dock still leaves the last workspace controls reachable.",
-    "The shared ScrollReveal implementation already passed observer one-time unobserve, focus completion, no-observer fallback, distinct patient/staff/caregiver variants, and reduced-motion final-state assertions.",
-    "Landing copy and the four-part SaaS model passed the forbidden identity-term audit; all staff routes, Maria persistence/reset flow, and caregiver clinical/nurse-detail exclusion passed on c96d13f."
+    "Retest the exact next corrected integrated commit; 9c451f2 is not passing independent evidence because of the fixed-dock/footer overlap.",
+    "Preserve the current exact 44x44 dock geometry, all five accessible labels, 2px focus outline, safe-area class, and scrollWidth==clientWidth results while adding bottom clearance.",
+    "A decisive retest should focus the footer Reduce motion button at 320x568 and 390x844, assert its bounding box does not intersect the dock, and verify elementFromPoint across its lower edge resolves to the footer control rather than dock chrome.",
+    "Do not rerun the expensive unrelated build/full journey unless the correction expands beyond bottom spacing; prior unaffected evidence passed and 9c451f2 typecheck plus the focused dock regression passed."
   ]
 }
