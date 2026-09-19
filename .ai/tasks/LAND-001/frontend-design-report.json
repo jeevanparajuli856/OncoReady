@@ -1,32 +1,63 @@
 {
   "schema_version": "1.0",
   "task_id": "LAND-001",
-  "agent": "gemini-frontend",
-  "status": "PARTIAL",
-  "summary": "",
+  "agent": "codex-frontend",
+  "status": "DESIGN_READY",
+  "summary": "Extend Clinical Glass into a light editorial landing experience called Continuity Aurora: official OncoReady branding, an immediate treatment-readiness message, one pointer-reactive character ribbon, and a calmer shared rhythm across the existing product proof sections.",
   "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "NONE",
+  "design_system_action": "EXTEND",
   "visual_direction": {
-    "layout": "",
-    "color": "",
-    "typography": "",
-    "spacing_and_shape": "",
-    "component_presentation": ""
+    "layout": "Keep OncoReady's existing landing information architecture and functional destinations. Use a slim glass header, an editorial two-column hero, a concise proof strip, role workspaces, live readiness proof, a three-step mechanism story, Louisiana access story, enterprise configurations, FAQ, and closing CTA. Alternate generous full-width breathing space with bounded product modules instead of reproducing the reference site's page structure.",
+    "color": "Use the official ink, indigo, mint, cool-white, and slate tokens as the brand foundation. Extend the landing-only atmosphere with low-opacity coral/peach and lavender light fields inspired by the reference, keeping surfaces predominantly white and status colors semantic. Indigo remains the primary action color, mint signals confirmed closure, and warm accents draw attention without implying clinical state.",
+    "typography": "Retain Outfit for expressive display headings because it matches the official wordmark, and Poppins/Plus Jakarta Sans for readable body copy. Increase hero scale with a responsive clamp and compact line height, use shorter line lengths and sentence-case labels, and keep operational details at current readable sizes. Avoid copying the reference typeface or all-caps marketing density.",
+    "spacing_and_shape": "Adopt a 4/8px rhythm with 24-40px section padding on mobile and 64-112px on desktop. Public feature surfaces use 24-32px radii, fine cool borders, and soft layered shadows; pills and buttons remain rounded but avoid hard black sticker outlines. Preserve denser operational components inside the readiness preview rather than restyling the product workspace.",
+    "component_presentation": "Use the official horizontal title logo in the public header/footer and official compact mark where width is constrained. The hero pairs a direct value proposition and two CTAs with a Continuity Field card containing the character ribbon and three owned-work labels. Role cards become large image-led editorial portals; the existing readiness graph sits in a polished browser/workspace frame; mechanism, access, enterprise, and FAQ sections reuse their real content with consistent glass cards and restrained gradients. Do not add customer logos or testimonials."
   },
   "motion": {
-    "strategy": "",
-    "transitions": "",
-    "microinteractions": "",
-    "reduced_motion": ""
+    "strategy": "Use one signature motion system. A canvas-based field samples a cancer-ribbon silhouette into deterministic glyph particles; the pointer gently repels nearby glyphs and shifts them from indigo toward mint/coral before a spring return. The effect is decorative, isolated from workflow state, capped in density, and paused offscreen or when the document is hidden.",
+    "transitions": "Use 180-240ms ease-out feedback for buttons, cards, navigation, and FAQ state; use 500-700ms fade/rise entrances only when a section first enters the viewport. Avoid aggressive parallax, continuous page-wide animation, hard bounce effects, and layout-changing transforms.",
+    "microinteractions": "Primary actions gain a small lift and softer shadow; image cards reveal a subtle tint and arrow translation; FAQ controls rotate the plus icon and expose content without abrupt jumps; the signature field shows a local glow/repel response without capturing clicks or pointer focus.",
+    "reduced_motion": "Honor both prefers-reduced-motion and the existing in-product motion-off class. Render the ribbon field once at its resting coordinates, remove automatic entrances and transforms, keep FAQ content changes immediate, and preserve every label, CTA, status, and navigation path."
   },
   "responsive": {
-    "strategy": "",
-    "notes": ""
+    "strategy": "Design mobile-first from 320px, using a compact official mark in the header, single-column hero and cards, horizontally safe CTAs, and a static or touch-passive continuity field. At 768px, introduce paired content modules; at 1024px and above, use the full wordmark, editorial split hero, and wider readiness proof.",
+    "notes": "The continuity field uses a fixed aspect-ratio container to prevent layout shift. Headline size and section spacing use clamp values. The official title logo keeps its intrinsic 620:128 ratio and swaps to the favicon mark when the full lockup would be unreadable. Existing patient/staff/caregiver surfaces keep their layout."
   },
-  "application_states": [],
-  "accessibility": [],
-  "assets_or_dependencies": [],
-  "design_system_changes": [],
+  "application_states": [
+    "Landing default with resting continuity ribbon and screening-pending readiness preview",
+    "Pointer-capable continuity field with local repel and color flare",
+    "Reduced-motion or motion-off landing with stable ribbon illustration",
+    "Expanded and collapsed FAQ items with matching aria-expanded state",
+    "Mobile navigation/CTA presentation with compact official mark",
+    "Existing role-entry, workspace modal, and live readiness states preserved"
+  ],
+  "accessibility": [
+    "Treat the continuity field as aria-hidden decoration; repeat its ownership meaning in visible text.",
+    "Maintain semantic landmarks and heading order, keyboard-operable anchors/buttons, and visible 2px focus indicators.",
+    "Keep public primary controls at least 44px tall and ensure text/background contrast meets WCAG AA.",
+    "Do not encode clinical or readiness meaning through color or motion alone.",
+    "Honor prefers-reduced-motion and the existing motion-off control with equivalent static content and immediate state changes.",
+    "Keep images meaningful only when their alt text adds context; mark decorative imagery empty-alt."
+  ],
+  "assets_or_dependencies": [
+    "Logo/oncoready-title-logo.svg copied into the frontend public asset pipeline",
+    "Logo/oncoready-favicon.svg and Logo/oncoready-favicon-512.png copied into the frontend public asset pipeline",
+    "Existing React, TypeScript, Tailwind CSS, Lucide/Font Awesome icons, and motion package",
+    "Custom canvas implementation with no new runtime dependency",
+    "Existing synthetic story imagery and workflow state"
+  ],
+  "design_system_changes": [
+    "Document the landing-only Continuity Aurora atmosphere as an extension of Clinical Glass.",
+    "Add public-surface tokens for coral light, lavender light, elevated white, editorial section spacing, and soft border/shadow treatment.",
+    "Add official horizontal and compact logo usage rules.",
+    "Add the signature continuity-field motion and performance/reduced-motion rules.",
+    "Replace public hard-outline sticker treatment with refined glass/elevated cards while retaining operational status semantics."
+  ],
   "blockers": [],
-  "notes_for_codex": []
+  "notes_for_codex": [
+    "This report implements the human constraint to borrow color, theme, and style only; it does not copy the reference layout or content.",
+    "Exact hero copy will avoid absolute outcome promises and center the product's real behavior: finding blockers, assigning owners, and visibly confirming the plan.",
+    "The implementation should touch only public presentation, shared logo compatibility, design-system documentation, and focused tests; workflow state must remain unchanged.",
+    "The canvas field must fail silently to its static SVG/ribbon treatment if 2D canvas is unavailable."
+  ]
 }
