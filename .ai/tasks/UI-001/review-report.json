@@ -2,8 +2,17 @@
   "schema_version": "1.0",
   "task_id": "UI-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "",
+  "reviewed_commit": "835d45f25d9657c5062acc05e3bf4ce8551b3b7a",
   "status": "CHANGES_REQUIRED",
-  "summary": "",
-  "findings": []
+  "summary": "The integrated revision delivers the approved Clinical Glass continuity, confident buyer-oriented landing, distinct observer-driven role-card arrivals, four-part SaaS business model, document-owned scrolling, bounded map/canvas work, responsive shared chrome, all workspace routes, and the unchanged Maria/caregiver journey with current TARGETED and commit-bound verification evidence. One release blocker remains in the motion control: re-enabling motion resets already completed reveals to pending, temporarily removes whole card groups from view, and permits a second entrance in the same mounted landing session.",
+  "findings": [
+    {
+      "severity": "medium",
+      "category": "motion-accessibility",
+      "file": "frontend/src/components/ScrollReveal.tsx",
+      "description": "Completed reveals are not remembered across effective-reduced-motion changes. In the production build at 1440x900, the three role cards reached data-reveal-state=\"revealed\"; clicking the footer Reduce motion control changed them to \"visible\", and clicking Motion off again to re-enable motion changed all three back to \"pending\". The same effect applies to workflow and SaaS reveals because the effect always calls setState('pending') whenever reducedMotion becomes false. Previously completed content therefore disappears while offscreen and can animate a second time, violating the requirements that entrances run at most once per mounted session and that motion-mode changes preserve immediately available content.",
+      "recommendation": "Persist a per-instance completed/visible state across reducedMotion transitions and never re-observe or return an already completed reveal to pending. Add a focused regression that reveals a card, toggles reduced motion on and back off, and asserts that it stays final and is not observed or animated again.",
+      "blocking": true
+    }
+  ]
 }
