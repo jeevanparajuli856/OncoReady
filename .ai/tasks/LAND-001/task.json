@@ -3,7 +3,7 @@
   "task_id": "LAND-001",
   "title": "Landing Page Brand and Motion Refresh",
   "type": "feature",
-  "status": "INTEGRATION",
+  "status": "REVIEW",
   "priority": "high",
   "owners": {
     "orchestrator": "codex",
