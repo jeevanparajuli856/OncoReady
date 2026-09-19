@@ -1,18 +1,40 @@
 {
   "schema_version": "1.0",
   "task_id": "LAND-001",
-  "agent": "gemini-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "agent": "codex-frontend",
+  "status": "COMPLETE",
+  "summary": "Refreshed the public landing page with the official OncoReady identity, an original light editorial visual system, a performant interactive continuity ribbon, responsive role-focused storytelling, and truthful product copy while preserving every existing workspace entry and golden-path interaction.",
+  "files_changed": [
+    "docs/design/DESIGN_SYSTEM.md",
+    "frontend/index.html",
+    "frontend/public/favicon.svg",
+    "frontend/public/logo.svg",
+    "frontend/public/oncoready-title-logo.svg",
+    "frontend/src/App.tsx",
+    "frontend/src/components/ContinuityField.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/components/LandingPage.tsx",
+    "frontend/src/components/Logo.tsx",
+    "frontend/src/index.css",
+    "frontend/tests/component.test.tsx",
+    ".ai/tasks/LAND-001/frontend-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "npm run test:smoke",
+      "npm run build",
+      "python3 scripts/agentctl.py scope check LAND-001 frontend",
+      "python3 scripts/agentctl.py task validate LAND-001",
+      "git diff --check",
+      "npx playwright screenshot --browser=chromium --viewport-size=320,800 http://127.0.0.1:5173 /tmp/oncoready-land-001-320.png"
+    ],
+    "notes": "Eight smoke and component tests passed, including reduced-motion coverage and the complete Maria patient/staff/caregiver plan-confirmation journey. The production TypeScript/Vite build passed. Visual review passed at 1440px, 390px, and 320px viewports."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The continuity canvas pauses while hidden or offscreen and after particles settle; reduced-motion users receive the same ribbon composition without animation.",
+    "The landing page intentionally keeps the existing workspace dock and authentication entry behavior intact."
+  ]
 }

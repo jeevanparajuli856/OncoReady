@@ -8,6 +8,9 @@ import {
   Clock,
   Network,
   Home,
+  Menu,
+  X,
+  ArrowRight,
 } from 'lucide-react';
 import { Perspective, ReadinessStatus, WorkflowState } from '../types';
 import { Avatar } from './Avatar';
@@ -24,8 +27,8 @@ interface HeaderProps {
   onOpenAuthModal: () => void;
 }
 
-const scrollTo = (id: string) => {
-  document.getElementById(id)?.scrollIntoView({ behavior: 'smooth' });
+const scrollTo = (id: string, reducedMotion = false) => {
+  document.getElementById(id)?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth' });
 };
 
 export const Header: React.FC<HeaderProps> = ({
@@ -33,10 +36,12 @@ export const Header: React.FC<HeaderProps> = ({
   onSetPerspective,
   overallReadiness,
   onReset,
+  reducedMotion,
   state,
   onOpenAuthModal,
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isLandingMenuOpen, setIsLandingMenuOpen] = useState(false);
 
   const getActiveUser = () => {
     switch (currentPerspective) {
@@ -89,32 +94,65 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   if (currentPerspective === 'LANDING') {
+    const landingLinks = [
+      ['workspaces', 'Workspaces'],
+      ['how-it-works', 'How it works'],
+      ['access-map', 'Louisiana access'],
+      ['pricing-section', 'Deployment'],
+      ['faq-section', 'FAQ'],
+    ] as const;
+
     return (
-      <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-white/80">
-        <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
+      <header className="landing-header sticky top-0 z-40 w-full">
+        <div className="landing-header__inner">
           <button onClick={() => onSetPerspective('LANDING')} className="cursor-pointer shrink-0" aria-label="Go to OncoReady home" title="Home">
-            <Logo size={30} compact />
+            <span className="hidden sm:block"><Logo size={38} /></span>
+            <span className="sm:hidden"><Logo size={42} showWordmark={false} /></span>
           </button>
 
-          <nav className="hidden lg:flex items-center gap-1 text-sm font-heading font-medium text-ink">
-            <button onClick={() => scrollTo('how-it-works')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">How it works</button>
-            <button onClick={() => scrollTo('access-map')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">Access map</button>
-            <button onClick={() => scrollTo('pricing-section')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">Pricing</button>
-            <button onClick={() => onSetPerspective('PATIENT')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">Patient</button>
-            <button onClick={() => onSetPerspective('STAFF')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">Staff</button>
-            <button onClick={() => onSetPerspective('CAREGIVER')} className="px-3 py-1.5 rounded-lg hover:bg-white/80">Caregiver</button>
+          <nav className="landing-header__nav" aria-label="Landing page navigation">
+            {landingLinks.map(([id, label]) => (
+              <button key={id} type="button" onClick={() => scrollTo(id, reducedMotion)}>{label}</button>
+            ))}
           </nav>
 
-          <div className="flex items-center gap-2 shrink-0">
-            <button onClick={onOpenAuthModal} className="btn-ghost btn-compact hidden sm:inline-flex">
-              Log In
+          <div className="landing-header__actions">
+            <button type="button" onClick={onOpenAuthModal} className="landing-header__login hidden sm:inline-flex">
+              Workspace access
             </button>
-            <button onClick={onOpenAuthModal} className="btn-candy btn-compact">
-              <span className="sm:hidden">Enter</span>
-              <span className="hidden sm:inline">Explore Workspace</span>
+            <button type="button" onClick={onOpenAuthModal} className="landing-header__cta">
+              <span className="sm:hidden">Explore</span>
+              <span className="hidden sm:inline">Explore workspace</span>
+            </button>
+            <button
+              type="button"
+              className="landing-header__menu"
+              aria-label={isLandingMenuOpen ? 'Close navigation menu' : 'Open navigation menu'}
+              aria-expanded={isLandingMenuOpen}
+              onClick={() => setIsLandingMenuOpen((open) => !open)}
+            >
+              {isLandingMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
           </div>
         </div>
+
+        {isLandingMenuOpen && (
+          <nav className="landing-header__mobile-nav" aria-label="Mobile landing page navigation">
+            {landingLinks.map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => {
+                  scrollTo(id, reducedMotion);
+                  setIsLandingMenuOpen(false);
+                }}
+              >
+                {label}
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
+              </button>
+            ))}
+          </nav>
+        )}
       </header>
     );
   }
