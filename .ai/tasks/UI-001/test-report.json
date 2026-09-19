@@ -2,17 +2,37 @@
   "schema_version": "1.0",
   "task_id": "UI-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "CHANGES_REQUIRED",
+  "summary": "Independent targeted testing of integrated commit c96d13f passed the reveal lifecycle, reduced-motion paths, finished-SaaS copy, build, responsive overflow, scroll-performance trace, all staff routes, and complete Maria/caregiver journey, but the visible mobile workspace-dock controls measure about 38.25 by 38.25 pixels at 320px and 390px viewports instead of the approved 44px minimum.",
+  "files_changed": [
+    ".ai/tasks/UI-001/test-report.json"
   ],
+  "contracts_used": [],
   "tests": {
     "passed": false,
-    "commands": [],
-    "notes": ""
+    "commands": [
+      "cd frontend && npx vitest run tests/smoke.test.ts tests/component.test.tsx tests/continuity-field.test.tsx tests/scroll-reveal.test.tsx",
+      "cd frontend && npx tsc --noEmit",
+      "cd frontend && npm run build",
+      "cd frontend && PLAYWRIGHT_PORT=4174 npx playwright test tests/e2e.spec.ts",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4175",
+      "cd frontend && node --input-type=module -e '<Playwright audit: 320x568, 390x844, 768x1024, and 1440x900 overflow/document-scroll, user reduced motion, FAQ, static map fallback, patient workspace reachability, and mobile dock geometry>'",
+      "cd frontend && node --input-type=module -e '<Playwright production scroll trace: full 1440x900 wheel pass with PerformanceObserver long-task collection>'",
+      "python3 scripts/agentctl.py scope check UI-001 tester"
+    ],
+    "notes": "Vitest passed 4 files and 14 tests with no skips. TypeScript passed. The production build passed after transforming 8,481 modules in 3m42s. Isolated-port Playwright passed 3/3: SaaS/reveal/overflow, OS reduced motion, and all eight staff destinations plus the complete Maria journey, caregiver DOM exclusion, and reset. Additional production-browser measurement found scrollWidth equal to clientWidth at 320, 390, 768, and 1440; document-owned workspace scrolling; immediate labeled map fallback; user motion-off final states with no pending reveal, transform, or smooth behavior; and no PerformanceObserver long tasks during a full 1440x900 landing wheel pass. The same measurement found every visible mobile dock control at approximately 38.25x38.25px at both mobile widths. A first default-port Playwright attempt reached an unrelated already-running stale preview and produced 2 failures/1 pass; the required isolated-port rerun against the freshly built c96d13f artifact passed 3/3."
   },
-  "blockers": [],
-  "notes_for_next_agent": []
+  "blockers": [
+    {
+      "type": "ACCESSIBILITY_ACCEPTANCE",
+      "description": "At 320x568 and 390x844, Home, Patient, Staff, Caregiver, and Graph buttons in the fixed mobile Workspace dock each render at about 38.25x38.25px. UI-001 requires 44px minimum public/patient/mobile targets, so the dock misses the approved responsive-accessibility boundary.",
+      "suggestion": "Increase the mobile DockTarget hit area to an explicit minimum of 44x44px without changing the compact icon size, then rerun the responsive overflow/coverage audit and the full targeted suite."
+    }
+  ],
+  "notes_for_next_agent": [
+    "Retest the exact corrected integrated commit; do not carry forward this commit-bound result as passing evidence.",
+    "Preserve the current no-overflow result at 320 and 390 while enlarging all five mobile dock hit areas, and confirm the fixed dock still leaves the last workspace controls reachable.",
+    "The shared ScrollReveal implementation already passed observer one-time unobserve, focus completion, no-observer fallback, distinct patient/staff/caregiver variants, and reduced-motion final-state assertions.",
+    "Landing copy and the four-part SaaS model passed the forbidden identity-term audit; all staff routes, Maria persistence/reset flow, and caregiver clinical/nurse-detail exclusion passed on c96d13f."
+  ]
 }
