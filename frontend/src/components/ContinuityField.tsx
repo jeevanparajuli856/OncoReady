@@ -123,6 +123,23 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [canvasReady, setCanvasReady] = useState(false);
+  const [systemReducedMotion, setSystemReducedMotion] = useState(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  const motionReduced = reducedMotion || systemReducedMotion;
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => setSystemReducedMotion(event.matches);
+
+    setSystemReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   useEffect(() => {
     const container = containerRef.current;
@@ -183,7 +200,7 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
     };
 
     const animate = (time: number) => {
-      if (reducedMotion || !visible || !documentVisible) {
+      if (motionReduced || !visible || !documentVisible) {
         animationRunning = false;
         draw(0, false);
         return;
@@ -209,7 +226,7 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
     };
 
     const startAnimation = () => {
-      if (reducedMotion || !visible || !documentVisible) {
+      if (motionReduced || !visible || !documentVisible) {
         window.cancelAnimationFrame(animationFrame);
         animationRunning = false;
         draw(0, false);
@@ -278,7 +295,7 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
       container.removeEventListener('pointerleave', handlePointerLeave);
       document.removeEventListener('visibilitychange', handleVisibility);
     };
-  }, [reducedMotion]);
+  }, [motionReduced]);
 
   return (
     <div

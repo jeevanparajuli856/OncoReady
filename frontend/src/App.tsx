@@ -38,7 +38,24 @@ export const App: React.FC = () => {
   const [patientSearch, setPatientSearch] = useState('');
   const [patientStatus, setPatientStatus] = useState('ALL');
   
-  const [reducedMotion, setReducedMotion] = useState<boolean>(false);
+  const [userReducedMotion, setUserReducedMotion] = useState<boolean>(false);
+  const [systemReducedMotion, setSystemReducedMotion] = useState<boolean>(() =>
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+  );
+  const reducedMotion = userReducedMotion || systemReducedMotion;
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== 'function') return undefined;
+
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const handleChange = (event: MediaQueryListEvent) => setSystemReducedMotion(event.matches);
+
+    setSystemReducedMotion(mediaQuery.matches);
+    mediaQuery.addEventListener('change', handleChange);
+    return () => mediaQuery.removeEventListener('change', handleChange);
+  }, []);
 
   // Sync state to localStorage on every transition
   useEffect(() => {
@@ -105,7 +122,7 @@ export const App: React.FC = () => {
         overallReadiness={state.overallReadiness}
         onReset={handleReset}
         reducedMotion={reducedMotion}
-        onToggleReducedMotion={() => setReducedMotion(!reducedMotion)}
+        onToggleReducedMotion={() => setUserReducedMotion(!userReducedMotion)}
         state={state}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
       />
@@ -285,7 +302,7 @@ export const App: React.FC = () => {
               <span className="rounded-full border border-line bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">Training environment</span>
             </button>
             <button
-              onClick={() => setReducedMotion(!reducedMotion)}
+              onClick={() => setUserReducedMotion(!userReducedMotion)}
               className={`px-3 py-1.5 rounded-lg border border-line font-heading font-semibold ${reducedMotion ? 'bg-accent text-white' : 'bg-white/70 hover:bg-white'}`}
             >
               {reducedMotion ? 'Motion off' : 'Reduce motion'}

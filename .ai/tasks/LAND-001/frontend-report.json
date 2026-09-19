@@ -17,6 +17,7 @@
     "frontend/src/components/Logo.tsx",
     "frontend/src/index.css",
     "frontend/tests/component.test.tsx",
+    "frontend/tests/continuity-field.test.tsx",
     ".ai/tasks/LAND-001/frontend-report.json"
   ],
   "contracts_used": [],
@@ -25,16 +26,17 @@
     "commands": [
       "npm run test:smoke",
       "npm run build",
+      "npx vitest run tests/continuity-field.test.tsx",
       "python3 scripts/agentctl.py scope check LAND-001 frontend",
       "python3 scripts/agentctl.py task validate LAND-001",
       "git diff --check",
       "npx playwright screenshot --browser=chromium --viewport-size=320,800 http://127.0.0.1:5173 /tmp/oncoready-land-001-320.png"
     ],
-    "notes": "Eight smoke and component tests passed, including reduced-motion coverage and the complete Maria patient/staff/caregiver plan-confirmation journey. The production TypeScript/Vite build passed. Visual review passed at 1440px, 390px, and 320px viewports."
+    "notes": "Nine smoke and component tests passed, including a focused OS preference-change regression that confirms pointer activity schedules no animation frames under reduced motion, plus the complete Maria patient/staff/caregiver plan-confirmation journey. The production TypeScript/Vite build passed. Visual review passed at 1440px, 390px, and 320px viewports."
   },
   "blockers": [],
   "notes_for_next_agent": [
-    "The continuity canvas pauses while hidden or offscreen and after particles settle; reduced-motion users receive the same ribbon composition without animation.",
+    "The continuity canvas pauses while hidden or offscreen and after particles settle; both the in-product control and the operating-system preference produce the same static ribbon composition and immediate scrolling.",
     "The landing page intentionally keeps the existing workspace dock and authentication entry behavior intact."
   ]
 }
