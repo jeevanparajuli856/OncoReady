@@ -32,48 +32,22 @@ PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REV
 
 Architecture chooses whether contracts, independent testing, and dedicated security review are required.
 
-## Start Gemini — design-required task
+## Codex frontend work — design-required task
 
-When Codex says `frontend_design_required=true`, open the prepared frontend worktree and tell Gemini:
+When `frontend_design_required=true`, Codex starts the frontend specialist in the prepared frontend worktree. The specialist follows `AGENTS.md`, `frontend/AGENTS.md`, and the frontend-development skill, then completes the design-only report before production implementation.
 
-```text
-Perform the frontend design pass for <TASK-ID>. Follow AGENTS.md and GEMINI.md.
-Create a distinctive, polished product experience consistent with the product identity and hero journey.
-Do not implement production frontend code yet. Return control after frontend-design-report.json is DESIGN_READY.
-```
-
-Return to Codex:
-
-```text
-Gemini completed the design pass for <TASK-ID>. Review it for compatibility only, bind approval to its exact design digest, and continue orchestration.
-```
-
-After Codex commits APPROVED design review, return to the same Gemini frontend worktree:
-
-```text
-Continue <TASK-ID> with frontend implementation. Sync the feature-branch review, verify the design gate, then implement the approved design and complete frontend-report.json.
-```
-
-Gemini uses:
+The Codex orchestrator reviews that report for compatibility, binds approval to its exact digest, and returns the approved handoff to the same frontend worktree. The frontend specialist then uses:
 
 ```bash
 python scripts/agentctl.py worktree sync <TASK-ID> frontend
 python scripts/agentctl.py frontend design-gate <TASK-ID>
 ```
 
-## Start Gemini — established design
+## Codex frontend work — established design
 
-When `frontend_design_required=false`:
+When `frontend_design_required=false`, Codex starts the frontend specialist to implement with the established design system and complete all relevant interaction states. No design-only handoff is required.
 
-```text
-Implement frontend for <TASK-ID> using the established design system. Follow AGENTS.md and GEMINI.md. Preserve product polish and complete all relevant interaction states.
-```
-
-## Return from Gemini
-
-```text
-Gemini finished/stopped <TASK-ID>. Read frontend-report.json, integrate its worker branch, and continue orchestration.
-```
+When the frontend specialist finishes or stops, the Codex orchestrator reads `frontend-report.json`, integrates the worker branch when complete, and continues orchestration.
 
 ## After final review and merge
 

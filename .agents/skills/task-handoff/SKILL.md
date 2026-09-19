@@ -1,6 +1,6 @@
 ---
 name: task-handoff
-description: Produce or consume structured handoff reports between Codex, Gemini, conditional specialists, reviewers, and the orchestrator.
+description: Produce or consume structured handoff reports between Codex specialists, reviewers, and the orchestrator.
 ---
 
 # Task Handoff Workflow
@@ -21,22 +21,22 @@ Read task state, prior reports, current authoritative artifacts, and repository 
 
 When `architecture-report.json.impacts.frontend_design_required=true`:
 
-### Gemini → Codex
-Gemini writes `frontend-design-report.json` as `DESIGN_READY`, scope-checks, and commits the design-only handoff on `agent/<TASK-ID>-frontend` before production frontend coding.
+### Frontend specialist → orchestrator
+The Codex frontend specialist writes `frontend-design-report.json` as `DESIGN_READY`, scope-checks, and commits the design-only handoff on `agent/<TASK-ID>-frontend` before production frontend coding.
 
-### Codex compatibility review
-Codex reads the committed design report from the frontend worker branch and computes:
+### Orchestrator compatibility review
+The Codex orchestrator reads the committed design report from the frontend worker branch and computes:
 
 ```bash
 python scripts/agentctl.py frontend design-digest <TASK-ID> --ref agent/<TASK-ID>-frontend
 ```
 
-Codex records it in `frontend-design-review.json.reviewed_design_sha256` and may request changes only for concrete conflicts involving requirements, architecture/contracts, security, accessibility, performance, scope, or explicit human/brand/existing-design-system constraints.
+The orchestrator records it in `frontend-design-review.json.reviewed_design_sha256` and may request changes only for concrete conflicts involving requirements, architecture/contracts, security, accessibility, performance, scope, or explicit human/brand/existing-design-system constraints.
 
-Codex must not reject/rewrite Gemini's aesthetic choices merely because it prefers different colors, typography, layout, radius, shadows, or motion.
+The orchestrator must not reject/rewrite the frontend specialist's aesthetic choices merely because it prefers different colors, typography, layout, radius, shadows, or motion.
 
-### Codex → Gemini
-Gemini syncs the feature-branch review and runs:
+### Orchestrator → frontend specialist
+The frontend specialist syncs the feature-branch review and runs:
 
 ```bash
 python scripts/agentctl.py worktree sync <TASK-ID> frontend
@@ -45,8 +45,8 @@ python scripts/agentctl.py frontend design-gate <TASK-ID>
 
 Any design-report change after approval requires a new compatibility review.
 
-### Gemini → Codex integration
-Gemini writes `frontend-report.json`; Codex integrates the branch without a second aesthetic implementation pass.
+### Frontend specialist → orchestrator integration
+The frontend specialist writes `frontend-report.json`; the orchestrator integrates the branch without a second aesthetic implementation pass.
 
 ## Conditional specialist handoff
 

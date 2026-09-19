@@ -91,7 +91,7 @@ Describe the single most important path through the product.
 
 ### Visual hook
 
-[Distinctive visual idea; Gemini owns its execution.]
+[Distinctive visual idea; the Codex frontend specialist owns its execution.]
 
 ### Interaction hook
 

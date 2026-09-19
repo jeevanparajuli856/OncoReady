@@ -13,11 +13,11 @@ The frontend is a primary product surface, not a final decorative layer. For new
 
 ## Frontend design authority
 
-Gemini is the frontend visual and interaction design authority inside product, architecture, contract, security, accessibility, performance, brand, and human-defined constraints.
+The Codex frontend specialist is the frontend visual and interaction design authority inside product, architecture, contract, security, accessibility, performance, brand, and human-defined constraints.
 
-Codex may specify required behavior and constraints but should not prescribe aesthetic choices unless they are already authoritative.
+The Codex orchestrator and architecture specialist may specify required behavior and constraints but should not prescribe aesthetic choices unless they are already authoritative.
 
-Gemini owns the coherent choice and implementation of:
+The frontend specialist owns the coherent choice and implementation of:
 - color usage and tokens
 - typography/font treatment
 - spacing, sizing, radius, borders, shadows, hierarchy

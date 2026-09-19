@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "AUTH-001",
-  "agent": "gemini-frontend",
+  "agent": "codex-frontend",
   "status": "PARTIAL",
   "summary": "",
   "existing_design_system": "docs/design/DESIGN_SYSTEM.md",

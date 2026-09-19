@@ -238,7 +238,7 @@ def frontend_design_gate(task_id, validate_state=True):
     current_digest = canonical_json_sha256(design)
     if reviewed_digest != current_digest:
         raise SystemExit(
-            "Gate failed: frontend design changed since Codex approval. "
+            "Gate failed: frontend design changed since orchestrator approval. "
             "Re-run compatibility review and record the current reviewed_design_sha256."
         )
     failed = [name for name, status in review.get("checks", {}).items() if status == "FAIL"]
@@ -247,7 +247,7 @@ def frontend_design_gate(task_id, validate_state=True):
         raise SystemExit("Gate failed: frontend design review checks are not fully resolved.")
     if review.get("required_changes"):
         raise SystemExit("Gate failed: approved frontend design review still contains required_changes.")
-    print(f"{task_id}: frontend design gate APPROVED; Gemini implementation may proceed.")
+    print(f"{task_id}: frontend design gate APPROVED; Codex frontend implementation may proceed.")
 
 
 def validate_task(task_id):

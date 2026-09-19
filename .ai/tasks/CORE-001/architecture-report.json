@@ -64,7 +64,7 @@
   "blockers": [],
   "notes_for_next_agent": [
     "The human-approved scope now includes public landing/sign-in/trust, seven persistent staff modules, and patient/caregiver portals; the previous five-screen-only and no-marketing constraints no longer apply.",
-    "Because the approved architecture scope changed after earlier design evidence, Gemini design evidence and compatibility approval must be refreshed and bound to this exact expanded scope before Phase B production implementation.",
+    "Because the approved architecture scope changed after earlier design evidence, frontend design evidence and compatibility approval must be refreshed and bound to this exact expanded scope before Phase B production implementation.",
     "Build in this order: route/shell and fixtures, Maria state/permissions/reset, public and portal entry, primary search/filters, golden path, then static enterprise breadth and polish.",
     "Maria is the only required fully interactive patient. Secondary patients, metrics, resources, integrations, and Admin may be stable synthetic/read-only content when their navigation and states are complete and truthful.",
     "Internal TypeScript types and fixture schemas are not a formal contract. Do not invent endpoints or implement against the repository's empty OpenAPI placeholder.",

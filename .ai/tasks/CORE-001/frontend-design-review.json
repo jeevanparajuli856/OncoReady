@@ -3,9 +3,9 @@
   "task_id": "CORE-001",
   "agent": "codex-orchestrator",
   "status": "APPROVED",
-  "summary": "Gemini's corrected Phase A design is compatible with the full CORE-001 enterprise frontend scope. It defines a persuasive public buyer experience, a complete persistent staff application, focused patient and caregiver experiences, one coherent deterministic treatment-readiness journey, a distinctive causal-path visual language, professional product presentation, bounded motion, truthful environment boundaries, and implementation-ready responsive/accessibility states.",
-  "review_scope": "Compatibility only. Do not substitute Codex aesthetic preferences for Gemini design authority.",
-  "reviewed_design_sha256": "15c3b64cce3a5f8702ef437534617b98cf10a4ba6ab6b602f2ca2a59724f2a6a",
+  "summary": "The corrected Phase A design is compatible with the full CORE-001 enterprise frontend scope. It defines a persuasive public buyer experience, a complete persistent staff application, focused patient and caregiver experiences, one coherent deterministic treatment-readiness journey, a distinctive causal-path visual language, professional product presentation, bounded motion, truthful environment boundaries, and implementation-ready responsive/accessibility states.",
+  "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
+  "reviewed_design_sha256": "34215cae5fd0c897ce2f7ba7a5fac5d29fb2d0e83b43cbe30a45d0572f2b7f46",
   "checks": {
     "requirements": "PASS",
     "architecture_and_contracts": "PASS",
@@ -16,8 +16,8 @@
     "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_gemini": [
-    "Gemini retains full frontend visual and interaction authority for Phase B. Implement the approved report and docs/design/DESIGN_SYSTEM.md as a cohesive full frontend product application, not as a generic template or a collection of disconnected showcase screens.",
+  "notes_for_frontend": [
+    "The Codex frontend specialist retains full visual and interaction authority for Phase B. Implement the approved report and docs/design/DESIGN_SYSTEM.md as a cohesive full frontend product application, not as a generic template or a collection of disconnected showcase screens.",
     "Normal product surfaces must not describe OncoReady as a prototype, demo, dummy, mock, toy, or similar diminished artifact. Use Explore Workspace, Workspace Access, and Reset Workspace. Keep the Training environment indicator discreet and use Illustrative records or Mapping preview only where truthfulness materially requires context.",
     "The existing frontend implementation predates this approved redesign. Rework it as necessary to match the approved enterprise information architecture, visual grammar, route model, content hierarchy, application states, and professional language; do not preserve obsolete components merely to minimize edits.",
     "The public experience should be persuasive and expressive; the staff workspace should be calm, precise, dense, and operational. Preserve the causal-path motif, Treatment Readiness Graph, owned action split, causal audit timeline, and caregiver permission boundary as the recognizable product system.",

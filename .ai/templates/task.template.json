@@ -10,7 +10,7 @@
     "architecture": "codex",
     "database": "codex",
     "backend": "codex",
-    "frontend": "gemini",
+    "frontend": "codex",
     "tester": "codex",
     "security": "codex",
     "review": "codex"

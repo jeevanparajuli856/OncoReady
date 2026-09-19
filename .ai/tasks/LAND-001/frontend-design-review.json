@@ -16,7 +16,7 @@
     "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_gemini": [
+  "notes_for_frontend": [
     "The human assigned Codex as the frontend owner for LAND-001, so Codex will implement the approved report.",
     "Preserve current workflow state and callbacks; keep the continuity canvas decorative and independently disposable.",
     "Use the official repository logo assets without redrawing or distorting them.",

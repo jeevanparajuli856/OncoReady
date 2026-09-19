@@ -21,7 +21,7 @@ Task ID:
 
 - [ ] Architecture report COMPLETE with all execution controls resolved
 - [ ] Required DB/backend/frontend reports COMPLETE
-- [ ] Gemini design gate APPROVED when required
+- [ ] Frontend design gate APPROVED when required
 - [ ] Contract artifacts validated when `contract_required=true`
 - [ ] Independent test report passes when test depth is TARGETED/FULL
 - [ ] Verification report PASSED for the integrated revision

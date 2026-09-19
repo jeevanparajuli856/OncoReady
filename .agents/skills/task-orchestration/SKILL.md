@@ -1,6 +1,6 @@
 ---
 name: task-orchestration
-description: Orchestrate a rapid product slice through lightweight planning, conditional contracts/tests/security, Gemini design authority, integration, verification, final review, and merge.
+description: Orchestrate a rapid product slice through lightweight planning, Codex-owned development, conditional contracts/tests/security, frontend design authority, integration, verification, final review, and merge.
 ---
 
 # Task Orchestration
@@ -62,7 +62,7 @@ Read `architecture-report.json.impacts`.
 
 - database=true → database specialist
 - backend=true → backend specialist
-- frontend=true → Gemini frontend worktree
+- frontend=true → Codex frontend specialist
 
 Do not spawn specialists for false impacts.
 
@@ -75,33 +75,33 @@ python scripts/agentctl.py worktree create <TASK-ID> frontend
 
 ### Frontend without design Phase A
 
-When `frontend_design_required=false`, ask Gemini to implement using the established design system/patterns.
+When `frontend_design_required=false`, ask the Codex frontend specialist to implement using the established design system/patterns.
 
 ### Frontend with design Phase A
 
 When `frontend_design_required=true`:
 
-1. Gemini performs design Phase A only in the frontend worktree.
-2. Gemini writes/commits `frontend-design-report.json` as `DESIGN_READY` without production frontend coding.
-3. Codex computes the committed report digest:
+1. The Codex frontend specialist performs design Phase A only in the frontend worktree.
+2. The frontend specialist writes/commits `frontend-design-report.json` as `DESIGN_READY` without production frontend coding.
+3. The Codex orchestrator computes the committed report digest:
 
 ```bash
 python scripts/agentctl.py frontend design-digest <TASK-ID> --ref agent/<TASK-ID>-frontend
 ```
 
-4. Codex writes that digest into `frontend-design-review.json.reviewed_design_sha256` and reviews compatibility only: requirements, architecture/interfaces, security, accessibility, performance, scope, explicit human/brand/design-system constraints.
-5. Codex may not reject the design merely due to aesthetic preference.
-6. Once APPROVED, Gemini syncs and verifies:
+4. The orchestrator writes that digest into `frontend-design-review.json.reviewed_design_sha256` and reviews compatibility only: requirements, architecture/interfaces, security, accessibility, performance, scope, explicit human/brand/design-system constraints.
+5. The orchestrator may not reject the design merely due to aesthetic preference.
+6. Once APPROVED, the frontend specialist syncs and verifies:
 
 ```bash
 python scripts/agentctl.py worktree sync <TASK-ID> frontend
 python scripts/agentctl.py frontend design-gate <TASK-ID>
 ```
 
-7. Gemini implements the approved experience in the same frontend branch/worktree and writes `frontend-report.json`.
+7. The frontend specialist implements the approved experience in the same frontend branch/worktree and writes `frontend-report.json`.
 8. If the design report changes after approval, repeat compatibility review.
 
-Codex integrates Gemini's branch; it does not perform a second aesthetic implementation pass.
+The Codex orchestrator integrates the frontend branch; it does not perform a second aesthetic implementation pass.
 
 After required implementation reports are COMPLETE:
 

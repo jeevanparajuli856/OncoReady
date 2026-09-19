@@ -2,8 +2,8 @@
 
 Reusable agentic development baseline for shipping polished, technically credible, end-to-end products quickly.
 
-- Codex orchestrates product slices and owns architecture/database/backend/integration/verification/final review.
-- Gemini owns frontend visual/interaction design and frontend implementation in V1 and is manually started by the human.
+- Codex orchestrates product slices and owns architecture, database, backend, frontend, integration, verification, and final review through scoped specialist roles.
+- The Codex frontend specialist owns visual/interaction design and frontend implementation.
 - Contracts, independent testing, and dedicated security review are conditional rather than mandatory phases.
 - Baseline safety, scope isolation, Git evidence, and design-authority gates remain deterministic.
 - The framework prefers a small number of vertical user-visible slices over enterprise-style subsystem decomposition.
@@ -24,9 +24,9 @@ PLANNING → BUILD_READY
         ├─ test depth chosen
         └─ security risk/review chosen
   ↓
-DB/backend/Gemini only when impacted
+Codex DB/backend/frontend specialists only when impacted
   ↓
-Conditional Gemini design pass → compatibility gate → Gemini implementation
+Conditional frontend design pass → compatibility gate → frontend implementation
   ↓
 Integration
   ├─ independent tester only for TARGETED/FULL
@@ -98,7 +98,7 @@ This preserves rigor where it matters without making every slice pay the full pr
 
 ```text
 AGENTS.md                 universal mission/invariants
-GEMINI.md                 Gemini frontend authority
+frontend/AGENTS.md        Codex frontend authority and workflow
 .agents/skills/           reusable workflows
 .codex/agents/            Codex specialist definitions
 .ai/project.json          operational product configuration

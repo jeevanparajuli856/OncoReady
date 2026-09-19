@@ -13,7 +13,7 @@
     "reviewed_design_sha256",
     "checks",
     "required_changes",
-    "notes_for_gemini"
+    "notes_for_frontend"
   ],
   "properties": {
     "schema_version": {
@@ -150,7 +150,7 @@
         "additionalProperties": false
       }
     },
-    "notes_for_gemini": {
+    "notes_for_frontend": {
       "type": "array",
       "items": {
         "type": "string"
