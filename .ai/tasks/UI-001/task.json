@@ -1,0 +1,232 @@
+{
+  "schema_version": "1.0",
+  "task_id": "UI-001",
+  "title": "Workspace visual continuity and motion polish",
+  "type": "feature",
+  "status": "BUILD_READY",
+  "priority": "high",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/UI-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "database/**",
+      "supabase/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/UI-001/task.json",
+        "docs/features/UI-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/UI-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/UI-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/UI-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/UI-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/UI-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/UI-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/UI-001/task.json",
+        ".ai/tasks/UI-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/UI-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/UI-001/task.json",
+        ".ai/tasks/UI-001/architecture-report.json",
+        ".ai/tasks/UI-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/UI-001/frontend-design-report.json",
+        ".ai/tasks/UI-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/UI-001/task.json",
+        ".ai/tasks/UI-001/architecture-report.json",
+        ".ai/tasks/UI-001/database-report.json",
+        ".ai/tasks/UI-001/backend-report.json",
+        ".ai/tasks/UI-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/UI-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/UI-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/UI-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/UI-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/UI-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/UI-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/UI-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/UI-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [],
+  "acceptance_criteria": [
+    "The landing page presents OncoReady as a finished buyer-oriented SaaS business solution and contains no demo, prototype, preview, portfolio, or training framing.",
+    "The patient, staff, and caregiver cards under 'Built around everyone responsible for tomorrow.' reveal once on viewport entry using distinct but coherent, non-blocking variants with no layout shift.",
+    "The former Deployment paths area becomes a SaaS business-model section explaining the institutional buyer, subscribed treatment-readiness capability, configuration or implementation shape, and expansion path.",
+    "Scrolling through the production landing build and every workspace has no repeatable section-boundary pause, horizontal overflow, or nested-scroll trap; reveal effects add no continuous scroll listener or render loop.",
+    "System or in-product reduced motion renders all reveal content immediately, disables smooth entrance behavior, and preserves equivalent content, focus, status, and route behavior.",
+    "Landing, sign-in, patient, all staff destinations, caregiver, system, modals, shared navigation, and mobile dock use a coherent Clinical Glass visual language while preserving operational hierarchy and meaningful states.",
+    "The caregiver surface remains transportation-only and exposes no clinical concern or nurse-only detail after the visual refresh.",
+    "The complete landing-to-confirmed-plan Maria journey, workspace navigation, reset, persistence, search and filtering, FAQ, map fallback, and responsive layouts continue to work.",
+    "The production build, existing critical-path checks, focused reveal/reduced-motion/copy checks, and independent targeted test report pass on the integrated revision."
+  ],
+  "created_by": "human"
+}

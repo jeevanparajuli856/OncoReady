@@ -1,0 +1,82 @@
+{
+  "schema_version": "1.0",
+  "task_id": "UI-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Defined a frontend-only Clinical Glass continuity slice that preserves the approved landing direction, adds varied one-time card reveals, removes bounded sources of scroll hesitation, reframes deployment content as a confident truthful SaaS model, and restyles every workspace without changing workflow behavior.",
+  "files_changed": [
+    "docs/features/UI-001.md",
+    ".ai/tasks/UI-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
+  },
+  "decisions": [
+    "Keep LAND-001's approved hero, official identity, Continuity Aurora landing composition, information order, signature continuity field, and functional destinations as the visual source of truth; UI-001 extends that system rather than redesigning the landing page.",
+    "Extend established Clinical Glass tokens and component language across public chrome, sign-in and workspace entry, patient and resolution flows, all staff routes, caregiver, system graph/timeline, modals, controls, and the mobile dock while preserving denser operational hierarchy for staff.",
+    "Make the landing role-card group headed 'Built around everyone responsible for tomorrow.' the required signature scroll reveal, with distinct but coherent patient, staff, and caregiver variants; allow restrained related variation elsewhere without animating every element.",
+    "Implement reveal behavior as local progressive enhancement using a shared IntersectionObserver-based primitive or equivalent pattern: visible fallback, one-time entrance, completed-observer cleanup, no raw scroll listener, no reveal-specific requestAnimationFrame loop, no layout-shifting properties, and immediate interaction.",
+    "Treat effective reduced motion as the union of the operating-system preference and the existing user control. Under either signal, reveal content renders immediately in its final state, explicit smooth scrolling is disabled, and the continuity field remains static without loss of meaning or function.",
+    "Address the reported pausy scrolling as a rendering-performance issue, not an easing issue: validate and remove or bound the inspected fixed background, broad backdrop-filter/compositing regions, offscreen work, and nested-scroll behavior while retaining the continuity canvas's capped resolution, visibility pause, and idle settling.",
+    "Reframe the current deployment section into a buyer-oriented SaaS business model explaining institutional buyer, subscribed workflow capability, organization/site configuration, implementation shape, and expansion path; do not fabricate price, traction, contractual availability, production integrations, compliance, or outcomes.",
+    "Present OncoReady on the public landing as a finished SaaS business solution. Replace demo, prototype, preview, portfolio, and training-environment framing with confident product/value/workflow language, without exposing internal truthfulness caveats or limitation disclaimers in the landing UI.",
+    "Keep the deterministic reducer, typed workflow state, browser persistence, audit events, caregiver allowlist, route/perspective callbacks, and all clinical/workflow semantics unchanged. Reveal state and theme state remain presentation-only and are not persisted in the domain model.",
+    "Reuse the existing React, TypeScript, Vite, Tailwind/CSS, and motion capabilities. Add no backend, database, infrastructure, analytics, API, or animation dependency for this slice.",
+    "No formal contract or ADR is required because all changes remain inside the existing frontend boundary and introduce no external or independently implemented interface."
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "description": "Viewport reveals could amplify the user's reported scroll hesitation through excessive observers, repeated animation, layout reads, or large composited layers.",
+      "mitigation": "Use one shared observer strategy, reveal once and unobserve, animate only compositor-friendly properties where practical, remove or limit confirmed fixed-background/blur offenders, and inspect the production build at mobile and presentation widths."
+    },
+    {
+      "severity": "medium",
+      "description": "Content hidden for entrance effects could stay unavailable when observers, scripts, or motion support fail.",
+      "mitigation": "Render content visible by default and enable pre-reveal state only as progressive enhancement; animation can never gate interaction, focus, accessibility-tree content, or navigation."
+    },
+    {
+      "severity": "medium",
+      "description": "Applying a public editorial theme to operational screens could reduce staff scan density or obscure urgent workflow state.",
+      "mitigation": "Reuse tokens and component families rather than marketing scale, keep staff surfaces compact, and preserve labeled ownership, deadline, status, focus, and non-color cues across every staff destination."
+    },
+    {
+      "severity": "medium",
+      "description": "A visual rewrite across all perspectives could regress the deterministic Maria journey, route reachability, reset, or caregiver privacy filtering.",
+      "mitigation": "Do not change domain state or callbacks; independently test representative responsive routes plus the complete patient/staff/caregiver confirmation path and clinical-data exclusion."
+    },
+    {
+      "severity": "medium",
+      "description": "SaaS business-model or pitch copy could imply pricing, customers, production deployment, live integrations, compliance, or proven outcomes that are not established.",
+      "mitigation": "Describe the intended buyer, subscribed capability, configuration and expansion logic without numeric pricing, traction, guarantees, or unsupported claims, while keeping those internal writing constraints out of landing-page disclaimer copy."
+    },
+    {
+      "severity": "low",
+      "description": "Motion variation could become inconsistent, distracting, or inaccessible across cards and screen sizes.",
+      "mitigation": "Bind variants to one frontend design system, keep them short and low-amplitude, use them selectively, and bypass them completely for system- or user-selected reduced motion."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "Complete frontend design Phase A and the digest-bound compatibility gate before production changes; exact motion variants, timing, easing, and workspace surface treatment belong to the frontend specialist within this architecture.",
+    "Start from the approved LAND-001 design report and docs/design/DESIGN_SYSTEM.md. Preserve the current landing direction; the user asked for more card motion, better scrolling, a business-pitch SaaS model, and workspace continuity rather than another landing redesign.",
+    "The inspected likely scroll-cost candidates are body background-attachment: fixed, large/broad backdrop-filter layers, long-page canvas/map compositing, and the staff shell's nested overflow container. Confirm with browser tools and change only what is needed for a smooth production-build pass.",
+    "The required signature reveal is the patient/staff/caregiver card group under 'Built around everyone responsible for tomorrow.' Each card should visibly arrive with a different but related reveal variant, once, with no layout shift or interaction delay.",
+    "Preserve ContinuityField's device-pixel-ratio cap, offscreen/hidden pause, idle settling, fallback, and live operating-system reduced-motion handling. Do not attach its render loop to document scroll.",
+    "Restyle every existing perspective and staff destination, but keep core component behavior, data, semantic labels, callbacks, and caregiver projection intact. Prefer shared token/component updates over one-off per-page duplication.",
+    "The SaaS section should answer who buys, what they subscribe to, how it is configured/implemented, and how it can expand. Do not add pricing, checkout, customer proof, lead capture, or unsupported deployment/integration/compliance language.",
+    "Audit all landing-visible copy and remove demo, prototype, preview, portfolio, and training-environment framing. Use straightforward finished-product and buyer-value language; do not add public caveat or limitations copy as a substitute.",
+    "TARGETED depth requires an independent tester after integration. Focus on reveal lifecycle, reduced motion, production scroll behavior, responsive surface reachability, landing positioning language, the complete Maria journey, and caregiver clinical-data exclusion rather than cosmetic snapshot volume.",
+    "No backend, database, infrastructure, contract, ADR, or dedicated security reviewer is selected."
+  ],
+  "execution": {
+    "contract_required": false,
+    "test_depth": "TARGETED",
+    "security_risk": "LOW",
+    "security_review_required": false
+  }
+}
