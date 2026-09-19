@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "CORE-001",
-  "agent": "gemini-frontend",
+  "agent": "codex-frontend",
   "status": "COMPLETE",
   "summary": "Implemented OncoReady's complete Phase B enterprise frontend redesign. Restructured the architecture to a persistent staff application shell with discrete module routes (Command Center, Exceptions, Case Workspace, etc.) while preserving the deterministic Treatment Readiness Golden Path. Purged legacy generic templates and aligned terminology with the approved professional design system.",
   "files_changed": [

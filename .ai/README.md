@@ -15,11 +15,11 @@ Conditional specialist report files are still created for a uniform workspace, b
 ## Frontend design authority
 
 For design-required work:
-- Gemini writes `frontend-design-report.json`
-- Codex writes `frontend-design-review.json` and binds approval to `reviewed_design_sha256`
-- Gemini implements the approved design and writes `frontend-report.json`
+- the Codex frontend specialist writes `frontend-design-report.json`
+- the Codex orchestrator writes `frontend-design-review.json` and binds approval to `reviewed_design_sha256`
+- the frontend specialist implements the approved design and writes `frontend-report.json`
 
-If Gemini's design report changes after approval, the digest mismatch forces a new compatibility review.
+If the frontend specialist's design report changes after approval, the digest mismatch forces a new compatibility review.
 
 ## Do not store here
 

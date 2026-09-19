@@ -57,14 +57,15 @@ Owns:
 - architect → minimum sufficient architecture plus machine-readable execution controls
 - database → schema/migrations only when persistence materially helps the product
 - backend → APIs/services/business logic actually required by the product journey
+- frontend → visual/interaction design and frontend implementation
 - tester → independent tests only when architecture selects TARGETED or FULL depth
 - security → independent review only when architecture requires it
 - reviewer → independent final product/engineering review
 
-### Gemini
-Gemini is the frontend design and implementation authority.
+### Codex frontend specialist
+The Codex frontend specialist is the frontend design and implementation authority.
 
-Gemini owns:
+The frontend specialist owns:
 - visual identity and design-system expression
 - color, typography, spacing, radius, borders, shadows, hierarchy
 - page/component composition and responsive presentation
@@ -74,11 +75,9 @@ Gemini owns:
 - frontend state/browser behavior
 - product storytelling through the interface and data visualization presentation
 
-Codex/architecture define functional requirements, interfaces, trust boundaries, accessibility/performance constraints, and required capabilities. They must not prescribe aesthetics unless an explicit human/brand/approved design-system requirement already makes that choice authoritative.
+The orchestrator and architecture specialist define functional requirements, interfaces, trust boundaries, accessibility/performance constraints, and required capabilities. They must not prescribe aesthetics unless an explicit human/brand/approved design-system requirement already makes that choice authoritative.
 
-For `frontend_design_required=true`, Gemini performs design Phase A before production frontend coding; Codex performs compatibility-only review; approval is bound to the exact design report through `reviewed_design_sha256`; Gemini then implements the approved design. Codex must not restyle Gemini's approved frontend as a second design pass.
-
-Gemini is manually started by the human in V1. Codex may prepare worktrees and handoffs but must not claim it spawned Gemini.
+For `frontend_design_required=true`, the Codex frontend specialist performs design Phase A before production frontend coding; the Codex orchestrator performs compatibility-only review; approval is bound to the exact design report through `reviewed_design_sha256`; the frontend specialist then implements the approved design. The orchestrator must not restyle the approved frontend as a second design pass.
 
 ## 5. Public control plane
 
@@ -189,7 +188,7 @@ Rules:
 Spawn only impacted workers:
 - database only if `impacts.database=true`
 - backend only if `impacts.backend=true`
-- Gemini frontend only if `impacts.frontend=true`
+- Codex frontend specialist only if `impacts.frontend=true`
 
 Prefer one vertical slice to produce a demonstrable user outcome rather than creating separate tasks for database, API, and UI layers unless independent sequencing is genuinely necessary.
 
@@ -197,7 +196,7 @@ For design-required frontend work, the design digest gate remains mandatory.
 
 ### Integration
 
-Integrate worker branches deliberately. Do not silently change contracts, architecture, or Gemini's approved visual direction.
+Integrate worker branches deliberately. Do not silently change contracts, architecture, or the approved frontend visual direction.
 
 Run independent tester only for TARGETED/FULL.
 
@@ -322,7 +321,7 @@ Done means:
 - primary user-visible outcome works end to end
 - core behavior is genuinely implemented, not a fake façade when real implementation is practical
 - no obvious placeholder or unfinished product surface remains in the intended journey
-- Gemini design gate passed when required and implementation remains coherent with it
+- frontend design gate passed when required and implementation remains coherent with it
 - required backend/database/integration work is complete
 - selected testing depth is satisfied
 - verification passes on the reviewed revision
@@ -355,4 +354,4 @@ NEXT_MODE: <AUTOMATIC | HUMAN_ACTION_REQUIRED | COMPLETE>
 NEXT: <next action>
 ```
 
-Use `HUMAN_ACTION_REQUIRED` only for genuine human decisions/actions, external credentials/access, sensitive/destructive approval, manually starting Gemini, and final merge approval.
+Use `HUMAN_ACTION_REQUIRED` only for genuine human decisions/actions, external credentials/access, sensitive/destructive approval, and final merge approval.

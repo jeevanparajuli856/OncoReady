@@ -120,7 +120,7 @@ Static/mock surfaces must still look complete, use coherent synthetic data, supp
 - **Database:** none. Typed fixtures and local persistence are sufficient.
 - **Backend:** none. All behavior is browser-local and no server interface is implied.
 - **Frontend:** new public entry, persistent staff shell, seven staff modules, patient portal, caregiver portal, and the complete Maria workflow.
-- **Frontend design:** required. The expanded visible experience establishes and applies the product design system across public, staff, patient, and caregiver contexts; Gemini retains exact visual and interaction authority within the functional, truthfulness, accessibility, and performance constraints.
+- **Frontend design:** required. The expanded visible experience establishes and applies the product design system across public, staff, patient, and caregiver contexts; the Codex frontend specialist retains exact visual and interaction authority within the functional, truthfulness, accessibility, and performance constraints.
 - **Infrastructure:** none. A locally reliable static frontend build is the only required runtime artifact.
 
 ## Contract impact
@@ -139,7 +139,7 @@ None. CORE-001 remains one frontend implementation with no live external or inde
 
 - Approved product definition in `docs/PROJECT.md` and system constraints in `docs/architecture/SYSTEM.md`.
 - React + TypeScript + Vite as configured in `.ai/project.json`.
-- Expanded Gemini design evidence and compatibility approval bound to this expanded public/staff/patient/caregiver scope before Phase B implementation proceeds.
+- Expanded frontend design evidence and compatibility approval bound to this expanded public/staff/patient/caregiver scope before Phase B implementation proceeds.
 - Frontend implementation must run after package installation without network services during the primary demonstration.
 - No API contract, backend, database, infrastructure, independent tester, or security specialist is introduced.
 

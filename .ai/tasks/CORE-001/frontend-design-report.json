@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "CORE-001",
-  "agent": "gemini-frontend",
+  "agent": "codex-frontend",
   "status": "DESIGN_READY",
   "summary": "Revised Phase A to establish a concrete, screen-by-screen enterprise implementation blueprint, conforming strictly to the required reporting schema. Replaced generic SaaS visuals with a crisp, structured operational system.",
   "existing_design_system": "docs/design/DESIGN_SYSTEM.md",

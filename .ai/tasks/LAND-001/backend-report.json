@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
-  "task_id": "AUTH-001",
-  "agent": "codex-frontend",
+  "task_id": "LAND-001",
+  "agent": "codex-backend",
   "status": "PARTIAL",
   "summary": "",
   "files_changed": [],

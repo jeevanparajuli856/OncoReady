@@ -23,7 +23,7 @@ Architecture owns what the frontend must accomplish and constraints it must resp
 
 Architecture may define required routes/workflows/capabilities, data/interface dependencies, trust boundaries, accessibility/performance targets, and supported platforms.
 
-Unless already authoritative from human/brand/design-system requirements, do not prescribe exact palette, fonts, decorative layout treatment, radius/shadows, animation style/easing/timing, iconography, or visual treatment. Those decisions belong to Gemini.
+Unless already authoritative from human/brand/design-system requirements, do not prescribe exact palette, fonts, decorative layout treatment, radius/shadows, animation style/easing/timing, iconography, or visual treatment. Those decisions belong to the Codex frontend specialist.
 
 Set `impacts.frontend_design_required=true` when the task introduces/materially changes visible experience: new page/workflow, landing/dashboard/navigation, major component/pattern, design-system establishment/extension, or meaningful motion/interaction concept. Set false for wiring/refactors/bugs/copy changes that should follow established patterns.
 

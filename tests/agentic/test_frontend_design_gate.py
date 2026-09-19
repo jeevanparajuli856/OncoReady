@@ -31,7 +31,7 @@ def _set_implementation_state(repo, task_id):
     p.write_text(json.dumps(task, indent=2) + '\n')
 
 
-def _set_design_ready(repo, task_id, summary='Gemini design ready.'):
+def _set_design_ready(repo, task_id, summary='Codex frontend design ready.'):
     p = repo / f'.ai/tasks/{task_id}/frontend-design-report.json'
     design = json.loads(p.read_text())
     design['status'] = 'DESIGN_READY'
@@ -59,7 +59,7 @@ def _approve_design(repo, task_id, design):
     p.write_text(json.dumps(review, indent=2) + '\n')
 
 
-def test_design_gate_requires_gemini_design_and_codex_approval(repo):
+def test_design_gate_requires_frontend_design_and_orchestrator_approval(repo):
     task_id = 'DESIGN-001'
     run(repo, 'scripts/new-task.py', task_id, 'Design gate test')
     _set_architecture(repo, task_id)
@@ -125,7 +125,7 @@ def test_design_gate_rejects_design_changed_after_codex_approval(repo):
 
     failed = run(repo, 'scripts/agentctl.py', 'frontend', 'design-gate', task_id, check=False)
     assert failed.returncode != 0
-    assert 'changed since Codex approval' in (failed.stderr + failed.stdout)
+    assert 'changed since orchestrator approval' in (failed.stderr + failed.stdout)
 
 
 def test_design_gate_rejects_empty_design_ready_evidence(repo):

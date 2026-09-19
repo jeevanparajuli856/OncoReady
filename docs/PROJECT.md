@@ -98,7 +98,7 @@ Viewers should immediately understand that tomorrow's treatment has two blockers
 
 ### Visual hook
 
-The Treatment Readiness Graph makes the upcoming treatment the central event and displays every unresolved dependency, owner, due time, action, and proof of closure. Gemini owns the exact visual system and composition.
+The Treatment Readiness Graph makes the upcoming treatment the central event and displays every unresolved dependency, owner, due time, action, and proof of closure. The Codex frontend specialist owns the exact visual system and composition.
 
 ### Interaction hook
 
