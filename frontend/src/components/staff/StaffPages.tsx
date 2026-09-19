@@ -104,13 +104,13 @@ export const StaffResources: React.FC = () => (
         <StickerCard hover={false} className="p-4">
           <h3 className="font-heading font-bold">Community Mobility Network</h3>
           <p className="text-sm text-muted-fg mt-1">Illustrative community transportation directory.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Mapping preview</div>
+          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Directory mapping</div>
         </StickerCard>
       </div>
     </div>
     <RideMap
       title="Louisiana access network"
-      subtitle="Illustrative parish-to-hub map • training environment"
+      subtitle="Illustrative parish-to-hub routing data"
       pickup={NEW_ORLEANS_PICKUP}
       destination={BENSON_CENTER}
       extras={LOUISIANA_SITES}
@@ -191,7 +191,7 @@ export const StaffIntegrations: React.FC = () => (
       {['Patient + Appointment', 'Task + Owner', 'Communication + Audit'].map((mapping) => (
         <div key={mapping} className="p-3 border-2 border-ink rounded-xl bg-white">
           <div className="text-sm font-heading font-bold">{mapping}</div>
-          <div className="text-xs text-muted-fg mt-1">Mapping preview • Not connected</div>
+          <div className="text-xs text-muted-fg mt-1">FHIR mapping • Not connected</div>
         </div>
       ))}
     </div>
@@ -207,7 +207,7 @@ export const StaffAdmin: React.FC<{
       <div>
         <h2 className="font-display text-2xl font-extrabold">Local Configuration</h2>
         <p className="text-sm text-muted-fg mt-1">
-          These rules are locked in the training environment. They are the same rules that split Maria's report to Sarah and Marcus, and that hide clinical text from Ana.
+          These workspace rules split Maria's report to Sarah and Marcus and keep clinical text out of Ana's transportation-only view.
         </p>
       </div>
       <div className="space-y-3">

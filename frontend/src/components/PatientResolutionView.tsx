@@ -12,12 +12,14 @@ import { WorkflowState } from '../types';
 
 interface PatientResolutionViewProps {
   state: WorkflowState;
+  reducedMotion?: boolean;
   onAcknowledgePlan: () => void;
   onBackToHome: () => void;
 }
 
 export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
   state,
+  reducedMotion = false,
   onAcknowledgePlan,
   onBackToHome,
 }) => {
@@ -32,7 +34,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
   const handleConfirmClick = () => {
     setIsSubmitting(true);
     try {
-      if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+      if (!reducedMotion && typeof window !== 'undefined' && typeof document !== 'undefined') {
         const canvas = document.createElement('canvas');
         if (canvas && typeof canvas.getContext === 'function' && canvas.getContext('2d')) {
           confetti({
@@ -51,7 +53,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
   };
 
   return (
-    <div className="page-shell space-y-5 animate-pop">
+    <div className="page-shell space-y-5">
       <div className="flex items-center justify-between gap-3">
         <button
           onClick={onBackToHome}

@@ -51,8 +51,8 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
     (currentRoute === 'CASE_WORKSPACE' ? 'Case Workspace' : 'Staff');
 
   return (
-    <div className="flex flex-col md:flex-row flex-1 min-h-0 w-full max-w-full overflow-x-clip min-h-[calc(100dvh-10rem)]">
-      <aside className="order-1 w-full md:w-56 bg-white/70 backdrop-blur-xl border-b md:border-b-0 md:border-r border-line flex flex-row md:flex-col shrink-0 max-w-full">
+    <div className="staff-shell flex flex-col md:flex-row flex-1 w-full max-w-full overflow-x-clip">
+      <aside className="staff-sidebar order-1 w-full md:w-56 bg-white/95 border-b md:border-b-0 md:border-r border-line flex flex-row md:flex-col shrink-0 max-w-full md:self-start md:sticky md:top-[4.25rem]">
         <nav className="flex-1 flex flex-wrap md:flex-col px-2 py-2 md:py-4 gap-1">
           <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
             Staff tools
@@ -99,18 +99,18 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
         </nav>
       </aside>
 
-      <div className="order-1 md:order-2 flex-1 flex flex-col min-w-0 overflow-hidden">
-        <div className="px-3 sm:px-5 lg:px-6 py-3 border-b border-line bg-white/50 backdrop-blur-md flex items-center justify-between gap-3 shrink-0">
+      <div className="order-1 md:order-2 flex-1 flex flex-col min-w-0">
+        <div className="px-3 sm:px-5 lg:px-6 py-3 border-b border-line bg-white/90 flex items-center justify-between gap-3 shrink-0">
           <div>
             <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">Staff workspace</p>
             <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>
           </div>
           <p className="hidden sm:block text-xs text-muted-fg text-right max-w-xs">
-            Use the bottom dock to move between Home, Patient, Caregiver, and Graph.
+            Use the shared workspace navigation to move between Patient, Caregiver, and Graph.
           </p>
         </div>
-        <div className="flex-1 overflow-y-auto">
-          <div className="p-3 sm:p-5 lg:p-6 min-h-full">
+        <div className="flex-1">
+          <div className="p-3 sm:p-5 lg:p-6">
             {children}
           </div>
         </div>

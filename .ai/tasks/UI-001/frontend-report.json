@@ -2,17 +2,53 @@
   "schema_version": "1.0",
   "task_id": "UI-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "Extended the approved Clinical Glass system across the complete OncoReady experience, added accessible one-time landing reveals and a buyer-oriented SaaS model, removed costly scroll treatments, and preserved the deterministic Maria journey and caregiver privacy boundary.",
+  "files_changed": [
+    "docs/design/DESIGN_SYSTEM.md",
+    "frontend/playwright.config.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/AuthModal.tsx",
+    "frontend/src/components/CaregiverView.tsx",
+    "frontend/src/components/Header.tsx",
+    "frontend/src/components/LandingPage.tsx",
+    "frontend/src/components/PatientResolutionView.tsx",
+    "frontend/src/components/PatientTreatmentHome.tsx",
+    "frontend/src/components/PortalAuthScreen.tsx",
+    "frontend/src/components/ReadinessCheckModal.tsx",
+    "frontend/src/components/RideMap.tsx",
+    "frontend/src/components/ScrollReveal.tsx",
+    "frontend/src/components/StaffAppShell.tsx",
+    "frontend/src/components/StaffCaseWorkspace.tsx",
+    "frontend/src/components/StaffExceptionQueue.tsx",
+    "frontend/src/components/staff/StaffPages.tsx",
+    "frontend/src/components/ui/floating-dock.tsx",
+    "frontend/src/index.css",
+    "frontend/src/lib/useDialogFocus.ts",
+    "frontend/tests/component.test.tsx",
+    "frontend/tests/e2e.spec.ts",
+    "frontend/tests/scroll-reveal.test.tsx",
+    ".ai/tasks/UI-001/frontend-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "npx tsc --noEmit",
+      "npm run build",
+      "npx vitest run tests/smoke.test.ts tests/component.test.tsx tests/continuity-field.test.tsx tests/scroll-reveal.test.tsx",
+      "npx playwright test tests/e2e.spec.ts",
+      "python3 scripts/agentctl.py scope check UI-001 frontend",
+      "git diff --check"
+    ],
+    "notes": "TypeScript completed successfully. The production Vite build passed twice; the latest build transformed 8,481 modules in 3m38s. Focused Vitest passed 4 files and 14 tests. Playwright passed all 3 UI-001 scenarios: one-time reveal/SaaS positioning/responsive overflow and performance-style checks; system reduced-motion final-state behavior; and all staff routes plus the complete Maria journey and caregiver clinical-data exclusion. Visual review passed the landing roles/SaaS sections and patient/staff workspaces."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The reveal primitive uses IntersectionObserver progressive enhancement, unobserves completed targets, promotes focused content immediately, and renders final content without observer support or under either reduced-motion source.",
+    "The SaaS section states the buyer, subscribed capability, configuration shape, and expansion path without pricing, fabricated integrations, or demo/prototype framing.",
+    "Clinical Glass tokens now cover public, gateway, patient, staff, caregiver, system, modal, navigation, and mobile-dock surfaces while preserving operational labels and workflow semantics.",
+    "Fixed body backgrounds, broad repeated blur, the staff nested vertical scroller, and eager live-map mounting were removed or bounded; the document owns workspace scrolling and the stable map fallback remains available.",
+    "Caregiver rendering remains transportation-only, and browser coverage confirms clinical symptom text is absent after the staff resolution flow."
+  ]
 }
