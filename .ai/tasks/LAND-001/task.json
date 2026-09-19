@@ -1,0 +1,237 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAND-001",
+  "title": "Landing Page Brand and Motion Refresh",
+  "type": "feature",
+  "status": "BUILD_READY",
+  "priority": "high",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "gemini",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/LAND-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "database/**",
+      "supabase/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAND-001/task.json",
+        "docs/features/LAND-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/LAND-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/LAND-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/LAND-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/LAND-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/LAND-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/LAND-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/LAND-001/task.json",
+        ".ai/tasks/LAND-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/LAND-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/LAND-001/task.json",
+        ".ai/tasks/LAND-001/architecture-report.json",
+        ".ai/tasks/LAND-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/LAND-001/frontend-design-report.json",
+        ".ai/tasks/LAND-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/LAND-001/task.json",
+        ".ai/tasks/LAND-001/architecture-report.json",
+        ".ai/tasks/LAND-001/database-report.json",
+        ".ai/tasks/LAND-001/backend-report.json",
+        ".ai/tasks/LAND-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/LAND-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/LAND-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAND-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/LAND-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAND-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/LAND-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/LAND-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/LAND-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [
+    "CORE-001"
+  ],
+  "acceptance_criteria": [
+    "The public header, landing hero, CTA area, and footer use the repository's official OncoReady assets without distortion, duplicated wordmarks, or layout shift; the browser favicon also uses the official favicon.",
+    "The page draws stylistic inspiration from the supplied reference through light composition, editorial hierarchy, atmospheric brand color, rounded surfaces, and generous spacing while remaining visibly and structurally OncoReady.",
+    "The landing page retains its own treatment-readiness content and current functional destinations; it does not reproduce Invofy's site structure, copy, assets, testimonials, or customer-logo patterns.",
+    "The first viewport states the treatment-readiness value in plain language, avoids unsupported absolute outcome claims, and offers a clear primary route into the workspace.",
+    "One signature continuity-field visual uses a cancer/continuity or Louisiana-related character/particle form, responds smoothly to pointer movement on capable devices, settles predictably, and never blocks page content or interaction.",
+    "With reduced motion enabled, the signature visual becomes a stable still treatment and all content, meaning, navigation, and focus behavior remain available.",
+    "Motion pauses when its section is offscreen or the document is hidden, avoids flashing and aggressive parallax, and does not cause visible layout shift or degraded primary interaction.",
+    "Role cards, readiness proof, how-it-works, Louisiana access, enterprise model, FAQ, CTA, and footer share one coherent visual system and a clear reading order.",
+    "Existing landing navigation, workspace CTA, patient/staff/caregiver entry, readiness preview actions, FAQ accordion, and return paths remain functional.",
+    "No new customer, testimonial, outcome, compliance, deployment, certification, clinical-validation, or live-integration claim appears.",
+    "The landing experience is complete and readable at 320px mobile, tablet, and presentation-laptop widths, with semantic structure, keyboard access, visible focus, sufficient contrast, non-color cues, and at least 44px primary public touch targets.",
+    "The production build and smoke suite pass, including the existing deterministic Maria journey and caregiver clinical-data exclusion regression."
+  ],
+  "created_by": "human"
+}

@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAND-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Defined a frontend-only landing-page refresh that applies the supplied visual mood to OncoReady's existing product story, integrates the official logo assets, and adds one bounded pointer-reactive continuity visual without changing workflow behavior.",
+  "files_changed": [
+    "docs/features/LAND-001.md",
+    ".ai/tasks/LAND-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
+  },
+  "decisions": [
+    "Treat the Lovable/Invofy material as mood and style inspiration only; preserve OncoReady's information architecture, content, functional destinations, healthcare context, and official brand.",
+    "Integrate the official title-logo and favicon assets from the repository Logo directory through the frontend public asset pipeline, with full and compact responsive variants rather than recreating the wordmark in HTML text.",
+    "Keep the completed CORE-001 workflow, role entry, readiness preview, FAQ behavior, and client-side navigation authoritative; the visual refresh may change presentation and supporting copy but not workflow or routing semantics.",
+    "Use one isolated signature continuity visual inspired by the supplied character-form references. It may use canvas, SVG, or DOM characters, but it must remain decorative, have a static reduced-motion presentation, pause offscreen/when hidden, and never gate content or navigation.",
+    "Prefer existing React, TypeScript, Tailwind, and motion capabilities with no new dependency. Any custom render loop must bound device-pixel ratio and work per frame and avoid layout reads within the loop.",
+    "Remove or rewrite unsupported absolute outcome language while preserving a confident product voice and the primary treatment-readiness story.",
+    "Limit scope to the public landing experience plus shared logo/header/footer compatibility; do not restyle the operational portals or change shared workflow state in this slice.",
+    "Use existing frontend state and event handlers directly. No formal contract is required because there is no independently implemented component or external API boundary."
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "description": "A pointer-reactive character field could reduce performance or create discomfort on mobile and motion-sensitive devices.",
+      "mitigation": "Use a bounded effect with a static fallback, reduced-motion equivalence, offscreen and hidden-page pausing, capped resolution/particle count, and mobile verification."
+    },
+    {
+      "severity": "medium",
+      "description": "A strong external reference could lead to an imitation that weakens OncoReady's identity or imports irrelevant SaaS marketing patterns.",
+      "mitigation": "Bind the design to the official OncoReady assets, brand tokens, treatment-readiness narrative, readiness graph, and current information architecture; explicitly exclude copied testimonials, logo marquees, imagery, copy, and component structure."
+    },
+    {
+      "severity": "medium",
+      "description": "Landing-page restructuring could break entry into the completed Maria workflow or existing anchor navigation.",
+      "mitigation": "Preserve current callbacks and state ownership, keep the animation independent of workflow state, and exercise landing entry plus the existing critical journey in smoke verification."
+    },
+    {
+      "severity": "low",
+      "description": "The official horizontal wordmark may become unreadable or distorted at small widths.",
+      "mitigation": "Use explicit responsive full and compact logo variants with correct aspect ratios, intrinsic sizing, accessible names, and layout-shift-safe dimensions."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "Gemini must perform design Phase A before production frontend changes because this materially changes landing composition, identity expression, and motion.",
+    "The human explicitly wants only the reference's color, theme, and style as inspiration, not its overall design or information architecture.",
+    "Inspect all repository-provided UI Suggestion images and official Logo assets during Phase A; the local files are authoritative references for this task.",
+    "Keep exact aesthetic choices within Gemini's design authority while satisfying the confirmed official-brand, light/clear, captivating-but-calm, and one-signature-motion constraints.",
+    "Candidate implementation areas are LandingPage, Header, Logo, shared public UI/decorations, index styles/tokens, frontend public assets, and focused smoke checks. Avoid workflow-state changes unless a concrete compatibility issue is reported.",
+    "Do not add testimonials, customer-logo claims, unsupported pricing/outcome claims, or imply live hospital integrations merely because the reference includes those marketing patterns.",
+    "SMOKE depth is implementation-owned; no independent tester or security reviewer is selected."
+  ],
+  "execution": {
+    "contract_required": false,
+    "test_depth": "SMOKE",
+    "security_risk": "LOW",
+    "security_review_required": false
+  }
+}
