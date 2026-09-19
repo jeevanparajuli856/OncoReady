@@ -77,7 +77,7 @@ const FloatingDockMobile = ({
           onClick={item.onClick}
           ariaLabel={item.title}
           className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+            'flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl',
             item.active ? 'bg-accent text-white' : 'bg-white/80 text-ink',
           )}
         >

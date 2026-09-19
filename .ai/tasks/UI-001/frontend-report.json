@@ -38,10 +38,12 @@
       "npm run build",
       "npx vitest run tests/smoke.test.ts tests/component.test.tsx tests/continuity-field.test.tsx tests/scroll-reveal.test.tsx",
       "npx playwright test tests/e2e.spec.ts",
+      "PLAYWRIGHT_PORT=4176 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
+      "node --input-type=module -e '<Playwright mobile dock geometry audit at 320x568, 390x844, and the 768px desktop breakpoint>'",
       "python3 scripts/agentctl.py scope check UI-001 frontend",
       "git diff --check"
     ],
-    "notes": "TypeScript completed successfully. The production Vite build passed twice; the latest build transformed 8,481 modules in 3m38s. Focused Vitest passed 4 files and 14 tests. Playwright passed all 3 UI-001 scenarios: one-time reveal/SaaS positioning/responsive overflow and performance-style checks; system reduced-motion final-state behavior; and all staff routes plus the complete Maria journey and caregiver clinical-data exclusion. Visual review passed the landing roles/SaaS sections and patient/staff workspaces."
+    "notes": "TypeScript completed successfully. The production Vite build passed after the dock correction, transforming 8,481 modules in 3m42s. The focused mobile-dock Playwright regression passed. Direct production-browser measurement confirmed all five visible dock targets are exactly 44x44 CSS px at both 320x568 and 390x844, document scrollWidth equals clientWidth at both widths, bottom/safe-area positioning remains intact, and the dock remains hidden at the 768px desktop breakpoint. Earlier focused Vitest passed 4 files and 14 tests, and the full Playwright suite passed the reveal, SaaS positioning, reduced-motion, all-staff-route, complete Maria journey, and caregiver clinical-data exclusion scenarios."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -49,6 +51,7 @@
     "The SaaS section states the buyer, subscribed capability, configuration shape, and expansion path without pricing, fabricated integrations, or demo/prototype framing.",
     "Clinical Glass tokens now cover public, gateway, patient, staff, caregiver, system, modal, navigation, and mobile-dock surfaces while preserving operational labels and workflow semantics.",
     "Fixed body backgrounds, broad repeated blur, the staff nested vertical scroller, and eager live-map mounting were removed or bounded; the document owns workspace scrolling and the stable map fallback remains available.",
-    "Caregiver rendering remains transportation-only, and browser coverage confirms clinical symptom text is absent after the staff resolution flow."
+    "Caregiver rendering remains transportation-only, and browser coverage confirms clinical symptom text is absent after the staff resolution flow.",
+    "The mobile Workspace dock now uses explicit 44x44 CSS-pixel interactive targets while retaining compact 16px icons, accessible labels, visible focus styling, safe-area spacing, mobile no-overflow behavior, and the existing desktop breakpoint behavior."
   ]
 }

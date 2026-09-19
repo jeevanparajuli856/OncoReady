@@ -52,6 +52,30 @@ test.describe('OncoReady UI-001 product experience', () => {
     expect(revealStates.every((state) => state === 'visible')).toBe(true);
   });
 
+  test('mobile workspace dock keeps 44px targets without horizontal overflow', async ({ page }) => {
+    for (const viewport of [
+      { width: 320, height: 568 },
+      { width: 390, height: 844 },
+    ]) {
+      await page.setViewportSize(viewport);
+
+      const dock = page.getByRole('navigation', { name: 'Workspace dock' });
+      await expect(dock).toBeVisible();
+
+      const targets = dock.getByRole('button');
+      await expect(targets).toHaveCount(5);
+      const targetSizes = await targets.evaluateAll((buttons) =>
+        buttons.map((button) => {
+          const bounds = button.getBoundingClientRect();
+          return { width: bounds.width, height: bounds.height };
+        }),
+      );
+
+      expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+    }
+  });
+
   test('workspace routes and the complete Maria journey remain connected', async ({ page }) => {
     await page.getByRole('button', { name: /Explore the workspace/i }).first().click();
     await expect(page.getByRole('dialog')).toBeVisible();
