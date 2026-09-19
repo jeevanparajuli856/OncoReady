@@ -98,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
       ['workspaces', 'Workspaces'],
       ['how-it-works', 'How it works'],
       ['access-map', 'Louisiana access'],
-      ['pricing-section', 'Deployment'],
+      ['pricing-section', 'Business model'],
       ['faq-section', 'FAQ'],
     ] as const;
 
@@ -158,7 +158,7 @@ export const Header: React.FC<HeaderProps> = ({
   }
 
   return (
-    <header className="sticky top-0 z-40 w-full bg-white/70 backdrop-blur-xl border-b border-white/80">
+    <header className="workspace-header sticky top-0 z-40 w-full bg-white/95 border-b border-line">
       <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
         <button onClick={() => onSetPerspective('LANDING')} aria-label="Go to OncoReady home" title="Home" className="shrink-0">
           <Logo size={30} compact />
@@ -207,7 +207,7 @@ export const Header: React.FC<HeaderProps> = ({
               </button>
 
               {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-72 bg-white/90 backdrop-blur-xl rounded-2xl border border-white/80 shadow-glass-lg py-2 z-50 animate-fade-in" onMouseLeave={() => setIsDropdownOpen(false)}>
+                <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-line shadow-glass-lg py-2 z-50 animate-fade-in" onMouseLeave={() => setIsDropdownOpen(false)}>
                   <div className="px-3.5 py-2 border-b border-line">
                     <div className="text-[11px] font-heading font-semibold uppercase tracking-wider text-muted-fg">
                       SWITCH CLINICAL WORKSPACE

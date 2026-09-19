@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { MapPin, Navigation } from 'lucide-react';
 
 export interface MapStop {
@@ -32,6 +32,36 @@ const isTestEnv =
   (typeof process !== 'undefined' && Boolean(process.env.VITEST));
 
 export const RideMap: React.FC<RideMapProps> = (props) => {
+  const boundaryRef = useRef<HTMLDivElement>(null);
+  const [nearViewport, setNearViewport] = useState(false);
+
+  useEffect(() => {
+    const boundary = boundaryRef.current;
+    if (!boundary || typeof window.IntersectionObserver !== 'function') {
+      setNearViewport(true);
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        setNearViewport(true);
+        observer.unobserve(entry.target);
+      },
+      { rootMargin: '250px 0px', threshold: 0.01 },
+    );
+    observer.observe(boundary);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div ref={boundaryRef} className="ride-map-boundary">
+      {nearViewport ? <DeferredRideMap {...props} /> : <MapFallback {...props} />}
+    </div>
+  );
+};
+
+const DeferredRideMap: React.FC<RideMapProps> = (props) => {
   const [live, setLive] = useState<null | typeof import('react-leaflet')>(null);
 
   useEffect(() => {

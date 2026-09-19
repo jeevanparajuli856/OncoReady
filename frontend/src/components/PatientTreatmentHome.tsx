@@ -61,7 +61,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
   const progress = Math.round((appointment.cycleNumber / appointment.totalCycles) * 100);
 
   return (
-    <div className="page-shell space-y-5 pb-8 animate-pop">
+    <div className="page-shell space-y-5 pb-8">
       <div className="card-sticker p-5 sm:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5 pb-5 border-b-2 border-ink/10">
           <div className="flex items-center gap-4 min-w-0">
@@ -331,7 +331,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
             onClick={() => onSwitchPerspective('CAREGIVER')}
             className="inline-flex items-center gap-1 text-sm font-heading font-bold hover:text-accent"
           >
-            Preview Caregiver View
+            Open Caregiver View
             <ArrowRight className="w-3.5 h-3.5" strokeWidth={2.5} />
           </button>
         </div>

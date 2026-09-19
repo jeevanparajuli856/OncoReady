@@ -18,7 +18,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
   const projection = deriveCaregiverProjection(state);
 
   return (
-    <div className="page-shell space-y-5 animate-pop overflow-x-clip">
+    <div className="page-shell space-y-5 overflow-x-clip">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-fg">Caregiver</p>

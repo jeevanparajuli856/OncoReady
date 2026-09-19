@@ -44,8 +44,8 @@ select:focus-visible {
 
 .landing-header {
   border-bottom: 1px solid rgba(226, 232, 240, 0.78);
-  background: rgba(248, 250, 253, 0.84);
-  backdrop-filter: blur(20px) saturate(150%);
+  background: rgba(248, 250, 253, 0.97);
+  box-shadow: 0 8px 24px -22px rgba(15, 23, 42, 0.45);
 }
 
 .landing-header__inner {
@@ -77,6 +77,7 @@ select:focus-visible {
   color: #475569;
   font-size: 0.78rem;
   font-weight: 600;
+  white-space: nowrap;
   transition: color 180ms ease, background-color 180ms ease;
 }
 
@@ -568,9 +569,75 @@ select:focus-visible {
 .landing-role-grid,
 .landing-step-grid,
 .landing-business-grid,
-.landing-deployment-grid {
+.landing-saas-grid {
   display: grid;
   gap: 1rem;
+}
+
+.scroll-reveal {
+  min-width: 0;
+}
+
+.scroll-reveal[data-reveal-state='pending'] {
+  opacity: 0;
+  will-change: opacity, transform;
+}
+
+.scroll-reveal[data-reveal-state='pending'][data-reveal-variant='patient'] {
+  transform: translate3d(-18px, 22px, 0);
+}
+
+.scroll-reveal[data-reveal-state='pending'][data-reveal-variant='staff'] {
+  transform: translate3d(0, 28px, 0) scale(0.975);
+}
+
+.scroll-reveal[data-reveal-state='pending'][data-reveal-variant='caregiver'] {
+  transform: translate3d(18px, 22px, 0);
+}
+
+.scroll-reveal[data-reveal-state='pending'][data-reveal-variant='workflow'] {
+  transform: translate3d(0, 14px, 0);
+}
+
+.scroll-reveal[data-reveal-state='pending'][data-reveal-variant='saas'] {
+  transform: translate3d(0, 12px, 0) scale(0.99);
+}
+
+.scroll-reveal[data-reveal-state='revealed'] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0) scale(1);
+  transition-property: opacity, transform;
+  transition-delay: var(--reveal-delay, 0ms);
+  transition-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.scroll-reveal[data-reveal-state='revealed'][data-reveal-variant='patient'] {
+  transition-duration: 540ms;
+}
+
+.scroll-reveal[data-reveal-state='revealed'][data-reveal-variant='staff'] {
+  transition-duration: 620ms;
+}
+
+.scroll-reveal[data-reveal-state='revealed'][data-reveal-variant='caregiver'] {
+  transition-duration: 560ms;
+}
+
+.scroll-reveal[data-reveal-state='revealed'][data-reveal-variant='workflow'] {
+  transition-duration: 440ms;
+}
+
+.scroll-reveal[data-reveal-state='revealed'][data-reveal-variant='saas'] {
+  transition-duration: 460ms;
+}
+
+.landing-role-reveal,
+.landing-role-reveal .landing-role-card,
+.landing-step-grid .scroll-reveal,
+.landing-step-grid .landing-step-card,
+.landing-saas-grid .scroll-reveal,
+.landing-saas-grid .landing-saas-card {
+  height: 100%;
 }
 
 .landing-role-card {
@@ -581,11 +648,11 @@ select:focus-visible {
   background: rgba(255, 255, 255, 0.84);
   text-align: left;
   box-shadow: 0 24px 60px -46px rgba(15, 23, 42, 0.52);
-  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .landing-role-card:hover {
-  transform: translateY(-4px);
+  transform: translateY(-2px);
   border-color: rgba(79, 70, 229, 0.2);
   box-shadow: 0 30px 70px -46px rgba(79, 70, 229, 0.42);
 }
@@ -661,10 +728,16 @@ select:focus-visible {
   color: #047857;
 }
 
+[data-tone='lavender'] .landing-icon-well {
+  border-color: rgba(119, 104, 232, 0.16);
+  background: rgba(119, 104, 232, 0.1);
+  color: #5b4fd1;
+}
+
 .landing-role-card h3,
 .landing-step-card h3,
 .landing-business-card h3,
-.landing-deployment-card h3 {
+.landing-saas-card h3 {
   margin-top: 1rem;
   color: var(--ink);
   font-family: 'Outfit', sans-serif;
@@ -677,7 +750,7 @@ select:focus-visible {
 .landing-role-card p,
 .landing-step-card > p:last-child,
 .landing-business-card p,
-.landing-deployment-card > p {
+.landing-saas-card > p {
   margin-top: 0.7rem;
   color: #64748b;
   font-size: 0.9rem;
@@ -810,7 +883,7 @@ select:focus-visible {
 
 .landing-step-card,
 .landing-business-card,
-.landing-deployment-card {
+.landing-saas-card {
   border: 1px solid rgba(226, 232, 240, 0.9);
   border-radius: 1.65rem;
   background: rgba(255, 255, 255, 0.86);
@@ -890,11 +963,11 @@ select:focus-visible {
   box-shadow: 0 30px 70px -52px rgba(15, 23, 42, 0.58);
 }
 
-.landing-deployment-card {
+.landing-saas-card {
   padding: clamp(1.4rem, 3vw, 2rem);
 }
 
-.landing-deployment-card[data-featured='true'] {
+.landing-saas-card[data-featured='true'] {
   border-color: rgba(79, 70, 229, 0.28);
   background:
     radial-gradient(circle at 100% 0%, rgba(119, 104, 232, 0.16), transparent 17rem),
@@ -902,28 +975,28 @@ select:focus-visible {
   box-shadow: 0 32px 74px -48px rgba(79, 70, 229, 0.52);
 }
 
-.landing-deployment-card > div:first-child {
+.landing-saas-card__topline {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 0.75rem;
 }
 
-.landing-deployment-card__label {
+.landing-saas-card__label {
   color: var(--accent);
-  font-size: 0.72rem;
+  font-size: 0.67rem;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
-.landing-deployment-card ul {
+.landing-saas-card ul {
   margin-block: 1.4rem;
   display: grid;
   gap: 0.7rem;
 }
 
-.landing-deployment-card li {
+.landing-saas-card li {
   display: flex;
   align-items: center;
   gap: 0.55rem;
@@ -931,12 +1004,14 @@ select:focus-visible {
   font-size: 0.82rem;
 }
 
-.landing-deployment-card li svg {
+.landing-saas-card li svg {
   color: var(--mint);
 }
 
-.landing-deployment-card .landing-button {
-  width: 100%;
+.landing-saas-action {
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
 }
 
 .landing-faq-grid {
@@ -1058,8 +1133,7 @@ select:focus-visible {
 
 .app-footer {
   border-top: 1px solid rgba(226, 232, 240, 0.82);
-  background: rgba(248, 250, 253, 0.86);
-  backdrop-filter: blur(18px);
+  background: rgba(248, 250, 253, 0.98);
 }
 
 @media (min-width: 640px) {
@@ -1085,9 +1159,12 @@ select:focus-visible {
 
   .landing-role-grid,
   .landing-step-grid,
-  .landing-business-grid,
-  .landing-deployment-grid {
+  .landing-business-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .landing-saas-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .landing-access-grid,
@@ -1123,6 +1200,12 @@ select:focus-visible {
   }
 }
 
+@media (min-width: 1180px) {
+  .landing-saas-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
 @media (max-width: 639px) {
   .landing-actions,
   .landing-actions .landing-button,
@@ -1139,6 +1222,20 @@ select:focus-visible {
   .landing-closing-cta {
     margin-inline: 0.75rem;
     width: auto;
+  }
+}
+
+@media (max-width: 767px) {
+  .scroll-reveal[data-reveal-state='pending'][data-reveal-variant='patient'] {
+    transform: translate3d(-8px, 18px, 0);
+  }
+
+  .scroll-reveal[data-reveal-state='pending'][data-reveal-variant='staff'] {
+    transform: translate3d(0, 24px, 0) scale(0.975);
+  }
+
+  .scroll-reveal[data-reveal-state='pending'][data-reveal-variant='caregiver'] {
+    transform: translate3d(8px, 20px, 0);
   }
 }
 
@@ -1162,7 +1259,7 @@ select:focus-visible {
       radial-gradient(ellipse 80% 50% at 10% -10%, rgba(79, 70, 229, 0.10), transparent 50%),
       radial-gradient(ellipse 70% 40% at 90% 0%, rgba(249, 115, 22, 0.07), transparent 46%),
       radial-gradient(ellipse 50% 30% at 50% 100%, rgba(5, 150, 105, 0.05), transparent 50%);
-    background-attachment: fixed;
+    background-attachment: scroll;
   }
 
   img,
@@ -1189,17 +1286,17 @@ select:focus-visible {
 
 @layer components {
   .card-sticker {
-    @apply bg-[#FFF4E8] border-2 border-ink rounded-2xl;
+    @apply bg-white/90 border border-line rounded-2xl shadow-glass;
   }
 
   .card-sticker-featured {
-    @apply bg-[#FFE8D2] border-2 border-ink rounded-2xl;
+    @apply bg-white border border-accent/20 rounded-2xl shadow-glass-hover;
   }
 
-  .card-sticker-accent { background-color: #EEF2FF; }
-  .card-sticker-pop { background-color: #FFE8D6; }
-  .card-sticker-sun { background-color: #FFF6D4; }
-  .card-sticker-mint { background-color: #E6F5EE; }
+  .card-sticker-accent { background-color: rgba(238, 242, 255, 0.92); }
+  .card-sticker-pop { background-color: rgba(255, 237, 225, 0.9); }
+  .card-sticker-sun { background-color: rgba(255, 248, 222, 0.92); }
+  .card-sticker-mint { background-color: rgba(230, 245, 238, 0.92); }
 
   .page-shell {
     @apply w-full max-w-[1280px] mx-auto min-w-0;
@@ -1208,24 +1305,24 @@ select:focus-visible {
   .btn-candy {
     @apply inline-flex items-center justify-center gap-2 min-h-12 px-6 py-2.5 rounded-xl
       bg-accent text-white font-heading font-semibold text-[0.95rem] leading-snug text-center
-      shadow-pop-accent transition-all duration-300 ease-bouncey;
+      shadow-pop-accent transition-[transform,box-shadow,background-color] duration-200;
   }
 
   .btn-candy:hover {
     @apply bg-brand-600;
-    transform: translate(-2px, -2px);
-    box-shadow: 6px 6px 0 0 #0F172A;
+    transform: translateY(-1px);
+    box-shadow: 0 16px 30px -16px rgba(79, 70, 229, 0.72);
   }
 
   .btn-candy:active {
-    transform: translate(2px, 2px);
-    box-shadow: 2px 2px 0 0 #0F172A;
+    transform: translateY(0);
+    box-shadow: 0 8px 18px -14px rgba(79, 70, 229, 0.7);
   }
 
   .btn-ghost {
     @apply inline-flex items-center justify-center gap-2 min-h-12 px-6 py-2.5 rounded-xl
       bg-white/80 text-ink font-heading font-semibold text-[0.95rem] leading-snug text-center
-      border-2 border-ink/15 backdrop-blur-md transition-all duration-300 ease-bouncey;
+      border border-line transition-[color,background-color,border-color,transform] duration-200;
   }
 
   .btn-ghost:hover {
@@ -1238,7 +1335,7 @@ select:focus-visible {
 
   .chip {
     @apply inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs
-      font-heading font-bold border-2 border-ink bg-white text-ink whitespace-nowrap;
+      font-heading font-bold border border-line bg-white text-ink whitespace-nowrap;
   }
 
   .chip-mint { @apply bg-mint/25 text-ink; }
@@ -1248,7 +1345,7 @@ select:focus-visible {
   .chip-ink { @apply bg-ink text-cream; }
 
   .filter-bar {
-    @apply flex items-center gap-1 p-1 rounded-xl bg-white/70 border border-white/80 backdrop-blur-md overflow-x-auto max-w-full shadow-glass;
+    @apply flex items-center gap-1 p-1 rounded-xl bg-white/95 border border-line overflow-x-auto max-w-full shadow-glass;
   }
 
   .filter-pill {
@@ -1261,12 +1358,12 @@ select:focus-visible {
   }
 
   .metric-tile {
-    @apply p-3.5 rounded-xl bg-white/55 border border-white/70 backdrop-blur-md;
+    @apply p-3.5 rounded-xl bg-white/85 border border-line;
   }
 
   .input-pop {
-    @apply w-full bg-white/80 border border-line rounded-xl text-ink
-      px-3 py-2.5 transition-all duration-300 backdrop-blur-md;
+    @apply w-full bg-white border border-line rounded-xl text-ink
+      px-3 py-2.5 transition-[border-color,box-shadow,background-color] duration-200;
   }
 
   .input-pop:focus {
@@ -1279,7 +1376,7 @@ select:focus-visible {
   }
 
   .icon-bubble {
-    @apply inline-flex items-center justify-center rounded-2xl border-2 border-ink shrink-0;
+    @apply inline-flex items-center justify-center rounded-2xl border border-line shrink-0;
   }
 
   .squiggle-underline {
@@ -1329,10 +1426,59 @@ select:focus-visible {
 }
 
 .leaflet-container {
-    font-family: 'Poppins', system-ui, sans-serif;
-    border-radius: 16px;
-    z-index: 0;
-  }
+  font-family: 'Poppins', system-ui, sans-serif;
+  border-radius: 16px;
+  z-index: 0;
+}
+
+.ride-map-boundary {
+  min-width: 0;
+  contain: layout paint;
+}
+
+.oncoready-app .border-2 {
+  border-width: 1px;
+}
+
+.oncoready-app .border-ink {
+  border-color: rgba(148, 163, 184, 0.48);
+}
+
+.motion-reduce .scroll-reveal,
+.motion-reduce .scroll-reveal[data-reveal-state] {
+  opacity: 1 !important;
+  transform: none !important;
+  transition: none !important;
+  will-change: auto !important;
+}
+
+.motion-reduce .animate-svg-dash {
+  animation: none;
+  stroke-dasharray: 4, 4;
+}
+
+.motion-reduce .pulse-emerald-ring,
+.motion-reduce .pulse-amber-ring {
+  animation: none;
+}
+
+.motion-reduce .btn-candy:hover,
+.motion-reduce .btn-candy:active,
+.motion-reduce .landing-button:hover,
+.motion-reduce .landing-role-card:hover,
+.motion-reduce .landing-role-card:hover .landing-role-card__image img,
+.motion-reduce .landing-role-card:hover .landing-text-link svg {
+  transform: none;
+}
+
+.motion-reduce *,
+.motion-reduce *::before,
+.motion-reduce *::after {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+  scroll-behavior: auto !important;
+}
 
 @media (max-width: 640px) {
   .chip {
@@ -1345,6 +1491,14 @@ select:focus-visible {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .scroll-reveal,
+  .scroll-reveal[data-reveal-state] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition: none !important;
+    will-change: auto !important;
+  }
+
   .animate-svg-dash {
     animation: none;
     stroke-dasharray: 4, 4;
@@ -1357,7 +1511,9 @@ select:focus-visible {
   .btn-candy:active {
     transform: none;
   }
-  * {
+  *,
+  *::before,
+  *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;

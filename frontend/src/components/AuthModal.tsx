@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useRef } from 'react';
 import { 
   X, 
   ShieldCheck, 
@@ -11,6 +11,7 @@ import {
 } from 'lucide-react';
 import { WorkflowState, Perspective } from '../types';
 import { Avatar } from './Avatar';
+import { useDialogFocus } from '../lib/useDialogFocus';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -25,6 +26,9 @@ export const AuthModal: React.FC<AuthModalProps> = ({
   state,
   onSelectPerspective,
 }) => {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  useDialogFocus(isOpen, dialogRef, onClose);
+
   if (!isOpen) return null;
 
   const handleSelect = (p: Perspective) => {
@@ -36,12 +40,12 @@ export const AuthModal: React.FC<AuthModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 overflow-y-auto bg-ink/50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 z-50 overflow-y-auto bg-ink/55 flex items-center justify-center p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
     >
-      <div className="bg-white/90 backdrop-blur-xl rounded-2xl max-w-2xl w-full border border-white/80 shadow-glass-lg overflow-hidden animate-slide-up">
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl max-w-2xl w-full border border-line shadow-glass-lg overflow-hidden animate-slide-up">
         
         {/* Modal Header */}
         <div className="bg-ink text-white p-6 sm:p-7 flex items-center justify-between">
@@ -51,7 +55,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-heading font-semibold bg-white/10 text-white">Authentication Gateway</span>
+                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-heading font-semibold bg-white/10 text-white">Workspace gateway</span>
                 <span className="text-xs text-white/70">Benson Cancer Center</span>
               </div>
               <h2 id="auth-modal-title" className="text-xl font-extrabold text-white mt-1">
@@ -250,10 +254,10 @@ export const AuthModal: React.FC<AuthModalProps> = ({
         <div className="p-4 sm:px-7 bg-muted/60 border-t border-line flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
             <Building2 className="w-4 h-4 text-accent" />
-            <span>Benson Cancer Center • Training environment</span>
+            <span>Benson Cancer Center • Role-based product workspace</span>
           </div>
           <span className="text-muted-fg font-mono text-[11px]">
-            Enterprise access controls • Training environment
+            Choose a workspace view
           </span>
         </div>
 

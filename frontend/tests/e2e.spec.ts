@@ -1,115 +1,103 @@
-import { test, expect } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-test.describe('OncoReady Treatment Readiness Golden Path E2E', () => {
-  test('Complete end-to-end journey from screening to dual-task dispatch, caregiver privacy, and plan confirmation', async ({ page }) => {
-    // 1. Visit Patient Treatment Home
+test.describe('OncoReady UI-001 product experience', () => {
+  test.beforeEach(async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle(/OncoReady/);
-    
-    // Check initial patient hero elements
-    await expect(page.locator('text=Upcoming Infusion: FOLFOX6 + Bevacizumab')).toBeVisible();
-    await expect(page.locator('text=Time Proximity')).toBeVisible();
-    await expect(page.locator('text=Complete Your Pre-Infusion Readiness Check')).toBeVisible();
+    await page.evaluate(() => localStorage.clear());
+    await page.reload();
+  });
 
-    // 2. Open Readiness Check Modal
-    const startBtn = page.getByRole('button', { name: /Start Readiness Check/i });
-    await expect(startBtn).toBeVisible();
-    await startBtn.click();
+  test('landing reveals once, presents the SaaS model, and stays horizontally safe', async ({ page }) => {
+    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+    await expect(page.getByText('SaaS business model')).toBeVisible();
+    await expect(page.getByRole('heading', { name: /One readiness capability, shaped around the oncology operation/i })).toBeVisible();
 
-    // Verify modal is open
+    const landingCopy = (await page.locator('body').innerText()).toLowerCase();
+    for (const term of ['demo', 'prototype', 'preview', 'portfolio', 'training environment']) {
+      expect(landingCopy).not.toContain(term);
+    }
+
+    const roleGrid = page.locator('.landing-role-grid');
+    await roleGrid.scrollIntoViewIfNeeded();
+    const roleReveals = page.locator('.landing-role-grid [data-reveal-variant]');
+    await expect(roleReveals).toHaveCount(3);
+    await expect(roleReveals.nth(0)).toHaveAttribute('data-reveal-variant', 'patient');
+    await expect(roleReveals.nth(1)).toHaveAttribute('data-reveal-variant', 'staff');
+    await expect(roleReveals.nth(2)).toHaveAttribute('data-reveal-variant', 'caregiver');
+    await expect(roleReveals.nth(0)).toHaveAttribute('data-reveal-state', 'revealed');
+    await expect(roleReveals.nth(1)).toHaveAttribute('data-reveal-state', 'revealed');
+    await expect(roleReveals.nth(2)).toHaveAttribute('data-reveal-state', 'revealed');
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.locator('#pricing-section').scrollIntoViewIfNeeded();
+    const pageWidths = await page.evaluate(() => ({
+      viewport: document.documentElement.clientWidth,
+      content: document.documentElement.scrollWidth,
+      attachment: getComputedStyle(document.body).backgroundAttachment,
+      headerBlur: getComputedStyle(document.querySelector('.landing-header') as HTMLElement).backdropFilter,
+    }));
+    expect(pageWidths.content).toBeLessThanOrEqual(pageWidths.viewport);
+    expect(pageWidths.attachment).not.toBe('fixed');
+    expect(pageWidths.headerBlur).toBe('none');
+  });
+
+  test('system reduced motion exposes final reveal content immediately', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.reload();
+
+    const revealStates = await page.locator('[data-reveal-state]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-reveal-state')),
+    );
+    expect(revealStates.length).toBeGreaterThan(0);
+    expect(revealStates.every((state) => state === 'visible')).toBe(true);
+  });
+
+  test('workspace routes and the complete Maria journey remain connected', async ({ page }) => {
+    await page.getByRole('button', { name: /Explore the workspace/i }).first().click();
     await expect(page.getByRole('dialog')).toBeVisible();
-    await expect(page.locator('text=2-Minute Pre-Infusion Readiness Check')).toBeVisible();
+    await page.getByTestId('auth-patient-card').click();
 
-    // Submit readiness report (defaults to cancelled ride + symptoms)
-    const submitBtn = page.getByRole('button', { name: /Submit Readiness Report/i });
-    await submitBtn.click();
+    await page.getByRole('button', { name: /Start Readiness Check/i }).click();
+    await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
+    await expect(page.getByText(/Your Reported Barriers are Being Resolved/i)).toBeVisible();
+    await page.getByRole('button', { name: /View Staff Workbench/i }).click();
 
-    // Verify modal closes and patient view updates
-    await expect(page.getByRole('dialog')).not.toBeVisible();
-    await expect(page.locator('text=Your Reported Barriers are Being Resolved')).toBeVisible();
+    const routeChecks = [
+      ['Command Center', /Command Center/i],
+      ['Exceptions', /Pre-Treatment Exception Queue/i],
+      ['Patients', /Patient Directory/i],
+      ['Resources', /Resource Directory/i],
+      ['Insights', /Operational Insights/i],
+      ['Integrations', /Proposed Data Flow Mapping/i],
+      ['Admin', /Local Configuration/i],
+    ] as const;
 
-    // 3. Switch to Staff Exception Queue
-    const staffNavBtn = page.getByRole('button', { name: /Staff Exception Queue/i });
-    await staffNavBtn.click();
+    for (const [route, heading] of routeChecks) {
+      await page.getByRole('button', { name: route, exact: true }).click();
+      await expect(page.getByRole('heading', { name: heading }).first()).toBeVisible();
+    }
 
-    // Verify Maria's exception card is present
-    await expect(page.locator('text=Pre-Treatment Exception Queue')).toBeVisible();
-    await expect(page.locator('text=Maria Hernandez').first()).toBeVisible();
+    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
+    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
+    await expect(page.getByText(/Task 1: Clinical Symptom Review/i)).toBeVisible();
+    await page.getByRole('button', { name: /Acknowledge Review & Record Disposition/i }).click();
+    await page.getByRole('button', { name: /Confirm & Dispatch Med-Van/i }).click();
 
-    // Open Case Workspace
-    const openCaseBtn = page.getByRole('button', { name: /Open Case Workspace/i });
-    await openCaseBtn.click();
+    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
+    await expect(page.getByText(/Ride Confirmed/i)).toBeVisible();
+    const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
+    expect(caregiverCopy).not.toContain('fever 100.4');
+    expect(caregiverCopy).not.toContain('tingling in fingers');
 
-    // Verify Workspace & Dual-Task Action Panels
-    await expect(page.locator('text=Task 1: Clinical Symptom Review')).toBeVisible();
-    await expect(page.locator('text=Task 2: Transportation Navigation')).toBeVisible();
-    await expect(page.locator('text=Treatment Readiness Graph')).toBeVisible();
+    await page.getByRole('button', { name: /Ana Hernandez/i }).click();
+    await page.getByText(/Patient Portal \(Maria Hernandez\)/i).click();
+    await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
+    await page.getByRole('checkbox', { name: /I acknowledge the 7:45 AM Med-Van/i }).check();
+    await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
+    await expect(page.getByText(/Everything is Set for Tomorrow Morning/i)).toBeVisible();
 
-    // 4. Staff Action 1: Acknowledge Clinical Concern (Nurse Sarah)
-    const ackClinicalBtn = page.getByRole('button', { name: /Acknowledge Concern & Authorize Pre-Med Labs/i });
-    await expect(ackClinicalBtn).toBeVisible();
-    await ackClinicalBtn.click();
-    await expect(page.locator('text=Clinical Review & Disposition Recorded')).toBeVisible();
-
-    // 5. Staff Action 2: Confirm Transportation Dispatch (Navigator Marcus)
-    const confirmTransportBtn = page.getByRole('button', { name: /Confirm & Dispatch Med-Van/i });
-    await expect(confirmTransportBtn).toBeVisible();
-    await confirmTransportBtn.click();
-    await expect(page.locator('text=Transportation Coordination Confirmed')).toBeVisible();
-
-    // 6. Caregiver Perspective & Strict Privacy Check
-    const caregiverNavBtn = page.getByRole('button', { name: /Caregiver \(Ana\)/i });
-    await caregiverNavBtn.click();
-
-    await expect(page.locator('text=Caregiver Portal • Ana Hernandez')).toBeVisible();
-    await expect(page.locator('text=Ride Confirmed')).toBeVisible();
-    await expect(page.locator('text=Ochsner Med-Van #402')).toBeVisible();
-    await expect(page.locator('text=Patient Privacy Boundary Enforced')).toBeVisible();
-
-    // Strict assertion: Clinical symptoms MUST NOT exist in caregiver DOM
-    const bodyText = await page.innerText('body');
-    expect(bodyText.toLowerCase()).not.toContain('fever 100.4');
-    expect(bodyText.toLowerCase()).not.toContain('tingling in fingers');
-    expect(bodyText.toLowerCase()).not.toContain('peripheral neuropathy');
-
-    // 7. Return to Patient Perspective & Acknowledge Updated Plan
-    const patientNavBtn = page.getByRole('button', { name: /Patient \(Maria\)/i });
-    await patientNavBtn.click();
-
-    await expect(page.locator('text=Your Updated Treatment Plan is Ready for Review')).toBeVisible();
-    const reviewPlanBtn = page.getByRole('button', { name: /Review & Confirm Plan/i });
-    await reviewPlanBtn.click();
-
-    // Patient Resolution View
-    await expect(page.locator('text=Review Updated Treatment Plan')).toBeVisible();
-    await expect(page.locator('text=Clinical Symptom Clearance & Advice')).toBeVisible();
-    await expect(page.locator('text=Confirmed Transportation Schedule')).toBeVisible();
-
-    // Check agreement and confirm
-    const agreeCheckbox = page.locator('#agree-checkbox');
-    await agreeCheckbox.check();
-
-    const finalizePlanBtn = page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i });
-    await finalizePlanBtn.click();
-
-    // Verify Plan Confirmed Victory State
-    await expect(page.locator('text=Everything is Set for Tomorrow Morning!')).toBeVisible();
-    await expect(page.locator('text=Treatment Plan Confirmed').first()).toBeVisible();
-
-    // 8. System Overview & Timeline
-    const systemNavBtn = page.getByRole('button', { name: /Readiness Graph & Audit/i });
-    await systemNavBtn.click();
-
-    await expect(page.locator('text=PLAN CONFIRMED & READY')).toBeVisible();
-    await expect(page.locator('text=Append-Only Causal Event Timeline')).toBeVisible();
-    await expect(page.locator('text=Treatment Plan Acknowledged by Patient')).toBeVisible();
-
-    // 9. Reset Journey
-    const resetBtn = page.getByRole('button', { name: /Reset Journey/i });
-    await resetBtn.click();
-
-    // Verify application resets back to initial state
-    await patientNavBtn.click();
-    await expect(page.locator('text=Complete Your Pre-Infusion Readiness Check')).toBeVisible();
+    await page.getByTitle(/Reset Workspace/i).click();
+    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
   });
 });

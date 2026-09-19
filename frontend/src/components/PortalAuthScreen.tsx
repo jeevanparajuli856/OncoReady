@@ -131,7 +131,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
   ];
 
   return (
-    <div className="page-shell min-h-[80vh] flex flex-col justify-between py-4 sm:py-8 space-y-8 animate-pop">
+    <div className="page-shell min-h-[80vh] flex flex-col justify-between py-4 sm:py-8 space-y-8">
       <div className="text-center space-y-4">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-heading font-semibold shadow-glass">
           <Building2 className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
@@ -169,13 +169,11 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {cards.map((card) => (
-          <div
+          <button
+            type="button"
             key={card.key}
             onClick={() => onSelectPerspective(card.key)}
-            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && onSelectPerspective(card.key)}
-            role="button"
-            tabIndex={0}
-            className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer hover:-translate-y-1 hover:shadow-glass-hover transition-all duration-300"
+            className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer text-left hover:-translate-y-0.5 hover:shadow-glass-hover transition-all duration-200"
           >
             <div className="space-y-4">
               <div className="flex flex-col gap-3 min-w-0">
@@ -198,14 +196,14 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
                 <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
               </span>
             </div>
-          </div>
+          </button>
         ))}
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-muted-fg">
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-accent" strokeWidth={2.5} />
-          Benson Cancer Center • Training environment
+          Benson Cancer Center • Role-based product workspace
         </div>
         <button onClick={onReset} className="btn-ghost btn-compact">
           Reset Application to Initial State

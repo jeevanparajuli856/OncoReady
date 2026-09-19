@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
 import {
   ArrowRight,
+  Building2,
   Check,
   CheckCircle2,
   ChevronDown,
-  CircleDollarSign,
   Clock3,
   Database,
+  Layers3,
   HeartHandshake,
   Lock,
   MapPin,
   Network,
   Route,
+  SlidersHorizontal,
   ShieldCheck,
   Sparkles,
   Stethoscope,
@@ -23,6 +25,7 @@ import { Avatar } from './Avatar';
 import { ContinuityField } from './ContinuityField';
 import { LogoMark } from './Logo';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
+import { RevealVariant, ScrollReveal } from './ScrollReveal';
 import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
 
 interface LandingPageProps {
@@ -35,7 +38,7 @@ interface LandingPageProps {
 const trustSignals = [
   { Icon: ShieldCheck, label: 'Human clinical authority' },
   { Icon: Lock, label: 'Permissioned caregiver view' },
-  { Icon: Database, label: 'FHIR R4 mapping preview' },
+  { Icon: Database, label: 'FHIR-shaped workflow mapping' },
   { Icon: Network, label: 'Deterministic audit trail' },
 ];
 
@@ -49,6 +52,7 @@ const workspaces = [
     tone: 'indigo',
     Icon: UserRound,
     perspective: 'PATIENT' as const,
+    reveal: 'patient' as RevealVariant,
   },
   {
     number: '02',
@@ -59,6 +63,7 @@ const workspaces = [
     tone: 'coral',
     Icon: Stethoscope,
     perspective: 'STAFF' as const,
+    reveal: 'staff' as RevealVariant,
   },
   {
     number: '03',
@@ -69,6 +74,7 @@ const workspaces = [
     tone: 'mint',
     Icon: HeartHandshake,
     perspective: 'CAREGIVER' as const,
+    reveal: 'caregiver' as RevealVariant,
   },
 ];
 
@@ -99,28 +105,39 @@ const workflowSteps = [
   },
 ];
 
-const deploymentModels = [
+const saasModel = [
   {
-    label: 'Community',
-    title: 'Community cancer center',
-    copy: 'A focused readiness workflow for a regional infusion operation and its navigation team.',
-    features: ['Treatment-anchored check-in', 'Exception ownership', 'Readiness graph', 'Mapping workspace'],
+    label: '01 • Institutional buyer',
+    title: 'Cancer centers and health systems',
+    copy: 'Oncology service lines subscribe at the program level to make pre-treatment readiness an accountable operating capability.',
+    features: ['Infusion operations', 'Clinical and navigation leaders'],
     tone: 'mint',
+    Icon: Building2,
   },
   {
-    label: 'Health system',
-    title: 'Enterprise cancer center',
-    copy: 'The complete continuity loop across patient, nurse, navigator, caregiver, and operational views.',
-    features: ['Multi-role workspaces', 'Closed-loop task state', 'Permissioned caregiver updates', 'Operational readiness signals'],
+    label: '02 • Subscribed capability',
+    title: 'One treatment-readiness workspace',
+    copy: 'Patient check-in, accountable exception routing, a shared readiness graph, and permission-limited logistics work as one service.',
+    features: ['Role-based workspaces', 'Visible ownership and closure'],
     tone: 'indigo',
     featured: true,
+    Icon: Layers3,
   },
   {
-    label: 'Network',
-    title: 'Multi-facility model',
-    copy: 'A future configuration path for oncology networks coordinating readiness across sites.',
-    features: ['Site-aware workflows', 'Shared routing policy', 'Cross-center reporting', 'Implementation planning'],
+    label: '03 • Configured implementation',
+    title: 'Shaped around the operation',
+    copy: 'Implementation aligns sites, roles, routing rules, escalation windows, and readiness checkpoints to the organization’s workflow.',
+    features: ['Center-defined responsibility', 'Workflow and mapping alignment'],
+    tone: 'coral',
+    Icon: SlidersHorizontal,
+  },
+  {
+    label: '04 • Expansion path',
+    title: 'Grow across the care network',
+    copy: 'Organizations can extend the same readiness model across additional sites, treatment programs, and operating roles.',
+    features: ['Additional programs and sites', 'Shared operating model'],
     tone: 'lavender',
+    Icon: Network,
   },
 ];
 
@@ -139,7 +156,7 @@ const faqs = [
   },
   {
     question: 'How could it fit an existing health-system environment?',
-    answer: 'The current product includes a proposed FHIR R4 mapping boundary for schedules, patients, tasks, and communications. Live EHR, messaging, and transportation integrations are future implementation work.',
+    answer: 'OncoReady organizes schedules, patients, owned tasks, and communications around the treatment event. A FHIR-shaped mapping keeps those workflow objects clear for implementation planning.',
   },
 ];
 
@@ -231,28 +248,35 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
 
         <div className="landing-role-grid">
-          {workspaces.map(({ Icon, ...workspace }) => (
-            <button
+          {workspaces.map(({ Icon, ...workspace }, index) => (
+            <ScrollReveal
               key={workspace.title}
-              type="button"
-              onClick={() => onSelectPerspective(workspace.perspective)}
-              className="landing-role-card"
-              data-tone={workspace.tone}
+              variant={workspace.reveal}
+              delay={index * 80}
+              reducedMotion={reducedMotion}
+              className="landing-role-reveal"
             >
-              <div className="landing-role-card__image">
-                <img src={workspace.image} alt="" />
-                <span>{workspace.number}</span>
-              </div>
-              <div className="landing-role-card__body">
-                <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
-                <h3>{workspace.title}</h3>
-                <p>{workspace.copy}</p>
-                <span className="landing-text-link">
-                  {workspace.action}
-                  <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                </span>
-              </div>
-            </button>
+              <button
+                type="button"
+                onClick={() => onSelectPerspective(workspace.perspective)}
+                className="landing-role-card"
+                data-tone={workspace.tone}
+              >
+                <div className="landing-role-card__image">
+                  <img src={workspace.image} alt="" loading="lazy" decoding="async" />
+                  <span>{workspace.number}</span>
+                </div>
+                <div className="landing-role-card__body">
+                  <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
+                  <h3>{workspace.title}</h3>
+                  <p>{workspace.copy}</p>
+                  <span className="landing-text-link">
+                    {workspace.action}
+                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                  </span>
+                </div>
+              </button>
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -264,7 +288,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <h2 id="readiness-proof-title">One report becomes accountable work.</h2>
           </div>
           <p>
-            Maria’s synthetic treatment record shows who owns each blocker, what happens next, and what evidence closes the loop.
+            An illustrative treatment-readiness record shows who owns each blocker, what happens next, and what evidence closes the loop.
           </p>
         </div>
 
@@ -275,7 +299,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               <div>
                 <div className="flex flex-wrap items-center gap-2">
                   <strong>Treatment Readiness Workspace</strong>
-                  <span className="landing-environment-pill">Training environment</span>
+                  <span className="landing-environment-pill">Illustrative record</span>
                 </div>
                 <p>Maria Hernandez • mFOLFOX6 Cycle 4 • Benson Cancer Center</p>
               </div>
@@ -323,16 +347,18 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           </div>
 
           <div className="landing-step-grid">
-            {workflowSteps.map(({ Icon, ...step }) => (
-              <article key={step.number} className="landing-step-card" data-tone={step.tone}>
-                <div className="landing-step-card__topline">
-                  <span>{step.number}</span>
-                  <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
-                </div>
-                <p className="landing-step-card__eyebrow">{step.eyebrow}</p>
-                <h3>{step.title}</h3>
-                <p>{step.copy}</p>
-              </article>
+            {workflowSteps.map(({ Icon, ...step }, index) => (
+              <ScrollReveal key={step.number} variant="workflow" delay={index * 60} reducedMotion={reducedMotion}>
+                <article className="landing-step-card" data-tone={step.tone}>
+                  <div className="landing-step-card__topline">
+                    <span>{step.number}</span>
+                    <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
+                  </div>
+                  <p className="landing-step-card__eyebrow">{step.eyebrow}</p>
+                  <h3>{step.title}</h3>
+                  <p>{step.copy}</p>
+                </article>
+              </ScrollReveal>
             ))}
           </div>
         </div>
@@ -347,7 +373,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
         <div className="landing-business-grid">
           {[
-            { Icon: CircleDollarSign, title: 'Who it serves', copy: 'Infusion operations that need a visible, accountable path from early barrier signal to confirmed treatment plan.' },
+            { Icon: Building2, title: 'Who it serves', copy: 'Infusion operations that need a visible, accountable path from early barrier signal to confirmed treatment plan.' },
             { Icon: Users, title: 'Why ownership matters', copy: 'Every issue carries a named role, due time, next action, and closure evidence instead of ending at referral.' },
             { Icon: MapPin, title: 'Where the story begins', copy: 'Louisiana first, with rural travel, medical transportation, and existing navigation teams shaping the experience.' },
           ].map(({ Icon, title, copy }) => (
@@ -391,33 +417,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         </div>
       </section>
 
-      <section id="pricing-section" className="landing-section landing-section--aurora" aria-labelledby="deployment-title">
+      <section id="pricing-section" className="landing-section landing-section--aurora" aria-labelledby="saas-title">
         <div className="landing-shell">
           <div className="landing-section-heading landing-section-heading--center">
-            <p className="landing-section-label">Deployment paths</p>
-            <h2 id="deployment-title">Fit the readiness loop to the oncology operation.</h2>
-            <p>Three implementation shapes, each centered on the same accountable treatment journey.</p>
+            <p className="landing-section-label">SaaS business model</p>
+            <h2 id="saas-title">One readiness capability, shaped around the oncology operation.</h2>
+            <p>Subscribe at the program level, configure the operating model, and expand the same accountable loop as the organization grows.</p>
           </div>
 
-          <div className="landing-deployment-grid">
-            {deploymentModels.map((model) => (
-              <article key={model.title} className="landing-deployment-card" data-tone={model.tone} data-featured={model.featured || undefined}>
-                <div>
-                  <span className="landing-deployment-card__label">{model.label}</span>
-                  {model.featured && <span className="landing-environment-pill">Complete loop</span>}
-                </div>
-                <h3>{model.title}</h3>
-                <p>{model.copy}</p>
-                <ul>
-                  {model.features.map((feature) => (
-                    <li key={feature}><Check className="h-4 w-4" aria-hidden="true" />{feature}</li>
-                  ))}
-                </ul>
-                <button type="button" onClick={onOpenAuthModal} className={`landing-button ${model.featured ? 'landing-button--primary' : 'landing-button--secondary'}`}>
-                  Explore this workspace
-                </button>
-              </article>
+          <div className="landing-saas-grid">
+            {saasModel.map(({ Icon, ...model }, index) => (
+              <ScrollReveal key={model.title} variant="saas" delay={index * 55} reducedMotion={reducedMotion}>
+                <article className="landing-saas-card" data-tone={model.tone} data-featured={model.featured || undefined}>
+                  <div className="landing-saas-card__topline">
+                    <span className="landing-saas-card__label">{model.label}</span>
+                    <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
+                  </div>
+                  <h3>{model.title}</h3>
+                  <p>{model.copy}</p>
+                  <ul>
+                    {model.features.map((feature) => (
+                      <li key={feature}><Check className="h-4 w-4" aria-hidden="true" />{feature}</li>
+                    ))}
+                  </ul>
+                </article>
+              </ScrollReveal>
             ))}
+          </div>
+
+          <div className="landing-saas-action">
+            <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--primary">
+              Explore the product workspaces
+              <ArrowRight className="h-4 w-4" aria-hidden="true" />
+            </button>
           </div>
         </div>
       </section>
@@ -427,7 +459,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="landing-faq-intro">
             <p className="landing-section-label">Clear by design</p>
             <h2 id="faq-title">Questions worth answering up front.</h2>
-            <p>What OncoReady does, where human judgment remains, and what the current product represents.</p>
+            <p>How OncoReady supports accountable readiness work while keeping clinical judgment with the care team.</p>
             <div className="landing-faq-note">
               <ShieldCheck className="h-5 w-5" aria-hidden="true" />
               <span>Patient-reported clinical concerns always route to human review.</span>
@@ -465,7 +497,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div>
           <p className="landing-section-label">Keep tomorrow on the calendar</p>
           <h2 id="closing-cta-title">See one concern become a confirmed plan.</h2>
-          <p>Enter the training workspace and follow Maria’s readiness journey from early signal to visible closure.</p>
+          <p>Explore the connected workspaces and follow one readiness journey from early signal to visible closure.</p>
         </div>
         <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--light">
           Explore the workspace

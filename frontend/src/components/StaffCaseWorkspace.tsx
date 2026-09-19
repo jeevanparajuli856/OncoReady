@@ -50,7 +50,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
   ] as const;
 
   return (
-    <div className="page-shell space-y-5 pb-8 animate-pop">
+    <div className="page-shell space-y-5 pb-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <button
           onClick={onBackToQueue}
