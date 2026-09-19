@@ -123,6 +123,7 @@ export const App: React.FC = () => {
         {state.currentPerspective === 'LANDING' && (
           <LandingPage
             state={state}
+            reducedMotion={reducedMotion}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
             onSelectPerspective={handleSetPerspective}
           />
@@ -273,16 +274,15 @@ export const App: React.FC = () => {
 
       </main>
 
-      {/* Clean Hospital Footer */}
-      <footer className="bg-white/60 backdrop-blur-xl border-t border-white/80 py-5 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
-          <div className="w-full flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
+      <footer className="app-footer py-6 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
+          <div className="w-full max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <button
               onClick={() => handleSetPerspective('LANDING')}
-              className="flex items-center gap-2"
+              className="flex items-center gap-3"
               aria-label="Go to OncoReady home"
             >
-              <Logo size={32} compact />
-              <span>Benson Cancer Center</span>
+              <Logo size={36} />
+              <span className="rounded-full border border-line bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">Training environment</span>
             </button>
             <button
               onClick={() => setReducedMotion(!reducedMotion)}

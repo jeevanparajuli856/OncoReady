@@ -9,6 +9,7 @@ interface LogoProps {
 }
 
 const LOGO_SRC = '/logo.svg';
+const TITLE_LOGO_SRC = '/oncoready-title-logo.svg';
 
 export const LogoMark: React.FC<{ size?: number; className?: string; mono?: boolean }> = ({
   size = 40,
@@ -30,21 +31,19 @@ export const Logo: React.FC<LogoProps> = ({
   compact = false,
   className,
 }) => {
+  if (!showWordmark) {
+    return <LogoMark size={size} className={className} />;
+  }
+
+  const width = Math.round(size * (compact ? 4.35 : 4.84375));
+
   return (
-    <div className={cn('flex items-center gap-2 select-none', className)}>
-      <LogoMark size={size} />
-      {showWordmark && (
-        <div className="leading-none text-left">
-          <div className="font-display font-extrabold tracking-tight text-ink text-[1.05rem] sm:text-[1.2rem]">
-            OncoReady
-          </div>
-          {!compact && (
-            <p className="text-[11px] font-medium text-muted-fg mt-0.5">
-              Keep tomorrow on the calendar
-            </p>
-          )}
-        </div>
-      )}
-    </div>
+    <img
+      src={TITLE_LOGO_SRC}
+      alt="OncoReady — Keep tomorrow on the calendar"
+      width={width}
+      height={size}
+      className={cn('block shrink-0 select-none object-contain object-left', className)}
+    />
   );
 };

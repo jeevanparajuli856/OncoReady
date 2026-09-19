@@ -15,12 +15,25 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
   it('renders the OncoReady enterprise landing page and workspace entry', () => {
     render(<App />);
 
-    expect(screen.getByText(/Zero Day-Of Chemotherapy/i)).toBeDefined();
-    expect(screen.getByText(/Next-Generation Oncology Clinical Continuity/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(screen.getByText(/Treatment readiness before the chair/i)).toBeDefined();
+    expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
+    expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Community Cancer Center/i)).toBeDefined();
-    expect(screen.getByText(/Enterprise Cancer Center/i)).toBeDefined();
-    expect(screen.getByText(/National Network/i)).toBeDefined();
+    expect(screen.getByText(/Community cancer center/i)).toBeDefined();
+    expect(screen.getByText(/Enterprise cancer center/i)).toBeDefined();
+    expect(screen.getByText(/Multi-facility model/i)).toBeDefined();
+  });
+
+  it('keeps the continuity story available when motion is turned off', () => {
+    render(<App />);
+
+    fireEvent.click(screen.getByRole('button', { name: /Reduce motion/i }));
+
+    expect(document.querySelector('.motion-reduce')).not.toBeNull();
+    expect(screen.getByRole('button', { name: /Motion off/i })).toBeDefined();
+    expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
+    expect(screen.getAllByRole('button', { name: /Explore the workspace/i }).length).toBeGreaterThan(0);
   });
 
   it('executes full interactive golden path from landing page to auth modal, dual triage, caregiver privacy, and plan confirmation', async () => {
@@ -127,6 +140,6 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     const resetBtn = screen.getByTitle(/Reset Workspace/i);
     fireEvent.click(resetBtn);
 
-    expect(screen.getByText(/Zero Day-Of Chemotherapy/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
   });
 });
