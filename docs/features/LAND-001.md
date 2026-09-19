@@ -77,7 +77,7 @@ None. The work is fully contained within the existing frontend and introduces no
 - `CORE-001` completed product journey and current frontend behavior.
 - Existing OncoReady design system and brand tokens.
 - Repository-provided official logo and inspiration assets.
-- Human manually starts Gemini for the required design Phase A and later implementation Phase B.
+- Codex owns the required design Phase A and later implementation Phase B under the human-approved frontend ownership override.
 
 ## Risks and mitigations
 

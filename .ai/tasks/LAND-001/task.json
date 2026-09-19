@@ -3,14 +3,14 @@
   "task_id": "LAND-001",
   "title": "Landing Page Brand and Motion Refresh",
   "type": "feature",
-  "status": "BUILD_READY",
+  "status": "IMPLEMENTATION",
   "priority": "high",
   "owners": {
     "orchestrator": "codex",
     "architecture": "codex",
     "database": "codex",
     "backend": "codex",
-    "frontend": "gemini",
+    "frontend": "codex",
     "tester": "codex",
     "security": "codex",
     "review": "codex"

@@ -49,10 +49,10 @@
   ],
   "blockers": [],
   "notes_for_next_agent": [
-    "Gemini must perform design Phase A before production frontend changes because this materially changes landing composition, identity expression, and motion.",
+    "Codex must perform design Phase A before production frontend changes because this materially changes landing composition, identity expression, and motion; the human explicitly assigned Codex as frontend owner for this task.",
     "The human explicitly wants only the reference's color, theme, and style as inspiration, not its overall design or information architecture.",
     "Inspect all repository-provided UI Suggestion images and official Logo assets during Phase A; the local files are authoritative references for this task.",
-    "Keep exact aesthetic choices within Gemini's design authority while satisfying the confirmed official-brand, light/clear, captivating-but-calm, and one-signature-motion constraints.",
+    "Keep exact aesthetic choices within the approved Phase A design while satisfying the confirmed official-brand, light/clear, captivating-but-calm, and one-signature-motion constraints.",
     "Candidate implementation areas are LandingPage, Header, Logo, shared public UI/decorations, index styles/tokens, frontend public assets, and focused smoke checks. Avoid workflow-state changes unless a concrete compatibility issue is reported.",
     "Do not add testimonials, customer-logo claims, unsupported pricing/outcome claims, or imply live hospital integrations merely because the reference includes those marketing patterns.",
     "SMOKE depth is implementation-owned; no independent tester or security reviewer is selected."
