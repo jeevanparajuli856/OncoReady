@@ -3,7 +3,7 @@
   "task_id": "UI-001",
   "title": "Workspace visual continuity and motion polish",
   "type": "feature",
-  "status": "BUILD_READY",
+  "status": "IMPLEMENTATION",
   "priority": "high",
   "owners": {
     "orchestrator": "codex",
