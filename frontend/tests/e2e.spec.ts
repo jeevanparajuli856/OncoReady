@@ -73,6 +73,42 @@ test.describe('OncoReady UI-001 product experience', () => {
 
       expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+
+      const motionControl = page.locator('footer').getByRole('button', { name: 'Reduce motion' });
+      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+      await motionControl.focus();
+
+      const controlBounds = await motionControl.boundingBox();
+      const dockBounds = await dock.boundingBox();
+      expect(controlBounds).not.toBeNull();
+      expect(dockBounds).not.toBeNull();
+      expect(controlBounds!.y + controlBounds!.height + 8).toBeLessThanOrEqual(dockBounds!.y);
+
+      const focusAndHitTest = await motionControl.evaluate((button) => {
+        const bounds = button.getBoundingClientRect();
+        const style = getComputedStyle(button);
+        const samples = [
+          [bounds.left + bounds.width * 0.25, bounds.top + bounds.height * 0.25],
+          [bounds.left + bounds.width * 0.75, bounds.top + bounds.height * 0.25],
+          [bounds.left + bounds.width / 2, bounds.top + bounds.height / 2],
+          [bounds.left + bounds.width * 0.25, bounds.top + bounds.height * 0.75],
+          [bounds.left + bounds.width * 0.75, bounds.top + bounds.height * 0.75],
+          [bounds.left + bounds.width / 2, bounds.bottom - 1],
+        ];
+
+        return {
+          outlineStyle: style.outlineStyle,
+          outlineWidth: style.outlineWidth,
+          targetOwnsEveryPoint: samples.every(([x, y]) => {
+            const hit = document.elementFromPoint(x, y);
+            return hit === button || button.contains(hit);
+          }),
+        };
+      });
+
+      expect(focusAndHitTest.outlineStyle).toBe('solid');
+      expect(focusAndHitTest.outlineWidth).toBe('2px');
+      expect(focusAndHitTest.targetOwnsEveryPoint).toBe(true);
     }
   });
 

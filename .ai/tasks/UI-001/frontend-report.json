@@ -3,7 +3,7 @@
   "task_id": "UI-001",
   "agent": "codex-frontend",
   "status": "COMPLETE",
-  "summary": "Extended the approved Clinical Glass system across the complete OncoReady experience, added accessible one-time landing reveals and a buyer-oriented SaaS model, removed costly scroll treatments, and preserved the deterministic Maria journey and caregiver privacy boundary.",
+  "summary": "Extended the approved Clinical Glass system across the complete OncoReady experience, added accessible one-time landing reveals and a buyer-oriented SaaS model, removed costly scroll treatments, and completed mobile dock target and fixed-chrome clearance corrections without changing the deterministic Maria journey or caregiver privacy boundary.",
   "files_changed": [
     "docs/design/DESIGN_SYSTEM.md",
     "frontend/playwright.config.ts",
@@ -40,10 +40,13 @@
       "npx playwright test tests/e2e.spec.ts",
       "PLAYWRIGHT_PORT=4176 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
       "node --input-type=module -e '<Playwright mobile dock geometry audit at 320x568, 390x844, and the 768px desktop breakpoint>'",
+      "npx vite build",
+      "PLAYWRIGHT_PORT=4180 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
+      "node --input-type=module -e '<Playwright footer clearance, focus, full-target hit-test, dock geometry, and overflow audit at 320x568, 390x844, and 768x1024>'",
       "python3 scripts/agentctl.py scope check UI-001 frontend",
       "git diff --check"
     ],
-    "notes": "TypeScript completed successfully. The production Vite build passed after the dock correction, transforming 8,481 modules in 3m42s. The focused mobile-dock Playwright regression passed. Direct production-browser measurement confirmed all five visible dock targets are exactly 44x44 CSS px at both 320x568 and 390x844, document scrollWidth equals clientWidth at both widths, bottom/safe-area positioning remains intact, and the dock remains hidden at the 768px desktop breakpoint. Earlier focused Vitest passed 4 files and 14 tests, and the full Playwright suite passed the reveal, SaaS positioning, reduced-motion, all-staff-route, complete Maria journey, and caregiver clinical-data exclusion scenarios."
+    "notes": "TypeScript completed successfully. The latest production Vite build passed after the document-clearance correction, transforming 8,481 modules in 3m40s, and the expanded focused mobile-dock Playwright regression passed. Direct production-browser measurement at 320x568 and 390x844 confirmed: the focused footer motion control ends 74.65625px and 74.265625px above the dock respectively; all six sampled points across the control, including its lower center, hit-test to the button; its 2px solid focus outline with 3px offset is visible; every dock target remains exactly 44x44 CSS px; and document scrollWidth equals clientWidth. At 768x1024 the shared mobile clearance resolves to 0px and the dock remains hidden. Earlier focused Vitest passed 4 files and 14 tests, and the full Playwright suite passed the reveal, SaaS positioning, reduced-motion, all-staff-route, complete Maria journey, and caregiver clinical-data exclusion scenarios."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -52,6 +55,7 @@
     "Clinical Glass tokens now cover public, gateway, patient, staff, caregiver, system, modal, navigation, and mobile-dock surfaces while preserving operational labels and workflow semantics.",
     "Fixed body backgrounds, broad repeated blur, the staff nested vertical scroller, and eager live-map mounting were removed or bounded; the document owns workspace scrolling and the stable map fallback remains available.",
     "Caregiver rendering remains transportation-only, and browser coverage confirms clinical symptom text is absent after the staff resolution flow.",
-    "The mobile Workspace dock now uses explicit 44x44 CSS-pixel interactive targets while retaining compact 16px icons, accessible labels, visible focus styling, safe-area spacing, mobile no-overflow behavior, and the existing desktop breakpoint behavior."
+    "The mobile Workspace dock now uses explicit 44x44 CSS-pixel interactive targets while retaining compact 16px icons, accessible labels, visible focus styling, safe-area spacing, mobile no-overflow behavior, and the existing desktop breakpoint behavior.",
+    "The shared mobile app shell reserves document-end clearance for the fixed dock footprint, viewport offset, focus ring, and safe area; the footer motion control is fully visible and hit-testable above the dock at both required mobile widths."
   ]
 }

@@ -15,6 +15,7 @@
   --lavender: #7768E8;
   --landing-canvas: #F8FAFD;
   --bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --workspace-dock-document-clearance: calc(44px + 2.25rem + env(safe-area-inset-bottom));
 }
 
 [role='button']:focus-visible,
@@ -25,6 +26,16 @@ textarea:focus-visible,
 select:focus-visible {
   outline: 2px solid #4F46E5;
   outline-offset: 3px;
+}
+
+.oncoready-app {
+  padding-bottom: var(--workspace-dock-document-clearance);
+}
+
+@media (min-width: 768px) {
+  .oncoready-app {
+    padding-bottom: 0;
+  }
 }
 
 .landing-page {
