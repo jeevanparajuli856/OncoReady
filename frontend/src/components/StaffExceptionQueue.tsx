@@ -33,7 +33,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
   ] as const;
 
   return (
-    <div className="page-shell space-y-5 pb-8 animate-pop">
+    <div className="page-shell space-y-5 pb-8">
       <div className="card-sticker p-5 sm:p-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-5 border-b-2 border-ink/10">
           <div className="space-y-2">

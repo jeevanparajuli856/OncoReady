@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0",
+  "task_id": "UI-001",
+  "agent": "codex-tester",
+  "status": "COMPLETE",
+  "summary": "Independent targeted testing passes on production commit 768c268: missing and failing IntersectionObserver paths now keep the complete landing visible with final reveal content, a static Continuity Field, and the static ride corridor, while observer- and keyboard-completed reveals remain monotonic across motion-mode changes.",
+  "files_changed": [
+    ".ai/tasks/UI-001/test-report.json"
+  ],
+  "contracts_used": [],
+  "tests": {
+    "passed": true,
+    "commands": [
+      "git diff 34125de..768c268 -- frontend .ai/tasks/UI-001/frontend-report.json",
+      "cd frontend && npx vitest run tests/scroll-reveal.test.tsx tests/continuity-field.test.tsx tests/component.test.tsx -t \"IntersectionObserver|reveals once|keyboard focus|effective reduced motion\" --reporter=verbose",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4189",
+      "cd frontend && node --input-type=module -e '<production Playwright audit: missing and throwing IntersectionObserver, page errors, final reveal states, ContinuityField RAF scheduling, static RideMap corridor, and observer/focus completion across effective-motion toggles>'",
+      "python3 scripts/agentctl.py scope check UI-001 tester"
+    ],
+    "notes": "Reviewed exact production commit 768c268ca3d26a6ace34972d434a12acb439ad49 and its focused diff from tester blocker commit 34125de. The selected Vitest run passed 9/9 executed tests across ScrollReveal, ContinuityField, and the complete App landing; 5 unrelated tests were intentionally skipped by the focused name filter. It proved visible fail-open behavior when IntersectionObserver is missing or its constructor throws, static ContinuityField rendering without requestAnimationFrame, complete landing content, final reveals, and the retained static ride corridor. The fresh production assets built immediately before commit 768c268 were then tested independently in Chromium. With IntersectionObserver undefined and with a throwing constructor, both runs produced zero page errors, 10/10 reveal nodes in visible final state, zero requestAnimationFrame calls, a visible Continuity Field, and the labeled dimensionally stable static corridor. In the normal observer path, patient/staff/caregiver cards remained [revealed, revealed, revealed] after Reduce motion was enabled and disabled; per-variant observe counts remained patient=1, staff=1, caregiver=1, workflow=3, saas=4. A patient card completed by keyboard focus likewise stayed revealed with its observe count fixed at one. The implementation therefore closes both the original replay blocker and the integrated no-observer fallback blocker without changing supported-browser behavior. Prior independent comprehensive evidence remains applicable to unaffected SaaS copy, scroll performance, responsive dock/layout, all workspace routes, the complete Maria journey, caregiver DOM exclusion, reset, and persistence behavior. Human approval of the motion feel is also recorded."
+  },
+  "blockers": [],
+  "notes_for_next_agent": [
+    "The independent TARGETED gate is complete for production revision 768c268: observer fallback, constructor-failure fallback, reveal monotonicity, and static rendering all pass.",
+    "ContinuityField remains static with no animation loop when observer setup is unavailable; RideMap stays on its existing labeled static corridor; supported browsers retain observer-driven optimization.",
+    "Run repository verification against the exact post-report commit, then refresh final review against that verified revision; no additional independent broad suite is required unless production behavior changes."
+  ]
+}

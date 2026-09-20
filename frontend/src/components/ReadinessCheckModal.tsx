@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   X,
   Car,
@@ -9,6 +9,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { cn } from '../lib/cn';
+import { useDialogFocus } from '../lib/useDialogFocus';
 
 interface ReadinessCheckModalProps {
   isOpen: boolean;
@@ -23,6 +24,8 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
   onSubmit,
   defaultAddress,
 }) => {
+  const dialogRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
   const [hasTransportIssue, setHasTransportIssue] = useState<boolean>(true);
   const [transportNotes, setTransportNotes] = useState<string>(
     'Ride cancelled by family member; needs assisted pickup at 7:45 AM'
@@ -34,21 +37,31 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
     'Mild fever 100.4°F and tingling in fingers since yesterday evening'
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorField, setErrorField] = useState<'clinical' | 'pickup' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  useDialogFocus(isOpen, dialogRef, onClose);
+
+  useEffect(() => {
+    if (errorMsg) errorRef.current?.focus();
+  }, [errorMsg]);
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+    setErrorField(null);
 
     if (hasClinicalConcern && !clinicalConcernText.trim()) {
       setErrorMsg('Please enter your symptoms or concerns so the oncology triage nurse can assist you.');
+      setErrorField('clinical');
       return;
     }
 
     if (hasTransportIssue && !pickupAddress.trim()) {
       setErrorMsg('Please confirm your pickup address for medical transport.');
+      setErrorField('pickup');
       return;
     }
 
@@ -73,14 +86,16 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
 
   return (
     <div
-      className="fixed inset-0 z-50 bg-ink/55 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4"
+      className="fixed inset-0 z-50 bg-ink/60 flex items-end sm:items-center justify-center p-0 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="readiness-check-title"
     >
       <form
+        ref={dialogRef}
+        tabIndex={-1}
         onSubmit={handleSubmit}
-        className="bg-cream w-full sm:max-w-3xl sm:rounded-2xl border-t-2 sm:border-2 border-ink shadow-glass-lg overflow-hidden flex flex-col max-h-[96dvh] sm:max-h-[90dvh] animate-slide-up"
+        className="bg-cream w-full sm:max-w-3xl sm:rounded-2xl border-t sm:border border-line shadow-glass-lg overflow-hidden flex flex-col max-h-[96dvh] sm:max-h-[90dvh] animate-slide-up"
       >
         <div className="bg-ink text-white px-5 sm:px-7 py-5 flex items-start justify-between gap-3 shrink-0">
           <div className="min-w-0 space-y-1">
@@ -104,7 +119,13 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
 
         <div className="flex-1 overflow-y-auto px-5 sm:px-7 py-6 space-y-6">
           {errorMsg && (
-            <div className="p-3.5 bg-sun/50 border-2 border-ink rounded-xl text-sm flex items-center gap-2">
+            <div
+              ref={errorRef}
+              id="readiness-error-summary"
+              role="alert"
+              tabIndex={-1}
+              className="p-3.5 bg-sun/20 border border-amber-300 rounded-xl text-sm flex items-center gap-2 focus:outline-none focus:ring-2 focus:ring-accent"
+            >
               <AlertTriangle className="w-4 h-4 shrink-0" strokeWidth={2.5} />
               <span>{errorMsg}</span>
             </div>
@@ -151,6 +172,8 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
                     type="text"
                     value={pickupAddress}
                     onChange={(e) => setPickupAddress(e.target.value)}
+                    aria-invalid={errorField === 'pickup'}
+                    aria-describedby={errorField === 'pickup' ? 'readiness-error-summary' : undefined}
                     className="input-pop text-sm border-2 border-ink"
                     placeholder="Enter pickup address"
                   />
@@ -222,6 +245,8 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
                   rows={4}
                   value={clinicalConcernText}
                   onChange={(e) => setClinicalConcernText(e.target.value)}
+                  aria-invalid={errorField === 'clinical'}
+                  aria-describedby={errorField === 'clinical' ? 'readiness-error-summary' : undefined}
                   className="input-pop text-sm border-2 border-ink min-h-[6.5rem]"
                   placeholder="e.g. Temperature, cold sensitivity, nausea, fatigue..."
                 />

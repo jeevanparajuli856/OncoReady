@@ -1,0 +1,24 @@
+{
+  "schema_version": "1.0",
+  "task_id": "UI-001",
+  "agent": "codex-orchestrator",
+  "status": "APPROVED",
+  "summary": "The exact DESIGN_READY handoff is compatible with UI-001 requirements, frontend-only architecture, low-risk trust boundaries, accessibility and reduced-motion obligations, scroll-performance constraints, task scope, and the established Clinical Glass / Continuity Aurora brand system.",
+  "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
+  "reviewed_design_sha256": "6a88ec5dfa50a31dd31127c94facf0aa0c4b101c3c8184769c11e4a434591734",
+  "checks": {
+    "requirements": "PASS",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "PASS",
+    "performance": "PASS",
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "PASS"
+  },
+  "required_changes": [],
+  "notes_for_frontend": [
+    "Implement this exact approved handoff after syncing the frontend worktree and passing the design gate; changing frontend-design-report.json requires a fresh digest review.",
+    "Keep user-facing product copy confident and final-product oriented; internal claim constraints must not appear as disclaimer panels or prototype language.",
+    "Preserve any unrelated user-owned changes outside the frontend worktree and do not modify backend, database, contracts, task.json, or workflow semantics."
+  ]
+}

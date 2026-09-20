@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { App } from '../src/App';
 
@@ -12,6 +12,31 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     localStorage.clear();
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    ['is unavailable', undefined],
+    ['construction fails', class {
+      constructor() {
+        throw new Error('IntersectionObserver unavailable');
+      }
+    }],
+  ])('keeps the full landing and static fallbacks visible when IntersectionObserver %s', (_label, observerImpl) => {
+    vi.stubGlobal('IntersectionObserver', observerImpl);
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
+    expect(screen.getByText('Treatment-day corridor')).toBeDefined();
+    expect(document.querySelector('.ride-map-boundary svg')).not.toBeNull();
+
+    const reveals = Array.from(document.querySelectorAll('[data-reveal-state]'));
+    expect(reveals.length).toBeGreaterThan(0);
+    expect(reveals.every((node) => node.getAttribute('data-reveal-state') === 'visible')).toBe(true);
+  });
+
   it('renders the OncoReady enterprise landing page and workspace entry', () => {
     render(<App />);
 
@@ -20,9 +45,16 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
     expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Community cancer center/i)).toBeDefined();
-    expect(screen.getByText(/Enterprise cancer center/i)).toBeDefined();
-    expect(screen.getByText(/Multi-facility model/i)).toBeDefined();
+    expect(screen.getByText(/SaaS business model/i)).toBeDefined();
+    expect(screen.getByText(/Cancer centers and health systems/i)).toBeDefined();
+    expect(screen.getByText(/One treatment-readiness workspace/i)).toBeDefined();
+    expect(screen.getByText(/Shaped around the operation/i)).toBeDefined();
+    expect(screen.getByText(/Grow across the care network/i)).toBeDefined();
+
+    const landingCopy = document.body.textContent?.toLowerCase() || '';
+    ['demo', 'prototype', 'preview', 'portfolio', 'training environment'].forEach((term) => {
+      expect(landingCopy).not.toContain(term);
+    });
   });
 
   it('keeps the continuity story available when motion is turned off', () => {
@@ -34,6 +66,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByRole('button', { name: /Motion off/i })).toBeDefined();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
     expect(screen.getAllByRole('button', { name: /Explore the workspace/i }).length).toBeGreaterThan(0);
+    expect(document.querySelectorAll('[data-reveal-state="pending"]')).toHaveLength(0);
   });
 
   it('executes full interactive golden path from landing page to auth modal, dual triage, caregiver privacy, and plan confirmation', async () => {

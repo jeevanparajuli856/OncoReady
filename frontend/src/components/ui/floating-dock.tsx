@@ -66,7 +66,7 @@ const FloatingDockMobile = ({
     <nav
       aria-label="Workspace dock"
       className={cn(
-        'flex w-full max-w-[22rem] md:hidden items-center justify-between gap-1 rounded-2xl border border-white/80 bg-white/75 px-1.5 py-1.5 shadow-glass backdrop-blur-xl',
+        'flex w-full max-w-[22rem] md:hidden items-center justify-between gap-1 rounded-2xl border border-line bg-white/95 px-1.5 py-1.5 shadow-glass',
         className,
       )}
     >
@@ -77,7 +77,7 @@ const FloatingDockMobile = ({
           onClick={item.onClick}
           ariaLabel={item.title}
           className={cn(
-            'flex h-9 w-9 shrink-0 items-center justify-center rounded-xl',
+            'flex h-[44px] w-[44px] shrink-0 items-center justify-center rounded-xl',
             item.active ? 'bg-accent text-white' : 'bg-white/80 text-ink',
           )}
         >
@@ -102,7 +102,7 @@ export const FloatingDockDesktop = ({
       onMouseMove={(e) => mouseX.set(e.pageX)}
       onMouseLeave={() => mouseX.set(Infinity)}
       className={cn(
-        'mx-auto hidden h-16 items-end gap-3 rounded-2xl border border-white/80 bg-white/75 px-4 pb-3 shadow-glass backdrop-blur-xl md:flex',
+        'mx-auto hidden h-16 items-end gap-3 rounded-2xl border border-line bg-white/95 px-4 pb-3 shadow-glass md:flex',
         className,
       )}
     >

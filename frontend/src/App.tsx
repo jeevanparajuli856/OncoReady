@@ -113,7 +113,7 @@ export const App: React.FC = () => {
   });
 
   return (
-    <div className={`min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
+    <div className={`oncoready-app min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
       
       {/* Universal Clinical & Commercial Header */}
       <Header
@@ -161,6 +161,7 @@ export const App: React.FC = () => {
             {isPatientResolutionOpen ? (
               <PatientResolutionView
                 state={state}
+                reducedMotion={reducedMotion}
                 onAcknowledgePlan={handleAcknowledgePlan}
                 onBackToHome={() => setIsPatientResolutionOpen(false)}
               />
@@ -299,7 +300,7 @@ export const App: React.FC = () => {
               aria-label="Go to OncoReady home"
             >
               <Logo size={36} />
-              <span className="rounded-full border border-line bg-white/80 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">Training environment</span>
+              <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">Treatment readiness platform</span>
             </button>
             <button
               onClick={() => setUserReducedMotion(!userReducedMotion)}
