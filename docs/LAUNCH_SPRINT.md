@@ -122,6 +122,15 @@ Railway PostgreSQL
 - Railway PostgreSQL contains controlled synthetic data only. Git-tracked migrations plus deterministic seed/reset remain recovery authority.
 - Server configuration fixes the scenario, phone, pickup, destination, provider, origins, rate limits, request-size limits, and external-action kill switches.
 - Reset restores the known scenario but never sends an SMS, places a call, or creates a transport request.
+- Until the funded-provider gate, all three external switches remain false. API commands may create inspectable workflow intent, but the UI must show the actual disabled/pending/recovery state and must not claim provider acceptance, delivery, answer, or completion.
+
+### Provider activation order
+
+1. Complete and verify the application with SMS and voice disabled.
+2. Deploy Railway `web`, `api`, and private `Postgres`; apply migrations and establish stable public web/API origins.
+3. Upgrade Twilio, acquire one SMS-and-voice-capable number, and retain one consented allowlisted recipient.
+4. Configure the Twilio Messaging Service and callbacks, then import the number into ElevenLabs and configure HMAC-authenticated post-call webhooks.
+5. Enable and verify SMS first, then voice. Keep the global external-action switch limited to the controlled rehearsal window.
 
 ## 6. Public API and event interface
 
@@ -220,13 +229,11 @@ The database specialist works on the task feature branch. Backend and frontend u
 | H2–H6 | Event store, projections, seed/reset, scheduled work, and outbox | Long-running TypeScript API foundation plus scenario, readiness, and work-item services | Remove public record; implement pricing and access gateway | Contract and design gates approved |
 | H6–H9 | Commit migration foundation; projection and constraint tests | Generated boundary models, command guards, scheduler drain, and contract/domain tests | Route/deep-link shell, generated client, and API state adapter | Build, migration reset, generated-client, and contract checks pass |
 | H9–H13 | Communication/transport persistence, receipts, and idempotency | Twilio, ElevenLabs, CareLink commands, signatures, and callbacks | Patient, staff, caregiver, and transport role projections | Maria flow works against persisted deterministic providers |
-| H13–H16 | Projection consistency, failure fixtures, and reset proof | Live callback preflight, retries, outbox recovery, and network-degraded behavior | CareLink lifecycle, channel history, loading/error, and failure/backup UI | Live SMS/voice proof passes or remains truthfully blocked; Day 1 checkpoint is committed |
+| H13–H16 | Projection consistency, failure fixtures, and reset proof | Callback/signature preflight, retries, outbox recovery, and network-degraded behavior | CareLink lifecycle plus truthful SMS/voice disabled, queued, pending, failure, unknown, reconciled, and completed presentation | Inactive-provider journey is complete; live proof is an explicit later activation gate |
 
-### Human credential checklist — due by H2
+### Human deployment checklist — Railway due before provider activation
 
 - Railway project with private PostgreSQL, `api`, and `web` services;
-- Twilio account, Messaging Service, SMS-capable number, auth token, and allowlisted E.164 phone;
-- ElevenLabs key, bounded agent, linked Twilio number, and webhook secret;
 - public HTTPS callback base URL;
 - stable Railway public domains for `api` and `web`, with API sleep disabled and one replica;
 - backend `DATABASE_URL` reference to `${{Postgres.DATABASE_URL}}` and frontend `VITE_API_BASE_URL` pointing to the API public domain;
@@ -234,6 +241,12 @@ The database specialist works on the task feature branch. Backend and frontend u
 - `TRANSPORT_PROVIDER=partner_dispatch`;
 - fixed pickup/destination, scenario token, CORS origins, and kill-switch configuration;
 - approved nonclinical SMS/voice script and test-recipient consent.
+
+### Human provider checklist — deliberately deferred until Railway is stable
+
+- upgraded Twilio account, one SMS-and-voice-capable number, Messaging Service, restricted API credentials, and allowlisted E.164 recipient;
+- ElevenLabs key, bounded agent, imported Twilio number, `oncoready_outcome` data-collection field, and webhook secret;
+- all external switches remain false until callback validation and duplicate/replay tests pass.
 
 Credentials must never be pasted into chat, committed to Git, placed in frontend variables, printed in logs, or captured in screenshots/reports.
 
@@ -289,7 +302,7 @@ Install the Playwright Chromium runtime before the independent browser test; una
 2. Pricing presents `$18,000/year`, `$1,500/month billed annually`, and custom pricing for larger programs from one configuration source.
 3. Google opens patient, Microsoft caregiver, Apple staff, and email transportation without a credential prompt or network identity request.
 4. Maria's T−3 response creates separate clinical, transportation, and callback work with accountable owners and deadlines.
-5. Twilio and ElevenLabs states shown as live are backed by authenticated callbacks.
+5. Before provider activation, Twilio and ElevenLabs cards truthfully show inactive, queued, pending, failed, unknown, or recovery state. After activation, delivered/completed states appear only from authenticated callbacks.
 6. CareLink records eligibility, accommodations, outbound/return plans, offer, assignment, failure, backup, notification, and acknowledgment.
 7. Ana receives only patient-authorized transportation logistics; clinical text and nurse details are absent from visual, accessibility, search, export, and outbound output.
 8. Maria's acknowledgment closes the transportation dependency; assignment alone does not.
