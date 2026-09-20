@@ -34,6 +34,13 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
     if (role === "caregiver") {
       return minimizeCaregiverProjection(projection);
     }
+    if(role==="patient"){
+      const current=await this.pool.query<{transport_request_id:string;aggregate_version:number}>("select transport_request_id,aggregate_version from public.transport_projections where scenario_id=$1 order by updated_at desc,created_at desc,transport_request_id desc limit 1",[scenarioId]);
+      const transport=projection.transport as Record<string,unknown>|undefined;
+      if(!transport||!current.rows[0])throw new AppError(503,"dependency_unavailable","Patient transport command identity is unavailable.",true);
+      transport.transport_request_id=current.rows[0].transport_request_id;
+      transport.aggregate_version=current.rows[0].aggregate_version;
+    }
     const reconciliation = (status?: string | null, attemptAt?: string | null, reference?: string | null) => {
       if (status === "outcome_unknown") return {state:"reconciliation_required",last_attempt_at:attemptAt??null,attempt_reference:reference??null,provenance:"none",permitted_recovery:"reconcile_provider"};
       if (status === "reconciled") return {state:"reconciled",last_attempt_at:attemptAt??null,attempt_reference:reference??null,provenance:"provider_lookup",permitted_recovery:"none"};

@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-backend",
   "status": "COMPLETE",
-  "summary": "Implemented the governed TypeScript Railway backend and closed the security review blockers: scheduled cadence cannot authorize provider work, dispatch requires an operator communication record, public PostgreSQL requires TLS, and manual-tick credentials fail closed unless strong.",
+  "summary": "Implemented the governed TypeScript Railway backend, including the current PatientTransportSummary command identity/version across memory and PostgreSQL projection paths so Maria can perform a guarded acknowledgment without widening caregiver data.",
   "files_changed": [
     "package.json",
     "package-lock.json",
@@ -44,12 +44,15 @@
   "tests": {
     "passed": true,
     "commands": [
+      "npx vitest run tests/server/domain.test.ts tests/server/repository.test.ts tests/server/security.test.ts tests/server/security-remediation.test.ts",
+      "npm run build:server",
+      "python3 scripts/agentctl.py scope check LAUNCH-001 backend",
       "npm run build:server && npm run test:server && npm run test:security",
       "python3 scripts/validate-contracts.py",
       "python3 -m pytest -q tests/database",
       "Scratch PostgreSQL 17: run npm run migrate:server twice against a fresh database and inspect public.oncoready_schema_migrations"
     ],
-    "notes": "The server build/typecheck passed; 48 focused server, contract, and FHIR tests passed, including an 18-test focused security/webhook subset; all governed contracts validated; and six vendor-neutral migration tests passed. A fresh PostgreSQL 17 rehearsal applied both migrations once, skipped both on the second run, and recorded 64-character SHA-256 checksums. Regression coverage proves reset-seeded cadence never materializes provider outbox work, unauthorized legacy outbox rows never reach dispatch, authorized rows reference their persisted communication.queued event, weak CRON_SECRET values fail startup/manual tick, and public database URLs reject non-TLS sslmode values. Existing coverage includes migration locking/drift/rollback, public-demo policy, operator authorization, scheduler non-overlap, idempotency/version guards, caregiver minimization, signed callbacks, deduplication, and transcript non-persistence."
+    "notes": "The final-review repair passed build/typecheck plus 36 targeted domain, repository, security, and security-remediation tests. New coverage proves PatientTransportSummary exposes the current transport_request_id and aggregate_version after seed/creation/transitions, PostgreSQL reads reconcile them from the relational transport projection, patient acknowledgment rejects stale versions, wrong state, and disallowed claimed roles, a valid patient acknowledgment updates all four role projections, caregiver minimization excludes command identity/version, and completion still requires picked_up plus nonblank closure evidence. Earlier integrated evidence remains 48 focused server/contract/FHIR tests, 18 security/webhook tests, validated contracts, and six vendor-neutral migration tests."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -63,6 +66,8 @@
     "Public PostgreSQL hosts require sslmode=require, verify-ca, or verify-full. Localhost and Railway private *.railway.internal connections remain supported without a TLS query flag.",
     "CRON_SECRET is validated during startup and manual-tick preflight as at least 32 UTF-8 bytes with at least 128 estimated bits of character-distribution entropy; weak or repetitive values fail with dependency_unavailable.",
     "Readiness is patient/web-only. Work-item and transport commands enforce resource existence, supported resource type, action, current-state, and claimed-role policies. CareLink request creation accepts only work_item_id plus command context and derives the fixed plan from server-owned finals state.",
+    "Patient transport summaries carry the current transport_request_id and aggregate_version from seed through CareLink creation and transitions. PostgreSQL patient reads reconcile identity/version from transport_projections; caregiver minimization intentionally excludes both fields.",
+    "Maria may acknowledge only the current patient_notified request using actor_role=patient and the current aggregate version. The transition updates coordinator, staff, patient, and caregiver projections while preserving the picked_up plus nonblank closure-evidence completion guard.",
     "Provider intent is committed before network I/O. Unknown network outcomes become outcome_unknown and are excluded from blind re-claim; signed callbacks reconcile stored attempts by provider conversation/message reference.",
     "ElevenLabs callbacks accept the official signed post_call_transcription and call_initiation_failure envelopes, derive scenario/correlation only from stored provider attempts, return HTTP 200, and persist neither transcript nor audio.",
     "Keep EXTERNAL_ACTIONS_ENABLED, TWILIO_SMS_ENABLED, and ELEVENLABS_VOICE_ENABLED false until Railway variables, fixed recipient, exact public origin, and signed callback preflight pass. No live provider action was performed by this worker."

@@ -31,7 +31,15 @@ describe("workflow domain",()=>{
   it("does not close transport before complete plan and pickup evidence",()=>{
     const command={...context,actor_role:"transport_coordinator" as const,action:"complete" as const,closure_evidence:"Maria arrived safely."};
     expect(()=>transportDraft(command,"44444444-4444-4444-8444-444444444444","driver_assigned",3,false)).toThrow(AppError);
+    expect(()=>transportDraft({...command,closure_evidence:"   "},"44444444-4444-4444-8444-444444444444","picked_up",3,true)).toThrow(AppError);
     expect(transportDraft(command,"44444444-4444-4444-8444-444444444444","picked_up",3,true).payload.to_status).toBe("completed");
+  });
+
+  it("allows Maria's patient role to acknowledge only from patient_notified",()=>{
+    const patient={...context,actor_role:"patient" as const,action:"acknowledge_patient" as const};
+    expect(transportDraft(patient,"44444444-4444-4444-8444-444444444444","patient_notified",8,false).payload.to_status).toBe("patient_acknowledged");
+    expect(()=>transportDraft(patient,"44444444-4444-4444-8444-444444444444","driver_assigned",8,false)).toThrow(AppError);
+    expect(()=>transportDraft({...patient,actor_role:"transport_coordinator" as const},"44444444-4444-4444-8444-444444444444","patient_notified",8,false)).toThrow(AppError);
   });
 
   it("enforces the action-specific transport role matrix",()=>{

@@ -167,7 +167,7 @@ export function createSeedProjections(scenarioId: string): Record<ActorRole, Rec
   const window = {starts_at: "2026-10-15T13:15:00.000Z", ends_at: "2026-10-15T13:45:00.000Z"};
   const treatment = {treatment_id: "22222222-2222-4222-8222-222222222222", starts_at: starts, arrival_window: window, location_display_name: "Benson Cancer Center", transport_notice_cutoff: "2026-10-12T22:00:00.000Z"};
   const reconciliation = {state: "not_required", last_attempt_at: null, attempt_reference: null, provenance: "none", permitted_recovery: "none"};
-  const transport = {status: "need_detected", provider_display_name: "CareLink Partner Dispatch", plan_version: 1, acknowledgment_required: true};
+  const transport = {transport_request_id:"44444444-4444-4444-8444-444444444444",aggregate_version:0,status: "need_detected", provider_display_name: "CareLink Partner Dispatch", plan_version: 1, acknowledgment_required: true};
   const base = {scenario_id: scenarioId, scenario_version: 0, as_of: "2026-10-12T14:00:00.000Z", treatment, readiness_status: "not_started"};
   return {
     patient: {...base, role: "patient", patient: {patient_id: "33333333-3333-4333-8333-333333333333", display_name: "Maria Santos"}, blockers: [], next_action: "Complete the T-3 readiness check-in.", communications: [], transport},
