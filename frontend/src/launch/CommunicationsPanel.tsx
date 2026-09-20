@@ -196,7 +196,7 @@ export const CommunicationsPanel: React.FC<{
       <ShieldCheck aria-hidden="true" />
       <div>
         <strong>Rehearsal-safe provider boundary</strong>
-        <p>Provider controls stay unavailable here until Railway deployment, allowlists, callback verification, and a controlled live test are complete. API evidence—not button state—determines every status shown below.</p>
+        <p>Provider initiation controls are intentionally unavailable in this public workspace. Operators may activate providers only after Railway deployment, allowlists, callback verification, and a controlled live test are complete. API evidence—not button state—determines every status shown below. A disabled or provider-unavailable dependency stays unresolved; it never becomes queued, delivered, answered, or completed.</p>
       </div>
     </div>
     <div className="launch-communication-grid">
