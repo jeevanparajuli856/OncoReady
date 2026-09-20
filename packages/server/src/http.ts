@@ -35,6 +35,14 @@ async function rawBody(request: Request, limit: number): Promise<string> {
   return body;
 }
 
+function parseJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw new AppError(400, "invalid_request", "Request body must be valid JSON.");
+  }
+}
+
 function callbackEvent(args:{scenarioId:string;aggregateId:string;version:number;eventType:string;payload:Record<string,unknown>;provenance:"twilio_callback"|"elevenlabs_callback";correlationId?:string;occurredAt?:string}):WorkflowEvent{
   const now=args.occurredAt??new Date().toISOString();
   return {event_id:randomUUID(),schema_version:"1.0",scenario_id:args.scenarioId,aggregate_type:"communication",aggregate_id:args.aggregateId,aggregate_version:args.version,event_type:args.eventType,payload:args.payload,occurred_at:now,recorded_at:new Date().toISOString(),actor:{role:"provider_callback",actor_id:args.provenance==="twilio_callback"?"twilio":"elevenlabs"},provenance:args.provenance,correlation_id:args.correlationId??randomUUID(),causation_id:null,idempotency_key:null};
@@ -60,7 +68,15 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
       const cors=origin?{"access-control-allow-origin":origin,"vary":"Origin"}:{};
       if(request.method==="OPTIONS") return new Response(null,{status:204,headers:{...cors,"access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"Content-Type,X-OncoReady-Scenario-Token,Authorization,X-Twilio-Signature,ElevenLabs-Signature"}});
 
+      if(path==="/health"){
+        if(request.method!=="GET") throw new AppError(404,"not_found","Route not found.");
+        assertRuntimeConfig(config);
+        await repository.healthCheck();
+        return json({status:"ok"},200,cors);
+      }
+
       if(path.startsWith("/api/v1/callbacks/twilio/")){
+        if(request.method!=="POST") throw new AppError(404,"not_found","Route not found.");
         const raw=await rawBody(request,32*1024); const params=validateTwilioSignature(config,`${path}${url.search}`,raw,request.headers.get("x-twilio-signature"));
         const value=Object.fromEntries(params.entries());
         if(path.endsWith("/inbound-message")){
@@ -76,19 +92,29 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
       }
 
       if(path.startsWith("/api/v1/callbacks/elevenlabs/")){
+        if(request.method!=="POST") throw new AppError(404,"not_found","Route not found.");
         const raw=await rawBody(request,256*1024); validateElevenLabsSignature(config.elevenLabs.webhookSecret,raw,request.headers.get("elevenlabs-signature"));
-        const parsed=JSON.parse(raw) as unknown;
+        const parsed=parseJson(raw);
         if(path.endsWith("/post-call")){
-          const input=parse(elevenLabsPostCall,parsed); const action=await repository.findProviderAction(input.call_id); if(!action) throw new AppError(404,"not_found","Provider action was not found.");
-          if(action.scenarioId!==input.scenario_id||action.correlationId!==input.correlation_id)throw new AppError(403,"forbidden_action","Voice callback does not match the governed provider action.");
+          const input=parse(elevenLabsPostCall,parsed);
+          if(!config.elevenLabs.agentId||input.data.agent_id!==config.elevenLabs.agentId)throw new AppError(403,"forbidden_action","Voice callback agent is not allowlisted.");
+          const action=await repository.findProviderAction(input.data.conversation_id); if(!action||action.channel!=="voice") throw new AppError(404,"not_found","Provider action was not found.");
           const map={ready:"ready",ride_help:"ride_help",scheduling_help:"scheduling_help",human_callback:"call_me",unsupported_or_uncertain:"unstructured"} as const;
-          const event=callbackEvent({scenarioId:input.scenario_id,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.response_recorded",payload:{communication_id:action.aggregateId,channel:"voice",response_kind:map[input.outcome],verbatim_text:null},provenance:"elevenlabs_callback",correlationId:input.correlation_id,occurredAt:input.occurred_at});
-          await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,providerReference:input.call_id,scenarioId:input.scenario_id,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
+          const collected=input.data.analysis.data_collection_results.oncoready_outcome?.value??"unsupported_or_uncertain";
+          const occurredAt=new Date(input.event_timestamp*1000).toISOString();
+          const event=callbackEvent({scenarioId:action.scenarioId,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.response_recorded",payload:{communication_id:action.aggregateId,channel:"voice",response_kind:map[collected],verbatim_text:null},provenance:"elevenlabs_callback",correlationId:action.correlationId,occurredAt});
+          const providerEventId=`${input.type}:${input.data.conversation_id}:${input.event_timestamp}`;
+          await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId,providerReference:input.data.conversation_id,scenarioId:action.scenarioId,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:200,headers:cors});
         }
-        const input=parse(elevenLabsFailure,parsed); const action=await repository.findProviderAction(input.call_id); if(!action) throw new AppError(404,"not_found","Provider action was not found.");
-        if(action.scenarioId!==input.scenario_id||action.correlationId!==input.correlation_id)throw new AppError(403,"forbidden_action","Voice callback does not match the governed provider action.");
-        const event=callbackEvent({scenarioId:input.scenario_id,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.status_changed",payload:{communication_id:action.aggregateId,channel:"voice",provider:"elevenlabs_twilio",status:"failed",provider_reference:input.call_id,failure_code:input.failure_code},provenance:"elevenlabs_callback",correlationId:input.correlation_id,occurredAt:input.occurred_at});
-        await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,providerReference:input.call_id,scenarioId:input.scenario_id,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
+        if(!path.endsWith("/failure")) throw new AppError(404,"not_found","Route not found.");
+        const input=parse(elevenLabsFailure,parsed);
+        if(!config.elevenLabs.agentId||input.data.agent_id!==config.elevenLabs.agentId)throw new AppError(403,"forbidden_action","Voice callback agent is not allowlisted.");
+        const action=await repository.findProviderAction(input.data.conversation_id); if(!action||action.channel!=="voice") throw new AppError(404,"not_found","Provider action was not found.");
+        const status=input.data.failure_reason==="no-answer"?"no_answer":"failed";
+        const occurredAt=new Date(input.event_timestamp*1000).toISOString();
+        const event=callbackEvent({scenarioId:action.scenarioId,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.status_changed",payload:{communication_id:action.aggregateId,channel:"voice",provider:"elevenlabs_twilio",status,provider_reference:input.data.conversation_id,failure_code:input.data.failure_reason},provenance:"elevenlabs_callback",correlationId:action.correlationId,occurredAt});
+        const providerEventId=`${input.type}:${input.data.conversation_id}:${input.event_timestamp}`;
+        await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId,providerReference:input.data.conversation_id,scenarioId:action.scenarioId,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:200,headers:cors});
       }
 
       if(path==="/api/v1/operations/tick"){
@@ -101,7 +127,7 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
 
       assertRuntimeConfig(config);
       if(!secureEqual(request.headers.get("x-oncoready-scenario-token"),config.scenarioToken)) throw new AppError(401,"unauthorized","Scenario credential is invalid.");
-      const body=async()=>{try{return JSON.parse(await rawBody(request,32*1024)) as unknown;}catch(error){if(error instanceof AppError)throw error;throw new AppError(400,"invalid_request","Request body must be valid JSON.");}};
+      const body=async()=>parseJson(await rawBody(request,32*1024));
       const governed=<T extends {scenario_id:string}>(command:T):T=>{if(command.scenario_id!==FINALS_SCENARIO_ID)throw new AppError(403,"forbidden_action","Only the controlled finals scenario is available.");return command;};
       if(request.method==="GET"&&path==="/api/v1/scenarios/finals") return json(await app.projection(FINALS_SCENARIO_ID,parse(role,url.searchParams.get("role"))),200,cors);
       if(request.method==="POST"&&path==="/api/v1/scenarios/finals/reset") return json(await app.reset(governed(parse(resetCommand,await body()))),200,cors);

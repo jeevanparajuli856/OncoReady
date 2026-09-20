@@ -107,7 +107,7 @@ export class WorkflowApplication {
       const version = 1;
       const event = eventFromDraft(command, {aggregate_type: "communication", aggregate_id: communicationId, aggregate_version: 1, event_type: "communication.queued", payload: {communication_id: communicationId, channel, purpose: command.purpose, destination_alias: command.destination_alias}}, actor(command.actor_role), "web", randomUUID());
       const projections=unchangedRoleProjections(snapshot,currentScenarioVersion(snapshot));projections.staff.timeline=[...((projections.staff.timeline as unknown[])??[]),event];
-      return {aggregateVersion: version, events: [event], projections, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, purpose: command.purpose}}]};
+      return {aggregateVersion: version, events: [event], projections, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, correlation_id: event.correlation_id, purpose: command.purpose}}]};
     });
   }
 

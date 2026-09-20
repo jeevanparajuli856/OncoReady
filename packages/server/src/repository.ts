@@ -39,6 +39,8 @@ export interface WebhookWrite {
 }
 
 export interface WorkflowRepository {
+  healthCheck(): Promise<void>;
+  close(): Promise<void>;
   getProjection(scenarioId: string, role: ActorRole): Promise<Record<string, unknown>>;
   executeCommand(input: ExecuteCommandInput, decide: (snapshot: CommandSnapshot) => CommandDecision): Promise<CommandReceipt>;
   findProviderAction(providerReference: string): Promise<{scenarioId: string; aggregateId: string; aggregateVersion: number; correlationId: string; channel: "sms" | "voice"} | null>;
@@ -80,6 +82,9 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
   private readonly webhookIds = new Set<string>();
 
   constructor(private readonly projections: Record<ActorRole, Record<string, unknown>>) {}
+
+  async healthCheck(): Promise<void> {}
+  async close(): Promise<void> {}
 
   async getProjection(_scenarioId: string, role: ActorRole): Promise<Record<string, unknown>> {
     const projection=structuredClone(this.projections[role]);return role==="caregiver"?minimizeCaregiverProjection(projection):projection;

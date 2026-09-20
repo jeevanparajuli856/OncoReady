@@ -66,15 +66,36 @@ export const communicationCommand = commandContext.extend({
 
 export const twilioInbound = z.object({MessageSid: z.string().min(1).max(64), From: z.string().min(3).max(32), To: z.string().min(3).max(32), Body: z.string().max(2000)}).passthrough();
 export const twilioStatus = z.object({MessageSid: z.string().min(1).max(64), MessageStatus: z.enum(["queued", "sent", "delivered", "undelivered", "failed"]), ErrorCode: z.string().max(32).nullable().optional()}).passthrough();
+const elevenLabsOutcome = z.object({
+  data_collection_id: z.literal("oncoready_outcome"),
+  value: z.enum(["ready", "ride_help", "scheduling_help", "human_callback", "unsupported_or_uncertain"]),
+  rationale: z.string().max(2000).nullable().optional(),
+}).passthrough();
 export const elevenLabsPostCall = z.object({
-  event_id: z.string().min(1).max(255), call_id: z.string().min(1).max(255), occurred_at: z.string().datetime(),
-  status: z.literal("completed"), outcome: z.enum(["ready", "ride_help", "scheduling_help", "human_callback", "unsupported_or_uncertain"]),
-  scenario_id: uuid, correlation_id: uuid,
-}).strict();
+  type: z.literal("post_call_transcription"),
+  event_timestamp: z.number().int().nonnegative(),
+  data: z.object({
+    agent_id: z.string().min(1).max(255),
+    conversation_id: z.string().min(1).max(255),
+    status: z.string().min(1).max(64),
+    analysis: z.object({
+      data_collection_results: z.object({oncoready_outcome: elevenLabsOutcome.optional()}).passthrough(),
+    }).passthrough(),
+  }).passthrough(),
+}).passthrough();
 export const elevenLabsFailure = z.object({
-  event_id: z.string().min(1).max(255), call_id: z.string().min(1).max(255), occurred_at: z.string().datetime(),
-  status: z.literal("failed"), failure_code: z.string().max(120), scenario_id: uuid, correlation_id: uuid,
-}).strict();
+  type: z.literal("call_initiation_failure"),
+  event_timestamp: z.number().int().nonnegative(),
+  data: z.object({
+    agent_id: z.string().min(1).max(255),
+    conversation_id: z.string().min(1).max(255),
+    failure_reason: z.enum(["busy", "no-answer", "unknown"]),
+    metadata: z.object({
+      type: z.enum(["twilio", "sip"]),
+      body: z.record(z.unknown()),
+    }).passthrough(),
+  }).passthrough(),
+}).passthrough();
 
 export type ResetCommand = z.infer<typeof resetCommand>;
 export type ReadinessCommand = z.infer<typeof readinessCommand>;

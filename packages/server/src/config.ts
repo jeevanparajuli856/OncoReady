@@ -3,11 +3,18 @@ import {AppError} from "./types.js";
 const enabled = (value: string | undefined): boolean => value === "true";
 
 export interface ServerConfig {
+  host: string;
+  port: number;
   databaseUrl: string;
   scenarioToken: string;
   allowedOrigins: string[];
   publicOrigin: string;
   cronSecret: string;
+  scheduler: {
+    enabled: boolean;
+    pollIntervalMs: number;
+    batchSize: number;
+  };
   externalActionsEnabled: boolean;
   allowlistedPhone?: string;
   twilio: {
@@ -27,7 +34,12 @@ export interface ServerConfig {
 }
 
 export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
+  const port = integerInRange(env.PORT, 3000, 1, 65_535, "PORT");
+  const pollIntervalMs = integerInRange(env.SCHEDULER_POLL_INTERVAL_MS, 15_000, 1_000, 300_000, "SCHEDULER_POLL_INTERVAL_MS");
+  const batchSize = integerInRange(env.SCHEDULER_BATCH_SIZE, 25, 1, 100, "SCHEDULER_BATCH_SIZE");
   return {
+    host: "0.0.0.0",
+    port,
     databaseUrl: env.DATABASE_URL ?? "",
     scenarioToken: env.ONCOREADY_SCENARIO_TOKEN ?? "",
     allowedOrigins: (env.ONCOREADY_ALLOWED_ORIGINS ?? "http://localhost:5173")
@@ -36,6 +48,11 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
       .filter(Boolean),
     publicOrigin: (env.ONCOREADY_PUBLIC_ORIGIN ?? "http://localhost:3000").replace(/\/$/, ""),
     cronSecret: env.CRON_SECRET ?? "",
+    scheduler: {
+      enabled: env.SCHEDULER_ENABLED === undefined ? true : enabled(env.SCHEDULER_ENABLED),
+      pollIntervalMs,
+      batchSize,
+    },
     externalActionsEnabled: enabled(env.EXTERNAL_ACTIONS_ENABLED),
     ...(env.FINALS_ALLOWLISTED_PHONE ? {allowlistedPhone: env.FINALS_ALLOWLISTED_PHONE} : {}),
     twilio: {
@@ -55,6 +72,14 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
   };
 }
 
+function integerInRange(value: string | undefined, fallback: number, minimum: number, maximum: number, name: string): number {
+  const parsed = value === undefined || value === "" ? fallback : Number(value);
+  if (!Number.isInteger(parsed) || parsed < minimum || parsed > maximum) {
+    throw new AppError(503, "dependency_unavailable", `${name} must be an integer from ${minimum} through ${maximum}.`, true);
+  }
+  return parsed;
+}
+
 export function assertRuntimeConfig(config: ServerConfig): void {
   if (!config.databaseUrl || !config.scenarioToken) {
     throw new AppError(503, "dependency_unavailable", "Server persistence or scenario control is not configured.", true);
@@ -62,7 +87,8 @@ export function assertRuntimeConfig(config: ServerConfig): void {
   let databaseUrl:URL;
   try{databaseUrl=new URL(config.databaseUrl);}catch{throw new AppError(503,"dependency_unavailable","Database connection configuration is invalid.",true);}
   if(!["postgres:","postgresql:"].includes(databaseUrl.protocol))throw new AppError(503,"dependency_unavailable","Database connection must use PostgreSQL.",true);
-  if(!["localhost","127.0.0.1","::1"].includes(databaseUrl.hostname)&&!databaseUrl.searchParams.get("sslmode"))throw new AppError(503,"dependency_unavailable","Remote database connection must explicitly require TLS.",true);
+  const privateRailwayHost = databaseUrl.hostname.endsWith(".railway.internal");
+  if(!["localhost","127.0.0.1","::1","[::1]"].includes(databaseUrl.hostname)&&!privateRailwayHost&&!databaseUrl.searchParams.get("sslmode"))throw new AppError(503,"dependency_unavailable","Public database connections must explicitly require TLS.",true);
 }
 
 export function assertProviderConfig(config: ServerConfig, provider: "sms" | "voice"): void {

@@ -4,10 +4,12 @@
   "type": "module",
   "engines": {"node": ">=20"},
   "scripts": {
-    "build:server": "tsc -p packages/server/tsconfig.json --noEmit",
+    "typecheck:server": "tsc -p packages/server/tsconfig.json --noEmit",
+    "build:server": "npm run typecheck:server && tsc -p packages/server/tsconfig.build.json",
+    "start:server": "node dist/server/server.js",
     "test:server": "vitest run tests/server tests/contracts tests/fhir",
     "test:security": "vitest run tests/server/security.test.ts tests/server/webhooks.test.ts",
-    "test": "npm run build:server && npm run test:server"
+    "test": "npm run typecheck:server && npm run test:server"
   },
   "dependencies": {
     "pg": "^8.13.1",
