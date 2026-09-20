@@ -1,10 +1,12 @@
 # OncoReady Nexus DevDay Winning Product Plan
 
-**Status:** Proposed for human review  
-**Planning branch:** `feature/PLAN-001-launch-roadmap`  
+**Status:** Approved and reconciled into governed task `LAUNCH-001`
+
+**Planning history:** drafted on `feature/PLAN-001-launch-roadmap`; governed execution continues on `feature/LAUNCH-001-finals-treatment-continuity-launch`
+
 **Primary inputs:** `ONCOREADY_WINNING_STRATEGY.md` and [`TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md)
 **Approved sprint handoff:** [`LAUNCH_SPRINT.md`](./LAUNCH_SPRINT.md) defines the two-day execution order, agent ownership, contract authority, verification gates, and Day 3 freeze.
-**Implementation state:** No production code is authorized by this document. After approval, the orchestrator must reconcile the authoritative project/architecture documents and create the individual feature tasks below.
+**Implementation state:** Source-of-truth reconciliation and governed contract preparation are authorized. Production code begins only after `LAUNCH-001` passes `BUILD_READY`, is committed, advances to `IMPLEMENTATION`, and completes its required frontend design gate.
 
 ## 1. Mission
 
@@ -174,7 +176,7 @@ The pilot price is an initial market-positioning hypothesis for a small infusion
 ### Recommended stack
 
 - Keep React + TypeScript + Vite for the frontend.
-- Add one FastAPI service for workflow commands, projections, vendor adapters/webhooks, FHIR generation, and later LightGBM inference.
+- Deploy the existing React/Vite frontend and TypeScript Vercel Node.js Functions as one Vercel project for workflow commands, projections, vendor adapters/webhooks, FHIR generation, and exported LightGBM inference.
 - Add Supabase PostgreSQL as persistence only; real identity/authentication remains outside the finals build.
 - Use Git-tracked SQL migrations under `supabase/migrations`.
 - Use an append-only workflow event table with current-state projections and an outbox/idempotency table.
@@ -182,18 +184,21 @@ The pilot price is an initial market-positioning hypothesis for a small infusion
 - Do not add Redis, Kafka, microservices, or a general-purpose queue unless measured behavior later proves they are required.
 
 ```text
-React role workspaces
+React/Vite role workspaces
         │
         ▼
-FastAPI contract boundary
+Generated OpenAPI client
         │
+        ▼
+TypeScript Vercel Node.js Functions
         ├── deterministic timeline, routing, SLA, and transport policies
+        ├── authenticated Cron tick + bounded scheduled/outbox drain
         ├── Twilio messaging adapter + signed callbacks
         ├── ElevenLabs/Twilio voice adapter + signed callbacks
         ├── custom Partner Dispatch portal + normalized transport events
         ├── disabled future-adapter registry for Uber Health and Lyft Concierge
         ├── metrics and FHIR projection
-        └── calibrated LightGBM inference adapter (final slice)
+        └── calibrated exported LightGBM inference adapter (final slice)
         │
         ▼
 PostgreSQL append-only events + projections + outbox/idempotency
@@ -211,60 +216,58 @@ Because the branded access page is not real authentication, the controlled final
 - test-phone allowlist;
 - configured `partner_dispatch` enforcement; Uber Health and Lyft Concierge adapters remain disabled and have no finals credentials;
 - vendor-action kill switches;
+- Vercel Pro or equivalent per-minute Cron availability; Hobby's daily schedule is insufficient for the finals scheduler;
+- durable scheduled/outbox rows are committed before delivery; consequential provider delivery completes inside the bounded authenticated tick rather than post-response background work;
 - secrets stored server-side and outside Git;
 - no arbitrary phone number or ride destination accepted from the public browser.
 
-## 6. Dependency-Ordered Feature Roadmap
+## 6. Dependency-Ordered LAUNCH-001 Milestones
 
-| Order | Task ID | Vertical slice | Winning-strategy coverage | Depends on |
+The following IDs are capability milestones inside the single governed `LAUNCH-001` vertical slice. They are not separate control-plane tasks and do not create competing contracts or lifecycle state.
+
+| Order | Milestone | Vertical slice | Winning-strategy coverage | Depends on |
 |---:|---|---|---|---|
-| 0 | PLAN-001 | Reconcile product and architecture source of truth | Enables all | Human approval of this roadmap |
-| 1 | LAND-002 | Public launch page, access gateway, and pricing | M9 truth/safety | PLAN-001 |
-| 2 | FLOW-001 | Durable early-warning and department ownership | M1, M4, M6, M7, M9 | LAND-002 |
-| 3 | SMS-001 | Twilio readiness messaging | M3, M7, M9 | FLOW-001 |
-| 4 | VOICE-001 | ElevenLabs voice fallback through Twilio | M3, M7, M9 | SMS-001 |
-| 5 | RIDE-001 | Custom Transportation Partner Dispatch portal | M5, M7, M9 | FLOW-001; SMS-001 preferred |
-| 6 | EVIDENCE-001 | Computed metrics and validated FHIR artifact | M8, M9 | FLOW-001, SMS-001, VOICE-001, RIDE-001 |
-| 7 | ML-001 | Calibrated LightGBM and SHAP explanations | M2, M6, M7, M9 | All prior slices |
+| 0 | PREP | Reconcile source of truth and freeze governed contracts | Enables all | Human approval of this roadmap |
+| 1 | LAND | Public launch page, access gateway, and pricing | M9 truth/safety | PREP |
+| 2 | FLOW | Durable early-warning and department ownership | M1, M4, M6, M7, M9 | LAND |
+| 3 | SMS | Twilio readiness messaging | M3, M7, M9 | FLOW |
+| 4 | VOICE | ElevenLabs voice fallback through Twilio | M3, M7, M9 | SMS |
+| 5 | RIDE | Custom Transportation Partner Dispatch portal | M5, M7, M9 | FLOW; SMS preferred |
+| 6 | EVIDENCE | Computed metrics and validated FHIR artifact | M8, M9 | FLOW, SMS, VOICE, RIDE |
+| 7 | ML | Calibrated LightGBM and SHAP explanations | M2, M6, M7, M9 | All prior milestones |
 
 ### Architecture and delivery controls
 
-| Task | DB | Backend | Frontend | Design phase | Infrastructure | Contract | Test depth | Security |
+| Task | DB | Server | Frontend | Design phase | Infrastructure | Contract | Test depth | Security |
 |---|---:|---:|---:|---:|---:|---:|---|---|
-| LAND-002 | No | No | Yes | Yes | No | No | TARGETED | LOW; no dedicated review |
-| FLOW-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | STANDARD; security review |
-| SMS-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
-| VOICE-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
-| RIDE-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
-| EVIDENCE-001 | Yes | Yes | Yes | Yes | No | Yes | TARGETED | HIGH; security review |
-| ML-001 | Yes | Yes | Yes | Yes | No | Yes | FULL | STANDARD; security review |
+| LAUNCH-001 | Yes | Yes | Yes | Yes | Yes | Yes | FULL | HIGH; dedicated security review |
 
 ### Parallel specialist execution
 
-The dependency order remains authoritative, but independent implementation work may proceed concurrently after PLAN-001 freezes the shared event and API contracts:
+The dependency order remains authoritative, but independent implementation work may proceed concurrently after LAUNCH-001 freezes the shared event and API contracts:
 
 - database specialist: PostgreSQL migrations, append-only events, projections, outbox/idempotency, and deterministic reseed;
-- backend specialist: FastAPI commands, role projections, Twilio/ElevenLabs webhooks, custom dispatch commands, metrics/FHIR, and the ML inference boundary;
+- server specialist: TypeScript Vercel Functions for commands, role projections, Cron/outbox draining, Twilio/ElevenLabs webhooks, custom dispatch commands, metrics/FHIR, and the exported ML inference boundary;
 - frontend specialist: approved access/pricing design, patient/staff/caregiver/transport workspaces, live state presentation, and finals visual polish;
 - focused integration workstreams: communications, the custom transportation portal, and LightGBM/SHAP artifacts against the frozen contracts;
 - orchestrator: source-of-truth control, branch integration, verification, security/review routing, and the seven-minute rehearsal.
 
 Parallel agents must not invent endpoints or event names independently. Each slice integrates through the approved contract and preserves the deterministic reset path.
 
-## 7. Feature Specifications
+## 7. LAUNCH-001 Milestone Specifications
 
-### PLAN-001 — Source-of-truth reconciliation
+### PREP — Source-of-truth reconciliation
 
 Before production code:
 
 - update `docs/PROJECT.md` with the new early-continuity mission, launch journey, non-goals, and backlog;
-- update `docs/architecture/SYSTEM.md` with the FastAPI/PostgreSQL/event/adapters shape;
+- update `docs/architecture/SYSTEM.md` with the Vercel Functions/PostgreSQL/event/adapters shape;
 - enable backend and database in `.ai/project.json` and add backend/database verification commands;
 - create one ADR for the launch stack and event-state boundary;
-- create the individual `docs/features/<TASK-ID>.md` and `.ai/tasks/<TASK-ID>/task.json` artifacts;
+- create `docs/features/LAUNCH-001.md`, `.ai/tasks/LAUNCH-001/task.json`, and the governed HTTP/event contracts;
 - do not reopen or rewrite completed `CORE-001`, `LAND-001`, or `UI-001` tasks.
 
-### LAND-002 — Launch page, access gateway, and pricing
+### LAND — Launch page, access gateway, and pricing
 
 **User outcome:** A visitor understands the product and pricing without seeing a patient record, then enters one of four polished role workspaces.
 
@@ -284,7 +287,7 @@ Before production code:
 
 **Failure/degraded behavior:** The gateway works offline. Invalid local workspace state returns to the known opening state rather than showing an authentication error.
 
-### FLOW-001 — Durable early-warning and department-owned work
+### FLOW — Durable early-warning and department-owned work
 
 **User outcome:** Maria is surfaced at least 72 hours before treatment; a single response creates separately owned clinical and transportation work with deadlines and closure evidence.
 
@@ -322,7 +325,7 @@ appointment changed → cutoff and dependent work recomputed/reopened
 - stale scheduler or source data is visible and never produces false reassurance;
 - reset/reseed restores the exact finals scenario.
 
-### SMS-001 — Twilio readiness messaging
+### SMS — Twilio readiness messaging
 
 **User outcome:** Maria receives and answers one minimal-detail readiness SMS using the same workflow as the web experience.
 
@@ -342,7 +345,7 @@ appointment changed → cutoff and dependent work recomputed/reopened
 
 Twilio documents asynchronous outbound status callbacks, inbound webhooks, Messaging Service opt-out handling, and signed webhook validation: <https://www.twilio.com/docs/messaging/guides/outbound-message-status-in-status-callbacks>, <https://www.twilio.com/docs/messaging/guides/webhook-request>, <https://www.twilio.com/docs/usage/webhooks/webhooks-security>.
 
-### VOICE-001 — ElevenLabs call through Twilio
+### VOICE — ElevenLabs call through Twilio
 
 **User outcome:** A failed SMS or `call me` reply produces one bounded voice call to the same allowlisted test phone.
 
@@ -367,7 +370,7 @@ Twilio documents asynchronous outbound status callbacks, inbound webhooks, Messa
 
 ElevenLabs supports Twilio-connected outbound calls and HMAC-authenticated post-call/failure webhooks: <https://elevenlabs.io/docs/eleven-agents/phone-numbers/twilio-integration/native-integration>, <https://elevenlabs.io/docs/api-reference/integrations/twilio/outbound-call>, <https://elevenlabs.io/docs/eleven-agents/workflows/post-call-webhooks>.
 
-### RIDE-001 — Custom Transportation Partner Dispatch portal
+### RIDE — Custom Transportation Partner Dispatch portal
 
 **User outcome:** A navigator and local transportation coordinator turn Maria's transportation risk into an eligibility-aware outbound and return plan, request and assign one CareLink partner trip through the custom dispatch portal, recover from one provider failure, and keep the blocker open until Maria acknowledges the confirmed plan.
 
@@ -388,7 +391,7 @@ ElevenLabs supports Twilio-connected outbound calls and HMAC-authenticated post-
 
 The research and provider decision are documented in [`docs/TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md). The external-provider adoption gate cannot be completed before finals, so CareLink Partner Dispatch is the final decision for the presentation. Uber Health and Lyft Concierge remain post-finals integration opportunities behind the normalized provider boundary.
 
-### EVIDENCE-001 — Operational metrics and FHIR R4 artifact
+### EVIDENCE — Operational metrics and FHIR R4 artifact
 
 **User outcome:** Investors and hospital stakeholders can inspect evidence derived from the same workflow rather than fixture-only dashboard numbers.
 
@@ -410,7 +413,7 @@ The research and provider decision are documented in [`docs/TRANSPORTATION_RESEA
 - validation failure is visible and blocks the `Validated` label;
 - the UI states that a valid FHIR artifact is not an Epic/Ochsner connection or writeback.
 
-### ML-001 — Calibrated LightGBM and SHAP, last
+### ML — Calibrated LightGBM and SHAP, last
 
 **User outcome:** The staff queue can explain why one treatment encounter was prioritized for supportive outreach without presenting the score as clinical risk.
 
@@ -435,12 +438,14 @@ The research and provider decision are documented in [`docs/TRANSPORTATION_RESEA
 - fit a sigmoid calibrator on the distinct calibration partition by default;
 - isotonic calibration may be evaluated only when the calibration sample is sufficiently large and it wins on held-out calibration without overfitting;
 - persist model, calibrator, feature schema, generator seed, training timestamp, and evaluation manifest as one versioned artifact set.
+- export a TypeScript-consumable predictor and calibrator plus a SHAP explanation bound to the exact finals feature-snapshot hash; the deployed Vercel application does not train models.
 
 Scikit-learn recommends calibrating on data independent from model fitting, and warns that isotonic calibration can overfit when calibration samples are much smaller than 1,000: <https://scikit-learn.org/stable/modules/calibration.html>.
 
 **SHAP explanations:**
 
 - use `shap.TreeExplainer` on the underlying LightGBM raw margin;
+- compute and version the finals SHAP explanation during the offline pipeline, then serve it only when the model, feature schema, and runtime feature-snapshot hashes match;
 - show the calibrated probability separately;
 - display the top directional contributors with feature values and snapshot timestamps;
 - label contributions as model associations, not causes and not additive pieces of the calibrated probability;
@@ -462,7 +467,7 @@ LightGBM supplies `LGBMClassifier` probability output and SHAP supports LightGBM
 
 ## 8. External Prerequisites
 
-These do not block LAND-002 or FLOW-001, but they must be available before their integration tasks reach implementation:
+These do not block PREP, LAND, or local FLOW work, but they must be available before the corresponding LAUNCH-001 integration gates:
 
 - one Twilio development account, Messaging Service, SMS-capable number, and allowlisted team phone;
 - one ElevenLabs account, bounded voice agent, imported/linked Twilio number, and webhook secret;
@@ -527,7 +532,7 @@ landing contains no patient record
 | 0:35–1:05 | Show the public value proposition, one Small Infusion Center Pilot price, and the branded role gateway | The product has a clear buyer, entry point, and commercial motion |
 | 1:05–1:50 | Open the patient workspace, show the real Twilio message, and reply `2` and `3` | One low-friction response enters the same working system |
 | 1:50–2:30 | Receive the bounded ElevenLabs call and verified structured callback outcome | Voice is a controlled accessibility/recovery channel, not a clinical chatbot |
-| 2:30–3:20 | Open the staff workspace and show the clinical/transport split, owners, SLA, and durable event IDs | FastAPI and PostgreSQL create accountable cross-role work rather than screen-only state |
+| 2:30–3:20 | Open the staff workspace and show the clinical/transport split, owners, SLA, and durable event IDs | TypeScript Vercel Functions and PostgreSQL create accountable cross-role work rather than screen-only state |
 | 3:20–4:05 | Open `Why flagged?` with the calibrated score, timestamped inputs, and SHAP contributors | The ML pipeline is real, inspectable, and limited to supportive outreach prioritization |
 | 4:05–5:20 | Enter the custom CareLink portal, review eligibility and return planning, show one vendor failure, and assign a backup; briefly show Uber Health/Lyft Concierge under `Planned adapters` | OncoReady owns closed-loop local dispatch today and has a truthful provider-expansion boundary |
 | 5:20–5:55 | Open Ana's caregiver view | Server-generated data minimization shares logistics without exposing clinical text |
@@ -554,15 +559,15 @@ Rough engineer-day estimates for a small experienced team, excluding vendor appr
 
 Required finals plan: approximately **31–49 engineer-days** before credit for the completed frontend foundation. These are effort estimates, not a sequential calendar plan. After contracts are frozen, multiple specialists execute database/backend, frontend, communications, transportation, and ML work in parallel. Uber Health/Lyft Concierge onboarding, compliance review, production PHI handling, and real hospital integration are outside the finals plan.
 
-### Aggressive parallel calendar
+### Two-day 16-hour parallel calendar
+
+The approved execution timebox provides **32 coding hours per implementation specialist** across two days (96 specialist-hours / 12 engineer-days for three specialists), followed by a protected finalization day. This is materially below the unconstrained 31–49 engineer-day estimate, so the calendar depends on the completed frontend foundation, frozen contracts, parallel ownership, one Maria journey, and strict rejection of new scope. Longer days do not waive quality, contract, security, or truthfulness gates.
 
 | Day | Integrated objective |
 |---:|---|
-| 1 | Approve PLAN-001, freeze contracts, land PostgreSQL/FastAPI foundation and deterministic seed/reset |
-| 2 | Run frontend/API integration, communications, custom dispatch, and ML artifact workstreams in parallel |
-| 3 | Complete cross-role projections, Twilio/ElevenLabs callbacks, dispatch failure/recovery, FHIR, and SHAP presentation |
-| 4 | Integrate branches, run targeted/full tests and security reviews, repair only demo-critical failures |
-| 5 | Freeze the build, preflight external services, rehearse the seven-minute journey, and capture the backup run |
+| 1 (H0–H16) | Freeze governed contracts and design; land PostgreSQL/Vercel Functions foundation, deterministic seed/reset, generated frontend client, cross-role workflow, Twilio/ElevenLabs callbacks, and CareLink failure/recovery checkpoint |
+| 2 (H0–H16) | Complete event evidence, FHIR, offline ML export and TypeScript inference, cross-role integration, FULL testing, exact-commit verification, focused security review, final review, and build freeze |
+| 3 (protected) | Preflight external services, run five rehearsals including one failure, capture the backup run, record the seven-minute journey, and submit; no planned feature development |
 
 ## 12. Approval Checklist
 
@@ -571,7 +576,7 @@ Human approval is requested for:
 1. The access mapping: Google → patient, Microsoft → caregiver, Apple → hospital staff, email → transportation coordinator.
 2. Removal of the complete public patient/workspace preview.
 3. One Small Infusion Center Pilot price of $18,000/year ($1,500/month billed annually), with custom pricing for larger organizations.
-4. FastAPI + Supabase PostgreSQL as the minimum launch stack, without real authentication in the finals build.
+4. One Vercel project containing React/Vite plus TypeScript Node.js Functions, backed by Supabase PostgreSQL and without real authentication in the finals build.
 5. One allowlisted team phone for both SMS and voice proof.
 6. The custom CareLink Partner Dispatch portal as the only finals transportation path; Uber Health and Lyft Concierge appear only as clearly labeled post-finals planned adapters.
 7. Direct LightGBM as the only trained classifier, with calibration and SHAP, implemented last.
@@ -580,6 +585,6 @@ Human approval is requested for:
 
 ## 13. Stop Condition
 
-This roadmap is ready to move into implementation when the approval checklist is accepted, authoritative project/architecture artifacts are reconciled, and LAND-002 plus its frontend design gate are created.
+This roadmap is ready to move into implementation when the approval checklist is accepted, authoritative project/architecture artifacts and governed LAUNCH-001 contracts are reconciled, LAUNCH-001 reaches `IMPLEMENTATION`, and its frontend design gate is approved.
 
 The finals build is complete when the seven-minute primary journey works end to end at production visual quality, the public site exposes no patient record, each displayed SMS/voice status is backed by a real callback or disclosed deterministic recovery event, every CareLink status is backed by persisted custom-dispatch events, Uber Health/Lyft Concierge remain visibly planned rather than connected, external actions are bounded to approved destinations, selected targeted/full tests pass, verification is current, required security reviews approve, final review approves, and the human completes the feature merges.

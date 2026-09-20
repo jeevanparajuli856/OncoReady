@@ -1,0 +1,188 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oncoready.local/contracts/events/workflow-event-payloads.schema.json",
+  "title": "OncoReady Workflow Event Payloads",
+  "$defs": {
+    "scenario_reset": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["seed_version", "external_actions_suppressed"],
+      "properties": {
+        "seed_version": {"type": "string", "minLength": 1},
+        "external_actions_suppressed": {"const": true}
+      }
+    },
+    "readiness_submission_recorded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["submission_id", "channel", "transport_status", "clinical_concern_verbatim", "callback_requested"],
+      "properties": {
+        "submission_id": {"type": "string", "format": "uuid"},
+        "channel": {"enum": ["web", "sms", "voice"]},
+        "transport_status": {"enum": ["confirmed", "needs_help", "unknown"]},
+        "clinical_concern_verbatim": {"type": ["string", "null"], "maxLength": 2000},
+        "callback_requested": {"type": "boolean"}
+      }
+    },
+    "barrier_detected": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["barrier_id", "barrier_type", "source", "status"],
+      "properties": {
+        "barrier_id": {"type": "string", "format": "uuid"},
+        "barrier_type": {"enum": ["clinical_concern", "transportation", "scheduling", "communication"]},
+        "source": {"enum": ["readiness_submission", "sms_reply", "voice_outcome", "staff_action", "scheduler"]},
+        "status": {"const": "open"}
+      }
+    },
+    "work_item_created": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["work_item_id", "work_item_type", "owner_role", "due_at", "source_barrier_id"],
+      "properties": {
+        "work_item_id": {"type": "string", "format": "uuid"},
+        "work_item_type": {"enum": ["clinical_review", "transport_navigation", "human_callback", "scheduling_support"]},
+        "owner_role": {"enum": ["triage_nurse", "navigator", "transport_coordinator", "scheduling_team"]},
+        "due_at": {"type": "string", "format": "date-time"},
+        "source_barrier_id": {"type": "string", "format": "uuid"}
+      }
+    },
+    "work_item_transitioned": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["work_item_id", "from_status", "to_status"],
+      "properties": {
+        "work_item_id": {"type": "string", "format": "uuid"},
+        "from_status": {"enum": ["open", "assigned", "acknowledged", "needs_information", "accepted", "actioned", "patient_informed", "patient_acknowledged", "escalated"]},
+        "to_status": {"enum": ["assigned", "acknowledged", "needs_information", "accepted", "actioned", "patient_informed", "patient_acknowledged", "escalated", "closed"]},
+        "owner_id": {"type": ["string", "null"], "maxLength": 120},
+        "note": {"type": ["string", "null"], "maxLength": 2000},
+        "closure_evidence": {"type": ["string", "null"], "maxLength": 2000}
+      }
+    },
+    "communication_queued": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["communication_id", "channel", "purpose", "destination_alias"],
+      "properties": {
+        "communication_id": {"type": "string", "format": "uuid"},
+        "channel": {"enum": ["sms", "voice"]},
+        "purpose": {"enum": ["readiness", "fallback", "plan_update", "human_callback"]},
+        "destination_alias": {"const": "finals_allowlisted_phone"}
+      }
+    },
+    "communication_status_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["communication_id", "channel", "provider", "status", "provider_reference"],
+      "properties": {
+        "communication_id": {"type": "string", "format": "uuid"},
+        "channel": {"enum": ["sms", "voice"]},
+        "provider": {"enum": ["twilio", "elevenlabs_twilio", "deterministic_replay"]},
+        "status": {"enum": ["queued", "sent", "delivered", "undelivered", "answered", "no_answer", "failed", "opted_out", "completed"]},
+        "provider_reference": {"type": "string", "minLength": 1, "maxLength": 255},
+        "failure_code": {"type": ["string", "null"], "maxLength": 120}
+      }
+    },
+    "communication_response_recorded": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["communication_id", "channel", "response_kind"],
+      "properties": {
+        "communication_id": {"type": "string", "format": "uuid"},
+        "channel": {"enum": ["sms", "voice"]},
+        "response_kind": {"enum": ["ready", "ride_help", "call_me", "scheduling_help", "repeat", "unstructured", "opt_out"]},
+        "verbatim_text": {"type": ["string", "null"], "maxLength": 2000}
+      }
+    },
+    "caregiver_permission_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["permission_id", "transport_logistics_allowed"],
+      "properties": {
+        "permission_id": {"type": "string", "format": "uuid"},
+        "transport_logistics_allowed": {"type": "boolean"}
+      }
+    },
+    "transport_eligibility_reviewed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport_request_id", "eligible", "service_area_confirmed", "operating_window_confirmed", "outbound_plan_complete", "return_plan_complete"],
+      "properties": {
+        "transport_request_id": {"type": "string", "format": "uuid"},
+        "eligible": {"type": "boolean"},
+        "service_area_confirmed": {"type": "boolean"},
+        "operating_window_confirmed": {"type": "boolean"},
+        "outbound_plan_complete": {"type": "boolean"},
+        "return_plan_complete": {"type": "boolean"},
+        "reason": {"type": ["string", "null"], "maxLength": 500}
+      }
+    },
+    "transport_status_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport_request_id", "provider", "from_status", "to_status"],
+      "properties": {
+        "transport_request_id": {"type": "string", "format": "uuid"},
+        "provider": {"enum": ["partner_dispatch", "deterministic_replay"]},
+        "from_status": {"enum": ["need_detected", "eligibility_reviewed", "request_ready", "offered", "accepted", "driver_assigned", "patient_notified", "patient_acknowledged", "en_route", "arrived", "picked_up", "backup_required", "backup_activated", "return_pending"]},
+        "to_status": {"enum": ["eligibility_reviewed", "request_ready", "offered", "accepted", "driver_assigned", "patient_notified", "patient_acknowledged", "en_route", "arrived", "picked_up", "completed", "declined", "cancelled", "provider_unavailable", "stale_assignment", "return_pending", "backup_required", "backup_activated", "escalated_to_navigator"]},
+        "driver_alias": {"type": ["string", "null"], "maxLength": 120},
+        "vehicle_description": {"type": ["string", "null"], "maxLength": 200},
+        "failure_reason": {"type": ["string", "null"], "maxLength": 500},
+        "closure_evidence": {"type": ["string", "null"], "maxLength": 1000}
+      }
+    },
+    "patient_plan_acknowledged": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["transport_request_id", "acknowledgment_channel", "plan_version"],
+      "properties": {
+        "transport_request_id": {"type": "string", "format": "uuid"},
+        "acknowledgment_channel": {"enum": ["web", "sms", "voice", "staff_recorded"]},
+        "plan_version": {"type": "integer", "minimum": 1}
+      }
+    },
+    "appointment_changed": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previous_start_at", "new_start_at", "dependent_work_reopened"],
+      "properties": {
+        "previous_start_at": {"type": "string", "format": "date-time"},
+        "new_start_at": {"type": "string", "format": "date-time"},
+        "dependent_work_reopened": {"type": "boolean"}
+      }
+    },
+    "evidence_generated": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["evidence_type", "artifact_version", "status"],
+      "properties": {
+        "evidence_type": {"enum": ["metrics", "fhir_r4"]},
+        "artifact_version": {"type": "string", "minLength": 1},
+        "status": {"enum": ["generated", "validated", "invalid"]},
+        "validator_version": {"type": ["string", "null"], "maxLength": 120}
+      }
+    },
+    "priority_scored": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model_version", "feature_schema_version", "feature_snapshot_hash", "calibrated_probability", "explanation_artifact_hash"],
+      "properties": {
+        "model_version": {"type": "string", "minLength": 1},
+        "feature_schema_version": {"type": "string", "minLength": 1},
+        "feature_snapshot_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"},
+        "calibrated_probability": {"type": "number", "minimum": 0, "maximum": 1},
+        "explanation_artifact_hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}
+      }
+    },
+    "priority_score_unavailable": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reason"],
+      "properties": {
+        "reason": {"enum": ["artifact_missing", "artifact_malformed", "artifact_stale", "schema_mismatch", "snapshot_mismatch", "runtime_error"]}
+      }
+    }
+  }
+}

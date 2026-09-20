@@ -2,7 +2,8 @@
 
 **Status:** Approved implementation handoff  
 **Sprint task:** `LAUNCH-001 — Finals Treatment Continuity Launch`  
-**Build window:** Two eight-hour engineering days  
+**Build window:** Two 16-hour coding days (32 coding hours per implementation specialist)
+
 **Finalization window:** One protected day for repair, rehearsal, recording, and submission  
 **Team:** Three implementation engineers plus orchestrator-controlled testing, security, and review gates  
 **Primary inputs:** [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md), [`TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md), [`PROJECT.md`](./PROJECT.md), and [`architecture/SYSTEM.md`](./architecture/SYSTEM.md)
@@ -73,10 +74,10 @@ No contract change is complete through chat agreement alone.
 Complete this work before starting the Day 1 implementation clock:
 
 - Reconcile `PROJECT.md`, `architecture/SYSTEM.md`, and `.ai/project.json` with the approved launch direction.
-- Enable FastAPI backend and Supabase PostgreSQL components and add required backend, database, contract, frontend, FHIR, and ML verification commands.
+- Enable TypeScript Vercel Node.js Functions and Supabase PostgreSQL components and add required server, database, contract, frontend, FHIR, and ML verification commands.
 - Replace browser-local workflow state as the launch authority with persisted workflow events and server-derived role projections.
 - Preserve React, TypeScript, Vite, the established design system, deterministic reset, accessibility, and reduced-motion behavior.
-- Add one ADR covering the React → FastAPI → PostgreSQL event-state boundary, the single-instance scheduler/outbox worker, provider adapters, deterministic recovery, and the decision not to add Redis, Kafka, Celery, or microservices.
+- Add one ADR covering the React/Vite → TypeScript Vercel Functions → PostgreSQL event-state boundary, authenticated Vercel Cron with bounded outbox claims, provider adapters, deterministic recovery, and the decision not to add a persistent app server, Redis, Kafka, Celery, or microservices.
 - Create `LAUNCH-001` with database, backend, frontend, infrastructure, and frontend-design impacts enabled.
 - Set `contract_required=true`, `test_depth=FULL`, `security_risk=HIGH`, and `security_review_required=true`.
 - Record the governed OpenAPI and event-schema files in the task contract list.
@@ -95,14 +96,14 @@ React + TypeScript role workspaces
 Generated OpenAPI client
         │
         ▼
-Single FastAPI service
+TypeScript Vercel Node.js Functions
         ├── workflow and projection services
-        ├── scheduler + transactional outbox poller
+        ├── authenticated Cron tick + bounded transactional outbox drain
         ├── Twilio messaging adapter and signed callbacks
         ├── ElevenLabs/Twilio voice adapter and signed callbacks
         ├── CareLink Partner Dispatch adapter
         ├── FHIR and operational-evidence projection
-        └── LightGBM inference and SHAP explanation adapter
+        └── exported LightGBM inference and SHAP explanation adapter
         │
         ▼
 Supabase PostgreSQL
@@ -115,8 +116,9 @@ Supabase PostgreSQL
 ### Runtime decisions
 
 - The frontend uses `/access`, `/patient`, `/caregiver`, `/staff`, and `/transport` routes.
-- The backend runs as one controlled finals instance behind the human-provided HTTPS callback domain.
-- A database-backed poller claims scheduled/outbox work with row locking and idempotency.
+- The Vite frontend and Node.js Functions deploy as one Vercel project behind the human-provided HTTPS callback domain.
+- An authenticated Vercel Cron request invokes an idempotent scheduler endpoint that claims a bounded batch of scheduled/outbox work with row locking. Per-minute cadence requires Vercel Pro; Hobby's daily cron is insufficient.
+- Request handlers persist commands/outbox work before attempting external effects. Consequential provider delivery completes inside the authenticated bounded tick; post-response background work is not part of the correctness model.
 - Supabase is a development/finals environment containing controlled synthetic data only.
 - Server configuration fixes the scenario, phone, pickup, destination, provider, origins, rate limits, request-size limits, and external-action kill switches.
 - Reset restores the known scenario but never sends an SMS, places a call, or creates a transport request.
@@ -205,44 +207,45 @@ Database constraints must prevent duplicate idempotency keys, invalid provider s
 | Engineer or agent | Exclusive ownership | Secondary Day 2 ownership |
 |---|---|---|
 | Database specialist | Migrations, seed/reset, event store, projections, outbox, idempotency, constraints, indexes | Synthetic ML dataset generator and artifact metadata |
-| Backend specialist | FastAPI domain/API, scheduler, Twilio, ElevenLabs, CareLink adapter, webhook verification | FHIR generation/validation and ML inference |
+| Server specialist | TypeScript Vercel Functions, domain/API, Cron tick, Twilio, ElevenLabs, CareLink adapter, webhook verification | FHIR generation/validation and exported ML inference |
 | Frontend specialist | Design Phase A, public/access surfaces, generated-client integration, role workspaces, transport portal | Evidence/ML presentation and finals polish |
 
 The database specialist works on the task feature branch. Backend and frontend use agent worktrees created from the committed IMPLEMENTATION state. Workers do not edit contracts or `task.json`. The orchestrator owns source-of-truth changes, contract changes, lifecycle state, integration, and evidence freshness.
 
-## 9. Day 1 — Working system and external integrations
+## 9. Day 1 — Working system and external integrations (16 coding hours)
 
 | Time | Database specialist | Backend specialist | Frontend specialist | Required gate |
 |---|---|---|---|---|
-| H0–H1 | Link DEV Supabase and create first migration | Validate environment and adapter configuration | Complete frontend design Phase A | Human supplies credentials; contract and design review start |
-| H1–H3 | Event store, projections, seed/reset, outbox | FastAPI foundation, scenario/readiness/work-item services | Remove public record; implement pricing and access gateway | Contract and design gates approved |
-| H3–H4 | Commit migration foundation; coordinate worktree sync | Contract/domain tests | Route/deep-link shell and API state adapter | Build, migration reset, and contract checks pass |
-| H4–H6 | Communication/transport persistence and idempotency | Twilio, ElevenLabs, CareLink commands and callbacks | Patient, staff, caregiver, and transport projections | Maria flow works with deterministic providers |
-| H6–H8 | Projection consistency and failure fixtures | Live callback preflight and scheduler | CareLink lifecycle, channel history, failure/backup UI | Live SMS and voice callback proof passes or task is blocked |
+| H0–H2 | Link DEV Supabase and create the first migration | Validate Vercel environment, secrets, callback reachability, Cron configuration, and adapters | Complete frontend design Phase A | Human supplies credentials; contract and design reviews start |
+| H2–H6 | Event store, projections, seed/reset, scheduled work, and outbox | TypeScript function foundation plus scenario, readiness, and work-item services | Remove public record; implement pricing and access gateway | Contract and design gates approved |
+| H6–H9 | Commit migration foundation; projection and constraint tests | Generated boundary models, command guards, Cron drain, and contract/domain tests | Route/deep-link shell, generated client, and API state adapter | Build, migration reset, generated-client, and contract checks pass |
+| H9–H13 | Communication/transport persistence, receipts, and idempotency | Twilio, ElevenLabs, CareLink commands, signatures, and callbacks | Patient, staff, caregiver, and transport role projections | Maria flow works against persisted deterministic providers |
+| H13–H16 | Projection consistency, failure fixtures, and reset proof | Live callback preflight, retries, outbox recovery, and network-degraded behavior | CareLink lifecycle, channel history, loading/error, and failure/backup UI | Live SMS/voice proof passes or remains truthfully blocked; Day 1 checkpoint is committed |
 
-### Human credential checklist — due by H1
+### Human credential checklist — due by H2
 
 - Supabase DEV database connection;
 - Twilio account, Messaging Service, SMS-capable number, auth token, and allowlisted E.164 phone;
 - ElevenLabs key, bounded agent, linked Twilio number, and webhook secret;
 - public HTTPS callback base URL;
-- server-side secret store or ignored backend environment file;
+- Vercel project with Node.js Functions and a Pro plan or equivalent per-minute scheduler;
+- server-side Vercel environment variables or ignored local server environment file;
 - `TRANSPORT_PROVIDER=partner_dispatch`;
 - fixed pickup/destination, scenario token, CORS origins, and kill-switch configuration;
 - approved nonclinical SMS/voice script and test-recipient consent.
 
 Credentials must never be pasted into chat, committed to Git, placed in frontend variables, printed in logs, or captured in screenshots/reports.
 
-## 10. Day 2 — Evidence, ML, integration, and freeze
+## 10. Day 2 — Evidence, ML, integration, and freeze (16 coding hours)
 
 | Time | Database/ML specialist | Backend/evidence specialist | Frontend specialist | Required gate |
 |---|---|---|---|---|
-| H0–H2 | Generate fixed-seed longitudinal cohort and separated partitions | Derive metrics and generate FHIR R4 bundle | Wire graph, timeline, metrics, FHIR, and channel evidence | Metrics are event-derived; FHIR validator runs |
-| H2–H4 | Train LightGBM, sigmoid calibration, leakage/subgroup tests, artifact manifest | SHAP raw-margin explanations and inference fallback | Staff-only `Why flagged?` view and truth boundaries | Invalid or stale model displays `Score unavailable` |
-| H4–H5 | Database/reset verification | Backend integration and provider-failure tests | Responsive, keyboard, reduced-motion, privacy, and degraded states | Worker scope checks and reports complete |
-| H5–H6 | Repair blocking failures only | Repair blocking failures only | Repair blocking failures only | Worker branches integrated deliberately |
-| H6–H7 | Support independent FULL testing | Support exact-commit verification | Critical-path Playwright and production build | Test and verification reports pass |
-| H7–H8 | Support focused security review | Final-review fixes only | Final visual/demo polish only | Security and final review approve; build freezes |
+| H0–H4 | Generate fixed-seed longitudinal cohort and patient-separated chronological partitions | Derive metrics and generate the FHIR R4 bundle/report | Wire graph, timeline, metrics, FHIR, and channel evidence | Metrics are event-derived; pinned FHIR validator runs |
+| H4–H8 | Train LightGBM, fit sigmoid calibration, run leakage/subgroup tests, and export the versioned runtime artifact set | Implement TypeScript artifact compatibility checks, inference/calibration, SHAP snapshot lookup, and safe fallback | Build staff-only `Why flagged?` view and product truth boundaries | Invalid, missing, stale, or snapshot-incompatible artifacts display `Score unavailable` |
+| H8–H11 | Database, deterministic reset, ordering, and projection verification | Function integration, callback ordering, Cron/outbox recovery, provider failure, and network-disabled tests | Responsive, keyboard, reduced-motion, caregiver privacy, and degraded-state pass | Worker scope checks and reports complete |
+| H11–H13 | Repair blocking integration failures only | Repair blocking integration failures only | Repair blocking integration failures only | Worker branches integrate deliberately; no new scope enters |
+| H13–H15 | Support independent FULL testing and fixture diagnosis | Support exact-commit verification and focused security review | Run critical-path Playwright, production build, and visual journey audit | Independent tests, project verification, and required security review pass |
+| H15–H16 | Freeze data and artifact versions | Repair only review-blocking defects and lock external preflight | Final visual/demo polish and rehearsal handoff | Final review approves the exact revision; build freezes for Day 3 |
 
 ### ML acceptance gates
 
@@ -256,6 +259,8 @@ Credentials must never be pasted into chat, committed to Git, placed in frontend
 - top-capacity precision exceeds prevalence;
 - subgroup sample counts and performance are reported without unsupported fairness or clinical-validation claims;
 - model, calibrator, feature schema, generator seed, training timestamp, and evaluation report ship as one versioned artifact set;
+- the offline Python build exports a TypeScript-consumable predictor/calibrator artifact plus a SHAP explanation bound to the exact finals feature-snapshot hash;
+- the deployed Vercel runtime performs no Python training and returns `Score unavailable` when model, calibrator, feature, explanation, or snapshot hashes disagree;
 - missing, malformed, stale, or schema-incompatible artifacts return `Score unavailable`, while universal cadence and deterministic routing continue.
 
 ## 11. Verification and acceptance
@@ -265,7 +270,7 @@ Credentials must never be pasted into chat, committed to Git, placed in frontend
 - project, task, report-schema, OpenAPI, and event-schema validation;
 - generated frontend types are current with the committed OpenAPI contract;
 - migration reset, deterministic seed, database constraints, ordering, projection consistency, and idempotency tests;
-- FastAPI domain/API tests;
+- TypeScript Vercel Function domain/API, Cron authorization, bounded-drain, and retry tests;
 - Twilio/ElevenLabs signature, allowlist, rate/request limit, STOP/HELP, duplicate, retry, and out-of-order callback tests;
 - CareLink decline, cancellation, unavailable-provider, stale assignment, return-pending, backup, appointment-change, and acknowledgment tests;
 - reset test proving that no external SMS, call, or transport action fires;

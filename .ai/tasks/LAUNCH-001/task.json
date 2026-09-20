@@ -1,0 +1,305 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAUNCH-001",
+  "title": "Finals Treatment Continuity Launch",
+  "type": "feature",
+  "status": "BUILD_READY",
+  "priority": "critical",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/LAUNCH-001.md",
+  "contracts": [
+    "contracts/openapi.yaml",
+    "contracts/events/workflow-event.schema.json",
+    "contracts/events/workflow-event-payloads.schema.json"
+  ],
+  "scope": {
+    "database": [
+      "supabase/**",
+      "ml/**",
+      "artifacts/ml/**",
+      "tests/database/**",
+      "tests/ml/**"
+    ],
+    "backend": [
+      "api/**",
+      "packages/**",
+      "tests/server/**",
+      "tests/contracts/**",
+      "tests/fhir/**",
+      "package.json",
+      "package-lock.json",
+      "vercel.json"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": [
+      "contracts/**",
+      "docs/PROJECT.md",
+      "docs/LAUNCH_ROADMAP.md",
+      "docs/LAUNCH_SPRINT.md",
+      "docs/features/LAUNCH-001.md",
+      "docs/architecture/**",
+      "docs/adr/**",
+      ".ai/project.json",
+      "scripts/validate-contracts.py"
+    ]
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAUNCH-001/task.json",
+        "docs/features/LAUNCH-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/project.json",
+        "docs/PROJECT.md",
+        "docs/LAUNCH_ROADMAP.md",
+        "docs/LAUNCH_SPRINT.md",
+        "scripts/validate-contracts.py",
+        ".ai/tasks/LAUNCH-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/LAUNCH-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/LAUNCH-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/LAUNCH-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        "tests/database/**",
+        "tests/ml/**",
+        ".ai/tasks/LAUNCH-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "api/**",
+        "packages/**",
+        ".ai/tasks/LAUNCH-001/task.json",
+        ".ai/tasks/LAUNCH-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "api/**",
+        "packages/**",
+        "tests/server/**",
+        "tests/contracts/**",
+        "tests/fhir/**",
+        "package.json",
+        "package-lock.json",
+        "vercel.json",
+        ".ai/tasks/LAUNCH-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        ".ai/tasks/LAUNCH-001/task.json",
+        ".ai/tasks/LAUNCH-001/architecture-report.json",
+        ".ai/tasks/LAUNCH-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/LAUNCH-001/frontend-design-report.json",
+        ".ai/tasks/LAUNCH-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/LAUNCH-001/task.json",
+        ".ai/tasks/LAUNCH-001/architecture-report.json",
+        ".ai/tasks/LAUNCH-001/database-report.json",
+        ".ai/tasks/LAUNCH-001/backend-report.json",
+        ".ai/tasks/LAUNCH-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "api/**",
+        "packages/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/LAUNCH-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/LAUNCH-001/**"
+      ],
+      "forbidden_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAUNCH-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/LAUNCH-001/**"
+      ],
+      "forbidden_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/LAUNCH-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "ml/**",
+        "artifacts/ml/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/LAUNCH-001/**"
+      ],
+      "forbidden_paths": [
+        "api/**",
+        "packages/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/LAUNCH-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/LAUNCH-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [
+    "CORE-001",
+    "LAND-001",
+    "UI-001"
+  ],
+  "acceptance_criteria": [
+    "The public landing DOM, accessibility tree, and searchable content contain no Maria record, MRN, regimen, facility record, readiness graph, or workspace preview.",
+    "Pricing comes from one configuration and presents $18,000/year, $1,500/month billed annually, and custom pricing for larger programs without a self-serve checkout claim.",
+    "Google opens /patient, Microsoft /caregiver, Apple /staff, and email /transport without credential collection or an identity-provider request; invalid local route/session state returns safely to /access.",
+    "Maria's T-3 submission preserves her clinical words and creates separately owned clinical, transportation, and callback work with deadlines; explicit barriers bypass ML ordering.",
+    "Every accepted command appends a versioned event and atomically updates projections, schedules, and outbox records; stale or invalid transitions fail and repeated idempotency keys return the prior semantic result.",
+    "Patient, staff, caregiver, transport, graph, timeline, metrics, and evidence views derive from the same persisted event history and remain consistent after refresh.",
+    "The authenticated Vercel Cron tick is bounded and idempotent; overlapping ticks have one active authority, stale claims recover safely, and uncertain provider sends are reconciled or escalated rather than blindly resent.",
+    "Twilio and ElevenLabs live statuses appear only after valid signed callbacks; invalid signatures, duplicates, out-of-order callbacks, STOP, no-answer, and provider failure remain safe and visible.",
+    "CareLink records notice cutoff, eligibility and funding, service area, accommodations, outbound and return plans, offer, acceptance, assignment, notification, acknowledgment, failure, backup, escalation, and completion as distinct states.",
+    "Transport assignment alone cannot close the blocker; provider failure or appointment change reopens affected work and Maria must acknowledge the complete current plan before closure.",
+    "Uber Health and Lyft Concierge remain disabled planned adapters and cannot produce credentials, network actions, callbacks, assignments, or active-trip status.",
+    "Ana's server-derived projection contains only authorized transportation logistics; clinical text, nurse details, internal notes, and model output are absent from API, UI, accessibility, search, export, log, and caregiver outbound surfaces.",
+    "A clearly non-urgent clinical concern remains under human authority; generic acknowledgment, ML, or provider outcomes cannot create medical clearance or resolve an undisposed urgent concern.",
+    "Metrics change only with source events, and FHIR displays Validated only for an exact generated artifact with a passing hash-bound report from the pinned validator without implying Epic or Ochsner connectivity.",
+    "Offline Python produces the LightGBM, sigmoid calibrator, feature schema, explanation metadata, seed, training timestamp, and evaluation manifest; TypeScript runtime matches reviewed golden vectors or shows Score unavailable.",
+    "Reset restores the exact starting scenario, projections, schedule, and presentation route without sending SMS, placing a call, creating a transport request, accepting a provider callback, or draining outbox work.",
+    "Network, provider, validator, or model failure never becomes false success; the affected dependency remains unresolved or unavailable and the governed recovery path remains operable.",
+    "Frontend states are complete at mobile and presentation widths, keyboard operable, semantic, visibly focused, non-color-dependent, and equivalent under reduced motion.",
+    "The Vercel production build, function routing, deep links, raw-body callback verification, Cron authentication/cadence, environment checks, and Supabase pooled connection behavior pass controlled-deployment preflight.",
+    "FULL independent testing, current repository verification, focused HIGH-risk security approval, final review, five consecutive rehearsals including one failure, backup recording, human merge, and control-plane closure are required before DONE."
+  ],
+  "created_by": "human"
+}

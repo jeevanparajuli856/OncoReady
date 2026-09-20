@@ -1,0 +1,118 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAUNCH-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Reconciled LAUNCH-001 into one governed React-to-TypeScript-Vercel-Functions-to-PostgreSQL treatment-continuity slice with append-only workflow events, role-filtered projections, a transactional outbox and protected idempotent cron tick, bounded provider adapters, deterministic recovery, event-derived FHIR/metrics evidence, and cross-language verified ML prioritization.",
+  "files_changed": [
+    "docs/features/LAUNCH-001.md",
+    "docs/architecture/SYSTEM.md",
+    "docs/adr/ADR-0001-vercel-event-boundary.md",
+    ".ai/tasks/LAUNCH-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": true,
+    "backend": true,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": true
+  },
+  "decisions": [
+    "Treat the existing CORE-001 React reducer and browser persistence as the completed frontend baseline, not LAUNCH-001 business authority; launch workflow state moves behind a generated OpenAPI client to TypeScript Vercel Node.js Functions.",
+    "Use Supabase PostgreSQL with timestamped Git-tracked migrations for append-only workflow events, role/evidence projections, scheduled actions, transactional outbox, webhook receipts, provider attempts, claim leases, idempotency records, and deterministic finals seed/reset.",
+    "Append governed events and update affected projections, schedules, and outbox rows atomically; use per-aggregate expected versions plus idempotency keys to reject stale writes and return stable duplicate-command results.",
+    "Invoke one authenticated, bounded scheduler/outbox tick through Vercel Cron at the approved per-minute cadence, which requires the selected Pro plan; use a PostgreSQL advisory lock and durable row claims/leases so overlaps and retries cannot become parallel scheduler authority.",
+    "Treat an interrupted possibly accepted provider action as outcome-unknown and reconcile it through provider identity/webhook or manual recovery; never blindly resend a consequential action solely because a lease expired.",
+    "Keep Vercel HTTP/webhook handlers thin and stateless; workflow policy, role projections, transport lifecycle, evidence generation, and adapter translation belong in shared TypeScript application/domain modules and cannot depend on warm memory or post-response work.",
+    "Make Twilio SMS, ElevenLabs-through-Twilio voice, and CareLink Partner Dispatch narrow server-only adapters with fixed allowlists, authenticated raw-body webhooks, idempotency, kill switches, and visible failure states. Uber Health and Lyft Concierge remain disabled planned metadata only.",
+    "Derive patient, staff, caregiver, transport, graph, timeline, metrics, FHIR, and ML views from persisted events through server-side role allowlists; caregiver clinical-data exclusion cannot depend on hidden React fields.",
+    "Require Maria's acknowledgment of the current complete outbound-and-return plan for transport closure; assignment, notification, stale plans, provider failure, and appointment changes cannot falsely close the dependency.",
+    "Preserve original clinical text for human review and replace the urgent fixture with a clearly non-urgent concern; no provider, generic acknowledgment, model result, or client heuristic may diagnose, triage, clear, cancel, or reschedule treatment.",
+    "Generate metrics and the FHIR R4 artifact from event state and show FHIR Validated only when a passing pinned-validator report matches the exact current artifact hash; valid FHIR is not represented as Epic/Ochsner connectivity or writeback.",
+    "Keep LightGBM training, sigmoid calibration, SHAP evaluation, leakage/subgroup testing, and export offline in Python; TypeScript runtime validates an immutable versioned artifact and must match Python golden inference/explanation vectors or return Score unavailable.",
+    "Make reset a scenario-scoped deterministic reseed that cannot enqueue or execute SMS, voice, or transport actions, and require deterministic/manual recovery to remain truthful rather than converting provider/network failure into success.",
+    "Bind frontend and function implementation to the registered OpenAPI and event-schema contracts; prose does not define wire shapes and mismatches require CONTRACT_CHANGE_REQUIRED orchestration.",
+    "Do not add FastAPI, a persistent worker, Redis, Kafka, Celery, microservices, a general workflow engine, or arbitrary runtime artifact upload to LAUNCH-001."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "The branded role gateway is not identity verification, yet role views contain clinically contextual scenario data.",
+      "mitigation": "Restrict LAUNCH-001 to controlled illustrative data and one server-managed scenario token, enforce actor/action policy and server-side role allowlist projections, and make no production authentication or PHI claim."
+    },
+    {
+      "severity": "high",
+      "description": "SMS, voice, reset, cron, and transport commands can create consequential or destructive effects if targets, retries, or privileges are unbounded.",
+      "mitigation": "Fix recipient, provider, pickup, destination, scripts, and scenario in server configuration; apply cron authentication, consent, rate/request limits, least privilege, stable action identities, kill switches, bounded retry, and a reset path proven to create zero external actions."
+    },
+    {
+      "severity": "high",
+      "description": "Forged, replayed, duplicate, or out-of-order provider webhooks could create false delivery, call, assignment, or closure state.",
+      "mitigation": "Verify official signatures/HMAC on exact raw requests before parsing, store unique webhook receipts, enforce replay and aggregate-version policy, and prevent webhook translation from bypassing domain transition guards."
+    },
+    {
+      "severity": "high",
+      "description": "Caregiver or transportation responses, accessibility text, search/export, outbound content, or logs could leak clinical concern or nurse/model detail.",
+      "mitigation": "Construct separate server-side allowlist projections and add negative contract/API/browser tests across serialized data, DOM, accessibility, search, export, outbound content, and logs."
+    },
+    {
+      "severity": "high",
+      "description": "Clinical-context workflow or ML language could imply autonomous triage, medical clearance, eligibility, or clinically validated prediction.",
+      "mitigation": "Use a clearly non-urgent fixture, preserve verbatim text for human disposition, keep explicit barriers and deterministic rules authoritative, limit the score to staff outreach ordering, and fail invalid artifacts to Score unavailable."
+    },
+    {
+      "severity": "medium",
+      "description": "Vercel Cron retries/overlap or function termination around a provider call could duplicate an action or leave its outcome ambiguous.",
+      "mitigation": "Authenticate cron, take a PostgreSQL advisory lock, use durable claims/leases and pre-call attempt records, pass stable provider identities, and reconcile outcome-unknown actions before any retry."
+    },
+    {
+      "severity": "medium",
+      "description": "Serverless concurrency, cold starts, or connection fan-out could exhaust Supabase connections or exceed function duration before state is committed.",
+      "mitigation": "Use the supported pooled connection, strict transaction/query/runtime budgets, bounded cron batches, parameterized SQL, database constraints, and deployment-level load/concurrency checks."
+    },
+    {
+      "severity": "medium",
+      "description": "Event and projection state could diverge, or a stale assignment/appointment could leave the readiness graph falsely confirmed.",
+      "mitigation": "Commit events and projections atomically, enforce per-aggregate versions and closure evidence, verify/rebuild projections from ordered events, and invalidate dependent work when appointment/provider state changes."
+    },
+    {
+      "severity": "medium",
+      "description": "The existing reducer and localStorage could remain as a second authority during migration and create cross-role or refresh contradictions.",
+      "mitigation": "Migrate one acceptance path at a time behind an API state adapter, prohibit local mutations once API-backed, keep browser storage presentation-only, and remove the competing authority before integrated verification."
+    },
+    {
+      "severity": "medium",
+      "description": "Offline Python and TypeScript runtime inference/explanation could diverge or accept a stale/malformed artifact.",
+      "mitigation": "Use one explicit immutable export schema/hash, fixed feature order and missing-value semantics, Python golden vectors with numeric tolerances, TypeScript parity tests, and fail closed to Score unavailable."
+    },
+    {
+      "severity": "medium",
+      "description": "FHIR evidence could become stale or appear validated when the current generated bundle was never checked.",
+      "mitigation": "Run the pinned validator in verification/freeze tooling, persist an inspectable report keyed to the exact bundle content hash, and project Validated only on an exact passing match."
+    },
+    {
+      "severity": "medium",
+      "description": "The compressed two-day, 16-hours-per-day implementation window could encourage contract drift, skipped validation, or false live-provider confidence.",
+      "mitigation": "Freeze and validate contracts before implementation, parallelize only behind those contracts, preserve FULL independent testing and exact-commit security/review gates, and block rather than fabricate unavailable cron, live, FHIR, or ML proof."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "The orchestrator has reconciled docs/PROJECT.md, docs/LAUNCH_ROADMAP.md, docs/LAUNCH_SPRINT.md, and .ai/project.json with the Vercel Functions decision, replaced the OpenAPI placeholder, added the governed event schemas, registered all three contract paths in task.json, and added contract validation.",
+    "The registered OpenAPI and event schemas are authoritative for endpoint/event names, shapes, errors, expected-version conflicts, idempotency replay, raw-webhook authentication inputs, cron behavior, and role projections. Workers must consume those artifacts and report CONTRACT_CHANGE_REQUIRED rather than infer wire details from architecture prose.",
+    "The frontend specialist must complete design Phase A and the digest-bound compatibility gate before production UI changes. Preserve the established system while designing access, transport, provider-pending/failure/outcome-unknown/recovery, evidence, and ML states.",
+    "Database implementation should establish deterministic seed/reset, immutable events, aggregate/version/idempotency constraints, projections, scheduled actions, outbox, webhook receipts, provider attempts, claims/leases, and only query-justified indexes before provider functions depend on them.",
+    "Backend implementation should use shared TypeScript domain modules, a supported pooled Supabase transaction connection, exact raw-body webhook verification, authenticated cron, bounded batches, no post-response work, and provider reconciliation before retrying an uncertain action.",
+    "The controlled finals deployment requires the Vercel plan that supports per-minute Cron. Validate plan, deployed schedule, secret authentication, actual invocation, deep-link rewrites, function routing, and callback URLs during preflight; do not silently lower cadence.",
+    "Offline Python owns ML training/calibration/SHAP evaluation and export. TypeScript runtime may load only the fixed reviewed artifact, and Python/TypeScript inference plus explanation parity must pass before score presentation.",
+    "Reset, network failure, provider failure/outcome unknown, invalid webhook, stale aggregate version, cron overlap/stale lease, appointment change, caregiver revocation, FHIR hash mismatch, and missing/stale/parity-failing ML artifacts are acceptance-critical states, not optional polish.",
+    "FULL depth requires an independent tester after integration. Verification must be current on the integrated commit before the mandatory focused HIGH-risk security review, and final review must assess that same current revision.",
+    "Live credentials, a consented allowlisted phone, the configured CareLink path, Vercel/Supabase access, and public HTTPS webhook deployment remain human/external prerequisites. Missing proof blocks live completion and cannot be replaced by an undisclosed fake status."
+  ],
+  "execution": {
+    "contract_required": true,
+    "test_depth": "FULL",
+    "security_risk": "HIGH",
+    "security_review_required": true
+  }
+}

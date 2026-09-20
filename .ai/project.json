@@ -14,9 +14,9 @@
   },
   "components": {
     "backend": {
-      "enabled": false,
-      "path": "backend",
-      "technology": null
+      "enabled": true,
+      "path": "api",
+      "technology": "TypeScript + Vercel Node.js Functions"
     },
     "frontend": {
       "enabled": true,
@@ -24,13 +24,54 @@
       "technology": "React + TypeScript + Vite"
     },
     "database": {
-      "enabled": false,
-      "provider": null,
+      "enabled": true,
+      "provider": "Supabase PostgreSQL",
       "migration_path": "supabase/migrations"
     }
   },
   "verification": {
     "checks": [
+      {
+        "name": "governed API and event contracts",
+        "command": [
+          "python3",
+          "scripts/validate-contracts.py"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
+        "name": "server database FHIR and ML runtime tests",
+        "command": [
+          "npm",
+          "run",
+          "test:server"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
+        "name": "offline ML artifact reproducibility",
+        "command": [
+          "python3",
+          "-m",
+          "pytest",
+          "-q",
+          "tests/ml"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
+        "name": "generated frontend API client is current",
+        "command": [
+          "npm",
+          "run",
+          "api:check"
+        ],
+        "cwd": "frontend",
+        "required": true
+      },
       {
         "name": "frontend build",
         "command": [
@@ -50,10 +91,31 @@
         ],
         "cwd": "frontend",
         "required": true
+      },
+      {
+        "name": "frontend full journey browser tests",
+        "command": [
+          "npm",
+          "run",
+          "test:e2e"
+        ],
+        "cwd": "frontend",
+        "required": true
       }
     ]
   },
   "security": {
-    "checks": []
+    "checks": [
+      {
+        "name": "callback authorization and external-action controls",
+        "command": [
+          "npm",
+          "run",
+          "test:security"
+        ],
+        "cwd": ".",
+        "required": true
+      }
+    ]
   }
 }
