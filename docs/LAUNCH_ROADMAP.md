@@ -3,6 +3,7 @@
 **Status:** Proposed for human review  
 **Planning branch:** `feature/PLAN-001-launch-roadmap`  
 **Primary inputs:** `ONCOREADY_WINNING_STRATEGY.md` and [`TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md)
+**Approved sprint handoff:** [`LAUNCH_SPRINT.md`](./LAUNCH_SPRINT.md) defines the two-day execution order, agent ownership, contract authority, verification gates, and Day 3 freeze.
 **Implementation state:** No production code is authorized by this document. After approval, the orchestrator must reconcile the authoritative project/architecture documents and create the individual feature tasks below.
 
 ## 1. Mission
