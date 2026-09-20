@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-backend",
   "status": "COMPLETE",
-  "summary": "Implemented the governed TypeScript Railway backend, including the current PatientTransportSummary command identity/version across memory and PostgreSQL projection paths so Maria can perform a guarded acknowledgment without widening caregiver data.",
+  "summary": "Implemented the governed TypeScript Railway backend, including durable work-item aggregate policy state across transitions and the current PatientTransportSummary identity/version needed for guarded patient acknowledgment.",
   "files_changed": [
     "package.json",
     "package-lock.json",
@@ -52,7 +52,7 @@
       "python3 -m pytest -q tests/database",
       "Scratch PostgreSQL 17: run npm run migrate:server twice against a fresh database and inspect public.oncoready_schema_migrations"
     ],
-    "notes": "The final-review repair passed build/typecheck plus 36 targeted domain, repository, security, and security-remediation tests. New coverage proves PatientTransportSummary exposes the current transport_request_id and aggregate_version after seed/creation/transitions, PostgreSQL reads reconcile them from the relational transport projection, patient acknowledgment rejects stale versions, wrong state, and disallowed claimed roles, a valid patient acknowledgment updates all four role projections, caregiver minimization excludes command identity/version, and completion still requires picked_up plus nonblank closure evidence. Earlier integrated evidence remains 48 focused server/contract/FHIR tests, 18 security/webhook tests, validated contracts, and six vendor-neutral migration tests."
+    "notes": "The latest focused regression proves a clinical_review work item advances from open to assigned to acknowledged without losing work_item_type or falling outside the public demo policy; the server typecheck and backend scope gate pass. The prior final-review repair passed build/typecheck plus 36 targeted domain, repository, security, and security-remediation tests. PatientTransportSummary coverage proves current identity/version, guarded patient acknowledgment, all-role projection updates, caregiver minimization, and the unchanged transport completion guard. Earlier integrated evidence remains 48 focused server/contract/FHIR tests, 18 security/webhook tests, validated contracts, and six vendor-neutral migration tests."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -66,6 +66,7 @@
     "Public PostgreSQL hosts require sslmode=require, verify-ca, or verify-full. Localhost and Railway private *.railway.internal connections remain supported without a TLS query flag.",
     "CRON_SECRET is validated during startup and manual-tick preflight as at least 32 UTF-8 bytes with at least 128 estimated bits of character-distribution entropy; weak or repetitive values fail with dependency_unavailable.",
     "Readiness is patient/web-only. Work-item and transport commands enforce resource existence, supported resource type, action, current-state, and claimed-role policies. CareLink request creation accepts only work_item_id plus command context and derives the fixed plan from server-owned finals state.",
+    "Work-item transitions merge the prior aggregate state while updating status/version/owner/closure values, preserving work_item_type and owner_role for every subsequent route/resource/action policy decision.",
     "Patient transport summaries carry the current transport_request_id and aggregate_version from seed through CareLink creation and transitions. PostgreSQL patient reads reconcile identity/version from transport_projections; caregiver minimization intentionally excludes both fields.",
     "Maria may acknowledge only the current patient_notified request using actor_role=patient and the current aggregate version. The transition updates coordinator, staff, patient, and caregiver projections while preserving the picked_up plus nonblank closure-evidence completion guard.",
     "Provider intent is committed before network I/O. Unknown network outcomes become outcome_unknown and are excluded from blind re-claim; signed callbacks reconcile stored attempts by provider conversation/message reference.",

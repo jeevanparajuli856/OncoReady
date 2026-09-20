@@ -62,7 +62,7 @@ export class WorkflowApplication {
       const staff = bumpProjection(projections.staff,scenarioVersion,"action_in_progress");
       staff.work_items = (staff.work_items as Array<Record<string, unknown>> ?? []).map((item) => item.work_item_id === workItemId ? {...item, status: draft.payload.to_status, aggregate_version: draft.aggregate_version, owner_display_name: command.owner_id ?? item.owner_display_name, closure_evidence: command.closure_evidence ?? item.closure_evidence} : item);
       staff.timeline = [...(staff.timeline as unknown[] ?? []), event];
-      projections.staff=staff;return {aggregateVersion: draft.aggregate_version, aggregateState: {status: draft.payload.to_status}, events: [event], projections};
+      projections.staff=staff;return {aggregateVersion: draft.aggregate_version, aggregateState: {...snapshot.aggregate.state,status:draft.payload.to_status,aggregate_version:draft.aggregate_version,owner_id:command.owner_id??snapshot.aggregate.state.owner_id??null,closure_evidence:command.closure_evidence??snapshot.aggregate.state.closure_evidence??null}, events: [event], projections};
     });
   }
 

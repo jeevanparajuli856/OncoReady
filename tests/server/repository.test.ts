@@ -24,6 +24,14 @@ describe("application transaction semantics",()=>{
     await expect(app.readiness({...base,idempotency_key:"version-b"})).rejects.toMatchObject({code:"version_conflict"});
   });
 
+  it("preserves work item resource policy state from assign through acknowledge",async()=>{
+    const workItemId="55555555-5555-4555-8555-555555555555";const projections=createSeedProjections(scenario);
+    projections.staff.work_items=[{work_item_id:workItemId,work_item_type:"clinical_review",owner_role:"triage_nurse",status:"open",due_at:"2026-10-12T18:00:00.000Z",aggregate_version:1}];
+    const app=new WorkflowApplication(new MemoryWorkflowRepository(projections),config);
+    await expect(app.workItem(workItemId,{scenario_id:scenario,actor_role:"staff",idempotency_key:"work-assign-001",expected_aggregate_version:1,action:"assign",owner_id:"triage-nurse-1"})).resolves.toMatchObject({aggregate_version:2});
+    await expect(app.workItem(workItemId,{scenario_id:scenario,actor_role:"staff",idempotency_key:"work-ack-001",expected_aggregate_version:2,action:"acknowledge"})).resolves.toMatchObject({aggregate_version:3});
+  });
+
   it("returns a caregiver allowlist projection with no clinical or model fields",async()=>{
     const projections=createSeedProjections(scenario);(projections.caregiver as Record<string,unknown>).clinical_text="must never leave server";(projections.caregiver.transport as Record<string,unknown>).nurse_note="hidden";(projections.caregiver as Record<string,unknown>).priority={score:0.9};
     const repo=new MemoryWorkflowRepository(projections);
