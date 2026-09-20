@@ -2,8 +2,8 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "agent": "codex-tester",
-  "status": "CHANGES_REQUIRED",
-  "summary": "Focused independent testing at 326814946a8c58ef1cf8d5afd5763deee3c79c5c confirmed patient acknowledgment and pickup/return behavior, but found that staff open-to-assign drops work_item_type and makes the required assigned-to-acknowledge transition fail closed with HTTP-equivalent 403.",
+  "status": "COMPLETE",
+  "summary": "Focused independent testing at 80482aade9a4c8c61ad67dc13f62713148645d6d confirms all three final-review regressions: staff open-to-assign-to-acknowledge, patient-only current-version transport acknowledgment with coordinator waiting, and picked-up completion with evidence while return-pending escalates.",
   "files_changed": [
     "tests/server/launch-journey.test.ts",
     "tests/frontend/no-secret-bundle.test.mjs",
@@ -19,8 +19,9 @@
     "contracts/events/workflow-event-payloads.schema.json"
   ],
   "tests": {
-    "passed": false,
+    "passed": true,
     "commands": [
+      "npx vitest run tests/server/final-review-regressions.test.ts (80482aade9a4c8c61ad67dc13f62713148645d6d: 3/3 passed)",
       "npx vitest run tests/server/final-review-regressions.test.ts",
       "cd frontend && npx vitest run tests/workflow-commands.test.ts",
       "cd frontend && npm run build && npx playwright test tests/e2e.spec.ts --grep \"Maria acknowledges|coordinator completes\"",
@@ -38,19 +39,13 @@
       "PostgreSQL 17 scratch cluster: apply database/migrations/*.sql in lexical order and run psql -f tests/database/launch_workflow.sql",
       ".venv/bin/python ml/train.py --output <temporary-directory> and cmp model.json evaluation.json golden-vectors.json manifest.json against artifacts/ml/supportive-outreach-v1"
     ],
-    "notes": "Only the three requested final-review regressions were exercised. The independent backend/integration file ran three tests: patient-only acknowledgment with current transport ID/version and coordinator waiting passed; picked_up completion with nonblank evidence plus return_pending escalation passed; staff open-to-assign then assigned-to-acknowledge failed on the second command because the persisted in-memory aggregate state no longer contains work_item_type. The frontend command-planner suite passed 2/2. The first focused Playwright invocation served a stale ignored dist and failed both selectors; after the required current frontend build, the exact two focused Chromium journeys passed 2/2. This was a deterministic build-artifact precondition, not a flaky retry, and is reported explicitly. No unchanged broad suite, live provider call, or Railway operation was run."
+    "notes": "Only the requested independent regression file was rerun after the backend repair. At exact implementation commit 80482aade9a4c8c61ad67dc13f62713148645d6d, all 3/3 cases passed: work-item aggregate state preserves work_item_type across open-to-assign and assigned-to-acknowledge; only the patient can acknowledge the current patient_notified request while the coordinator waits; and picked_up completes only with nonblank closure evidence while return_pending escalates. Earlier focused frontend evidence remains unchanged. No frontend or broad suite, live provider call, or Railway operation was repeated."
   },
-  "blockers": [
-    {
-      "type": "WORK_ITEM_AGGREGATE_STATE_LOSS",
-      "description": "WorkflowApplication.workItem persists aggregateState with only status after assign. The next acknowledge command receives no work_item_type and workItemDraft rejects it as outside the public demo policy.",
-      "suggestion": "Preserve the existing aggregate state, especially work_item_type, when applying each work-item status transition; then rerun only tests/server/final-review-regressions.test.ts."
-    }
-  ],
+  "blockers": [],
   "notes_for_next_agent": [
     "Run repository verification with the pinned ML environment active (for example PATH=\"$PWD/.venv/bin:$PATH\") so the configured python3 ML check resolves numpy, LightGBM, scikit-learn, and SHAP.",
     "The independent browser supplement closes transport-role coverage and confirms the static browser sends neither Authorization nor operator/scenario token headers.",
     "Provider switches remained false and all network-facing provider behavior was exercised only through deterministic signed-callback fixtures.",
-    "At commit 3268149, fix the work-item aggregate-state loss before advancing: patient acknowledgment and coordinator completion/escalation are already confirmed by focused independent tests."
+    "All three final-review regressions are independently green at implementation commit 80482aade9a4c8c61ad67dc13f62713148645d6d."
   ]
 }
