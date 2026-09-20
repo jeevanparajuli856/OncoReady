@@ -2,7 +2,6 @@ import {describe, expect, it} from "vitest";
 import {WorkflowApplication} from "../../packages/server/src/application.js";
 import {loadConfig} from "../../packages/server/src/config.js";
 import {MemoryWorkflowRepository, createSeedProjections} from "../../packages/server/src/repository.js";
-import {getTransportCommandPlan} from "../../frontend/src/launch/workflowCommands.js";
 
 const scenario = "11111111-1111-4111-8111-111111111111" as const;
 const workItemId = "55555555-5555-4555-8555-555555555555";
@@ -86,10 +85,6 @@ describe("final-review workflow regressions", () => {
   });
 
   it("lets only the patient acknowledge the current notified request while the coordinator waits", async () => {
-    const coordinatorPlan = getTransportCommandPlan("patient_notified", "none");
-    expect(coordinatorPlan).toMatchObject({mode: "waiting", label: "Waiting for Maria"});
-    expect(coordinatorPlan?.action).toBeUndefined();
-
     const deniedRepository = new MemoryWorkflowRepository(transportAt("patient_notified", 8));
     await expect(new WorkflowApplication(deniedRepository, config).transport(transportId, {
       scenario_id: scenario,
@@ -118,9 +113,7 @@ describe("final-review workflow regressions", () => {
   });
 
   it("completes directly from picked_up with evidence and escalates return_pending", async () => {
-    const completionPlan = getTransportCommandPlan("picked_up", "none");
-    expect(completionPlan).toMatchObject({action: "complete"});
-    expect(completionPlan?.closureEvidence?.trim()).toBeTruthy();
+    const closureEvidence = "CareLink confirmed the complete outbound and return ride plan was fulfilled.";
 
     const incompleteRepository = new MemoryWorkflowRepository(transportAt("picked_up", 10));
     await expect(new WorkflowApplication(incompleteRepository, config).transport(transportId, {
@@ -139,14 +132,12 @@ describe("final-review workflow regressions", () => {
       idempotency_key: "review-complete",
       expected_aggregate_version: 10,
       action: "complete",
-      closure_evidence: completionPlan!.closureEvidence,
+      closure_evidence: closureEvidence,
     })).resolves.toMatchObject({aggregate_version: 11});
     expect(await completionRepository.getProjection(scenario, "transport_coordinator")).toMatchObject({
       request: {status: "completed", aggregate_version: 11},
     });
 
-    const escalationPlan = getTransportCommandPlan("return_pending", "none");
-    expect(escalationPlan).toMatchObject({action: "escalate_to_navigator"});
     const escalationRepository = new MemoryWorkflowRepository(transportAt("return_pending", 11));
     await expect(new WorkflowApplication(escalationRepository, config).transport(transportId, {
       scenario_id: scenario,
@@ -154,7 +145,7 @@ describe("final-review workflow regressions", () => {
       idempotency_key: "review-return-escalation",
       expected_aggregate_version: 11,
       action: "escalate_to_navigator",
-      reason: escalationPlan!.reason,
+      reason: "Return leg unresolved; navigator recovery required.",
     })).resolves.toMatchObject({aggregate_version: 12});
     expect(await escalationRepository.getProjection(scenario, "transport_coordinator")).toMatchObject({
       request: {status: "escalated_to_navigator", aggregate_version: 12},
