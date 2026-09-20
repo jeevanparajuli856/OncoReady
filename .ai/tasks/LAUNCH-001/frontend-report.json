@@ -74,7 +74,7 @@
       "python3 scripts/agentctl.py scope check LAUNCH-001 frontend",
       "git diff --check"
     ],
-    "notes": "The generated OpenAPI client is current. TypeScript and the Vite production build pass. Seven focused Vitest checks pass for provider evidence, activation-held channels, pricing, route mapping, and the continuity field. Five Chromium journeys pass for the public 320px surface, activation-held communications, verified versus outcome-unknown provider evidence, revoked caregiver privacy, dialog focus/Escape behavior, and reduced motion. A Railway-shaped build proved that VITE_API_BASE_URL is embedded as the public API origin while scenario/operator/provider/database secret names are absent from the production output. npm audit reported zero vulnerabilities."
+    "notes": "The generated OpenAPI client is current. TypeScript and the Vite production build pass. Seven focused Vitest checks pass for provider evidence, activation-held channels, pricing, route mapping, and the continuity field. Five Chromium journeys pass for the public 320px surface, activation-held communications, verified versus outcome-unknown provider evidence, revoked caregiver privacy, dialog focus/Escape behavior, reduced motion, 390px header target size, and horizontal overflow. A Railway-shaped build proved that VITE_API_BASE_URL is embedded as the public API origin while scenario/operator/provider/database secret names are absent from the production output. npm audit reported zero vulnerabilities. Visual review passed for the provider workspace at 1440px and 390px; the mobile header was corrected to compact icon controls with 44px targets."
   },
   "blockers": [],
   "notes_for_next_agent": [
