@@ -6,6 +6,7 @@
   "scripts": {
     "typecheck:server": "tsc -p packages/server/tsconfig.json --noEmit",
     "build:server": "npm run typecheck:server && tsc -p packages/server/tsconfig.build.json",
+    "migrate:server": "node dist/server/migrate.js",
     "start:server": "node dist/server/server.js",
     "test:server": "vitest run tests/server tests/contracts tests/fhir",
     "test:security": "vitest run tests/server/security.test.ts tests/server/webhooks.test.ts",
