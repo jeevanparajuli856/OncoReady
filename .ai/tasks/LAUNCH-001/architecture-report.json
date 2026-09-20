@@ -3,8 +3,9 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-architect",
   "status": "COMPLETE",
-  "summary": "Revised LAUNCH-001 to the human-approved Railway-only topology: Railway hosts the Vite web service, a long-running Node.js/TypeScript API with a bounded PostgreSQL-backed poller, and private PostgreSQL; no hosted cron or database-originated HTTP scheduler is used.",
+  "summary": "Reconciled the Railway static-frontend trust boundary: the browser uses a narrow fixed-scenario public synthetic API without a secret, while reset, SMS/voice initiation, provider callbacks, and manual scheduler control retain distinct server-side authentication and public commands cannot authorize external effects.",
   "files_changed": [
+    "docs/features/LAUNCH-001.md",
     "docs/architecture/SYSTEM.md",
     "docs/architecture/LAUNCH-001-EXTERNAL-SETUP.md",
     "docs/adr/ADR-0001-railway-runtime-event-boundary.md",
@@ -18,87 +19,73 @@
     "infrastructure": true
   },
   "decisions": [
-    "Use one Railway project and one explicitly selected controlled launch environment with three services: a public `web` Vite static service, a public long-running `api` Node.js/TypeScript service, and private `Postgres`.",
-    "Retain Node.js/TypeScript for the backend because contracts, shared tooling, runtime artifacts, and current implementation direction are aligned with it. FastAPI is human-permitted and Railway-compatible but rejected for this slice because migration/rewrite risk does not improve the launch journey.",
-    "Set `VITE_API_BASE_URL` on `web` to the public API origin; set `DATABASE_URL=${{Postgres.DATABASE_URL}}` on `api` so database traffic stays on Railway private networking. The browser never receives database/provider secrets.",
-    "Run the normal scheduler inside the long-running API process. The timer only wakes a bounded database operation; PostgreSQL due rows, claims, leases, attempt state, and database time remain authoritative.",
-    "Each scheduler cycle uses a transaction-scoped PostgreSQL advisory lock plus bounded `FOR UPDATE SKIP LOCKED` claims, claim tokens, and leases; it commits provider intent/attempt before network I/O and never holds a transaction across the provider call.",
-    "Keep governed `GET /api/v1/operations/tick?max_items=25` and opaque bearer `CRON_SECRET` unchanged for controlled manual/preflight invocation of the same bounded cycle. It is not called by Railway Cron or another automated scheduler.",
-    "Do not use legacy hosting resources, hosted cron, a database-extension HTTP scheduler, Railway Cron, Redis, Kafka, Celery, a separate worker, or a workflow engine for LAUNCH-001.",
-    "Use vendor-neutral Git-tracked PostgreSQL migrations with migration history/advisory locking. Port portable workflow schema/seed content and remove the retired HTTP scheduler migration from the Railway target sequence.",
-    "Append events and update projections, scheduled actions, outbox, and idempotency state atomically. Preserve per-aggregate expected versions and stable duplicate-command results.",
-    "Treat an interrupted possibly accepted provider action as `outcome_unknown`; reconcile by provider identity/signed callback or manual recovery before retry and never resend solely because a lease expired.",
-    "Keep Twilio SMS, ElevenLabs-through-Twilio voice, and CareLink as narrow server adapters with fixed recipients/providers/locations, authenticated raw-body callbacks, stable action identities, rate limits, consent, and kill switches.",
-    "Derive patient, staff, caregiver, transport, graph, timeline, metrics, FHIR, and ML views from persisted events through server allowlists; caregiver minimization cannot depend on hidden frontend fields.",
-    "Preserve Maria's complete current outbound-and-return plan acknowledgment as the transportation closure guard; assignment, notification, stale plans, provider failure, and appointment changes cannot falsely close it.",
-    "Keep offline Python authoritative for LightGBM/calibration/SHAP training and export; TypeScript runtime accepts only reviewed immutable artifacts and returns `Score unavailable` on invalidity or parity failure.",
-    "Make reset a scenario-scoped deterministic reseed with external effects suppressed and proof of zero provider/outbox dispatch.",
-    "Preserve governed API paths/methods/security/event meanings. The Railway host metadata and official ElevenLabs provider envelope are reconciled in the authoritative OpenAPI contract."
+    "Keep the approved Railway-only topology: public static `web`, public long-running Node.js/TypeScript `api`, and private Railway `Postgres` connected by `DATABASE_URL`.",
+    "Do not place a scenario or operator token in Vite code, variables, storage, source maps, runtime configuration, or generated clients. `VITE_API_BASE_URL` is the browser's only deployment value.",
+    "Replace global `FinalsScenarioToken` OpenAPI security with explicit operation-level public-demo, operator, provider-callback, and scheduler trust classes.",
+    "Make finals role projections, metrics, FHIR, priority evidence, readiness submission, work-item commands, and CareLink request/commands anonymous only for the controlled illustrative finals scenario.",
+    "Require `OperatorControlToken` using `X-OncoReady-Operator-Token` for deterministic reset and SMS/voice initiation. Store it as server-only `ONCOREADY_OPERATOR_TOKEN` and retire `ONCOREADY_SCENARIO_TOKEN` after migration.",
+    "Retain provider signature authentication on Twilio/ElevenLabs callbacks and opaque `CRON_SECRET` bearer authentication on the manual tick endpoint.",
+    "Set `ONCOREADY_PUBLIC_DEMO_ENABLED=false` by default; the controlled finals deployment explicitly opts in with `true` and fails closed otherwise.",
+    "Keep command `scenario_id` for event/idempotency consistency but constrain it in OpenAPI to `11111111-1111-4111-8111-111111111111` and reject any mismatch before domain execution.",
+    "Constrain public readiness to `channel: web`; signed callbacks are the only SMS/voice outcome boundary. Reduce public CareLink creation to `work_item_id` plus command context and derive every plan/provider/location field from server-owned finals state.",
+    "Treat `actor_role` as unverified demo provenance, not identity. Enforce an explicit route, aggregate/resource, action, current-state, and role-claim matrix server-side.",
+    "Give public mutations a hard database-only effect ceiling: they may append events/projections and internal workflow state but cannot create or authorize provider outbox work.",
+    "Accept provider dispatch authorization only from an operator-authenticated communication command; persist the authorization source and still apply fixed recipient/provider/script allowlists, kill switches, rate limits, versions, and idempotency.",
+    "Use exact CORS as browser isolation and configuration hygiene, never as authentication. Apply body limits and per-origin/IP/operation rate limits to public mutations.",
+    "Keep deterministic reset outside the public application. The operator invokes it by script/direct API before rehearsal, and it suppresses all external effects.",
+    "Keep the normal scheduler inside the API process with PostgreSQL time, advisory locking, bounded claims, leases, and reconcile-before-retry; the protected HTTP tick is manual/preflight only.",
+    "Complete ML, backend, frontend, Railway, contract-policy, and no-secret-bundle readiness with all external switches false before configuring or enabling Twilio and ElevenLabs.",
+    "Retain FULL testing and HIGH risk with a dedicated security review because public mutations, privileged reset/provider actions, signed callbacks, and real bounded communications cross material trust boundaries."
   ],
   "risks": [
     {
       "severity": "high",
-      "description": "The branded role gateway is not identity verification, yet role views contain clinically contextual illustrative data.",
-      "mitigation": "Use controlled illustrative data only, a server-managed scenario token, actor/action allowlists, and server-side role projections; make no production authentication, PHI, or compliance claim."
+      "description": "A secret embedded in the Railway static frontend would be publicly recoverable and would provide no meaningful authorization.",
+      "mitigation": "Send no secret to the browser; use a narrow public synthetic API and keep operator/provider/scheduler credentials server-side."
     },
     {
       "severity": "high",
-      "description": "SMS, voice, reset, manual tick, and transportation actions can create consequential effects if targets, privileges, or retries are unbounded.",
-      "mitigation": "Fix recipient/provider/location/script values in server configuration, require consent and rate limits, keep kill switches off by default, use stable action identities and bounded retry, and prove reset creates zero external effects."
+      "description": "Anonymous commands could trigger cost, harassment, consent violations, or misleading provider success if they can create external work.",
+      "mitigation": "Enforce a database-only public effect ceiling and require operator-authenticated, fixed-target communication commands before any provider outbox authorization."
     },
     {
       "severity": "high",
-      "description": "Forged, replayed, duplicate, or out-of-order callbacks could create false provider success or closure.",
-      "mitigation": "Verify Twilio/ElevenLabs signatures against exact raw input and canonical URL before parsing, persist unique callback receipts, and apply version/transition guards."
+      "description": "The local role selector is not identity and cannot protect confidential or role-private data from anonymous callers.",
+      "mitigation": "Use illustrative data only, describe role as demo context, preserve server-minimized projection schemas, and require real identity before introducing protected data."
     },
     {
       "severity": "high",
-      "description": "Caregiver, transportation, accessibility, export, outbound, or log surfaces could disclose clinical text, nurse detail, or model output.",
-      "mitigation": "Use separate server-side allowlist schemas and negative contract/API/browser/log tests across every disclosure surface."
-    },
-    {
-      "severity": "high",
-      "description": "Clinical-context language or ML evidence could imply autonomous triage, medical clearance, or clinical validation.",
-      "mitigation": "Keep the fixture clearly non-urgent and illustrative, human disposition authoritative, the score staff-only and non-clinical, and invalid artifacts safely unavailable."
+      "description": "Leaked operator, provider, or scheduler credentials could enable destructive reset, outbound communication, or privileged processing.",
+      "mitigation": "Keep credentials only in Railway server variables, use separate scopes, redact logs, rate-limit privileged routes, rotate on exposure, and keep provider switches false outside controlled windows."
     },
     {
       "severity": "medium",
-      "description": "Process restart, overlapping poll/manual tick, lease expiry, or failure around provider acceptance could duplicate an action or leave its result ambiguous.",
-      "mitigation": "Use database-time due rows, advisory locking, `SKIP LOCKED`, claim tokens/leases, committed pre-call attempt records, stable provider identities, scheduler heartbeat, and reconcile-before-retry."
+      "description": "Anonymous visitors can vandalize or race the shared synthetic scenario even when they cannot cause external effects.",
+      "mitigation": "Use fixed scenario/action policies, versions, idempotency, bounded rate limits, one controlled environment, monitoring, and operator-authenticated deterministic reset."
     },
     {
       "severity": "medium",
-      "description": "A long-running API poller is unavailable while the Railway service is sleeping, crashed, redeploying, or disconnected from PostgreSQL.",
-      "mitigation": "Disable sleeping, configure health/restart behavior, keep one launch replica, persist every due item in PostgreSQL, alert/preflight on stale scheduler heartbeat, and catch up from database time after restart."
+      "description": "CORS may be mistaken for authentication or a forwarded client address may be trusted incorrectly for rate limiting.",
+      "mitigation": "Document CORS as defense-in-depth, enforce consequence limits independently, trust only Railway's known proxy hop, and test direct non-browser requests."
     },
     {
       "severity": "medium",
-      "description": "A retired platform-specific migration path or routing artifact could be reintroduced accidentally after the host decision.",
-      "mitigation": "Keep vendor-neutral migrations and Railway routing authoritative, and make verification reject retired runtime references."
-    },
-    {
-      "severity": "medium",
-      "description": "Separate public web/API origins can produce CORS failures or invalid provider signatures if domains change or proxy URL reconstruction is wrong.",
-      "mitigation": "Use exact origins, stable domains, canonical forwarded-protocol/host handling, and preflight signed callbacks again after any domain change."
-    },
-    {
-      "severity": "medium",
-      "description": "Event/projection state, ML output, or FHIR validation evidence could become stale or inconsistent.",
-      "mitigation": "Use atomic event/projection updates, rebuild checks, exact artifact hashes, cross-language golden vectors, and exact-bundle validator reports."
+      "description": "Process restart or ambiguous provider acceptance can duplicate a consequential action.",
+      "mitigation": "Use durable PostgreSQL claims, committed provider attempts, stable identities, signed callbacks, and reconcile-before-retry; lease expiry alone never permits resend."
     }
   ],
   "blockers": [],
   "notes_for_next_agent": [
-    "Environment decisions: web=`VITE_API_BASE_URL`; api=`APP_ENV`, Railway-referenced `DATABASE_URL`, `ONCOREADY_SCENARIO_TOKEN`, exact `ONCOREADY_ALLOWED_ORIGINS`, exact API `ONCOREADY_PUBLIC_ORIGIN`, `CRON_SECRET`, `SCHEDULER_ENABLED=true`, `SCHEDULER_POLL_INTERVAL_MS=15000`, `SCHEDULER_BATCH_SIZE=25`, provider switches false initially, and the documented Twilio/ElevenLabs IDs and secrets.",
-    "Railway service decisions: `web` uses frontend root/static SPA output; `api` keeps repository-root build context for api/packages/contracts/migrations/artifacts, listens on `0.0.0.0:$PORT`, has `/health`, one launch replica, sleep disabled, and restart enabled; `Postgres` remains private.",
-    "The protected tick endpoint and CRON_SECRET remain because they are governed. They are manual/preflight compatibility surfaces, not scheduler infrastructure. Normal scheduled work comes from the in-process poller and PostgreSQL claims.",
-    "Database implementation should port the workflow core into vendor-neutral migrations, retain scheduled_actions/outbox/provider attempts/receipts/idempotency/leases, and delete or exclude the retired HTTP scheduler migration. Do not install platform-specific roles/extensions without a new decision.",
-    "Backend implementation must keep the scheduler cycle in shared application code so the internal poller and protected HTTP tick call the same bounded function; no duplicated scheduling logic.",
-    "Frontend implementation must use the public Railway API origin. No secret or database value may use the VITE_ prefix.",
-    "ElevenLabs setup remains disabled until its Railway variables, agent data-collection field, signed webhook URLs, and controlled recipient are configured and preflighted. Twilio form callbacks allow provider-added parameters and remain suitable for direct official webhook validation.",
-    "The frontend design gate remains required for the task-level visible experience; hosting migration does not authorize the architect/orchestrator to restyle the approved design.",
-    "FULL independent testing, exact-commit verification, HIGH-risk security review, final review, and controlled rehearsals remain mandatory.",
-    "FastAPI is permitted by the human but intentionally not selected. Do not describe Node/TypeScript as a Railway constraint; it is a scope and migration-risk decision for LAUNCH-001."
+    "CONTRACT_CHANGE_REQUIRED before frontend API integration: update `contracts/openapi.yaml` exactly as described in `docs/architecture/SYSTEM.md`; event contracts do not change.",
+    "Public operations: GET finals projection/metrics/FHIR/priority and POST readiness/work-item/CareLink request/CareLink commands, all with `security: []`, fixed finals scenario, explicit 403 policy errors, and 429 on mutations. Readiness is web-only; CareLink creation accepts no client-selected plan fields.",
+    "Operator operations: POST reset/SMS/voice with `OperatorControlToken` header `X-OncoReady-Operator-Token`; manual tick remains `CronSecret`; callbacks retain official signature headers.",
+    "Frontend must generate a client with no operator token parameter, use only public operations, and keep reset and provider-initiation controls out of the anonymous journey.",
+    "Backend must enforce public no-outbox authorization as an application/domain invariant, not only a router convention. CORS is not the authorization control.",
+    "Environment decisions: web=`VITE_API_BASE_URL`; api=`ONCOREADY_PUBLIC_DEMO_ENABLED`, server-only `ONCOREADY_OPERATOR_TOKEN`, `DATABASE_URL`, exact origins, `CRON_SECRET`, scheduler settings, and provider variables/switches.",
+    "Keep `EXTERNAL_ACTIONS_ENABLED=false`, `TWILIO_SMS_ENABLED=false`, and `ELEVENLABS_VOICE_ENABLED=false` through ML/backend/frontend/Railway readiness. Provider setup and live proof are a later phase.",
+    "Scheduler decision is unchanged: one long-running API owns the poller; PostgreSQL owns durable due work/claims; protected tick is manual/preflight only.",
+    "FastAPI remains human-permitted but is not selected for this slice because the existing TypeScript implementation and contracts make a rewrite unnecessary risk.",
+    "FULL independent testing must include direct non-browser calls, arbitrary scenario/action rejection, no-secret bundle inspection, public no-external-effect proof, operator auth, callbacks, scheduler overlap, and the complete browser journey."
   ],
   "execution": {
     "contract_required": true,

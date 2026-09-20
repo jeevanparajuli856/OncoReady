@@ -42,7 +42,8 @@ Real values belong in an ignored local `.env` or Railway variables. Never put se
 |---|---:|---|
 | `APP_ENV` | No | `production` |
 | `DATABASE_URL` | Yes | `${{Postgres.DATABASE_URL}}` reference |
-| `ONCOREADY_SCENARIO_TOKEN` | Yes | At least 32 random bytes |
+| `ONCOREADY_PUBLIC_DEMO_ENABLED` | No | `true` only in the illustrative finals environment |
+| `ONCOREADY_OPERATOR_TOKEN` | Yes | At least 32 random bytes; reset and SMS/voice initiation only |
 | `ONCOREADY_ALLOWED_ORIGINS` | No | Exact `web` HTTPS origin; never `*` |
 | `ONCOREADY_PUBLIC_ORIGIN` | No | Exact public `api` HTTPS origin |
 | `CRON_SECRET` | Yes | At least 32 random bytes; manual tick only |
@@ -121,6 +122,9 @@ Preflight must prove:
 - landing and direct SPA routes load;
 - `/health` reports process/database readiness without secrets;
 - CORS permits only the exact web origin;
+- the web bundle contains only `VITE_API_BASE_URL` and sends no operator credential;
+- anonymous API calls are fixed to the illustrative finals scenario and cannot reset, queue SMS/voice, or create provider outbox authorization;
+- `X-OncoReady-Operator-Token` is required for reset and SMS/voice initiation;
 - Postgres is private and migrations/seed are current;
 - reset creates no outbox/provider effect;
 - scheduler heartbeat advances and stale leases recover;
@@ -130,6 +134,8 @@ Preflight must prove:
 References: [Railway monorepos](https://docs.railway.com/guides/deploying-a-monorepo), [frontend variables](https://docs.railway.com/guides/frontend-environment-variables), [PostgreSQL](https://docs.railway.com/databases/postgresql).
 
 ## 2. Twilio
+
+Defer this section until ML, backend, frontend, Railway deployment, and the public-demo/operator boundary pass preflight with `EXTERNAL_ACTIONS_ENABLED=false`, `TWILIO_SMS_ENABLED=false`, and `ELEVENLABS_VOICE_ENABLED=false`.
 
 Human steps:
 
@@ -154,6 +160,8 @@ Approved inputs are `1 ready`, `2 need a ride`, `3 call me`, `4 scheduling help`
 References: [Messaging Services](https://www.twilio.com/docs/messaging/services), [webhook validation](https://www.twilio.com/docs/messaging/guides/webhook-request).
 
 ## 3. ElevenLabs through Twilio
+
+Defer this section with Twilio. Do not add provider credentials or enable voice during the platform-readiness phase.
 
 Human steps:
 
@@ -204,13 +212,14 @@ References: [native Twilio integration](https://elevenlabs.io/docs/eleven-agents
 
 ## 5. Enablement order
 
-1. Deploy all services with external switches `false`.
-2. Apply migrations; run reset/seed and prove zero external effects.
-3. Pass Railway health, routing, database, scheduler, and manual-tick preflight.
-4. Reject invalid Twilio/ElevenLabs signatures and prove callback duplicate/order safety.
-5. Enable only SMS; verify authentic sent/delivered/inbound callbacks, then rehearse STOP/undelivered recovery.
-6. Enable only voice after the signed-webhook and data-collection preflight; verify one bounded call and no transcript/audio persistence.
-7. Enable the global switch only for a controlled rehearsal window and run the required success/failure rehearsals.
+1. Deploy ML artifacts, backend, frontend, and PostgreSQL with every external switch `false` and no provider credentials required for health.
+2. Apply migrations; perform operator-authenticated reset/seed and prove zero external effects.
+3. Pass Railway health, routing, database, scheduler, public-demo route policy, operator authentication, and no-secret-bundle preflight.
+4. Keep provider setup deferred until those platform-readiness checks pass.
+5. Configure Twilio and ElevenLabs, reject invalid signatures, and prove callback duplicate/order safety while external switches remain `false`.
+6. Enable only SMS; verify authentic sent/delivered/inbound callbacks, then rehearse STOP/undelivered recovery.
+7. Enable only voice after the signed-webhook and data-collection preflight; verify one bounded call and no transcript/audio persistence.
+8. Enable the global switch only for a controlled rehearsal window and run the required success/failure rehearsals.
 
 Unknown provider outcomes remain unresolved until reconciled; lease expiry never authorizes blind resend.
 

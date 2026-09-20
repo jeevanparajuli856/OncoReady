@@ -62,11 +62,13 @@ Responsibilities:
 - public story and centrally configured pilot pricing without patient records on the public route;
 - local role entry and `/access`, `/patient`, `/caregiver`, `/staff`, and `/transport` routes;
 - generated OpenAPI client and generated boundary types;
-- loading, conflict, validation, provider-pending, degraded, retry, empty, success, and reset presentation;
+- loading, conflict, validation, provider-pending, degraded, retry, empty, success, and post-reset presentation;
 - Treatment Readiness Graph, event timeline, role workspaces, communication and transportation evidence, FHIR evidence, and staff-only priority explanation;
 - presentation-only state such as focus, open panels, and reduced-motion preference.
 
 `VITE_API_BASE_URL` contains the public `api` domain and is the only public cross-service address compiled into the frontend. No database or provider secret may use the `VITE_` prefix.
+
+The browser sends no scenario, operator, provider, scheduler, or database credential. The branded role choice selects a synthetic projection and permitted demo interaction; it is not authentication and cannot protect confidential data between anonymous visitors. The launch database therefore contains controlled illustrative data only.
 
 The frontend does not own workflow transitions, role authorization, caregiver filtering, provider success, scheduled work, or durable event state. The current reducer/local storage cannot remain a second launch authority.
 
@@ -88,6 +90,26 @@ Responsibilities:
 Handlers remain thin. Workflow rules, projections, provider translations, evidence generation, and ML behavior belong in shared TypeScript application/domain modules. The service cannot use process memory as durable coordination and cannot rely on local runtime files surviving a redeploy.
 
 The controlled launch starts with one API replica, sleeping disabled, and an automatic restart policy. Database claims and leases still make the scheduler safe if a restart overlaps, an operator invokes the tick endpoint, or a later deployment increases replicas.
+
+### Controlled public demo boundary
+
+The static `web` service cannot keep a shared secret. Embedding `ONCOREADY_SCENARIO_TOKEN` in JavaScript, a `VITE_` variable, local storage, a source map, or a generated client would publish it. CORS also cannot authenticate a caller: it constrains conforming browsers, not scripts or direct HTTP clients.
+
+The API therefore uses operation-level trust classes:
+
+| Class | Operations | Authentication | Consequence ceiling |
+|---|---|---|---|
+| Public synthetic read | finals role projection; metrics, FHIR, and priority evidence | None | Read fixed illustrative data only |
+| Public synthetic mutation | readiness; work-item commands; CareLink request/commands | None | Append fixed-scenario database events/projections only; never authorize provider outbox work |
+| Operator control | deterministic reset; queue SMS; queue voice | `X-OncoReady-Operator-Token` | Fixed-scenario reset or one fixed-recipient external intent, still subject to kill switches and allowlists |
+| Provider callback | Twilio and ElevenLabs callback routes | Official provider signature over exact raw request | Record an allowlisted provider outcome only |
+| Scheduler control | manual operations tick | `Authorization: Bearer <CRON_SECRET>` | Run the same bounded durable-work cycle as the internal poller |
+
+`ONCOREADY_PUBLIC_DEMO_ENABLED` defaults false. When true, public routes are available only for the compiled-in finals scenario. Public requests may not select a scenario, phone number, provider, pickup/destination, script, model, or artifact. The request `scenario_id` remains in the command contract for event/idempotency consistency but must equal the finals UUID; `actor_role` is unverified demo provenance, not authorization. The server enforces route, aggregate type, current state, actor/action combination, expected version, idempotency, body size, and a per-origin/IP/operation rate limit.
+
+Public mutation execution has a hard effect boundary: it may update PostgreSQL demo events, projections, internal SLA state, and idempotency receipts, but it cannot create or authorize an SMS/voice provider outbox row. Provider dispatch requires an operator-authenticated communication command recorded as the authorization source. Reset is also operator-only and is invoked with an operator script or direct API call before a rehearsal, never from the public bundle.
+
+Exact CORS remains required for browser isolation and configuration hygiene, but denial of arbitrary scenarios/targets and denial of external effects are the security controls. Rate limiting and deterministic operator reset limit public-state vandalism; they are not represented as user authentication.
 
 ### Workflow and projection modules
 
@@ -223,7 +245,7 @@ Initiation error, timeout, invalid callback, undelivered message, no-answer call
 
 ### Deterministic reset
 
-Reset is scenario-scoped. It validates the privileged controlled action, suppresses all external-action creation, restores the fixed seed and projections, clears/reinitializes only governed launch scheduler/outbox/idempotency/callback state, and records technical reset evidence where required. Reset cannot send SMS, place a call, or create a transportation request.
+Reset is scenario-scoped and operator-authenticated. It is not callable by the public static application. It validates the privileged controlled action, suppresses all external-action creation, restores the fixed seed and projections, clears/reinitializes only governed launch scheduler/outbox/idempotency/callback state, and records technical reset evidence where required. Reset cannot send SMS, place a call, or create a transportation request.
 
 ## Interface authority and contract blockers
 
@@ -233,25 +255,34 @@ For LAUNCH-001, contracts remain mandatory:
 - `contracts/events/*.schema.json` is authoritative for workflow event envelopes and payloads.
 - `.ai/tasks/LAUNCH-001/task.json` identifies the governed contract files.
 
-The Railway host decision does not require any endpoint, method, security scheme, command, response, or event-payload change. Frontend and backend can preserve the existing generated boundary. Two contract documentation/provider issues require orchestrator reconciliation before final contract freeze:
+The separate Railway static origin makes the current global scenario-token requirement undeployable without publishing a server secret. This is `CONTRACT_CHANGE_REQUIRED`; a contract specialist/orchestrator must reconcile `contracts/openapi.yaml` before frontend API integration. Architecture does not silently redefine the wire boundary.
 
-1. the OpenAPI `servers` list still names the retired deployment host; replace only that deployment metadata with the canonical Railway web/API origin model;
-2. the current ElevenLabs callback request schemas describe normalized OncoReady objects, while ElevenLabs sends signed `post_call_transcription` and `call_initiation_failure` envelopes. The governed boundary must either accept the official provider envelopes or explicitly define an authenticated translation boundary. Implementation must not silently accept a different shape.
+Required OpenAPI delta:
 
-Architecture prose cannot redefine these wire shapes. Any required change is `CONTRACT_CHANGE_REQUIRED` and orchestrator-owned.
+1. Remove global `FinalsScenarioToken` security and its `X-OncoReady-Scenario-Token` scheme.
+2. Add `OperatorControlToken`, an API-key header named `X-OncoReady-Operator-Token`.
+3. Set `security: []` explicitly on finals projection; readiness; work-item commands; CareLink request/commands; metrics; FHIR; and priority operations. Their descriptions must say fixed illustrative scenario and, for mutations, database-only demo effect.
+4. Require `OperatorControlToken` only on reset, queue-SMS, and queue-voice operations. Retain `CronSecret` only on manual tick and the official signature header contracts on provider callbacks.
+5. Add a `FinalsScenarioId` string schema with `const: 11111111-1111-4111-8111-111111111111`, and reference it from command `scenario_id`. Keep `actor_role` but describe it as claimed demo provenance; narrow readiness to `patient`, reset/communications to `staff`, create-transport to `staff | transport_coordinator`, and keep action-specific role checks for work-item/transport commands.
+6. Constrain the public readiness command to `channel: web`; SMS/voice evidence enters only through authenticated provider callbacks. Remove server-owned plan fields from the public create-transport request body except `work_item_id`; the server derives arrival window, cutoff, funding, service area, mobility, outbound/return plan, and notification permission from the fixed seed/current projection.
+7. Remove `401` from anonymous demo operations, retain `403` for fixed-scenario/action policy, and declare `429` consistently on every public mutation. Operator operations retain `401`, `403`, version/idempotency errors, and rate limiting.
+8. Preserve all paths, methods, command receipts, expected-version/idempotency behavior, callback envelopes, and event schemas. No event-contract change is required.
+
+Backend contract implementation must apply authorization before body-driven behavior, derive the finals scenario server-side, reject a nonmatching body value, apply the route/resource/action matrix, and make public commands incapable of producing provider outbox authorization. Frontend contract implementation must generate a client with no operator-token parameter, call only public operations, keep operator controls out of the public journey, and use `VITE_API_BASE_URL` as its only deployment value.
 
 ## Trust boundaries and controls
 
 | Boundary | Material risk | Required control |
 |---|---|---|
-| Browser -> public API | Forged role/action, injection, oversized/rapid requests, stale writes | Controlled scenario token, actor/action allowlists, schema validation, parameterized SQL, size/rate limits, exact CORS, versions, idempotency |
-| Local role entry -> role projection | Branded buttons mistaken for identity; overbroad response | Illustrative data only, no PHI, server allowlist projections, truthful presentation boundary |
+| Browser -> public demo API | Forged role/action, state vandalism, injection, oversized/rapid requests, stale writes | Fixed scenario, database-only effect ceiling, route/resource/action allowlists, schema validation, parameterized SQL, size/rate limits, exact CORS, versions, idempotency |
+| Local role entry -> role projection | Branded buttons mistaken for identity or confidentiality; overbroad response | Illustrative data only, no PHI, server allowlist projections, truthful presentation boundary; role is unverified demo context |
+| Operator -> reset/provider initiation | Leaked credential, destructive reset, SMS/voice abuse | Server-only operator token, no browser exposure, fixed target, bounded rate, kill switches, auditable authorization source |
 | Patient text -> staff/logs | Script injection or unnecessary sensitive logging | Inert rendering, no raw HTML, length bounds, verbatim human review, minimized/redacted logs |
 | Patient/staff -> caregiver/transport | Clinical/internal/model leakage | Separate server schemas plus negative API/DOM/accessibility/search/export/log tests |
 | API -> Railway PostgreSQL | Overprivilege, partial state, connection exhaustion | Private `DATABASE_URL`, least privilege, small pool, transactions, constraints, parameterized queries |
 | Scheduler loop -> providers | Duplicate, arbitrary, or uncertain consequential action | DB advisory lock, bounded claims/leases, fixed targets, kill switches, stable identity, reconcile-before-retry |
 | Provider callback -> domain | Forged, replayed, duplicate, or out-of-order outcome | Official raw signature/HMAC verification, receipt uniqueness, replay policy, transition/version guards |
-| Reset -> database/outbox | Destructive misuse or external action during reset | Scenario-scoped privilege, fixed seed, external effects suppressed, no production target |
+| Reset -> database/outbox | Destructive misuse or external action during reset | Operator-only scenario-scoped privilege, fixed seed, external effects suppressed, no production target |
 | ML/FHIR artifact -> claim | Stale or mismatched evidence; false clinical/interoperability claim | Immutable hash/version, parity tests, safe-unavailable state, exact-hash validator report |
 | Railway variables/logs -> operator/repository | Credential exposure | Server-only sealed variables, no `VITE_` secrets, ignored local env, redaction, presence-only checks |
 
@@ -284,7 +315,7 @@ Minimum launch infrastructure:
 - `web` service from the Vite frontend with SPA deep-link fallback and a public HTTPS domain;
 - `api` service from the repository root so it can use `api/`, `packages/`, contracts, database migrations, and ML artifacts; it has a public HTTPS domain, `/health` check, one replica, sleeping disabled, and restart-on-failure/always behavior;
 - private Railway `Postgres` service; no browser access and no public TCP proxy for normal operation;
-- server-only Railway variables for database reference, scenario/tick tokens, exact origins, provider credentials, fixed recipient/location/provider values, rate limits, and kill switches;
+- server-only Railway variables for database reference, operator/tick tokens, exact origins, provider credentials, fixed recipient/location/provider values, rate limits, and kill switches, plus a non-secret fail-closed public-demo enablement flag;
 - no legacy hosting resource, database-extension scheduler, Railway Cron, cache, queue, or second backend runtime.
 
 Provider callbacks must use the stable public API origin. Changing that origin requires updating Twilio and ElevenLabs settings and re-running exact-URL signature tests before actions are enabled.
@@ -293,14 +324,15 @@ Provider callbacks must use the stable public API origin. Changing that origin r
 
 1. Orchestrator reconciles `docs/PROJECT.md`, `.ai/project.json`, `docs/features/LAUNCH-001.md`, task acceptance/scope, roadmap/sprint references, OpenAPI server metadata, and deployment verification to Railway.
 2. Database specialist ports the portable workflow schema/seed to the approved vendor-neutral migration path and removes the retired HTTP scheduler migration from the target sequence.
-3. Backend specialist implements the long-running API process, shared domain modules, private PostgreSQL access, internal poller, protected manual tick, raw callback verification, and `/health` behavior against governed contracts.
-4. Frontend specialist completes the existing design gate and migrates browser authority to the generated client using the Railway API origin.
-5. Integrate one vertical path before enabling providers: reset -> readiness -> split work -> schedule/outbox -> projections -> acknowledgment -> evidence.
-6. Enable Twilio and ElevenLabs separately only after signed callback, allowlist, idempotency, and failure-path checks pass.
-7. Run FULL independent tests, exact-commit verification, focused HIGH-risk security review, final review, and controlled rehearsals.
+3. Contract specialist/orchestrator replaces global scenario-token security with the operation-level public-demo/operator/provider/scheduler scheme above and validates the generated boundary.
+4. Backend specialist implements the long-running API process, route-class security, public database-only effect ceiling, shared domain modules, private PostgreSQL access, internal poller, protected manual tick, raw callback verification, and `/health` behavior against governed contracts.
+5. Frontend specialist completes the existing design gate and migrates browser authority to the generated public client using the Railway API origin, without any server secret.
+6. Integrate one vertical path before enabling providers: operator reset -> public readiness -> split work -> projections -> acknowledgment -> evidence; initiate any provider outreach separately through an operator-authenticated action.
+7. Enable Twilio and ElevenLabs separately only after signed callback, allowlist, idempotency, public-no-external-effect, and failure-path checks pass.
+8. Run FULL independent tests, exact-commit verification, focused HIGH-risk security review, final review, and controlled rehearsals.
 
 ## Verification expectations
 
-Verification covers contract/schema validation and generated-client freshness; vendor-neutral migration reset/seed and constraints; event ordering, concurrency, idempotency, projection consistency; scheduler restart/overlap/lease/outbox recovery; raw-body callback authentication/replay/order; fixed provider targets and kill switches; CareLink failure/backup; reset with zero effects; complete cross-role browser journey; caregiver negative disclosure; responsive/keyboard/reduced-motion behavior; exact-hash FHIR validation; ML reproducibility/parity/fallback; Railway web/API routing, SPA deep links, health/restart behavior, private database wiring, and network-disabled recovery.
+Verification covers contract/schema validation and generated-client freshness; proof that the browser bundle contains no operator token; anonymous fixed-scenario reads and allowlisted database-only mutations; rejection of arbitrary scenarios/actions and public external effects; operator authentication for reset/provider initiation; vendor-neutral migration reset/seed and constraints; event ordering, concurrency, idempotency, projection consistency; scheduler restart/overlap/lease/outbox recovery; raw-body callback authentication/replay/order; fixed provider targets and kill switches; CareLink failure/backup; reset with zero effects; complete cross-role browser journey; caregiver negative disclosure; responsive/keyboard/reduced-motion behavior; exact-hash FHIR validation; ML reproducibility/parity/fallback; Railway web/API routing, SPA deep links, health/restart behavior, private database wiring, and network-disabled recovery.
 
 Required preflight evidence includes the exact Railway project/environment/service IDs, successful `web` and `api` deployments, public domains, private `DATABASE_URL` reference, current migrations, bounded database pool, fresh scheduler heartbeat with no stuck claims, callback origins, provider switches/allowlists, FHIR validator availability, and ML artifact compatibility. A green service health check is not provider-success evidence; only authenticated governed outcomes are.
