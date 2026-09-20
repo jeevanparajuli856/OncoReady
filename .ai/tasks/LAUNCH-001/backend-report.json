@@ -2,17 +2,56 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "agent": "codex-backend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Implemented the governed TypeScript backend as a long-running Railway API with private PostgreSQL persistence, a shared bounded scheduler cycle, signed provider callbacks, and explicit failure-safe external action handling.",
+  "files_changed": [
+    "package.json",
+    "package-lock.json",
+    "packages/server/src/application.ts",
+    "packages/server/src/config.ts",
+    "packages/server/src/domain.ts",
+    "packages/server/src/evidence.ts",
+    "packages/server/src/http.ts",
+    "packages/server/src/ml.ts",
+    "packages/server/src/postgres-repository.ts",
+    "packages/server/src/providers.ts",
+    "packages/server/src/repository.ts",
+    "packages/server/src/scheduler.ts",
+    "packages/server/src/schemas.ts",
+    "packages/server/src/server.ts",
+    "packages/server/src/types.ts",
+    "packages/server/tsconfig.json",
+    "packages/server/tsconfig.build.json",
+    "railway/api.toml",
+    "tests/contracts/openapi-boundary.test.ts",
+    "tests/fhir/evidence.test.ts",
+    "tests/server/domain.test.ts",
+    "tests/server/ml-runtime.test.ts",
+    "tests/server/repository.test.ts",
+    "tests/server/scheduler.test.ts",
+    "tests/server/security.test.ts",
+    "tests/server/webhooks.test.ts"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/openapi.yaml",
+    "contracts/events/workflow-event.schema.json",
+    "contracts/events/workflow-event-payloads.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "npm run build:server && npm run test:server",
+      "python3 scripts/validate-contracts.py",
+      "python3 -m pytest -q tests/database"
+    ],
+    "notes": "The server build/typecheck passed; 28 focused server, contract, and FHIR tests passed; all governed contracts validated; and six vendor-neutral migration tests passed. Tests cover the health/tick trust boundaries, scheduler non-overlap, idempotency/version guards, caregiver minimization, external-action controls, Twilio signatures, official ElevenLabs post-call/failure envelopes, callback deduplication, and transcript non-persistence."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Configure the Railway api service to use railway/api.toml, the repository root as build context, one replica, sleeping disabled, and DATABASE_URL=${{Postgres.DATABASE_URL}}.",
+    "The process listens on 0.0.0.0:$PORT, exposes database-backed GET /health, runs the same WorkflowApplication.tick cycle from the internal scheduler and authenticated manual endpoint, and waits for an active tick before closing PostgreSQL on SIGTERM/SIGINT.",
+    "Provider intent is committed before network I/O. Unknown network outcomes become outcome_unknown and are excluded from blind re-claim; signed callbacks reconcile stored attempts by provider conversation/message reference.",
+    "ElevenLabs callbacks accept the official signed post_call_transcription and call_initiation_failure envelopes, derive scenario/correlation only from stored provider attempts, return HTTP 200, and persist neither transcript nor audio.",
+    "Keep EXTERNAL_ACTIONS_ENABLED, TWILIO_SMS_ENABLED, and ELEVENLABS_VOICE_ENABLED false until Railway variables, fixed recipient, exact public origin, and signed callback preflight pass. No live provider action was performed by this worker."
+  ]
 }
