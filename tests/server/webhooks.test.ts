@@ -5,8 +5,8 @@ import {createHttpHandler} from "../../packages/server/src/http.js";
 import {loadConfig} from "../../packages/server/src/config.js";
 import {MemoryWorkflowRepository,createSeedProjections} from "../../packages/server/src/repository.js";
 
-const scenario="11111111-1111-4111-8111-111111111111";
-const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_SCENARIO_TOKEN:"scenario-secret",ONCOREADY_PUBLIC_ORIGIN:"https://finals.example",CRON_SECRET:"cron",TWILIO_AUTH_TOKEN:"twilio-secret",ELEVENLABS_WEBHOOK_SECRET:"eleven-secret",ELEVENLABS_AGENT_ID:"agent-1",FINALS_ALLOWLISTED_PHONE:"+15550000000"});
+const scenario="11111111-1111-4111-8111-111111111111" as const;
+const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_PUBLIC_ORIGIN:"https://finals.example",CRON_SECRET:"cron",TWILIO_AUTH_TOKEN:"twilio-secret",ELEVENLABS_WEBHOOK_SECRET:"eleven-secret",ELEVENLABS_AGENT_ID:"agent-1",FINALS_ALLOWLISTED_PHONE:"+15550000000"});
 
 describe("provider callback authentication",()=>{
   it("rejects invalid Twilio signatures before recording state",async()=>{

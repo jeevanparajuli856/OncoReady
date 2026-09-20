@@ -3,8 +3,8 @@ import {MemoryWorkflowRepository,createSeedProjections} from "../../packages/ser
 import {WorkflowApplication} from "../../packages/server/src/application.js";
 import {loadConfig} from "../../packages/server/src/config.js";
 
-const scenario="11111111-1111-4111-8111-111111111111";
-const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_SCENARIO_TOKEN:"secret",CRON_SECRET:"cron"});
+const scenario="11111111-1111-4111-8111-111111111111" as const;
+const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_OPERATOR_TOKEN:"operator-control-token-000000000000",CRON_SECRET:"cron"});
 
 describe("application transaction semantics",()=>{
   it("returns the prior semantic result for a repeated idempotency key",async()=>{
@@ -40,6 +40,31 @@ describe("application transaction semantics",()=>{
     await app.communication("sms",{scenario_id:scenario,actor_role:"staff",idempotency_key:"queue-sms-001",expected_aggregate_version:0,purpose:"readiness",destination_alias:"finals_allowlisted_phone"});
     expect(repo.outbox).toHaveLength(1);
     await app.reset({scenario_id:scenario,actor_role:"staff",idempotency_key:"reset-key-001",expected_aggregate_version:0,confirmation:"RESET_FINALS_SCENARIO"});
+    expect(repo.outbox).toHaveLength(0);
+  });
+
+  it("rejects provider outbox work from the public database-only execution class",async()=>{
+    const repo=new MemoryWorkflowRepository(createSeedProjections(scenario));
+    await expect(repo.executeCommand({
+      scenarioId:scenario,
+      idempotencyKey:"public-outbox-invariant-001",
+      semanticInput:{action:"attempt_provider_work"},
+      aggregateType:"readiness_check",
+      aggregateId:"public-outbox-invariant-001",
+      expectedVersion:0,
+      effectClass:"public_database_only",
+    },()=>({
+      aggregateVersion:1,
+      events:[],
+      projections:{},
+      outbox:[{
+        scenario_id:scenario,
+        action_type:"sms",
+        stable_action_id:"public-outbox-invariant-001",
+        payload:{destination_alias:"finals_allowlisted_phone"},
+      }],
+    }))).rejects.toMatchObject({status:403,code:"forbidden_action"});
+    expect(repo.events).toHaveLength(0);
     expect(repo.outbox).toHaveLength(0);
   });
 });

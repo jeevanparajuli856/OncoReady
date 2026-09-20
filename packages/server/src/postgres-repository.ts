@@ -6,7 +6,7 @@ import {scorePriority} from "./ml.js";
 import type {ActorRole, CommandReceipt, OutboxItem, WorkflowEvent} from "./types.js";
 import {AppError} from "./types.js";
 import type {CommandDecision, CommandSnapshot, ExecuteCommandInput, WebhookWrite, WorkflowRepository} from "./repository.js";
-import {minimizeCaregiverProjection,semanticHash} from "./repository.js";
+import {enforceEffectClass,minimizeCaregiverProjection,semanticHash} from "./repository.js";
 
 const FINALS_SCENARIO_ID = "11111111-1111-4111-8111-111111111111";
 const roles: ActorRole[] = ["patient", "caregiver", "staff", "transport_coordinator"];
@@ -65,10 +65,12 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
     const version = head.rows[0]?.aggregate_version ?? 0;
     let state: Record<string, unknown> = {};
     if (input.aggregateType === "work_item") {
-      const row = await client.query("select status, owner_id, closure_evidence from public.work_item_projections where scenario_id=$1 and work_item_id=$2", [input.scenarioId, input.aggregateId]);
-      state = row.rows[0] ?? {};
+      const row = await client.query("select status,owner_id,closure_evidence,work_item_type,owner_role,aggregate_version from public.work_item_projections where scenario_id=$1 and work_item_id=$2", [input.scenarioId, input.aggregateId]);
+      if(!row.rows[0])throw new AppError(404,"not_found","Work item was not found.");
+      state = row.rows[0];
     } else if (input.aggregateType === "transport_request") {
       const row = await client.query("select * from public.transport_projections where scenario_id=$1 and transport_request_id=$2", [input.scenarioId, input.aggregateId]);
+      if(!row.rows[0]&&!input.allowCreate)throw new AppError(404,"not_found","Transport request was not found.");
       state = row.rows[0] ?? {};
     }
     const projectionRows = await client.query<{role: ActorRole; projection: Record<string, unknown>}>("select role, projection from public.role_projections where scenario_id=$1 for update", [input.scenarioId]);
@@ -125,6 +127,7 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
       const snapshot = await this.loadSnapshot(client, input);
       if (snapshot.aggregate.version !== input.expectedVersion) throw new AppError(409, "version_conflict", "Aggregate version is stale.", false, snapshot.aggregate.version);
       const decision = decide(snapshot);
+      enforceEffectClass(input,decision);
       for (const event of decision.events) { await this.insertEvent(client, event); await this.updateRelationalProjection(client, event, decision); }
       for (const [role, projection] of Object.entries(decision.projections) as Array<[ActorRole, Record<string, unknown>]>) {
         await client.query("update public.role_projections set scenario_version=$3,as_of=$4,projection=$5,updated_at=clock_timestamp() where scenario_id=$1 and role=$2", [input.scenarioId,role,projection.scenario_version,projection.as_of,projection]);
