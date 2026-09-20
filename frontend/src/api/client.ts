@@ -6,6 +6,7 @@ export type RoleProjection = ApiSchemas['RoleProjection'];
 export type PatientProjection = ApiSchemas['PatientProjection'];
 export type CaregiverProjection = ApiSchemas['CaregiverProjection'];
 export type StaffProjection = ApiSchemas['StaffProjection'];
+export type StaffCommunication = StaffProjection['communications'][number];
 export type TransportProjection = ApiSchemas['TransportProjection'];
 export type Problem = ApiSchemas['Problem'];
 export type CommandReceipt = ApiSchemas['CommandReceipt'];
@@ -52,10 +53,14 @@ const parseResponse = async <T>(response: Response): Promise<T> => {
   return body as T;
 };
 
+const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL ?? '').trim().replace(/\/+$/, '');
+
+export const resolveApiUrl = (path: string) => `${apiBaseUrl}${path}`;
+
 const request = async <T>(path: string, init?: RequestInit): Promise<T> => {
-  const response = await fetch(path, {
+  const response = await fetch(resolveApiUrl(path), {
     ...init,
-    credentials: 'same-origin',
+    credentials: 'omit',
     headers: {
       Accept: 'application/json',
       ...(init?.body ? { 'Content-Type': 'application/json' } : {}),
@@ -89,4 +94,3 @@ export const finalsApi = {
 
 export const newIdempotencyKey = (purpose: string) =>
   `${purpose}:${typeof crypto !== 'undefined' && crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
-

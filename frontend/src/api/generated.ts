@@ -619,32 +619,63 @@ export interface components {
         } & {
             [key: string]: unknown;
         };
+        /** @description Official signed ElevenLabs post-call transcription envelope. Transcript and audio content are not persisted by OncoReady. */
         ElevenLabsPostCall: {
-            event_id: string;
-            call_id: string;
-            /** Format: date-time */
-            occurred_at: string;
             /** @constant */
-            status: "completed";
-            /** @enum {string} */
-            outcome: "ready" | "ride_help" | "scheduling_help" | "human_callback" | "unsupported_or_uncertain";
-            /** Format: uuid */
-            scenario_id: string;
-            /** Format: uuid */
-            correlation_id: string;
+            type: "post_call_transcription";
+            event_timestamp: number;
+            data: {
+                agent_id: string;
+                conversation_id: string;
+                status: string;
+                analysis: {
+                    data_collection_results: {
+                        oncoready_outcome?: components["schemas"]["ElevenLabsOutcomeResult"];
+                    } & {
+                        [key: string]: unknown;
+                    };
+                } & {
+                    [key: string]: unknown;
+                };
+            } & {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
-        ElevenLabsFailure: {
-            event_id: string;
-            call_id: string;
-            /** Format: date-time */
-            occurred_at: string;
+        ElevenLabsOutcomeResult: {
             /** @constant */
-            status: "failed";
-            failure_code: string;
-            /** Format: uuid */
-            scenario_id: string;
-            /** Format: uuid */
-            correlation_id: string;
+            data_collection_id: "oncoready_outcome";
+            /** @enum {string} */
+            value: "ready" | "ride_help" | "scheduling_help" | "human_callback" | "unsupported_or_uncertain";
+            rationale?: string | null;
+        } & {
+            [key: string]: unknown;
+        };
+        /** @description Official signed ElevenLabs call-initiation-failure envelope. */
+        ElevenLabsFailure: {
+            /** @constant */
+            type: "call_initiation_failure";
+            event_timestamp: number;
+            data: {
+                agent_id: string;
+                conversation_id: string;
+                /** @enum {string} */
+                failure_reason: "busy" | "no-answer" | "unknown";
+                metadata: {
+                    /** @enum {string} */
+                    type: "twilio" | "sip";
+                    body: {
+                        [key: string]: unknown;
+                    };
+                } & {
+                    [key: string]: unknown;
+                };
+            } & {
+                [key: string]: unknown;
+            };
+        } & {
+            [key: string]: unknown;
         };
         MetricsEvidence: {
             /** Format: uuid */
@@ -1539,7 +1570,7 @@ export interface operations {
         };
         responses: {
             /** @description Callback accepted or duplicate safely ignored */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -1567,7 +1598,7 @@ export interface operations {
         };
         responses: {
             /** @description Callback accepted or duplicate safely ignored */
-            204: {
+            200: {
                 headers: {
                     [name: string]: unknown;
                 };
