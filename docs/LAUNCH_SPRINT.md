@@ -77,7 +77,7 @@ Complete this work before starting the Day 1 implementation clock:
 - Enable TypeScript Vercel Node.js Functions and Supabase PostgreSQL components and add required server, database, contract, frontend, FHIR, and ML verification commands.
 - Replace browser-local workflow state as the launch authority with persisted workflow events and server-derived role projections.
 - Preserve React, TypeScript, Vite, the established design system, deterministic reset, accessibility, and reduced-motion behavior.
-- Add one ADR covering the React/Vite → TypeScript Vercel Functions → PostgreSQL event-state boundary, authenticated Vercel Cron with bounded outbox claims, provider adapters, deterministic recovery, and the decision not to add a persistent app server, Redis, Kafka, Celery, or microservices.
+- Add one ADR covering the React/Vite → TypeScript Vercel Functions → PostgreSQL event-state boundary, Supabase Cron invoking an authenticated bounded Vercel outbox tick, provider adapters, deterministic recovery, and the decision not to add a persistent app server, Redis, Kafka, Celery, or microservices.
 - Create `LAUNCH-001` with database, backend, frontend, infrastructure, and frontend-design impacts enabled.
 - Set `contract_required=true`, `test_depth=FULL`, `security_risk=HIGH`, and `security_review_required=true`.
 - Record the governed OpenAPI and event-schema files in the task contract list.
@@ -98,7 +98,7 @@ Generated OpenAPI client
         ▼
 TypeScript Vercel Node.js Functions
         ├── workflow and projection services
-        ├── authenticated Cron tick + bounded transactional outbox drain
+        ├── authenticated tick + bounded transactional outbox drain
         ├── Twilio messaging adapter and signed callbacks
         ├── ElevenLabs/Twilio voice adapter and signed callbacks
         ├── CareLink Partner Dispatch adapter
@@ -117,9 +117,9 @@ Supabase PostgreSQL
 
 - The frontend uses `/access`, `/patient`, `/caregiver`, `/staff`, and `/transport` routes.
 - The Vite frontend and Node.js Functions deploy as one Vercel project behind the human-provided HTTPS callback domain.
-- An authenticated Vercel Cron request invokes an idempotent scheduler endpoint that claims a bounded batch of scheduled/outbox work with row locking. Per-minute cadence requires Vercel Pro; Hobby's daily cron is insufficient.
+- Supabase Free Cron (`pg_cron`) uses `pg_net` once per minute to invoke the bearer-authenticated Vercel `GET /api/v1/operations/tick` endpoint. Vercel Hobby hosts the app/functions and has no Cron job. The shared opaque secret exists only as Vercel `CRON_SECRET` and Supabase Vault `oncoready_cron_secret`; Vault `oncoready_tick_url` holds the canonical endpoint.
 - Request handlers persist commands/outbox work before attempting external effects. Consequential provider delivery completes inside the authenticated bounded tick; post-response background work is not part of the correctness model.
-- Supabase is a development/finals environment containing controlled synthetic data only.
+- Supabase Free is a development/finals environment containing controlled synthetic data only. Its 500 MB limit, possible inactivity pause, and lack of included automated backups are accepted; Git-tracked migrations plus deterministic seed/reset are recovery authority.
 - Server configuration fixes the scenario, phone, pickup, destination, provider, origins, rate limits, request-size limits, and external-action kill switches.
 - Reset restores the known scenario but never sends an SMS, places a call, or creates a transport request.
 
@@ -216,7 +216,7 @@ The database specialist works on the task feature branch. Backend and frontend u
 
 | Time | Database specialist | Backend specialist | Frontend specialist | Required gate |
 |---|---|---|---|---|
-| H0–H2 | Link DEV Supabase and create the first migration | Validate Vercel environment, secrets, callback reachability, Cron configuration, and adapters | Complete frontend design Phase A | Human supplies credentials; contract and design reviews start |
+| H0–H2 | Link DEV Supabase, create the first migration, and configure the migrated Supabase Cron job after Vault provisioning | Validate Vercel Hobby environment, tick authentication, callback reachability, and adapters | Complete frontend design Phase A | Human supplies credentials; contract and design reviews start |
 | H2–H6 | Event store, projections, seed/reset, scheduled work, and outbox | TypeScript function foundation plus scenario, readiness, and work-item services | Remove public record; implement pricing and access gateway | Contract and design gates approved |
 | H6–H9 | Commit migration foundation; projection and constraint tests | Generated boundary models, command guards, Cron drain, and contract/domain tests | Route/deep-link shell, generated client, and API state adapter | Build, migration reset, generated-client, and contract checks pass |
 | H9–H13 | Communication/transport persistence, receipts, and idempotency | Twilio, ElevenLabs, CareLink commands, signatures, and callbacks | Patient, staff, caregiver, and transport role projections | Maria flow works against persisted deterministic providers |
@@ -228,7 +228,8 @@ The database specialist works on the task feature branch. Backend and frontend u
 - Twilio account, Messaging Service, SMS-capable number, auth token, and allowlisted E.164 phone;
 - ElevenLabs key, bounded agent, linked Twilio number, and webhook secret;
 - public HTTPS callback base URL;
-- Vercel project with Node.js Functions and a Pro plan or equivalent per-minute scheduler;
+- Vercel Hobby project with Node.js Functions and no Vercel Cron configuration;
+- Supabase Free access with Cron/`pg_net`/Vault, `oncoready_tick_url`, and `oncoready_cron_secret` provisioned after the scheduler migration lands;
 - server-side Vercel environment variables or ignored local server environment file;
 - `TRANSPORT_PROVIDER=partner_dispatch`;
 - fixed pickup/destination, scenario token, CORS origins, and kill-switch configuration;

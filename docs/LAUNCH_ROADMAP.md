@@ -216,7 +216,9 @@ Because the branded access page is not real authentication, the controlled final
 - test-phone allowlist;
 - configured `partner_dispatch` enforcement; Uber Health and Lyft Concierge adapters remain disabled and have no finals credentials;
 - vendor-action kill switches;
-- Vercel Pro or equivalent per-minute Cron availability; Hobby's daily schedule is insufficient for the finals scheduler;
+- Vercel Hobby for the React application and Functions, plus Supabase Free Cron (`pg_cron` + `pg_net`) for the one-minute scheduler; no Vercel Cron job or paid Vercel plan is required;
+- Supabase Vault entries `oncoready_tick_url` and `oncoready_cron_secret`, with the identical opaque secret stored as Vercel's server-only `CRON_SECRET`;
+- Free-project preflight for active status, database size below 500 MB, current migrations, Vault entry presence, named Cron cadence, and the latest successful `pg_net` response; migrations and deterministic seed/reset are recovery authority because automated backups are not included;
 - durable scheduled/outbox rows are committed before delivery; consequential provider delivery completes inside the bounded authenticated tick rather than post-response background work;
 - secrets stored server-side and outside Git;
 - no arbitrary phone number or ride destination accepted from the public browser.

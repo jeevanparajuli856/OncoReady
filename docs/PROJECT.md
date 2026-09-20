@@ -149,7 +149,7 @@ A typed, deterministic workflow command model appends versioned events and deriv
 React + TypeScript + Vite role workspaces
   → generated client from contracts/openapi.yaml
   → TypeScript Vercel Node.js Functions in the same Vercel project
-  → authenticated Vercel Cron tick drains bounded scheduled/outbox work
+  → Supabase Cron invokes the authenticated bounded Vercel scheduler/outbox tick
   → provider adapters: Twilio, ElevenLabs, CareLink Partner Dispatch
   → Supabase PostgreSQL events, projections, outbox, scheduled work, callback receipts
   → event-derived metrics, FHIR bundle/report, and versioned exported ML artifacts
@@ -162,7 +162,7 @@ React + TypeScript + Vite role workspaces
 | Frontend | React + TypeScript + Vite | Preserve the completed experience and design system |
 | Server runtime | TypeScript Vercel Node.js Functions | One-language command/query/callback boundary in the same Vercel deployment |
 | Database | Supabase PostgreSQL via Git-tracked migrations | Durable cross-role state, event history, idempotency, scheduling, and reset |
-| Worker | Authenticated Vercel Cron tick plus bounded database claims | Deadline and delivery behavior without a long-running server or queue platform; per-minute cadence requires Vercel Pro |
+| Worker | Supabase Cron (`pg_cron` + `pg_net`) plus an authenticated Vercel tick and bounded database claims | Per-minute deadline and delivery behavior without a long-running server, queue platform, or paid Vercel scheduler |
 | External providers | Twilio, ElevenLabs, configured CareLink partner workflow | Real controlled communication and transportation proof |
 | ML | Offline Python LightGBM/calibration/SHAP build; versioned runtime export consumed by TypeScript | Preserve the approved real pipeline while keeping the deployed application runtime in one Vercel project |
 
@@ -264,7 +264,7 @@ Stop adding scope when the one finals journey is visually complete, genuinely ev
 |---|---|---|
 | D-001 | Preserve React, TypeScript, Vite, and the established design system | Confirmed |
 | D-002 | Deploy the Vite frontend and TypeScript Vercel Node.js Functions as one Vercel project backed by Supabase PostgreSQL event state | Confirmed |
-| D-003 | Use an authenticated Vercel Cron tick with bounded PostgreSQL outbox/scheduler claims; do not add a persistent app server, Redis, Kafka, Celery, or microservices | Confirmed |
+| D-003 | Use Supabase Free Cron to invoke an authenticated Vercel Hobby tick with bounded PostgreSQL outbox/scheduler claims; do not add a persistent app server, Redis, Kafka, Celery, or microservices | Confirmed; amended 2026-09-20 |
 | D-004 | Use CareLink Partner Dispatch as the only active finals transportation path | Confirmed |
 | D-005 | Keep Uber Health and Lyft Concierge as visibly planned, disconnected adapters | Confirmed |
 | D-006 | Use one allowlisted team-controlled phone for Twilio and ElevenLabs proof | Confirmed, credentials pending human supply |

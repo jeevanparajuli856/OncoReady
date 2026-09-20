@@ -371,7 +371,7 @@ paths:
       tags: [Operations]
       operationId: runScheduledWorkTick
       summary: Claim and process a bounded batch of due scheduled and outbox work
-      description: Called by Vercel Cron. Durable work exists in PostgreSQL before this endpoint runs.
+      description: Called by the configured authenticated scheduler. Durable work exists in PostgreSQL before this endpoint runs.
       security:
         - CronSecret: []
       parameters:
@@ -638,16 +638,24 @@ components:
             transport: {$ref: '#/components/schemas/PatientTransportSummary'}
 
     CaregiverProjection:
-      description: Allowlisted logistics projection. Clinical text, clinical work, nurse notes, scores, and evidence are not members of this schema.
+      description: Allowlisted logistics projection. When permission is revoked, transport is absent at the server boundary. Clinical text, clinical work, nurse notes, scores, and evidence are not members of this schema.
       allOf:
         - $ref: '#/components/schemas/ProjectionBase'
-        - type: object
-          required: [role, caregiver, permission, transport]
-          properties:
-            role: {const: caregiver}
-            caregiver: {type: object, additionalProperties: false, required: [display_name], properties: {display_name: {type: string, maxLength: 120}}}
-            permission: {type: object, additionalProperties: false, required: [transport_logistics_allowed], properties: {transport_logistics_allowed: {type: boolean}}}
-            transport: {$ref: '#/components/schemas/CaregiverTransportSummary'}
+        - oneOf:
+            - type: object
+              required: [role, caregiver, permission, transport]
+              properties:
+                role: {const: caregiver}
+                caregiver: {type: object, additionalProperties: false, required: [display_name], properties: {display_name: {type: string, maxLength: 120}}}
+                permission: {type: object, additionalProperties: false, required: [transport_logistics_allowed], properties: {transport_logistics_allowed: {const: true}}}
+                transport: {$ref: '#/components/schemas/CaregiverTransportSummary'}
+            - type: object
+              required: [role, caregiver, permission]
+              not: {required: [transport]}
+              properties:
+                role: {const: caregiver}
+                caregiver: {type: object, additionalProperties: false, required: [display_name], properties: {display_name: {type: string, maxLength: 120}}}
+                permission: {type: object, additionalProperties: false, required: [transport_logistics_allowed], properties: {transport_logistics_allowed: {const: false}}}
 
     StaffProjection:
       allOf:
@@ -659,7 +667,7 @@ components:
             patient: {$ref: '#/components/schemas/PatientSummary'}
             barriers: {type: array, items: {$ref: '#/components/schemas/BarrierSummary'}}
             work_items: {type: array, items: {$ref: '#/components/schemas/WorkItemSummary'}}
-            communications: {type: array, items: {$ref: '#/components/schemas/CommunicationSummary'}}
+            communications: {type: array, items: {$ref: '#/components/schemas/StaffCommunicationSummary'}}
             transport: {$ref: '#/components/schemas/StaffTransportSummary'}
             timeline: {type: array, items: {$ref: './events/workflow-event.schema.json'}}
 
@@ -737,9 +745,30 @@ components:
         communication_id: {type: string, format: uuid}
         channel: {type: string, enum: [sms, voice]}
         purpose: {type: string, enum: [readiness, fallback, plan_update, human_callback]}
-        status: {type: string, enum: [queued, sent, delivered, undelivered, answered, no_answer, failed, opted_out, completed]}
+        status: {type: string, enum: [queued, sent, delivered, undelivered, answered, no_answer, failed, opted_out, completed, outcome_unknown]}
         provenance: {type: string, enum: [provider_callback, deterministic_replay]}
         occurred_at: {type: string, format: date-time}
+        reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    StaffCommunicationSummary:
+      allOf:
+        - $ref: '#/components/schemas/CommunicationSummary'
+        - type: object
+          required: [reconciliation]
+          properties:
+            reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    ProviderReconciliationSummary:
+      description: Durable provider-attempt state. Outcome-unknown work cannot be blindly resent; only the declared recovery is permitted.
+      type: object
+      additionalProperties: false
+      required: [state, last_attempt_at, attempt_reference, provenance, permitted_recovery]
+      properties:
+        state: {type: string, enum: [not_required, outcome_unknown, reconciliation_required, reconciled, manual_recovery_required]}
+        last_attempt_at: {type: [string, 'null'], format: date-time}
+        attempt_reference: {type: [string, 'null'], maxLength: 255}
+        provenance: {type: string, enum: [none, provider_callback, provider_lookup, deterministic_replay, manual_recovery]}
+        permitted_recovery: {type: string, enum: [none, await_callback, refresh_status, reconcile_provider, activate_backup, escalate_manually]}
 
     PatientTransportSummary:
       type: object
@@ -771,7 +800,7 @@ components:
       allOf:
         - $ref: '#/components/schemas/PatientTransportSummary'
         - type: object
-          required: [transport_request_id, aggregate_version, eligibility, outbound_plan_complete, return_plan_complete]
+          required: [transport_request_id, aggregate_version, eligibility, outbound_plan_complete, return_plan_complete, reconciliation]
           properties:
             transport_request_id: {type: string, format: uuid}
             aggregate_version: {type: integer, minimum: 0}
@@ -779,11 +808,12 @@ components:
             outbound_plan_complete: {type: boolean}
             return_plan_complete: {type: boolean}
             failure_reason: {type: [string, 'null'], maxLength: 500}
+            reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
 
     TransportCoordinatorRequest:
       type: object
       additionalProperties: false
-      required: [transport_request_id, aggregate_version, status, arrival_window, notice_cutoff, funding_path, service_area, mobility, outbound_plan, return_plan, notification_permission, acknowledgment_status]
+      required: [transport_request_id, aggregate_version, status, arrival_window, notice_cutoff, funding_path, service_area, mobility, outbound_plan, return_plan, notification_permission, acknowledgment_status, reconciliation]
       properties:
         transport_request_id: {type: string, format: uuid}
         aggregate_version: {type: integer, minimum: 0}
@@ -800,10 +830,11 @@ components:
         acknowledgment_status: {type: string, enum: [not_requested, awaiting_patient, acknowledged]}
         driver_alias: {type: [string, 'null'], maxLength: 120}
         vehicle_description: {type: [string, 'null'], maxLength: 200}
+        reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
 
     TransportStatus:
       type: string
-      enum: [need_detected, eligibility_reviewed, request_ready, offered, accepted, driver_assigned, patient_notified, patient_acknowledged, en_route, arrived, picked_up, completed, declined, cancelled, provider_unavailable, stale_assignment, return_pending, backup_required, backup_activated, escalated_to_navigator]
+      enum: [need_detected, eligibility_reviewed, request_ready, offered, accepted, driver_assigned, patient_notified, patient_acknowledged, en_route, arrived, picked_up, completed, declined, cancelled, provider_unavailable, outcome_unknown, stale_assignment, return_pending, backup_required, backup_activated, escalated_to_navigator]
 
     TwilioInboundMessage:
       type: object

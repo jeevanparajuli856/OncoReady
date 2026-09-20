@@ -7,11 +7,25 @@
 
 This is the one operator checklist for accounts, secrets, external services, callback URLs, and local verification tooling required by LAUNCH-001. Complete the account-side work while implementation continues. Do not add a real patient, real protected health information, a production identity provider, or production hospital credentials.
 
+## Approved external stack
+
+| Service | Required plan/account | Purpose |
+|---|---|---|
+| Vercel | Hobby (`$0`) | Hosts the React application and TypeScript Functions; Vercel Cron is not used. |
+| Supabase | Free (`$0`) | PostgreSQL, transaction pooler, Vault, `pg_cron`, and `pg_net` scheduler trigger. |
+| Google Cloud | Not required | Cloud Scheduler and Cloud SQL are not part of LAUNCH-001. Your Google Cloud credits remain unused. |
+| Twilio | Development account; paid/verified sender may be required | Controlled live SMS and the Twilio number used by ElevenLabs voice. Carrier registration timing can be the longest external lead item. |
+| ElevenLabs | Account with ElevenAgents and sufficient calling access | One bounded voice agent, linked Twilio number, and authenticated post-call/failure callbacks. |
+| CareLink | No external account | CareLink Partner Dispatch is OncoReady's internal persisted coordinator workflow. |
+| HL7 FHIR validator | No cloud account | Local pinned Java validator for hash-bound FHIR R4 evidence. |
+| ML tooling | No cloud account | Local Python 3.12 LightGBM/SHAP training and reproducibility checks. |
+
 ## Fastest safe order
 
 - [ ] Create a password-manager vault/collection for OncoReady finals credentials.
-- [ ] Create or select a Vercel project on a **Pro** plan.
-- [ ] Create a dedicated Supabase DEV/finals project containing illustrative data only.
+- [ ] Create or select a **Vercel Hobby** project. Do not configure Vercel Cron.
+- [ ] Create a dedicated **Supabase Free** DEV/finals project containing illustrative data only.
+- [ ] After the scheduler migration lands, provision the canonical tick URL and shared tick secret in Supabase Vault and verify the one-minute Supabase Cron job.
 - [ ] Create or upgrade a Twilio account; secure one SMS/voice-capable number and one consented team-controlled recipient.
 - [ ] Start US messaging registration/verification immediately if using a US long-code or toll-free sender.
 - [ ] Create an ElevenLabs account and a bounded ElevenAgents voice agent.
@@ -29,17 +43,17 @@ Never place a credential in:
 - a variable beginning with `VITE_` (Vite exposes those values to the browser bundle);
 - logs, verification reports, screen recordings, or presentation slides.
 
-Local secrets belong in an ignored `.env` file. Hosted secrets belong in Vercel **Project → Settings → Environment Variables**. Set live-provider secrets only for the controlled deployment that will use them. Keep Preview deployments network-disabled unless a specific preview URL has been reviewed and allowlisted.
+Local secrets belong in an ignored `.env` file. Hosted application/provider secrets belong in Vercel **Project → Settings → Environment Variables**. The scheduler receives only the canonical tick URL and the shared tick secret through Supabase Vault. Set live-provider secrets only for the controlled deployment that will use them. Keep Preview deployments network-disabled unless a specific preview URL has been reviewed and allowlisted.
 
-Generate at least 32 random bytes for both `ONCOREADY_SCENARIO_TOKEN` and `CRON_SECRET`. Vercel recommends a random cron secret of at least 16 characters and automatically supplies it as `Authorization: Bearer <CRON_SECRET>` to the configured cron endpoint: [Vercel cron security](https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs).
+Generate at least 32 random bytes for both `ONCOREADY_SCENARIO_TOKEN` and `CRON_SECRET`. The identical `CRON_SECRET` value must exist in exactly two runtime locations: Vercel's server-only environment for verification and Supabase Vault as `oncoready_cron_secret` for invocation. It must never appear in Git, SQL migrations, a URL, logs, screenshots, or chat.
 
 ## 2. Vercel
 
 ### Account and project
 
 1. Create/select the Vercel team that will own the controlled finals deployment.
-2. Use a **Pro or Enterprise** plan. The approved schedule runs once per minute; Vercel currently limits Hobby cron to once per day, while Pro/Enterprise support once per minute: [Vercel cron usage and pricing](https://vercel.com/docs/cron-jobs/usage-and-pricing).
-3. Import this Git repository as one Vercel project. Keep the repository root as the project root; root `vercel.json` owns the frontend build, function routing, rewrites, and cron schedule.
+2. Use the **Hobby** plan. LAUNCH-001 does not use Vercel Cron, so Vercel Pro is not required.
+3. Import this Git repository as one Vercel project. Keep the repository root as the project root; root `vercel.json` owns the frontend build, function routing, and deep-link rewrites.
 4. Make the first deployment with all external actions disabled.
 5. Record the canonical HTTPS origin, for example `https://oncoready-finals.vercel.app`. Avoid switching between preview aliases when testing signed callbacks because Twilio signs the exact requested URL.
 
@@ -60,9 +74,9 @@ Create these variables in Vercel. Values shown are descriptions, not literal val
 
 After setting `ONCOREADY_PUBLIC_ORIGIN`, redeploy so every function sees the final value.
 
-### Cron verification
+### Scheduler endpoint preparation
 
-The repository will configure:
+Vercel hosts this protected endpoint but does not schedule it:
 
 ```text
 GET /api/v1/operations/tick
@@ -70,25 +84,32 @@ schedule: every minute
 Authorization: Bearer <CRON_SECRET>
 ```
 
-After deployment:
+After deployment, record the full canonical URL including the bounded batch query:
 
-1. Open **Project → Settings → Cron Jobs**.
-2. Confirm the path and one-minute cadence.
-3. Confirm an unauthenticated manual request returns `401`.
-4. Confirm Vercel's scheduled invocation appears in function logs without printing the authorization value.
-5. Confirm concurrent/manual invocations do not create duplicate provider actions before enabling any provider.
+```text
+https://<ONCOREADY_PUBLIC_ORIGIN>/api/v1/operations/tick?max_items=25
+```
 
-Cron timing is not an exact real-time guarantee. Workflow safety comes from PostgreSQL advisory locking, durable claims, leases, and idempotency—not from assuming only one HTTP invocation.
+Confirm an unauthenticated request returns `401`. Do not configure a Vercel Cron job. Supabase Cron configuration and verification are in section 3.
 
 ## 3. Supabase PostgreSQL
 
 ### Create the controlled database
 
-1. Create a new Supabase project dedicated to DEV/finals use.
+1. Create a new Supabase project dedicated to DEV/finals use on the **Free** plan.
 2. Choose a region close to the Vercel deployment region.
 3. Use a strong database password and store it only in the vault.
 4. Do not add real patient data. The repository's deterministic illustrative seed is the only intended scenario.
 5. Record the project reference from the dashboard URL.
+
+The approved Free-plan boundary is deliberately small: two active free projects per account, 500 MB database size per project, and 5 GB egress. A Free project may pause after low activity, and included automated database backups are unavailable. See [Supabase billing and Free quotas](https://supabase.com/docs/guides/platform/billing-on-supabase) and [Free-project pausing](https://supabase.com/docs/guides/platform/free-project-pausing).
+
+For LAUNCH-001:
+
+- keep only controlled illustrative data and bounded workflow evidence;
+- check database size before every rehearsal and keep it below 500 MB;
+- treat Git-tracked migrations plus deterministic seed/reset as recovery authority;
+- if Supabase reports the project paused, resume it in the dashboard, wait for database health, then rerun migration, seed/projection, Vault, Cron, and authenticated-tick preflight before enabling external actions.
 
 ### Connection for Vercel
 
@@ -125,6 +146,29 @@ npx --yes supabase@2.117.0 db push --linked
 The CLI workflow and migration guidance are documented by Supabase: [local development workflow](https://supabase.com/docs/guides/local-development/cli-workflows).
 
 Do **not** run `supabase db reset --linked` yourself. It destroys the linked remote database. A remote reset is allowed only after the orchestrator confirms the exact DEV/finals project and explicitly schedules the deterministic reseed. Never run it against production.
+
+### Supabase Vault and one-minute Cron
+
+Do this only after the scheduler migration has landed and the canonical Vercel deployment exists.
+
+1. In Vercel, confirm `CRON_SECRET` is stored only as a server-side environment variable and redeploy.
+2. In Supabase Dashboard, open **Database → Vault** (or the current Vault management surface).
+3. Create `oncoready_tick_url` with the full canonical URL:
+
+```text
+https://<ONCOREADY_PUBLIC_ORIGIN>/api/v1/operations/tick?max_items=25
+```
+
+4. Create `oncoready_cron_secret` with the exact same opaque value stored as Vercel `CRON_SECRET`.
+5. Apply the reviewed database migration. The migration enables `pg_cron` and `pg_net`, defines the restricted Vault-backed invoker, and installs the named one-minute job without embedding either environment-specific value.
+6. Open **Integrations → Cron** and confirm the migrated OncoReady job is active with schedule `* * * * *`.
+7. Confirm the latest Cron run and `pg_net` response are successful, the Vercel function log shows the tick request, and neither system displays the authorization value.
+8. Confirm an unauthenticated request returns `401`, then run the repository's authenticated preflight without printing the secret.
+9. Trigger overlapping/manual checks only while all external-action switches are disabled; confirm the PostgreSQL advisory lock allows one scheduler authority and no duplicate provider action.
+
+Supabase documents hosted `pg_cron` + `pg_net` scheduling and recommends Vault for the authentication value: [Scheduling functions](https://supabase.com/docs/guides/functions/schedule-functions). Cron job/run state is visible in the dashboard and the `cron.job_run_details` table: [Supabase Cron](https://supabase.com/docs/guides/cron).
+
+Cron timing is not an exact real-time guarantee. Workflow safety comes from PostgreSQL advisory locking, durable claims, leases, and idempotency—not from assuming only one HTTP invocation. A missing Vault value, paused project, stale origin, disabled job, non-successful `pg_net` response, or unauthenticated tick is a failed preflight.
 
 ## 4. Twilio SMS and phone number
 
@@ -261,7 +305,18 @@ The official validator supports FHIR R4 and is available from [HL7's validator p
 
 ## 8. Offline ML toolchain
 
-No cloud ML account or external model API is required. Install Python 3.12. The database/ML specialist will commit a pinned `ml/requirements.txt` for LightGBM, scikit-learn, SHAP, NumPy, and pytest plus the reproducible artifact-generation command.
+No cloud ML account or external model API is required. Install Python 3.12. The pinned toolchain is `lightgbm==4.6.0`, `numpy==2.2.6`, `scikit-learn==1.6.1`, `shap==0.47.2`, and `pytest==8.3.5`. On macOS, install OpenMP first with `brew install libomp`.
+
+After `ml/requirements.txt` lands:
+
+```bash
+python3.12 -m venv .venv-ml
+.venv-ml/bin/pip install -r ml/requirements.txt
+.venv-ml/bin/python ml/train.py
+.venv-ml/bin/python -m pytest -q tests/ml
+```
+
+Generated artifacts live under `artifacts/ml/supportive-outreach-v1/`.
 
 Do not upload a model or pickle into the runtime. Only the reviewed immutable JSON/artifact set produced by the offline pipeline may be loaded by TypeScript. Missing, stale, malformed, or parity-failing artifacts must result in `Score unavailable` while deterministic outreach continues.
 
@@ -286,7 +341,7 @@ Do not turn on all providers at once.
 1. Deploy with `EXTERNAL_ACTIONS_ENABLED=false`, `TWILIO_SMS_ENABLED=false`, and `ELEVENLABS_VOICE_ENABLED=false`.
 2. Apply reviewed migrations to the dedicated Supabase DEV/finals project.
 3. Run reset/seed and prove reset created zero outbox sends or external actions.
-4. Verify canonical origin, CORS allowlist, scenario token, cron authentication, and database pool behavior.
+4. Verify canonical origin, CORS allowlist, scenario token, active Supabase Free project, database size, Vault entries, Supabase Cron cadence/latest response, tick authentication, and database pool behavior.
 5. Verify invalid Twilio and ElevenLabs signatures return `401`; verify duplicate/out-of-order callbacks are safe.
 6. Enable only Twilio SMS and send to the one allowlisted, consented phone.
 7. Confirm queued/sent/delivered and inbound reply events from authentic callbacks.
@@ -305,9 +360,15 @@ Send these **non-secret** values in chat when ready:
 ```text
 Vercel project/team name:
 Canonical HTTPS origin:
-Vercel plan supports 1-minute cron: yes/no
+Vercel plan is Hobby and Vercel Cron is absent: yes/no
 Supabase project ref:
 Supabase region:
+Supabase plan is Free: yes/no
+Supabase project active and below 500 MB: yes/no
+Supabase Vault tick URL stored: yes/no
+Supabase Vault shared tick secret stored: yes/no
+Supabase one-minute Cron job active: yes/no
+Latest Supabase Cron/pg_net invocation successful: yes/no
 Twilio account ready: yes/no
 Twilio sender type: Messaging Service / number
 Twilio Messaging Service SID (non-secret, if used):
@@ -329,8 +390,9 @@ Do not send `DATABASE_URL`, database passwords, access tokens, auth tokens, API 
 
 Report any of these as soon as discovered:
 
-- Vercel project cannot use a one-minute cron schedule;
+- Vercel Hobby deployment or protected tick endpoint is unavailable;
 - Supabase transaction-pooler URI is unavailable or the project is not isolated from real data;
+- Supabase Free cannot enable `pg_cron`, `pg_net`, or Vault, the project is paused, the database approaches 500 MB, or the migrated one-minute job cannot reach the canonical tick endpoint;
 - Twilio sender registration/verification will miss the rehearsal date;
 - the recipient cannot provide explicit consent or cannot be dedicated to controlled testing;
 - Twilio cannot support both the required SMS callbacks and ElevenLabs-linked calling on the selected number;
