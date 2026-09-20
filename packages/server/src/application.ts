@@ -1,6 +1,6 @@
 import {randomUUID} from "node:crypto";
 import type {ServerConfig} from "./config.js";
-import {createTransportDraft, eventFromDraft, readinessDrafts, transportDraft, workItemDraft} from "./domain.js";
+import {createTransportDraft, eventFromDraft, OPERATOR_AUTHORIZATION_SOURCE, readinessDrafts, transportDraft, workItemDraft} from "./domain.js";
 import type {ActorRole, WorkflowEvent} from "./types.js";
 import {AppError} from "./types.js";
 import type {CommunicationCommand, CreateTransportCommand, ReadinessCommand, ResetCommand, TransportCommand, WorkItemCommand} from "./schemas.js";
@@ -113,7 +113,7 @@ export class WorkflowApplication {
       const version = 1;
       const event = eventFromDraft(command, {aggregate_type: "communication", aggregate_id: communicationId, aggregate_version: 1, event_type: "communication.queued", payload: {communication_id: communicationId, channel, purpose: command.purpose, destination_alias: command.destination_alias}}, actor(command.actor_role), "web", randomUUID());
       const projections=unchangedRoleProjections(snapshot,currentScenarioVersion(snapshot));projections.staff.timeline=[...((projections.staff.timeline as unknown[])??[]),event];
-      return {aggregateVersion: version, events: [event], projections, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, correlation_id: event.correlation_id, purpose: command.purpose,authorization_source:"operator_control"}}]};
+      return {aggregateVersion: version, events: [event], projections, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, correlation_id: event.correlation_id, purpose: command.purpose,authorization_source:OPERATOR_AUTHORIZATION_SOURCE}}]};
     });
   }
 

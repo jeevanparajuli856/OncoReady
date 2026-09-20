@@ -9,7 +9,7 @@ const config = loadConfig({
   DATABASE_URL: "postgres://localhost/oncoready",
   ONCOREADY_PUBLIC_DEMO_ENABLED: "true",
   ONCOREADY_OPERATOR_TOKEN: operatorToken,
-  CRON_SECRET: "independent-cron-secret",
+  CRON_SECRET: "H7qM2vX9pL4sR8kC3wN6dF1yT5jB0zA!",
   EXTERNAL_ACTIONS_ENABLED: "false",
   TWILIO_SMS_ENABLED: "false",
   ELEVENLABS_VOICE_ENABLED: "false",

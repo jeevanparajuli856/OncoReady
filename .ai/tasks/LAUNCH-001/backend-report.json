@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-backend",
   "status": "COMPLETE",
-  "summary": "Implemented the governed TypeScript backend as a long-running Railway API with private PostgreSQL persistence, checksum-locked pre-deploy migrations, a shared bounded scheduler cycle, signed provider callbacks, and a fail-closed public-demo/operator trust boundary that prevents anonymous provider authorization.",
+  "summary": "Implemented the governed TypeScript Railway backend and closed the security review blockers: scheduled cadence cannot authorize provider work, dispatch requires an operator communication record, public PostgreSQL requires TLS, and manual-tick credentials fail closed unless strong.",
   "files_changed": [
     "package.json",
     "package-lock.json",
@@ -28,6 +28,7 @@
     "tests/contracts/openapi-boundary.test.ts",
     "tests/fhir/evidence.test.ts",
     "tests/server/domain.test.ts",
+    "tests/server/launch-journey.test.ts",
     "tests/server/migrations.test.ts",
     "tests/server/ml-runtime.test.ts",
     "tests/server/repository.test.ts",
@@ -48,7 +49,7 @@
       "python3 -m pytest -q tests/database",
       "Scratch PostgreSQL 17: run npm run migrate:server twice against a fresh database and inspect public.oncoready_schema_migrations"
     ],
-    "notes": "The server build/typecheck passed; 42 focused server, contract, and FHIR tests passed, including a 17-test focused security/webhook subset; all governed contracts validated; and six vendor-neutral migration tests passed. A fresh PostgreSQL 17 rehearsal applied both migrations once, skipped both on the second run, and recorded 64-character SHA-256 checksums. Tests cover deterministic migration ordering, advisory locking, applied-prefix enforcement, checksum/history drift rejection, rollback and secret-safe errors, plus disabled-demo failure, direct non-browser public access, arbitrary scenario/resource/action/role rejection, web-only readiness, server-derived CareLink plans, repository-enforced public no-outbox effects, operator authentication/authorization provenance, health/tick trust boundaries, scheduler non-overlap, idempotency/version guards, caregiver minimization, signed callbacks, deduplication, and transcript non-persistence."
+    "notes": "The server build/typecheck passed; 48 focused server, contract, and FHIR tests passed, including an 18-test focused security/webhook subset; all governed contracts validated; and six vendor-neutral migration tests passed. A fresh PostgreSQL 17 rehearsal applied both migrations once, skipped both on the second run, and recorded 64-character SHA-256 checksums. Regression coverage proves reset-seeded cadence never materializes provider outbox work, unauthorized legacy outbox rows never reach dispatch, authorized rows reference their persisted communication.queued event, weak CRON_SECRET values fail startup/manual tick, and public database URLs reject non-TLS sslmode values. Existing coverage includes migration locking/drift/rollback, public-demo policy, operator authorization, scheduler non-overlap, idempotency/version guards, caregiver minimization, signed callbacks, deduplication, and transcript non-persistence."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -57,6 +58,10 @@
     "The process listens on 0.0.0.0:$PORT, exposes database-backed GET /health, runs the same WorkflowApplication.tick cycle from the internal scheduler and authenticated manual endpoint, and waits for an active tick before closing PostgreSQL on SIGTERM/SIGINT.",
     "Public access is enabled only by ONCOREADY_PUBLIC_DEMO_ENABLED=true and is fixed to the illustrative finals scenario. Public reads and commands require no browser credential, while application/repository effect classes prevent every public command from creating provider outbox authorization.",
     "Keep ONCOREADY_OPERATOR_TOKEN server-only. Reset and fixed-recipient SMS/voice initiation require X-OncoReady-Operator-Token; accepted communication outbox payloads persist authorization_source=operator_control before the existing provider switches and allowlists are evaluated.",
+    "Reset-seeded and future cadence scheduled_actions remain internal/manual workflow records. A due schedule is rejected with operator_authorization_required and never becomes an outbox row; only an operator communication command creates provider intent.",
+    "Before dispatch, PostgreSQL verifies authorization_source=operator_control, a matching communication_id/stable_action_id, and a linked communication.queued workflow event for the same scenario/channel. Legacy or malformed outbox rows are failed without network I/O.",
+    "Public PostgreSQL hosts require sslmode=require, verify-ca, or verify-full. Localhost and Railway private *.railway.internal connections remain supported without a TLS query flag.",
+    "CRON_SECRET is validated during startup and manual-tick preflight as at least 32 UTF-8 bytes with at least 128 estimated bits of character-distribution entropy; weak or repetitive values fail with dependency_unavailable.",
     "Readiness is patient/web-only. Work-item and transport commands enforce resource existence, supported resource type, action, current-state, and claimed-role policies. CareLink request creation accepts only work_item_id plus command context and derives the fixed plan from server-owned finals state.",
     "Provider intent is committed before network I/O. Unknown network outcomes become outcome_unknown and are excluded from blind re-claim; signed callbacks reconcile stored attempts by provider conversation/message reference.",
     "ElevenLabs callbacks accept the official signed post_call_transcription and call_initiation_failure envelopes, derive scenario/correlation only from stored provider attempts, return HTTP 200, and persist neither transcript nor audio.",

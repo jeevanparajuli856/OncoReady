@@ -11,6 +11,14 @@ export interface EventDraft {
   payload: Record<string, unknown>;
 }
 
+export const OPERATOR_AUTHORIZATION_SOURCE = "operator_control";
+
+export function requireOperatorProviderAuthorization(payload: Record<string, unknown>): void {
+  if (payload.authorization_source !== OPERATOR_AUTHORIZATION_SOURCE || typeof payload.communication_id !== "string" || payload.communication_id.length === 0) {
+    throw new AppError(403, "forbidden_action", "Provider work requires operator authorization.");
+  }
+}
+
 export function eventFromDraft(
   command: CommandContext,
   draft: EventDraft,

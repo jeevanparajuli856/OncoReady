@@ -1,4 +1,5 @@
 import {createHash, randomUUID} from "node:crypto";
+import {requireOperatorProviderAuthorization} from "./domain.js";
 import type {ActorRole, CommandReceipt, OutboxItem, WorkflowEvent} from "./types.js";
 import {AppError} from "./types.js";
 
@@ -148,6 +149,7 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
     const started = new Date(); let succeeded = 0; let failed = 0;
     const claimed = this.outbox.splice(0, maxItems);
     for (const item of claimed) {
+      try { requireOperatorProviderAuthorization(item.payload); } catch { failed += 1; continue; }
       try { await dispatch(item); succeeded += 1; } catch { failed += 1; }
     }
     return {tick_id: randomUUID(), started_at: started.toISOString(), completed_at: new Date().toISOString(), claimed: claimed.length, succeeded, failed, remaining_due: this.outbox.length};
@@ -157,7 +159,7 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
 export function enforceEffectClass(input: ExecuteCommandInput, decision: CommandDecision): void {
   const outbox=decision.outbox??[];
   if(input.effectClass==="public_database_only"&&outbox.length>0)throw new AppError(403,"forbidden_action","Public demo commands cannot authorize provider work.");
-  if(input.effectClass==="operator_external"&&outbox.some((item)=>item.payload.authorization_source!=="operator_control"))throw new AppError(403,"forbidden_action","Provider work requires an operator authorization source.");
+  if(input.effectClass==="operator_external")for(const item of outbox)requireOperatorProviderAuthorization(item.payload);
 }
 
 export function createSeedProjections(scenarioId: string): Record<ActorRole, Record<string, unknown>> {

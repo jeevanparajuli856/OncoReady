@@ -1,7 +1,7 @@
 import {createHash, randomUUID} from "node:crypto";
 import {Pool, type PoolClient} from "pg";
 import {generateFhirEvidence} from "./evidence.js";
-import {isProviderStatusRegression} from "./domain.js";
+import {isProviderStatusRegression,requireOperatorProviderAuthorization} from "./domain.js";
 import {scorePriority} from "./ml.js";
 import type {ActorRole, CommandReceipt, OutboxItem, WorkflowEvent} from "./types.js";
 import {AppError} from "./types.js";
@@ -12,10 +12,6 @@ const FINALS_SCENARIO_ID = "11111111-1111-4111-8111-111111111111";
 const roles: ActorRole[] = ["patient", "caregiver", "staff", "transport_coordinator"];
 
 function asReceipt(value: unknown): CommandReceipt { return value as CommandReceipt; }
-function deterministicUuid(value: string): string {
-  const hex = createHash("sha256").update(value).digest("hex");
-  return `${hex.slice(0,8)}-${hex.slice(8,12)}-4${hex.slice(13,16)}-8${hex.slice(17,20)}-${hex.slice(20,32)}`;
-}
 
 export class PostgresWorkflowRepository implements WorkflowRepository {
   private readonly pool: Pool;
@@ -257,21 +253,34 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
       await claimClient.query("select * from public.recover_stale_claims(clock_timestamp())");
       const scheduled=await claimClient.query("select * from public.claim_scheduled_actions($1,$2,30)",[tickId,maxItems]);
       for(const action of scheduled.rows){
-        const actionType=String(action.payload.channel??action.payload.action_type??"");
-        const provider=actionType==="sms"?"twilio_sms":actionType==="voice"?"elevenlabs_twilio":"";
-        if(!provider){
-          await claimClient.query("update public.scheduled_actions set status='failed',last_error_code='invalid_scheduled_payload',claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where scheduled_action_id=$1",[action.scheduled_action_id]);
-          await claimClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='scheduled_action' and resource_id=$1 and status='active'",[action.scheduled_action_id]);
-          continue;
-        }
-        const communicationId=deterministicUuid(`communication:${action.stable_action_id}`);
-        const correlationId=deterministicUuid(`correlation:${action.stable_action_id}`);
-        const payload={...action.payload,communication_id:communicationId,correlation_id:correlationId};
-        await claimClient.query(`insert into public.outbox (scenario_id,scheduled_action_id,provider,action_type,destination_alias,stable_action_id,payload) values ($1,$2,$3,$4,'finals_allowlisted_phone',$5,$6) on conflict (stable_action_id) do nothing`,[action.scenario_id,action.scheduled_action_id,provider,actionType,action.stable_action_id,payload]);
-        await claimClient.query("update public.scheduled_actions set status='completed',completed_at=clock_timestamp(),claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where scheduled_action_id=$1",[action.scheduled_action_id]);
+        await claimClient.query("update public.scheduled_actions set status='failed',last_error_code='operator_authorization_required',claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where scheduled_action_id=$1",[action.scheduled_action_id]);
         await claimClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='scheduled_action' and resource_id=$1 and status='active'",[action.scheduled_action_id]);
       }
-      rows=await claimClient.query("select * from public.claim_outbox($1,$2,30)",[tickId,maxItems]);
+      const claimedOutbox=await claimClient.query("select * from public.claim_outbox($1,$2,30)",[tickId,maxItems]);
+      claimed=claimedOutbox.rowCount??0;
+      const authorizedRows:Array<Record<string,any>>=[];
+      for(const row of claimedOutbox.rows){
+        let authorized=false;
+        try{
+          requireOperatorProviderAuthorization(row.payload as Record<string,unknown>);
+          if(row.payload.communication_id===row.stable_action_id){
+            const record=await claimClient.query<{authorized:boolean}>(`select exists(
+              select 1 from public.workflow_events we
+               where we.event_id=$1 and we.scenario_id=$2
+                 and we.aggregate_type='communication' and we.aggregate_id::text=$3
+                 and we.event_type='communication.queued' and we.payload->>'channel'=$4
+            ) authorized`,[row.event_id,row.scenario_id,row.stable_action_id,row.action_type]);
+            authorized=record.rows[0]?.authorized===true;
+          }
+        }catch{authorized=false;}
+        if(authorized)authorizedRows.push(row);
+        else{
+          failed+=1;
+          await claimClient.query("update public.outbox set status='failed',last_error_code='operator_authorization_required',completed_at=clock_timestamp(),claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where outbox_id=$1",[row.outbox_id]);
+          await claimClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='outbox' and resource_id=$1 and status='active'",[row.outbox_id]);
+        }
+      }
+      rows={rows:authorizedRows,rowCount:authorizedRows.length};
       await claimClient.query("commit");
     } catch(error) {
       await claimClient.query("rollback");
@@ -280,7 +289,6 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
       claimClient.release();
     }
 
-    claimed=rows.rowCount ?? 0;
     for (const row of rows.rows) {
       const attemptId=randomUUID(); const requestHash=createHash("sha256").update(JSON.stringify(row.payload)).digest("hex");
       // Provider intent is durable before the network boundary. Any
