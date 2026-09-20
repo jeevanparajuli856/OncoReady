@@ -4,8 +4,9 @@ Railway is the sole host for the `web`, `api`, and `Postgres` services. Use cont
 
 ## Tool access observed 2026-09-20
 
-- Railway plugin tools are installed but report **not connected**.
-- `railway` is not on this agent shell's `PATH`.
+- Railway CLI `5.58.0` is installed at `/Users/jeevaparajuli/.railway/bin/railway` and authenticated to Jeevan Parajuli's workspace.
+- The CLI can see the existing `OncoReady-Dev` project and its `production` environment. The project currently has no services and this repository is not linked to it.
+- Railway agent tooling is installed and healthy. The separate hosted connector still reports **not connected**, so CLI access is the verified path in this session.
 
 Verify after reconnecting/restarting the terminal:
 
@@ -16,9 +17,10 @@ railway whoami --json
 railway status --json
 ```
 
-If needed, install the CLI with `brew install railway` or `npm i -g @railway/cli`, then connect Codex with:
+Add the installed CLI to future shells if desired, then connect the optional hosted connector:
 
 ```bash
+export PATH="$PATH:$HOME/.railway/bin"
 railway mcp install --agent codex --oauth
 ```
 
@@ -72,12 +74,14 @@ railway environment list --json
 railway service list --json
 ```
 
-Create/link one project and a dedicated controlled environment (for example `finals`). Add only missing services; re-list after ambiguous output to avoid duplicates.
+Link the existing project and explicitly select its environment. Create a dedicated `finals` environment only if you do not want to use the existing `production` environment. Add only missing services; re-list after ambiguous output to avoid duplicates.
 
 ```bash
-railway init --name OncoReady
-railway environment new finals
-railway environment link finals
+railway link --project OncoReady-Dev --environment production --json
+railway status --json
+# Optional isolation instead of production:
+# railway environment new finals --json
+# railway environment link finals
 railway add --service web --json
 railway add --service api --json
 railway add --database postgres --json
@@ -102,7 +106,7 @@ railway domain --service api --json
 Wire Postgres by reference:
 
 ```bash
-railway variable set 'DATABASE_URL=${{Postgres.DATABASE_URL}}' --service api --environment finals
+railway variable set 'DATABASE_URL=${{Postgres.DATABASE_URL}}' --service api --environment production
 ```
 
 Configure `api` with `/health`, one launch replica, sleeping disabled, restart enabled, the reviewed migration command, and code-owned build/start commands. Do not configure Railway Cron; the long-running API poller wakes durable database work.
@@ -167,14 +171,24 @@ Agent rules:
 - never diagnose, triage, prescribe, clear treatment, cancel/reschedule, decide eligibility, or close clinical work;
 - end after the outcome/handoff; expose no arbitrary tools.
 
-Create an HMAC-authenticated webhook and store its secret. Governed routes are:
+Under the agent's analysis/data-collection settings, add a string field with ID `oncoready_outcome` and restrict it to:
+
+```text
+ready
+ride_help
+scheduling_help
+human_callback
+unsupported_or_uncertain
+```
+
+Create HMAC-authenticated webhooks for the transcription and initiation-failure events and store the secret. Governed routes are:
 
 ```text
 https://<API_DOMAIN>/api/v1/callbacks/elevenlabs/post-call
 https://<API_DOMAIN>/api/v1/callbacks/elevenlabs/failure
 ```
 
-Do not enable the webhook until the orchestrator reconciles the current OpenAPI normalized schemas with ElevenLabs' signed `post_call_transcription` and `call_initiation_failure` envelopes. The backend validates `ElevenLabs-Signature` on the raw body, discards transcript/audio, and persists only the approved minimal outcome/failure evidence.
+The OpenAPI contract now accepts ElevenLabs' official signed `post_call_transcription` and `call_initiation_failure` envelopes. The backend validates `ElevenLabs-Signature` and its timestamp on the exact raw body before parsing, identifies the stored provider attempt by `conversation_id`, discards transcript/audio, and persists only the approved minimal outcome/failure evidence. A successful handler returns HTTP `200` as required by ElevenLabs.
 
 Once `ELEVENLABS_API_KEY` is supplied through an approved secret channel, agent/phone/webhook configuration may be automated. Billing, phone purchase/verification, consent, and account acceptance remain human actions.
 
@@ -193,7 +207,7 @@ References: [native Twilio integration](https://elevenlabs.io/docs/eleven-agents
 3. Pass Railway health, routing, database, scheduler, and manual-tick preflight.
 4. Reject invalid Twilio/ElevenLabs signatures and prove callback duplicate/order safety.
 5. Enable only SMS; verify authentic sent/delivered/inbound callbacks, then rehearse STOP/undelivered recovery.
-6. After the ElevenLabs contract gate, enable only voice; verify one bounded call and no transcript/audio persistence.
+6. Enable only voice after the signed-webhook and data-collection preflight; verify one bounded call and no transcript/audio persistence.
 7. Enable the global switch only for a controlled rehearsal window and run the required success/failure rehearsals.
 
 Unknown provider outcomes remain unresolved until reconciled; lease expiry never authorizes blind resend.
