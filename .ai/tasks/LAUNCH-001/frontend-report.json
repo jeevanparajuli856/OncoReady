@@ -5,7 +5,7 @@
   "status": "COMPLETE",
   "summary": "Implemented the approved Clinical Glass launch experience using generated OpenAPI types and the Railway API, including truthful read-only SMS/voice provider evidence, minimized role projections, complete async and recovery states, responsive accessibility, and Railway Vite SPA readiness; removed the obsolete browser-local workflow UI and dependencies.",
   "files_changed": [
-    "frontend/.env.example",
+    "frontend/env.example",
     "frontend/Staticfile",
     "frontend/railway.toml",
     "frontend/package.json",
