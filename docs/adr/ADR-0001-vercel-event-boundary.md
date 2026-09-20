@@ -1,8 +1,8 @@
-# ADR-0001 — Vercel Function Event Boundary and Idempotent Cron Tick
+# ADR-0001 — Vercel Function Event Boundary and Idempotent Supabase Cron Tick
 
 ## Status
 
-Accepted
+Accepted; scheduler amended 2026-09-20
 
 ## Context
 
@@ -18,7 +18,7 @@ Adopt a React → TypeScript Vercel Node.js Functions → Supabase PostgreSQL la
 2. TypeScript Vercel Node.js Functions are the authoritative command, policy, projection, webhook, provider-adapter, FHIR, and ML-inference boundary. They enforce scenario/actor/action policy, input validation, expected aggregate versions, idempotency, and role-filtered serialization.
 3. Supabase PostgreSQL stores an append-only workflow event stream as the durable business record plus rebuildable/read-optimized projections, scheduled actions, a transactional outbox, webhook receipts, claim leases, provider attempts, and idempotency records.
 4. A command appends event(s) and updates affected projections, schedules, and outbox rows in one database transaction through a Vercel-compatible pooled connection.
-5. Vercel Cron calls one authenticated, bounded, idempotent scheduler/outbox tick. The deployment uses the Vercel plan required for the approved per-minute cadence. A PostgreSQL advisory lock permits one active tick authority; durable row claims and leases protect retries and recovery.
+5. Supabase Cron (`pg_cron`) uses `pg_net` once per minute to call the existing authenticated, bounded, idempotent Vercel `GET /api/v1/operations/tick` endpoint. Vercel Hobby hosts the application and does not own the schedule. A PostgreSQL advisory lock permits one active tick authority; durable row claims and leases protect retries and recovery.
 6. The tick records dispatch intent before an external call and records the definitive outcome through the same event boundary. If execution stops after possible provider acceptance, the state becomes outcome-unknown and must be reconciled or handled manually rather than blindly resent.
 7. Provider-specific behavior is isolated behind narrow adapters/webhook functions. Twilio messaging, ElevenLabs-through-Twilio voice, and CareLink Partner Dispatch are enabled only by server configuration. Uber Health and Lyft Concierge remain disabled planned adapters with no credentials or network behavior.
 8. Every live external state shown in the product requires a corresponding authenticated provider outcome. Deterministic replay/manual recovery may preserve the journey when a provider fails, but cannot emit or present a live-provider success.
@@ -27,6 +27,8 @@ Adopt a React → TypeScript Vercel Node.js Functions → Supabase PostgreSQL la
 11. Do not add FastAPI, a continuously running worker, Redis, Kafka, Celery, a general workflow engine, microservices, or a separate event-store product for LAUNCH-001.
 
 The governed interfaces are `contracts/openapi.yaml` and the LAUNCH-001 event JSON schemas registered in the task. Architecture prose and implementation cannot silently redefine them.
+
+The tick keeps the contract's bearer authentication. The human project operator owns and rotates one opaque value stored as Vercel's server-only `CRON_SECRET` and the Supabase Vault entry `oncoready_cron_secret`; the canonical endpoint URL is stored separately as `oncoready_tick_url`. A timestamped database migration enables `pg_cron`/`pg_net`, defines the restricted Vault-backed invoker, and installs the named one-minute job without embedding either value. Missing Vault values, a paused database, a stale origin, a disabled job, or a non-successful invocation fails preflight.
 
 ## Alternatives considered
 
@@ -49,6 +51,14 @@ Rejected. Direct browser access would blur the workflow/provider trust boundary 
 ### A long-running loop inside a Vercel Function
 
 Rejected. Function instances are ephemeral and duration-bounded. A short authenticated cron tick with database-owned state is deterministic, observable, and retryable.
+
+### Vercel Cron on a paid plan
+
+Rejected after human cost review. The application does not otherwise require Vercel Pro, and Supabase is already the durable workflow authority. Supabase Cron can provide the required one-minute HTTPS trigger without changing the Vercel endpoint or adding another cloud account.
+
+### Google Cloud Scheduler
+
+Rejected for this slice despite available credits. It would add billing, IAM/service-account configuration, and another operational trust boundary while Supabase Cron already satisfies the cadence next to the authoritative durable work.
 
 ### Redis/Celery or a managed queue
 
@@ -75,14 +85,15 @@ Rejected. A second runtime and Python-specific serialized model would complicate
 - Frontend and functions share TypeScript boundary tooling while OpenAPI remains the stable cross-component authority.
 - Expected versions, idempotency, webhook receipts, database locks/leases, and provider action identities make duplicate/replayed/out-of-order work testable.
 - The outbox prevents a database commit from silently losing its corresponding provider intent.
-- One Vercel project, one database, and one bounded cron tick keep the deployment understandable within the launch window.
+- One Vercel Hobby project, one Supabase Free database/Cron authority, and one bounded tick keep the deployment understandable within the launch window without a paid Vercel scheduler.
 - Offline Python retains mature LightGBM/SHAP tooling while TypeScript runtime remains deterministic and independently parity-tested.
 - Deterministic reset and recovery preserve finals reliability without pretending a failed network action succeeded.
 
 ### Negative
 
 - Event/projection consistency, artifact export/parity, idempotency, outbox recovery, cron overlap, lease recovery, and webhook ordering require more implementation and test depth than the CORE reducer.
-- Serverless duration, cold starts, connection budgets, cron cadence, and plan capabilities become explicit operational constraints.
+- Serverless duration, cold starts, connection budgets, Supabase Cron/`pg_net` cadence, Vault configuration, and Free-plan availability become explicit operational constraints.
+- Supabase Free is limited to 500 MB, may pause after inactivity, and has no automated backups; controlled illustrative data, bounded retention, migration/seed recovery, and rehearsal preflight are mandatory.
 - There is an unavoidable uncertain-outcome window around providers that do not support native idempotency/reconciliation; automatic blind resend is forbidden, so manual recovery may be required.
 - The frontend must migrate away from direct reducer/local-storage mutations and handle network, conflict, pending, degraded, and outcome-unknown states.
 - Local role entry is still not production authentication, so the environment must remain restricted to controlled illustrative data.
@@ -90,8 +101,8 @@ Rejected. A second runtime and Python-specific serialized model would complicate
 
 ### Security implications
 
-- Provider and database credentials remain in server-only Vercel environment configuration; fixed recipient, provider, pickup, destination, script, origins, limits, and kill switches bound external effects.
-- The cron endpoint requires its secret before it can claim work. Database advisory locks and leases are safety controls, not authentication substitutes.
+- Provider and database credentials remain in server-only Vercel environment configuration; the shared tick secret additionally exists only in Supabase Vault. Fixed recipient, provider, pickup, destination, script, origins, limits, and kill switches bound external effects.
+- The tick endpoint requires an exact bearer secret before it can claim work. The operator owns rotation across Vercel and Vault; database advisory locks and leases are safety controls, not authentication substitutes.
 - Twilio and ElevenLabs webhooks are authenticated against raw requests before parsing; receipts and domain versions prevent replay or regression.
 - Role/action policy and role-filtered allowlist projections are server enforced, but they do not make the branded role gateway production identity.
 - Reset is scenario-scoped, externally inert, and unavailable against production systems.
@@ -101,7 +112,7 @@ Rejected. A second runtime and Python-specific serialized model would complicate
 
 ### Operational implications
 
-- The finals environment runs a Vercel Cron schedule at the approved cadence. Preflight must verify the plan, schedule, authentication, deployment origin, and actual invocation before the journey is considered ready.
+- The finals environment runs one named Supabase Cron job at the approved one-minute cadence. Preflight must verify the Free project is active, the migrated job and Vault-backed URL/secret are present, authentication reaches the canonical Vercel Hobby origin, and the latest `pg_net` invocation succeeded before the journey is considered ready. After an inactivity pause, the operator resumes the project and reruns database, seed/projection, Vault, Cron, and tick checks before enabling external actions.
 - Functions use a supported Supabase pooled connection and strict transaction/query/runtime budgets; in-memory coordination and post-response background work are invalid.
 - Database migrations, seed/reset, projection consistency, cron overlap/lease/outbox recovery, adapter preflight, webhook reachability, exact-hash FHIR validation, and Python/TypeScript ML parity become required verification evidence.
 - Provider/network failure produces unresolved, degraded, or outcome-unknown state and an approved reconciliation/manual path. Operators must not repair the journey by directly editing projections.
