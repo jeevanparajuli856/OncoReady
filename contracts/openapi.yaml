@@ -794,8 +794,16 @@ components:
 
     PatientTransportSummary:
       type: object
-      required: [status, provider_display_name, plan_version, acknowledgment_required]
+      required: [transport_request_id, aggregate_version, status, provider_display_name, plan_version, acknowledgment_required]
       properties:
+        transport_request_id:
+          type: string
+          format: uuid
+          description: Fixed-scenario command identity used for Maria's guarded plan acknowledgment.
+        aggregate_version:
+          type: integer
+          minimum: 0
+          description: Current transport aggregate version for optimistic concurrency.
         status: {$ref: '#/components/schemas/TransportStatus'}
         provider_display_name: {type: string, maxLength: 160}
         pickup_window: {$ref: '#/components/schemas/TimeWindow'}
