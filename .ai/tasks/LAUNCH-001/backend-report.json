@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-backend",
   "status": "COMPLETE",
-  "summary": "Implemented the governed TypeScript backend as a long-running Railway API with private PostgreSQL persistence, checksum-locked pre-deploy migrations, a shared bounded scheduler cycle, signed provider callbacks, and explicit failure-safe external action handling.",
+  "summary": "Implemented the governed TypeScript backend as a long-running Railway API with private PostgreSQL persistence, checksum-locked pre-deploy migrations, a shared bounded scheduler cycle, signed provider callbacks, and a fail-closed public-demo/operator trust boundary that prevents anonymous provider authorization.",
   "files_changed": [
     "package.json",
     "package-lock.json",
@@ -43,18 +43,21 @@
   "tests": {
     "passed": true,
     "commands": [
-      "npm run build:server && npm run test:server",
+      "npm run build:server && npm run test:server && npm run test:security",
       "python3 scripts/validate-contracts.py",
       "python3 -m pytest -q tests/database",
       "Scratch PostgreSQL 17: run npm run migrate:server twice against a fresh database and inspect public.oncoready_schema_migrations"
     ],
-    "notes": "The server build/typecheck passed; 33 focused server, contract, and FHIR tests passed; all governed contracts validated; and six vendor-neutral migration tests passed. A fresh PostgreSQL 17 rehearsal applied both migrations once, skipped both on the second run, and recorded 64-character SHA-256 checksums. Tests cover deterministic migration ordering, advisory locking, applied-prefix enforcement, checksum/history drift rejection, rollback and secret-safe errors, plus the health/tick trust boundaries, scheduler non-overlap, idempotency/version guards, caregiver minimization, external-action controls, signed callbacks, deduplication, and transcript non-persistence."
+    "notes": "The server build/typecheck passed; 42 focused server, contract, and FHIR tests passed, including a 17-test focused security/webhook subset; all governed contracts validated; and six vendor-neutral migration tests passed. A fresh PostgreSQL 17 rehearsal applied both migrations once, skipped both on the second run, and recorded 64-character SHA-256 checksums. Tests cover deterministic migration ordering, advisory locking, applied-prefix enforcement, checksum/history drift rejection, rollback and secret-safe errors, plus disabled-demo failure, direct non-browser public access, arbitrary scenario/resource/action/role rejection, web-only readiness, server-derived CareLink plans, repository-enforced public no-outbox effects, operator authentication/authorization provenance, health/tick trust boundaries, scheduler non-overlap, idempotency/version guards, caregiver minimization, signed callbacks, deduplication, and transcript non-persistence."
   },
   "blockers": [],
   "notes_for_next_agent": [
     "Configure the Railway api service to use railway/api.toml, the repository root as build context, one replica, sleeping disabled, and DATABASE_URL=${{Postgres.DATABASE_URL}}. Railway now runs npm run migrate:server as the pre-deploy command after the compiled server build.",
     "The migration runner sorts database/migrations/*.sql lexically, holds a PostgreSQL advisory lock, requires applied history to be an exact prefix, rejects checksum drift before running new SQL, and records each migration transactionally in public.oncoready_schema_migrations without logging connection values.",
     "The process listens on 0.0.0.0:$PORT, exposes database-backed GET /health, runs the same WorkflowApplication.tick cycle from the internal scheduler and authenticated manual endpoint, and waits for an active tick before closing PostgreSQL on SIGTERM/SIGINT.",
+    "Public access is enabled only by ONCOREADY_PUBLIC_DEMO_ENABLED=true and is fixed to the illustrative finals scenario. Public reads and commands require no browser credential, while application/repository effect classes prevent every public command from creating provider outbox authorization.",
+    "Keep ONCOREADY_OPERATOR_TOKEN server-only. Reset and fixed-recipient SMS/voice initiation require X-OncoReady-Operator-Token; accepted communication outbox payloads persist authorization_source=operator_control before the existing provider switches and allowlists are evaluated.",
+    "Readiness is patient/web-only. Work-item and transport commands enforce resource existence, supported resource type, action, current-state, and claimed-role policies. CareLink request creation accepts only work_item_id plus command context and derives the fixed plan from server-owned finals state.",
     "Provider intent is committed before network I/O. Unknown network outcomes become outcome_unknown and are excluded from blind re-claim; signed callbacks reconcile stored attempts by provider conversation/message reference.",
     "ElevenLabs callbacks accept the official signed post_call_transcription and call_initiation_failure envelopes, derive scenario/correlation only from stored provider attempts, return HTTP 200, and persist neither transcript nor audio.",
     "Keep EXTERNAL_ACTIONS_ENABLED, TWILIO_SMS_ENABLED, and ELEVENLABS_VOICE_ENABLED false until Railway variables, fixed recipient, exact public origin, and signed callback preflight pass. No live provider action was performed by this worker."

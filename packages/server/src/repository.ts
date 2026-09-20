@@ -27,6 +27,8 @@ export interface ExecuteCommandInput {
   aggregateType: string;
   aggregateId: string;
   expectedVersion: number;
+  effectClass: "public_database_only" | "operator_external" | "operator_control";
+  allowCreate?: boolean;
 }
 
 export interface WebhookWrite {
@@ -98,9 +100,22 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
       return {...structuredClone(prior.receipt), disposition: "replayed"};
     }
     const key = `${input.aggregateType}:${input.aggregateId}`;
-    const aggregate = this.versions.get(key) ?? {version: 0, state: {}};
+    let aggregate = this.versions.get(key);
+    if(!aggregate&&input.aggregateType==="work_item"){
+      const workItems=(this.projections.staff.work_items as Array<Record<string,unknown>>|undefined)??[];
+      const item=workItems.find((candidate)=>candidate.work_item_id===input.aggregateId);
+      if(!item)throw new AppError(404,"not_found","Work item was not found.");
+      aggregate={version:Number(item.aggregate_version??0),state:structuredClone(item)};
+    }
+    if(!aggregate&&input.aggregateType==="transport_request"){
+      const request=this.projections.transport_coordinator.request as Record<string,unknown>|undefined;
+      if(request?.transport_request_id===input.aggregateId)aggregate={version:Number(request.aggregate_version??0),state:structuredClone(request)};
+      else if(!input.allowCreate)throw new AppError(404,"not_found","Transport request was not found.");
+    }
+    aggregate??={version: 0, state: {}};
     if (aggregate.version !== input.expectedVersion) throw new AppError(409, "version_conflict", "Aggregate version is stale.", false, aggregate.version);
     const decision = decide({aggregate: structuredClone(aggregate), projections: structuredClone(this.projections)});
+    enforceEffectClass(input,decision);
     this.events.push(...structuredClone(decision.events));
     this.versions.set(key, {version: decision.aggregateVersion, state: structuredClone(decision.aggregateState ?? aggregate.state)});
     for (const [role, projection] of Object.entries(decision.projections) as Array<[ActorRole, Record<string, unknown>]>) this.projections[role] = structuredClone(projection);
@@ -137,6 +152,12 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
     }
     return {tick_id: randomUUID(), started_at: started.toISOString(), completed_at: new Date().toISOString(), claimed: claimed.length, succeeded, failed, remaining_due: this.outbox.length};
   }
+}
+
+export function enforceEffectClass(input: ExecuteCommandInput, decision: CommandDecision): void {
+  const outbox=decision.outbox??[];
+  if(input.effectClass==="public_database_only"&&outbox.length>0)throw new AppError(403,"forbidden_action","Public demo commands cannot authorize provider work.");
+  if(input.effectClass==="operator_external"&&outbox.some((item)=>item.payload.authorization_source!=="operator_control"))throw new AppError(403,"forbidden_action","Provider work requires an operator authorization source.");
 }
 
 export function createSeedProjections(scenarioId: string): Record<ActorRole, Record<string, unknown>> {

@@ -2,7 +2,7 @@ import {describe,expect,it} from "vitest";
 import {readinessDrafts,transportDraft,workItemDraft,classifySms,isProviderStatusRegression} from "../../packages/server/src/domain.js";
 import {AppError} from "../../packages/server/src/types.js";
 
-const scenario="11111111-1111-4111-8111-111111111111";
+const scenario="11111111-1111-4111-8111-111111111111" as const;
 const context={scenario_id:scenario,actor_role:"patient" as const,idempotency_key:"readiness-001",expected_aggregate_version:1};
 
 describe("workflow domain",()=>{
@@ -18,14 +18,27 @@ describe("workflow domain",()=>{
   });
 
   it("requires closure evidence and keeps clinical authority with staff",()=>{
-    expect(()=>workItemDraft({...context,actor_role:"staff",action:"close",closure_evidence:null},"55555555-5555-4555-8555-555555555555","actioned",2)).toThrow(AppError);
-    expect(()=>workItemDraft({...context,actor_role:"patient",action:"close",closure_evidence:"reviewed"},"55555555-5555-4555-8555-555555555555","actioned",2)).toThrow(AppError);
+    expect(()=>workItemDraft({...context,actor_role:"staff",action:"close",closure_evidence:null},"55555555-5555-4555-8555-555555555555","actioned",2,"clinical_review")).toThrow(AppError);
+    expect(()=>workItemDraft({...context,actor_role:"patient",action:"close",closure_evidence:"reviewed"},"55555555-5555-4555-8555-555555555555","actioned",2,"clinical_review")).toThrow(AppError);
+  });
+
+  it("enforces work resource and action role policy",()=>{
+    const command={...context,actor_role:"transport_coordinator" as const,action:"assign" as const,owner_id:"carelink-team"};
+    expect(()=>workItemDraft(command,"55555555-5555-4555-8555-555555555555","open",2,"clinical_review")).toThrow(AppError);
+    expect(workItemDraft(command,"55555555-5555-4555-8555-555555555555","open",2,"transport_navigation").payload.to_status).toBe("assigned");
   });
 
   it("does not close transport before complete plan and pickup evidence",()=>{
     const command={...context,actor_role:"transport_coordinator" as const,action:"complete" as const,closure_evidence:"Maria arrived safely."};
     expect(()=>transportDraft(command,"44444444-4444-4444-8444-444444444444","driver_assigned",3,false)).toThrow(AppError);
     expect(transportDraft(command,"44444444-4444-4444-8444-444444444444","picked_up",3,true).payload.to_status).toBe("completed");
+  });
+
+  it("enforces the action-specific transport role matrix",()=>{
+    const staffOffer={...context,actor_role:"staff" as const,action:"offer" as const};
+    expect(()=>transportDraft(staffOffer,"44444444-4444-4444-8444-444444444444","request_ready",2,false)).toThrow(AppError);
+    const coordinatorOffer={...staffOffer,actor_role:"transport_coordinator" as const};
+    expect(transportDraft(coordinatorOffer,"44444444-4444-4444-8444-444444444444","request_ready",2,false).payload.to_status).toBe("offered");
   });
 
   it("treats STOP as opt-out without fuzzy fallback",()=>{

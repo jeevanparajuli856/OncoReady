@@ -41,6 +41,7 @@ function requireRole(actual: CommandContext["actor_role"], allowed: CommandConte
 
 export function readinessDrafts(command: ReadinessCommand, dueAt: string): EventDraft[] {
   requireRole(command.actor_role, ["patient"]);
+  if(command.channel!=="web")throw new AppError(403,"forbidden_action","Public readiness is web-only.");
   const submissionId = randomUUID();
   const drafts: EventDraft[] = [{
     aggregate_type: "readiness_submission", aggregate_id: submissionId, aggregate_version: 1,
@@ -68,8 +69,10 @@ const permittedWorkFrom:Record<WorkItemCommand["action"],string[]>={
   assign:["open"],acknowledge:["assigned"],accept:["open","assigned","acknowledged"],request_information:["assigned","acknowledged","accepted"],record_action:["acknowledged","accepted","needs_information"],escalate:["open","assigned","acknowledged","needs_information","accepted","actioned"],inform_patient:["actioned"],acknowledge_patient:["patient_informed"],close:["actioned","patient_acknowledged"],
 };
 
-export function workItemDraft(command: WorkItemCommand, workItemId: string, currentStatus: string, nextVersion: number): EventDraft {
-  requireRole(command.actor_role, ["staff", "transport_coordinator"]);
+export function workItemDraft(command: WorkItemCommand, workItemId: string, currentStatus: string, nextVersion: number,workItemType: string): EventDraft {
+  const allowedRoles:CommandContext["actor_role"][]=workItemType==="transport_navigation"?["staff","transport_coordinator"]:["staff"];
+  if(!["clinical_review","transport_navigation","human_callback","scheduling_support"].includes(workItemType))throw new AppError(403,"forbidden_action","The work item resource is outside the public demo policy.");
+  requireRole(command.actor_role, allowedRoles);
   const toStatus = workTransitions[command.action];
   if (!toStatus) throw new AppError(422, "invalid_transition", "Unsupported work item transition.");
   if(!permittedWorkFrom[command.action].includes(currentStatus))throw new AppError(422,"invalid_transition",`Cannot ${command.action} a work item from ${currentStatus}.`);
@@ -91,10 +94,16 @@ const transportTransitions: Record<Exclude<TransportCommand["action"], "review_e
 const permittedTransportFrom:Record<TransportCommand["action"],string[]>={
   review_eligibility:["need_detected","eligibility_reviewed"],mark_request_ready:["eligibility_reviewed"],offer:["request_ready"],accept:["offered"],assign_driver:["accepted"],notify_patient:["driver_assigned"],acknowledge_patient:["patient_notified"],mark_en_route:["patient_acknowledged"],arrive:["en_route"],pick_up:["arrived"],complete:["picked_up"],mark_return_pending:["picked_up"],mark_provider_unavailable:["request_ready","offered","accepted","driver_assigned","patient_notified","patient_acknowledged","en_route"],decline:["offered"],cancel:["accepted","driver_assigned","patient_notified","patient_acknowledged"],activate_backup:["provider_unavailable","declined","cancelled","backup_required"],escalate_to_navigator:["provider_unavailable","declined","cancelled","stale_assignment","return_pending","backup_required","backup_activated"],
 };
+const transportActionRoles:Record<TransportCommand["action"],CommandContext["actor_role"][]>={
+  review_eligibility:["staff","transport_coordinator"],
+  mark_request_ready:["transport_coordinator"],offer:["transport_coordinator"],accept:["transport_coordinator"],assign_driver:["transport_coordinator"],
+  mark_provider_unavailable:["transport_coordinator"],decline:["transport_coordinator"],cancel:["staff","transport_coordinator"],activate_backup:["staff","transport_coordinator"],
+  notify_patient:["transport_coordinator"],acknowledge_patient:["patient","staff"],mark_en_route:["transport_coordinator"],arrive:["transport_coordinator"],pick_up:["transport_coordinator"],
+  complete:["transport_coordinator"],mark_return_pending:["transport_coordinator"],escalate_to_navigator:["staff","transport_coordinator"],
+};
 
 export function transportDraft(command: TransportCommand, transportId: string, currentStatus: string, nextVersion: number, planComplete: boolean): EventDraft {
-  const patientAck = command.action === "acknowledge_patient";
-  requireRole(command.actor_role, patientAck ? ["patient", "staff"] : ["staff", "transport_coordinator"]);
+  requireRole(command.actor_role,transportActionRoles[command.action]);
   if(!permittedTransportFrom[command.action].includes(currentStatus))throw new AppError(422,"invalid_transition",`Cannot ${command.action} transport from ${currentStatus}.`);
   if (command.action === "review_eligibility") {
     if ([command.eligible, command.service_area_confirmed, command.operating_window_confirmed, command.outbound_plan_complete, command.return_plan_complete].some((v) => v == null)) {

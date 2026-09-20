@@ -4,7 +4,7 @@ import type {ServerConfig} from "./config.js";
 import {assertRuntimeConfig} from "./config.js";
 import {WorkflowApplication} from "./application.js";
 import {classifySms} from "./domain.js";
-import {elevenLabsFailure, elevenLabsPostCall, communicationCommand, createTransportCommand, readinessCommand, resetCommand, role, transportCommand, twilioInbound, twilioStatus, workItemCommand} from "./schemas.js";
+import {elevenLabsFailure, elevenLabsPostCall, communicationCommand, createTransportCommand, readinessCommand, resetCommand, role, transportCommand, twilioInbound, twilioStatus, uuid, workItemCommand} from "./schemas.js";
 import {validateElevenLabsSignature, validateTwilioSignature} from "./providers.js";
 import type {WorkflowRepository} from "./repository.js";
 import {AppError, type WorkflowEvent} from "./types.js";
@@ -60,13 +60,14 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
     const traceId=randomUUID();
     try{
       const url=new URL(request.url); const path=url.pathname;
-      const clientKey=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()??"local";
-      const window=Math.floor(Date.now()/60_000); const bucket=requestBuckets.get(clientKey);
-      if(bucket?.window===window){bucket.count+=1;if(bucket.count>240)throw new AppError(429,"rate_limited","Request rate exceeds the controlled-environment limit.",true);}else requestBuckets.set(clientKey,{window,count:1});
+      const clientKey=request.headers.get("x-forwarded-for")?.split(",").at(-1)?.trim()??"direct";
+      const bucketKey=`${clientKey}:${request.method}:${path}`;
+      const window=Math.floor(Date.now()/60_000); const bucket=requestBuckets.get(bucketKey);
+      if(bucket?.window===window){bucket.count+=1;if(bucket.count>240)throw new AppError(429,"rate_limited","Request rate exceeds the controlled-environment limit.",true);}else requestBuckets.set(bucketKey,{window,count:1});
       const origin=request.headers.get("origin");
       if(origin&&!config.allowedOrigins.includes(origin)) throw new AppError(403,"forbidden_action","Origin is not allowed.");
       const cors=origin?{"access-control-allow-origin":origin,"vary":"Origin"}:{};
-      if(request.method==="OPTIONS") return new Response(null,{status:204,headers:{...cors,"access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"Content-Type,X-OncoReady-Scenario-Token,Authorization,X-Twilio-Signature,ElevenLabs-Signature"}});
+      if(request.method==="OPTIONS") return new Response(null,{status:204,headers:{...cors,"access-control-allow-methods":"GET,POST,OPTIONS","access-control-allow-headers":"Content-Type,X-OncoReady-Operator-Token,Authorization,X-Twilio-Signature,ElevenLabs-Signature"}});
 
       if(path==="/health"){
         if(request.method!=="GET") throw new AppError(404,"not_found","Route not found.");
@@ -126,22 +127,25 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
       }
 
       assertRuntimeConfig(config);
-      if(!secureEqual(request.headers.get("x-oncoready-scenario-token"),config.scenarioToken)) throw new AppError(401,"unauthorized","Scenario credential is invalid.");
       const body=async()=>parseJson(await rawBody(request,32*1024));
-      const governed=<T extends {scenario_id:string}>(command:T):T=>{if(command.scenario_id!==FINALS_SCENARIO_ID)throw new AppError(403,"forbidden_action","Only the controlled finals scenario is available.");return command;};
-      if(request.method==="GET"&&path==="/api/v1/scenarios/finals") return json(await app.projection(FINALS_SCENARIO_ID,parse(role,url.searchParams.get("role"))),200,cors);
-      if(request.method==="POST"&&path==="/api/v1/scenarios/finals/reset") return json(await app.reset(governed(parse(resetCommand,await body()))),200,cors);
-      if(request.method==="POST"&&path==="/api/v1/readiness-submissions") return json(await app.readiness(governed(parse(readinessCommand,await body()))),202,cors);
+      const governed=async<T>(schema:ZodType<T>):Promise<T>=>{const value=await body();if(typeof value==="object"&&value!==null&&"scenario_id" in value&&(value as {scenario_id?:unknown}).scenario_id!==FINALS_SCENARIO_ID)throw new AppError(403,"forbidden_action","Only the controlled finals scenario is available.");return parse(schema,value);};
+      const operator=()=>{if(config.operatorToken.length<32)throw new AppError(503,"dependency_unavailable","Operator control is not configured.",true);if(!secureEqual(request.headers.get("x-oncoready-operator-token"),config.operatorToken))throw new AppError(401,"unauthorized","Operator credential is invalid.");};
+      const publicDemo=()=>{if(!config.publicDemoEnabled)throw new AppError(403,"forbidden_action","The controlled public demo is disabled.");};
+
+      if(request.method==="POST"&&path==="/api/v1/scenarios/finals/reset"){operator();return json(await app.reset(await governed(resetCommand)),200,cors);}
+      if(request.method==="POST"&&path==="/api/v1/communications/sms"){operator();return json(await app.communication("sms",await governed(communicationCommand)),202,cors);}
+      if(request.method==="POST"&&path==="/api/v1/communications/voice"){operator();return json(await app.communication("voice",await governed(communicationCommand)),202,cors);}
+
+      if(request.method==="GET"&&path==="/api/v1/scenarios/finals"){publicDemo();return json(await app.projection(FINALS_SCENARIO_ID,parse(role,url.searchParams.get("role"))),200,cors);}
+      if(request.method==="POST"&&path==="/api/v1/readiness-submissions"){publicDemo();return json(await app.readiness(await governed(readinessCommand)),202,cors);}
       let match=path.match(/^\/api\/v1\/work-items\/([0-9a-f-]+)\/commands$/i);
-      if(request.method==="POST"&&match) return json(await app.workItem(match[1]!,governed(parse(workItemCommand,await body()))),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/transport/requests") return json(await app.createTransport(governed(parse(createTransportCommand,await body()))),202,cors);
+      if(request.method==="POST"&&match){publicDemo();return json(await app.workItem(parse(uuid,match[1]!),await governed(workItemCommand)),202,cors);}
+      if(request.method==="POST"&&path==="/api/v1/transport/requests"){publicDemo();return json(await app.createTransport(await governed(createTransportCommand)),202,cors);}
       match=path.match(/^\/api\/v1\/transport\/requests\/([0-9a-f-]+)\/commands$/i);
-      if(request.method==="POST"&&match) return json(await app.transport(match[1]!,governed(parse(transportCommand,await body()))),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/communications/sms") return json(await app.communication("sms",governed(parse(communicationCommand,await body()))),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/communications/voice") return json(await app.communication("voice",governed(parse(communicationCommand,await body()))),202,cors);
-      if(request.method==="GET"&&path==="/api/v1/evidence/metrics") return json(await app.metrics(FINALS_SCENARIO_ID),200,cors);
-      if(request.method==="GET"&&path==="/api/v1/evidence/fhir") return json(await app.fhir(FINALS_SCENARIO_ID),200,cors);
-      if(request.method==="GET"&&path==="/api/v1/evidence/priority") return json(await app.priority(FINALS_SCENARIO_ID),200,cors);
+      if(request.method==="POST"&&match){publicDemo();return json(await app.transport(parse(uuid,match[1]!),await governed(transportCommand)),202,cors);}
+      if(request.method==="GET"&&path==="/api/v1/evidence/metrics"){publicDemo();return json(await app.metrics(FINALS_SCENARIO_ID),200,cors);}
+      if(request.method==="GET"&&path==="/api/v1/evidence/fhir"){publicDemo();return json(await app.fhir(FINALS_SCENARIO_ID),200,cors);}
+      if(request.method==="GET"&&path==="/api/v1/evidence/priority"){publicDemo();return json(await app.priority(FINALS_SCENARIO_ID),200,cors);}
       throw new AppError(404,"not_found","Route not found.");
     }catch(error){
       const appError=error instanceof AppError?error:new AppError(500,"internal_error","The request could not be completed.",true);

@@ -6,7 +6,8 @@ export interface ServerConfig {
   host: string;
   port: number;
   databaseUrl: string;
-  scenarioToken: string;
+  publicDemoEnabled: boolean;
+  operatorToken: string;
   allowedOrigins: string[];
   publicOrigin: string;
   cronSecret: string;
@@ -41,7 +42,8 @@ export function loadConfig(env: NodeJS.ProcessEnv = process.env): ServerConfig {
     host: "0.0.0.0",
     port,
     databaseUrl: env.DATABASE_URL ?? "",
-    scenarioToken: env.ONCOREADY_SCENARIO_TOKEN ?? "",
+    publicDemoEnabled: enabled(env.ONCOREADY_PUBLIC_DEMO_ENABLED),
+    operatorToken: env.ONCOREADY_OPERATOR_TOKEN ?? "",
     allowedOrigins: (env.ONCOREADY_ALLOWED_ORIGINS ?? "http://localhost:5173")
       .split(",")
       .map((origin) => origin.trim())
@@ -81,9 +83,6 @@ function integerInRange(value: string | undefined, fallback: number, minimum: nu
 }
 
 export function assertRuntimeConfig(config: ServerConfig): void {
-  if (!config.databaseUrl || !config.scenarioToken) {
-    throw new AppError(503, "dependency_unavailable", "Server persistence or scenario control is not configured.", true);
-  }
   assertDatabaseUrl(config.databaseUrl);
 }
 
