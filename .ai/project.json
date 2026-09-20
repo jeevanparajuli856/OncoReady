@@ -15,8 +15,8 @@
   "components": {
     "backend": {
       "enabled": true,
-      "path": "api",
-      "technology": "TypeScript + Vercel Node.js Functions"
+      "path": "packages/server",
+      "technology": "TypeScript + Node.js HTTP service on Railway"
     },
     "frontend": {
       "enabled": true,
@@ -25,8 +25,8 @@
     },
     "database": {
       "enabled": true,
-      "provider": "Supabase PostgreSQL",
-      "migration_path": "supabase/migrations"
+      "provider": "Railway PostgreSQL",
+      "migration_path": "database/migrations"
     }
   },
   "verification": {

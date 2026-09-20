@@ -119,8 +119,8 @@ An append-only event timeline makes causality inspectable from signal through as
 - Public landing privacy cleanup, `Pricing` navigation, and centrally configured Small Infusion Center Pilot pricing.
 - Local branded role mapping: Google → patient, Microsoft → caregiver, Apple → staff, email → transportation.
 - React + TypeScript role workspaces integrated through generated OpenAPI types/client.
-- One TypeScript Vercel application deployment containing the Vite frontend and Node.js Functions for commands, projections, provider callbacks, metrics, FHIR, and ML inference.
-- Supabase PostgreSQL append-only workflow events, projections, outbox, scheduling, callback receipts, idempotency, deterministic seed, and safe reset.
+- One Railway project containing separate Vite web, long-running Node.js API, and private PostgreSQL services.
+- Railway PostgreSQL append-only workflow events, projections, outbox, scheduling, callback receipts, idempotency, deterministic seed, and safe reset.
 - T−7/T−3/T−1 outreach timing, business-day transportation cutoff, separate clinical/transport/callback work, SLA and escalation.
 - Twilio SMS and ElevenLabs voice through Twilio, bounded to one allowlisted team-controlled number.
 - Custom CareLink Partner Dispatch workflow with eligibility, outbound/return plan, assignment, failure/recovery, notification, and patient acknowledgment.
@@ -148,10 +148,10 @@ A typed, deterministic workflow command model appends versioned events and deriv
 ```text
 React + TypeScript + Vite role workspaces
   → generated client from contracts/openapi.yaml
-  → TypeScript Vercel Node.js Functions in the same Vercel project
-  → Supabase Cron invokes the authenticated bounded Vercel scheduler/outbox tick
+  → long-running TypeScript Node.js API service on Railway
+  → bounded in-process poller coordinates through PostgreSQL locks, claims, and leases
   → provider adapters: Twilio, ElevenLabs, CareLink Partner Dispatch
-  → Supabase PostgreSQL events, projections, outbox, scheduled work, callback receipts
+  → private Railway PostgreSQL events, projections, outbox, scheduled work, callback receipts
   → event-derived metrics, FHIR bundle/report, and versioned exported ML artifacts
 ```
 
@@ -160,11 +160,11 @@ React + TypeScript + Vite role workspaces
 | Subsystem | Decision | Product reason |
 |---|---|---|
 | Frontend | React + TypeScript + Vite | Preserve the completed experience and design system |
-| Server runtime | TypeScript Vercel Node.js Functions | One-language command/query/callback boundary in the same Vercel deployment |
-| Database | Supabase PostgreSQL via Git-tracked migrations | Durable cross-role state, event history, idempotency, scheduling, and reset |
-| Worker | Supabase Cron (`pg_cron` + `pg_net`) plus an authenticated Vercel tick and bounded database claims | Per-minute deadline and delivery behavior without a long-running server, queue platform, or paid Vercel scheduler |
+| Server runtime | Long-running TypeScript Node.js HTTP service on Railway | One-language command/query/callback boundary with a stable public callback origin |
+| Database | Railway PostgreSQL via Git-tracked migrations | Durable cross-role state, event history, idempotency, scheduling, and reset over private networking |
+| Worker | Bounded in-process poller coordinated by PostgreSQL advisory locks, row claims, and leases | Timely deadline and delivery behavior without another scheduler, queue, or cache service |
 | External providers | Twilio, ElevenLabs, configured CareLink partner workflow | Real controlled communication and transportation proof |
-| ML | Offline Python LightGBM/calibration/SHAP build; versioned runtime export consumed by TypeScript | Preserve the approved real pipeline while keeping the deployed application runtime in one Vercel project |
+| ML | Offline Python LightGBM/calibration/SHAP build; versioned runtime export consumed by TypeScript | Preserve the approved real pipeline while keeping the deployed API runtime in Node.js |
 
 ## 8. Contract and source-of-truth policy
 
@@ -256,15 +256,15 @@ Stop adding scope when the one finals journey is visually complete, genuinely ev
 | Q-001 | Which production identity, consent, and authorization model would Ochsner approve? | Required before real users or PHI | No; production use remains out of scope |
 | Q-002 | Which clinical concern categories, owners, SLAs, and escalation language are approved? | Required before clinical deployment | No; finals concern remains clearly non-urgent and illustrative |
 | Q-003 | Which existing Ochsner staff surface should OncoReady replace or augment? | Prevents another inbox | No |
-| Q-004 | Are Twilio, ElevenLabs, Supabase DEV, and callback-domain credentials available by Day 1 H2? | Required for live external proof | No for contract planning; yes for corresponding implementation gates |
+| Q-004 | Are Twilio, ElevenLabs, Railway project/database, and callback-domain credentials available by Day 1 H2? | Required for live external proof | No for contract planning; yes for corresponding implementation gates |
 
 ## 16. Approved decisions
 
 | ID | Decision | Status |
 |---|---|---|
 | D-001 | Preserve React, TypeScript, Vite, and the established design system | Confirmed |
-| D-002 | Deploy the Vite frontend and TypeScript Vercel Node.js Functions as one Vercel project backed by Supabase PostgreSQL event state | Confirmed |
-| D-003 | Use Supabase Free Cron to invoke an authenticated Vercel Hobby tick with bounded PostgreSQL outbox/scheduler claims; do not add a persistent app server, Redis, Kafka, Celery, or microservices | Confirmed; amended 2026-09-20 |
+| D-002 | Deploy separate Vite web, long-running TypeScript API, and private PostgreSQL services in one Railway project | Confirmed; amended 2026-09-20 |
+| D-003 | Run a bounded API-process poller coordinated by PostgreSQL locks, claims, and leases; keep the authenticated tick only for manual preflight and add no Redis, Kafka, Celery, or microservices | Confirmed; amended 2026-09-20 |
 | D-004 | Use CareLink Partner Dispatch as the only active finals transportation path | Confirmed |
 | D-005 | Keep Uber Health and Lyft Concierge as visibly planned, disconnected adapters | Confirmed |
 | D-006 | Use one allowlisted team-controlled phone for Twilio and ElevenLabs proof | Confirmed, credentials pending human supply |

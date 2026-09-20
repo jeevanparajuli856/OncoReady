@@ -2,189 +2,194 @@
 
 ## System summary
 
-OncoReady is a treatment-continuity orchestration product. It identifies a recoverable threat before oncology treatment, creates separately owned clinical and practical work, coordinates communication and transportation recovery, and proves whether the complete continuity plan closed.
+OncoReady is a treatment-continuity orchestration product. It identifies recoverable threats before oncology treatment, assigns clinical and practical work to the right humans, coordinates bounded communication and transportation recovery, and proves whether the complete continuity plan closed.
 
-The completed CORE-001 experience used one React application, a deterministic reducer, synthetic fixtures, and browser persistence. LAUNCH-001 retains that presentation foundation but changes the launch authority: browser state is no longer the business record. TypeScript Vercel Node.js Functions validate commands, enforce workflow policy, append immutable events, produce role-filtered projections, handle provider webhooks, and coordinate bounded external actions against Supabase PostgreSQL.
+The completed CORE-001 experience used a React application, deterministic reducer, synthetic fixtures, and browser persistence. LAUNCH-001 retains that presentation foundation but moves workflow authority to a long-running TypeScript service and Railway PostgreSQL. Browser state is presentation-only; the server validates commands, enforces policy, appends immutable events, builds role-minimized projections, handles provider callbacks, and coordinates scheduled external actions.
 
-The launch environment is deliberately finals-scoped. It supports controlled illustrative data and working integrations; it is not production identity, PHI, hospital connectivity, clinical validation, or a claim of production scale.
+The launch environment contains controlled illustrative data only. It is not production identity, PHI, hospital connectivity, clinical validation, or a claim of production scale.
 
 ## Architecture principles
 
 - Optimize for the complete early-signal-to-acknowledged-plan journey and its deterministic recovery path.
-- Keep one causal append-only event history as the durable source for projections, metrics, evidence, and external-action state.
-- Accept state changes only through server-side commands with validation, actor/action policy, expected aggregate version, and idempotency.
-- Preserve original patient words and human clinical authority. ML may order supportive outreach but cannot route, downgrade, diagnose, clear, cancel, or close treatment work.
-- Derive each role's response on the server and minimize before serialization; hiding fields in React is not authorization or privacy enforcement.
-- Treat provider initiation, callback receipt, patient notification, patient acknowledgment, and closure as distinct facts.
-- Make stateless function concurrency safe through PostgreSQL transactions, constraints, locks, durable claims, and leases.
-- Use PostgreSQL for persistence, scheduling, outbox, locking, and deduplication without Redis, Kafka, Celery, microservices, or a continuously running worker.
-- Make external failure visible and recoverable; never silently replace a failed live action with fabricated success.
+- Keep one append-only event history as the durable source for projections, metrics, evidence, and external-action state.
+- Accept changes only through server-side commands with input validation, actor/action policy, expected aggregate versions, and idempotency.
+- Preserve patient words and human clinical authority. ML may support outreach ordering but cannot diagnose, triage, clear, cancel, or close treatment work.
+- Build role projections on the server and minimize them before serialization; hiding fields in React is not privacy enforcement.
+- Treat queued, attempted, provider-accepted, callback-confirmed, patient-notified, patient-acknowledged, and closed as different facts.
+- Keep scheduling durable in PostgreSQL. A process timer wakes work; it is never the source of truth.
+- Make provider failure and uncertain outcomes visible and recoverable; never turn an unavailable integration into fabricated success.
+- Keep the launch topology to one Railway project, two application services, and one PostgreSQL service. Do not add Redis, Kafka, Celery, a workflow platform, or microservices.
 
 ## Runtime topology
 
 ```text
-React + TypeScript + Vite on Vercel
-public, access, patient, caregiver, staff, transport
-             │
-             │ generated OpenAPI client over HTTPS
-             ▼
-TypeScript Vercel Node.js Functions
-  ├─ command/query functions and role/action policy
-  ├─ Twilio, ElevenLabs, and CareLink webhook functions
-  ├─ provider initiation adapters
-  ├─ metrics and FHIR evidence functions
-  └─ versioned ML inference/explanation function
-             │
-             │ pooled transactional connection
-             ▼
-Supabase PostgreSQL
-  ├─ append-only workflow events
-  ├─ current role/evidence projections
-  ├─ scheduled actions + transactional outbox
-  ├─ idempotency keys + callback receipts + leases
-  └─ Supabase Cron + pg_net
-             ▲
-             │ HTTPS every minute; bearer-authenticated
-             │
-GET /api/v1/operations/tick on Vercel Hobby
+Public browser
+    |
+    | HTTPS
+    v
+Railway `web` service
+React + TypeScript + Vite static application
+    |
+    | generated OpenAPI client over the public API origin
+    v
+Railway `api` service (long-running Node.js/TypeScript process)
+    |- command/query routes and role/action policy
+    |- Twilio and ElevenLabs callback routes
+    |- provider adapters and CareLink workflow
+    |- metrics, FHIR, and ML inference
+    `- bounded scheduler/outbox poller
+    |
+    | private Railway network; DATABASE_URL reference
+    v
+Railway PostgreSQL
+    |- append-only workflow events
+    |- role/evidence projections
+    |- scheduled actions and transactional outbox
+    |- idempotency and callback receipts
+    `- provider attempts, claims, leases, and scheduler state
 ```
 
-There is one shared TypeScript domain/application package, not a set of services. Each function is short-lived and stateless between invocations. Supabase Cron is only the wake-up trigger: the protected endpoint attempts a PostgreSQL advisory lock and claims bounded due work, so concurrent or retried HTTP invocations exit or resume from durable state rather than becoming parallel scheduler authority.
+The Railway project has a dedicated controlled launch environment and three named services: `web`, `api`, and `Postgres`. Both application services may have public HTTPS domains. PostgreSQL stays private and is reachable only from the API through a Railway reference variable such as `${{Postgres.DATABASE_URL}}`.
 
 ## Components and responsibilities
 
-### Frontend
+### Web service
 
-**Technology:** React + TypeScript + Vite, deployed on Vercel using the established design system.
+**Technology:** React + TypeScript + Vite, deployed as a Railway static service from `frontend/`.
 
 Responsibilities:
 
-- public product story and centrally configured pricing without a patient record preview;
-- local branded role entry and `/access`, `/patient`, `/caregiver`, `/staff`, and `/transport` routes;
+- public story and centrally configured pilot pricing without patient records on the public route;
+- local role entry and `/access`, `/patient`, `/caregiver`, `/staff`, and `/transport` routes;
 - generated OpenAPI client and generated boundary types;
-- role-appropriate loading, conflict, validation, provider-pending, degraded, retry, empty, success, and reset states;
-- Treatment Readiness Graph, causal timeline, role workspaces, communication/transport evidence, FHIR report, and staff-only priority explanation;
-- presentation-only state such as open panels, focus, and reduced-motion preference.
+- loading, conflict, validation, provider-pending, degraded, retry, empty, success, and reset presentation;
+- Treatment Readiness Graph, event timeline, role workspaces, communication and transportation evidence, FHIR evidence, and staff-only priority explanation;
+- presentation-only state such as focus, open panels, and reduced-motion preference.
 
-The frontend does not own workflow transitions, role authorization, caregiver filtering, provider success, or durable event state. The existing reducer/local storage cannot remain a competing launch authority.
+`VITE_API_BASE_URL` contains the public `api` domain and is the only public cross-service address compiled into the frontend. No database or provider secret may use the `VITE_` prefix.
 
-### Vercel function boundary
+The frontend does not own workflow transitions, role authorization, caregiver filtering, provider success, scheduled work, or durable event state. The current reducer/local storage cannot remain a second launch authority.
 
-**Technology:** TypeScript Vercel Node.js Functions with contract-aligned schemas and shared domain/application modules.
+### API service
+
+**Technology:** a continuously running Node.js/TypeScript HTTP process on Railway, listening on `0.0.0.0:$PORT`.
 
 Responsibilities:
 
-- validate request bodies, headers, size, scenario, actor role, action, idempotency key, and expected aggregate version;
-- expose command/query/webhook operations defined only by `contracts/openapi.yaml`;
+- implement the paths and schemas in `contracts/openapi.yaml`;
+- validate bodies, headers, sizes, scenario, actor role, action, idempotency key, and expected aggregate version;
 - map domain failures to stable contract errors without leaking internal exceptions;
-- verify provider webhooks against the exact raw request before parsing or acting;
+- verify Twilio and ElevenLabs signatures against the exact raw request body and canonical public URL before parsing or acting;
 - return role-filtered projections rather than unrestricted aggregate state;
-- enforce restrictive CORS and bounded route-level rate limiting;
-- acquire a bounded pooled Supabase PostgreSQL connection and finish transaction/request work inside function duration limits.
+- enforce restrictive CORS, bounded rate limits, and fixed allowlists for consequential actions;
+- run the bounded PostgreSQL-backed scheduler/outbox cycle;
+- expose liveness/readiness diagnostics that do not reveal secrets or sensitive payloads.
 
-Handlers stay thin. Workflow, projection, provider, FHIR, and ML behavior belongs in shared modules. Functions cannot rely on in-memory locks, local files written at runtime, timers, background work after the response, sticky sessions, or warm-instance state.
+Handlers remain thin. Workflow rules, projections, provider translations, evidence generation, and ML behavior belong in shared TypeScript application/domain modules. The service cannot use process memory as durable coordination and cannot rely on local runtime files surviving a redeploy.
+
+The controlled launch starts with one API replica, sleeping disabled, and an automatic restart policy. Database claims and leases still make the scheduler safe if a restart overlaps, an operator invokes the tick endpoint, or a later deployment increases replicas.
 
 ### Workflow and projection modules
 
 Responsibilities:
 
-- calculate T−7/T−3/T−1 cadence, business-day transport cutoffs, owners, SLAs, escalation, appointment-change invalidation, and closure requirements;
-- preserve patient verbatim input as inert data and split clinical, transportation, and callback work deterministically;
+- calculate T-7/T-3/T-1 outreach, business-day transportation cutoffs, owners, SLAs, escalation, appointment-change invalidation, and closure requirements;
+- preserve patient text as inert data and split clinical, transportation, and callback work deterministically;
 - enforce allowed transitions and expected aggregate versions;
-- append events and update affected projections/schedules/outbox rows in one transaction;
-- build separate patient, staff, caregiver, transport, graph, timeline, metrics, and evidence projections;
-- rebuild or verify projections from ordered event history.
+- append governed events and update projections, schedules, and outbox rows in one database transaction;
+- build patient, staff, caregiver, transport, graph, timeline, metrics, and evidence projections;
+- rebuild or verify projections from ordered events.
 
-Caregiver and transport projections are explicit allowlists, not broad objects with client-side field hiding.
+Caregiver and transportation projections are explicit allowlists, not broad objects filtered by the client.
 
-### Persistence
+### Railway PostgreSQL
 
-**Technology:** Supabase PostgreSQL with timestamped Git-tracked SQL migrations and a Vercel-compatible pooled transaction connection.
+**Technology:** Railway-managed PostgreSQL with Git-tracked, vendor-neutral SQL migrations under the database implementation path approved by the orchestrator.
 
 Required data classes:
 
 - scenario and treatment configuration;
-- immutable `workflow_events` with per-aggregate monotonic versioning;
-- current work-item, communication, transport, caregiver, metric, scheduler, and evidence projections;
+- immutable `workflow_events` with monotonic per-aggregate versions;
+- work-item, communication, transportation, caregiver, metrics, scheduler, and evidence projections;
 - scheduled actions and transactional outbox;
-- idempotency records, provider attempts, callback receipts, claim leases, and retry state;
-- deterministic finals seed and safe reset support;
-- ML artifact/evaluation metadata, not arbitrary uploaded executable artifacts.
+- idempotency records, provider attempts, callback receipts, claim tokens, leases, and retry state;
+- deterministic launch seed and safe reset support;
+- ML artifact/evaluation metadata, not arbitrary executable uploads.
 
-Database constraints enforce unique idempotency/callback identifiers, aggregate ordering, the configured provider/scenario, and required closure evidence. Indexes are limited to aggregate replay, primary projection reads, due work/outbox claims, and callback/idempotency lookup. Schema changes are migrations; dashboard edits or direct tool mutations are never the only record.
+Database constraints enforce aggregate ordering, unique idempotency/callback identities, fixed provider/scenario values, and closure evidence. Indexes are limited to aggregate replay, primary projection reads, due-work claims, and callback/idempotency lookup.
 
-### Supabase Cron trigger and outbox tick
+The API receives `DATABASE_URL` as a Railway reference to the private Postgres service. The browser never receives a database URL. A small application pool is sufficient for the initial single API replica; PgBouncer, HA, and public database networking are deferred until measured need or a separate reliability requirement justifies them.
 
-Supabase Cron (`pg_cron`) runs once per minute and uses `pg_net` to invoke the existing Vercel `GET /api/v1/operations/tick?max_items=25` endpoint. Each invocation:
+Migrations run as a reviewed pre-deploy step or explicit release command using an advisory migration lock and a migration history table. Dashboard edits are never the only schema record. The retired platform-specific HTTP scheduler migration is not part of the Railway target and must not be applied there.
 
-1. sends `Authorization: Bearer <secret>` over HTTPS and the Vercel function verifies the bearer value plus external-action configuration;
-2. attempts a scenario-specific PostgreSQL advisory lock;
-3. atomically claims a bounded batch of due scheduled/outbox rows with row locking and a lease;
-4. records dispatch intent/attempt before crossing a provider boundary;
-5. invokes only enabled adapters with fixed targets and stable action identifiers;
-6. records a definitive result through the same command/event boundary, then releases/completes the claim;
-7. exits before the function duration budget rather than opening a long poll or background loop.
+### Database-backed scheduler and outbox
 
-Only one tick holds scheduler authority at a time, even if Supabase Cron, `pg_net`, an operator, or the network retries or overlaps invocations. Stale leases are recoverable. If a function fails after a provider may have accepted an action but before local confirmation, that action enters `outcome_unknown`: the adapter reconciles through a provider identifier/callback when supported, otherwise it requires manual recovery. It is never blindly resent merely because a lease expired.
+The API process contains a lightweight poller. The timer only wakes the following bounded database operation; PostgreSQL owns due time, claims, retry state, and recovery:
 
-This tick replaces a continuously running worker. Vercel Hobby hosts the frontend and functions; it has no schedule configured. The human project operator owns one generated opaque secret and stores the identical value in two approved locations: Vercel's server-only `CRON_SECRET` for verification and Supabase Vault as `oncoready_cron_secret` for invocation. The canonical tick URL is stored in Vault as `oncoready_tick_url` so no secret or environment-specific origin is committed. The database specialist owns a timestamped migration that enables `pg_cron`/`pg_net`, defines a least-privilege invoker that reads only those named Vault entries, and installs the named one-minute job; the operator provisions/rotates Vault values and activates or pauses the job after preflight. The job, invoker, or logs must not print the authorization header.
+1. On startup, wait for database readiness and current migrations before enabling the poller.
+2. At a short fixed interval, use database time and attempt a transaction-scoped advisory lock for the launch scheduler.
+3. Claim a bounded set of due `scheduled_actions` and `outbox` rows with `FOR UPDATE SKIP LOCKED`, a unique claim token, owner, attempt count, and lease expiry.
+4. Commit dispatch intent and a provider-attempt record before crossing the provider boundary; do not hold a database transaction open during network I/O.
+5. Invoke only enabled adapters with fixed targets and stable action identities.
+6. Record a definitive result through the same command/event boundary. A timeout after possible provider acceptance becomes `outcome_unknown`.
+7. Reconcile an unknown outcome through provider identity or signed callback when available; otherwise require manual recovery. Never resend merely because a lease expired.
+8. Reclaim only work whose lease expired before a provider call or whose retry policy explicitly permits another attempt.
 
-The Supabase Free project contains controlled illustrative data only. Its 500 MB limit is sufficient for the bounded finals scenario, but growth is checked during preflight and event/provider evidence retention remains deliberately bounded. The plan may pause after inactivity and supplies no automated backups. Git-tracked migrations plus deterministic seed/reset are therefore the recovery authority, not dashboard state. Before rehearsal, verification, or review, preflight must confirm the project is active, migrations and projections are current, both Vault entries resolve, the named Cron job is active at one-minute cadence, the latest `pg_net` response is successful, and an authenticated tick reaches the current canonical Vercel origin. After any pause, resume the project, wait for database health, rerun those checks and deterministic reset/seed verification, then enable external actions.
+The advisory lock serializes claim cycles; durable row claims and provider action identities protect delivery after the claim transaction ends. Restarts are safe because due work remains in PostgreSQL and the next process catches up from database time.
 
-### Provider adapters and webhooks
+`GET /api/v1/operations/tick?max_items=25` remains contractually available with opaque bearer authentication. On Railway it invokes the same bounded cycle for controlled operator/preflight use. It is not the normal schedule and no hosted cron or database-originated HTTP caller is required. `CRON_SECRET` is retained as the server-only compatibility name for that protected endpoint.
 
-- **Twilio messaging:** server-only send to the allowlisted team number; official raw-request signature validation for inbound/status webhooks; consent, STOP/HELP, delivery, retry, and order handling.
-- **ElevenLabs through Twilio:** one bounded, consented call; HMAC-authenticated post-call/failure webhooks; allowlisted structured outcomes only; transcript/audio retention off by default.
-- **CareLink Partner Dispatch:** only active transport adapter; fixed provider boundary for eligibility, outbound/return planning, offer, assignment, notification, acknowledgment, failure, backup, escalation, and completion.
-- **Planned providers:** Uber Health and Lyft Concierge may be represented only as disabled registry metadata. They have no finals credentials, network actions, webhooks, or active status.
+### Provider adapters and callbacks
 
-Adapters translate vendor-specific requests/outcomes to governed commands/events. They do not own workflow policy or close dependencies directly.
+- **Twilio messaging:** send only to the allowlisted team number; validate `X-Twilio-Signature` on the raw form request and exact external URL; handle consent, STOP/HELP, delivery, duplicate, retry, and ordering behavior.
+- **ElevenLabs through Twilio:** initiate one bounded consented call; validate `ElevenLabs-Signature` on the raw body; accept only approved structured outcomes; keep transcript/audio retention disabled or minimized.
+- **CareLink Partner Dispatch:** the product's persisted coordinator workflow for the fixed illustrative provider, with eligibility, outbound/return planning, offer, assignment, notification, acknowledgment, failure, backup, escalation, and completion.
+- **Planned providers:** Uber Health and Lyft Concierge remain disabled metadata with no credentials, requests, callbacks, or active status.
 
-### Evidence and offline/runtime ML split
+Adapters translate provider payloads into governed domain commands/events. They cannot own workflow policy or close a dependency directly.
 
-- Operational metrics are deterministic projections of workflow events.
-- TypeScript generates the FHIR R4 bundle from the controlled scenario. A pinned official validator runs in verification/freeze tooling outside the request path and produces an inspectable report bound to the exact bundle content hash. Runtime displays `Validated` only when the current bundle hash has a passing report; otherwise it displays pending/failed/unavailable.
-- Offline Python owns training data generation, patient-separated chronological partitions, LightGBM training, sigmoid calibration, SHAP evaluation, leakage/subgroup/acceptance tests, and export.
-- The immutable export contains a format/version identifier, tree ensemble, calibrator coefficients, ordered feature schema, missing-value semantics, explanation/background metadata, generator seed, training timestamp, evaluation manifest/hash, and Python golden vectors.
-- TypeScript runtime validates the full artifact set, computes raw margin, calibrated probability, and the approved SHAP-compatible explanation, then checks version/schema compatibility. Python/TypeScript parity fixtures define numeric tolerances.
-- Missing, stale, malformed, parity-failing, or schema-incompatible artifacts produce `Score unavailable`; universal cadence and deterministic routing continue.
+### Evidence and ML
 
-The runtime never executes arbitrary Python, loads a pickle, accepts a user-supplied model, or retrains inside a Vercel Function.
+- Operational metrics are projections of workflow events.
+- TypeScript generates the FHIR R4 bundle. A pinned validator runs outside the request path and creates a report bound to the exact bundle hash. Runtime shows `Validated` only for an exact passing match.
+- Offline Python owns LightGBM training, sigmoid calibration, SHAP evaluation, leakage/subgroup checks, and immutable export.
+- TypeScript validates the artifact version/schema/hash and must match Python golden vectors. Missing, stale, malformed, or parity-failing artifacts produce `Score unavailable` while deterministic routing continues.
+- Runtime code never executes arbitrary Python, loads pickle files, accepts uploaded models, or retrains inside the API service.
 
 ## Domain and event model
 
 ```text
 Scenario
-  └─ TreatmentEncounter
-       ├─ SignalSnapshot (T−7 / T−3 / T−1)
-       ├─ ReadinessSubmission
-       │    ├─ ClinicalWorkItem
-       │    ├─ TransportationWorkItem → TransportRequest
-       │    └─ CallbackWorkItem
-       ├─ CaregiverGrant
-       ├─ CommunicationAttempt
-       └─ EvidenceProjection
+  `- TreatmentEncounter
+       |- SignalSnapshot (T-7 / T-3 / T-1)
+       |- ReadinessSubmission
+       |    |- ClinicalWorkItem
+       |    |- TransportationWorkItem -> TransportRequest
+       |    `- CallbackWorkItem
+       |- CaregiverGrant
+       |- CommunicationAttempt
+       `- EvidenceProjection
 
 Command
-  → validate policy + expected version + idempotency
-  → append typed event(s)
-  → update projection(s), scheduled action(s), outbox row(s)
-  → commit atomically
+  -> validate policy + expected version + idempotency
+  -> append typed event(s)
+  -> update projection(s), scheduled action(s), outbox row(s)
+  -> commit atomically
 ```
 
-Each event carries the governed envelope: event/schema identity, aggregate identity/type/version, event type and typed payload, occurred/received timestamps, actor/provenance, correlation and causation identifiers, and idempotency identity where applicable.
+Every event uses the governed envelope: event/schema identity, aggregate identity/type/version, event type and payload, occurred/recorded timestamps, actor/provenance, correlation/causation identifiers, and idempotency identity where applicable.
 
 Key invariants:
 
-- events are appended, never updated or deleted during normal operation;
-- aggregate versions are monotonic and stale commands conflict rather than overwrite;
+- events append and never mutate during normal operation;
+- stale aggregate versions conflict rather than overwrite;
 - one idempotency key maps to one semantic result;
-- provider receipt is not provider success, assignment is not patient notification, and notification is not acknowledgment;
-- clinical and transport work have independent owners, deadlines, dispositions, and closure evidence;
-- transport cannot close until the current outbound/return plan is confirmed and Maria acknowledges it;
-- appointment or provider failure invalidates stale dependent closure;
-- caregiver projection contains only explicitly granted transport logistics;
-- ML state cannot create, suppress, prioritize over an explicit barrier, or close work.
+- provider receipt is not provider success, assignment is not notification, and notification is not acknowledgment;
+- clinical and transportation work have independent owners, deadlines, dispositions, and closure evidence;
+- transport closes only after the complete current outbound/return plan is acknowledged by Maria;
+- appointment/provider failure invalidates stale dependent closure;
+- caregiver output contains only explicitly granted transport logistics;
+- ML state cannot create, suppress, or close work and cannot outrank an explicit barrier.
 
 ## Primary data flows
 
@@ -192,138 +197,110 @@ Key invariants:
 
 ```text
 Maria submits readiness response
-  → function validates scenario/actor/version/idempotency
-  → domain module preserves verbatim text and emits separate work events
-  → transaction commits events + role projections + schedule/outbox
-  → staff/transport/patient views read role-filtered projections
-  → human/provider commands append further events
-  → Maria acknowledges the complete current plan
-  → closure guards project continuity plan confirmed
+  -> API validates scenario/actor/version/idempotency
+  -> domain preserves verbatim text and emits separate work events
+  -> transaction commits events + projections + schedules/outbox
+  -> staff/transport/patient read role-filtered projections
+  -> human/provider commands append further events
+  -> Maria acknowledges the complete current plan
+  -> closure guards project continuity plan confirmed
 ```
 
-### External action and webhook
+### Scheduled external action
 
 ```text
 approved command/event
-  → transactional outbox row
-  → protected cron tick claims row
-  → allowlist + kill-switch + provider config check
-  → provider request with stable action identity
-  → attempt/provider receipt event
-  → signed webhook verified on raw request
-  → webhook deduplicated and translated to domain command/event
-  → affected projections update
+  -> transactional outbox row
+  -> internal poller claims bounded due work
+  -> allowlist + kill-switch + provider configuration check
+  -> provider attempt recorded with stable action identity
+  -> provider request
+  -> signed callback verified and deduplicated
+  -> domain event + affected projections update
 ```
 
-An initiation error, timeout, invalid webhook, undelivered message, no-answer call, decline, cancellation, or provider outage records failure/pending/unknown state and triggers only the approved retry/manual fallback. It never records a successful provider outcome.
+Initiation error, timeout, invalid callback, undelivered message, no-answer call, decline, cancellation, or provider outage remains failed, pending, or unknown and triggers only the approved fallback. It never records provider success.
 
 ### Deterministic reset
 
-Reset is a controlled scenario operation. It authenticates the scenario action, disables external-action creation for the reset transaction, restores the fixed seed and projections, invalidates finals scheduler/outbox/idempotency/webhook state as defined by the contract and migrations, and records technical reset evidence separately when needed. Reset cannot send SMS, start a call, or create a transport request.
+Reset is scenario-scoped. It validates the privileged controlled action, suppresses all external-action creation, restores the fixed seed and projections, clears/reinitializes only governed launch scheduler/outbox/idempotency/callback state, and records technical reset evidence where required. Reset cannot send SMS, place a call, or create a transportation request.
 
-## Interface authority
+## Interface authority and contract blockers
 
-For LAUNCH-001, formal contracts are mandatory:
+For LAUNCH-001, contracts remain mandatory:
 
-- `contracts/openapi.yaml` is authoritative for HTTP paths, operation identifiers, command/query/webhook shapes, shared schemas, errors, version conflicts, and idempotency semantics.
-- Registered `contracts/events/*.schema.json` files are authoritative for the workflow event envelope and payloads.
-- `.ai/tasks/LAUNCH-001/task.json` identifies the exact governed contract files.
+- `contracts/openapi.yaml` is authoritative for HTTP paths, operation identifiers, request/response schemas, errors, expected-version conflicts, and idempotency semantics.
+- `contracts/events/*.schema.json` is authoritative for workflow event envelopes and payloads.
+- `.ai/tasks/LAUNCH-001/task.json` identifies the governed contract files.
 
-Architecture prose and implementation may explain or consume these contracts but cannot redefine wire shapes. Frontend uses generated client/types; function handlers validate at the boundary; migrations may add internal projection fields without changing public event meaning. A mismatch requires `CONTRACT_CHANGE_REQUIRED` and orchestrator-controlled reconciliation before dependent work continues.
+The Railway host decision does not require any endpoint, method, security scheme, command, response, or event-payload change. Frontend and backend can preserve the existing generated boundary. Two contract documentation/provider issues require orchestrator reconciliation before final contract freeze:
+
+1. the OpenAPI `servers` list still names the retired deployment host; replace only that deployment metadata with the canonical Railway web/API origin model;
+2. the current ElevenLabs callback request schemas describe normalized OncoReady objects, while ElevenLabs sends signed `post_call_transcription` and `call_initiation_failure` envelopes. The governed boundary must either accept the official provider envelopes or explicitly define an authenticated translation boundary. Implementation must not silently accept a different shape.
+
+Architecture prose cannot redefine these wire shapes. Any required change is `CONTRACT_CHANGE_REQUIRED` and orchestrator-owned.
 
 ## Trust boundaries and controls
 
 | Boundary | Material risk | Required control |
 |---|---|---|
-| Public browser → Vercel Functions | Forged role/action, injection, oversized/rapid requests, stale writes | Controlled scenario token, actor/action allowlist, schema validation, parameterized queries, size/rate limits, CORS, expected versions, idempotency |
-| Local role entry → role projection | Branded buttons mistaken for authentication; overbroad data returned | Finals fixture data only, no production/real PHI, server-selected allowlisted projections, truthful product/presenter boundary |
-| Patient free text → staff rendering/logs | Script injection or unnecessary sensitive logging | Treat as inert text, no raw HTML, bounded length, preserve verbatim for human review, redact/minimize logs |
-| Patient/staff state → caregiver/transport | Clinical or internal detail leakage | Server-side explicit allowlists; negative tests across response, DOM, accessibility, search, export, outbound content, and logs |
-| Vercel Functions → Supabase | Connection exhaustion, overprivileged SQL, partial state | Supported pooler, strict connection/time budgets, least-privilege credentials, parameterized SQL, transactions, constraints |
-| Supabase Cron/`pg_net` → Vercel tick | Vault exposure, forged invocation, overlap, retry, stale origin, or cadence drift | Named Vault entries, bearer authentication, least-privilege invoker, HTTPS canonical origin, PostgreSQL advisory lock, durable claims/leases, bounded batches, cadence/response preflight |
-| Functions → Twilio/ElevenLabs/CareLink | Consequential action to arbitrary target; duplicate/uncertain send | Server-only credentials, fixed recipient/provider/pickup/destination, consent, kill switches, stable action identity, reconcile-before-retry |
-| Provider webhook → domain | Forged, replayed, duplicate, or out-of-order outcome | Official raw-request signature/HMAC verification before parse, receipt uniqueness, replay policy, transition/version guard |
-| Reset/reseed → persistence/outbox | Destructive misuse or external action during reset | Controlled finals token/action, bounded scenario transaction, external actions disabled, deterministic proof, no production target |
-| ML/FHIR artifact → product claim | Cross-language mismatch, leakage, stale evidence, false clinical/interoperability claim | Immutable version/hash manifest, Python/TypeScript golden vectors, held-out/leakage gates, safe-unavailable state, exact-hash validator evidence |
-| Secrets/logging → repository/operator | Credential exposure | Vercel server-only environment plus Supabase Vault for the shared tick secret, ignored local env, presence checks without values, redacted logs/reports/screenshots |
+| Browser -> public API | Forged role/action, injection, oversized/rapid requests, stale writes | Controlled scenario token, actor/action allowlists, schema validation, parameterized SQL, size/rate limits, exact CORS, versions, idempotency |
+| Local role entry -> role projection | Branded buttons mistaken for identity; overbroad response | Illustrative data only, no PHI, server allowlist projections, truthful presentation boundary |
+| Patient text -> staff/logs | Script injection or unnecessary sensitive logging | Inert rendering, no raw HTML, length bounds, verbatim human review, minimized/redacted logs |
+| Patient/staff -> caregiver/transport | Clinical/internal/model leakage | Separate server schemas plus negative API/DOM/accessibility/search/export/log tests |
+| API -> Railway PostgreSQL | Overprivilege, partial state, connection exhaustion | Private `DATABASE_URL`, least privilege, small pool, transactions, constraints, parameterized queries |
+| Scheduler loop -> providers | Duplicate, arbitrary, or uncertain consequential action | DB advisory lock, bounded claims/leases, fixed targets, kill switches, stable identity, reconcile-before-retry |
+| Provider callback -> domain | Forged, replayed, duplicate, or out-of-order outcome | Official raw signature/HMAC verification, receipt uniqueness, replay policy, transition/version guards |
+| Reset -> database/outbox | Destructive misuse or external action during reset | Scenario-scoped privilege, fixed seed, external effects suppressed, no production target |
+| ML/FHIR artifact -> claim | Stale or mismatched evidence; false clinical/interoperability claim | Immutable hash/version, parity tests, safe-unavailable state, exact-hash validator report |
+| Railway variables/logs -> operator/repository | Credential exposure | Server-only sealed variables, no `VITE_` secrets, ignored local env, redaction, presence-only checks |
 
-The task is HIGH risk because it performs external communication/transport actions and exposes public webhooks, cron, reset, and role-dependent boundaries in a clinical context. A dedicated security review is mandatory on the exact verified integrated commit.
+The task remains **HIGH** risk because it exposes signed webhooks, privileged reset/tick operations, role-dependent projections, and real bounded communication actions in a clinical context. Independent security review remains mandatory on the exact verified commit.
 
 ## Failure modes and recovery
 
 | Failure | Product behavior | Recovery/evidence |
 |---|---|---|
-| Function/database unavailable | No optimistic success; retain only a clearly unsent draft when safe | Retry after health restoration; transaction evidence proves whether command committed |
-| Stale aggregate version | Show conflict/refresh state; do not overwrite | Reload projection and submit a still-valid explicit command with a new idempotency key |
-| Duplicate command/webhook | Return prior semantic result; append no duplicate business event | Idempotency/webhook receipt lookup |
-| Out-of-order webhook | Keep current valid state; record/ignore or park per contract | Later valid webhook or manual reconciliation; no state regression |
-| Overlapping/retried cron | Non-lock holder exits; claimed work remains durable | Advisory lock plus row claim/lease evidence |
-| Tick dies before provider call | No provider effect; lease becomes eligible for bounded retry | Durable dispatch intent and attempt state |
-| Tick dies after possible provider acceptance | Show outcome unknown; do not blindly resend | Provider identifier/webhook reconciliation or manual recovery |
-| SMS undelivered/STOP | Barrier remains unresolved; no prohibited follow-up SMS | Approved voice/manual path, respecting opt-out |
-| Voice no-answer/provider error | Callback need remains open | Manual callback or deterministic replay state; no fabricated answer |
-| CareLink decline/cancel/unavailable/stale/return pending | Transport blocker reopens/remains at risk | One controlled backup activation or navigator escalation |
-| Appointment changes | Old cutoff, transport assignment, and closure evidence become stale | Recompute dependent work and require current plan acknowledgment |
-| FHIR validator fails/unavailable/hash mismatch | Do not show `Validated` | Preserve report/failure and validate exact current artifact |
-| Model artifact missing/stale/incompatible/parity-failing | Show `Score unavailable`, never low risk | Deterministic cadence/routing continues; repair immutable artifact set |
-| Network disabled | No live-success claim | Deterministic/manual recovery journey remains complete and distinguishable |
-| Reset interrupted | Scenario is not reported ready until seed/projections verify | Transactional reset or rerun to known state; never dispatch external work |
+| API/database unavailable | No optimistic success | Restore health; transaction evidence proves whether a command committed |
+| API process restarts | Due work remains durable | Railway restart plus database-time catch-up and stale-lease recovery |
+| Stale aggregate version | Show conflict; do not overwrite | Reload projection and issue a still-valid command with a new idempotency key |
+| Duplicate command/callback | Replay prior semantic result; no duplicate event | Idempotency or callback-receipt lookup |
+| Overlapping poll/manual tick | Claims remain single-owner | Advisory lock plus `SKIP LOCKED`, tokens, and leases |
+| Process dies before provider call | No provider effect | Expired pre-call claim may retry within policy |
+| Process dies after possible acceptance | Show `outcome_unknown`; do not resend | Provider identity/callback reconciliation or manual recovery |
+| SMS undelivered/STOP | Barrier unresolved; prohibited SMS stops | Approved voice/manual path respecting opt-out |
+| Voice no-answer/provider error | Callback need remains open | Human callback or disclosed replay; no fabricated answer |
+| Transport decline/cancel/stale/return pending | Transportation remains at risk | One bounded backup or navigator escalation |
+| Appointment changes | Prior plan/closure becomes stale | Recompute work and require current acknowledgment |
+| FHIR validation unavailable/mismatch | Do not show `Validated` | Preserve failure and validate exact current bundle |
+| ML artifact unavailable/mismatch | Show `Score unavailable` | Deterministic cadence continues |
+| Railway deployment/provider outage | No live-success claim | Restore/redeploy and use truthful manual recovery |
 
-## Infrastructure and deployment boundary
+## Deployment boundary
 
-The minimum launch environment contains:
+Minimum launch infrastructure:
 
-- one Vercel project serving the React/Vite build and Node.js Functions with deep-link rewrites;
-- one Supabase Free development/finals PostgreSQL project containing controlled illustrative data only, with the accepted 500 MB, possible inactivity-pause, and no-automated-backup constraints;
-- one protected Supabase Cron job using `pg_net` to invoke the bounded Vercel tick once per minute;
-- public HTTPS Twilio, ElevenLabs, and CareLink webhook functions;
-- server-only Vercel environment variables for the scenario token, cron secret, allowed origins, pooled database connection, provider credentials, fixed recipient/location/provider, limits, and kill switches;
-- a pinned FHIR validator in verification/freeze tooling and a fixed versioned ML runtime artifact set.
+- one Railway project with an explicitly selected controlled environment;
+- `web` service from the Vite frontend with SPA deep-link fallback and a public HTTPS domain;
+- `api` service from the repository root so it can use `api/`, `packages/`, contracts, database migrations, and ML artifacts; it has a public HTTPS domain, `/health` check, one replica, sleeping disabled, and restart-on-failure/always behavior;
+- private Railway `Postgres` service; no browser access and no public TCP proxy for normal operation;
+- server-only Railway variables for database reference, scenario/tick tokens, exact origins, provider credentials, fixed recipient/location/provider values, rate limits, and kill switches;
+- no legacy hosting resource, database-extension scheduler, Railway Cron, cache, queue, or second backend runtime.
 
-Do not introduce FastAPI, a second application service, containers, IaC, Redis, Kafka, Celery, service mesh, microservices, or a production observability platform unless a separately approved requirement earns them. Human-controlled production deployment and any real-data environment remain outside LAUNCH-001.
+Provider callbacks must use the stable public API origin. Changing that origin requires updating Twilio and ElevenLabs settings and re-running exact-URL signature tests before actions are enabled.
 
-## Migration from the CORE frontend authority
+## Implementation sequence
 
-1. Freeze the governed HTTP/event contracts and generate frontend boundary client/types.
-2. Add migrations, deterministic seed/reset, event append, projections, scheduled actions, outbox, idempotency/webhook receipts, and claim leases.
-3. Implement shared TypeScript domain modules and Vercel command/query/webhook/cron functions against those contracts.
-4. Introduce a frontend API state adapter and route shell; move one acceptance path at a time from reducer commands to API commands.
-5. Remove local storage/reducer state as launch authority once every role projection and reset path is API-backed. Browser storage may retain only non-sensitive presentation preferences or an explicitly unsent draft.
-6. Verify projection consistency, cron overlap/recovery, deterministic reset, and no-external-action reset before enabling provider kill switches.
+1. Orchestrator reconciles `docs/PROJECT.md`, `.ai/project.json`, `docs/features/LAUNCH-001.md`, task acceptance/scope, roadmap/sprint references, OpenAPI server metadata, and deployment verification to Railway.
+2. Database specialist ports the portable workflow schema/seed to the approved vendor-neutral migration path and removes the retired HTTP scheduler migration from the target sequence.
+3. Backend specialist implements the long-running API process, shared domain modules, private PostgreSQL access, internal poller, protected manual tick, raw callback verification, and `/health` behavior against governed contracts.
+4. Frontend specialist completes the existing design gate and migrates browser authority to the generated client using the Railway API origin.
+5. Integrate one vertical path before enabling providers: reset -> readiness -> split work -> schedule/outbox -> projections -> acknowledgment -> evidence.
+6. Enable Twilio and ElevenLabs separately only after signed callback, allowlist, idempotency, and failure-path checks pass.
+7. Run FULL independent tests, exact-commit verification, focused HIGH-risk security review, final review, and controlled rehearsals.
 
-No production-data backfill is required. Existing CORE-001 browser data is synthetic and is not migrated into PostgreSQL; the fixed launch seed replaces it.
+## Verification expectations
 
-## Accessibility, performance, and presentation constraints
+Verification covers contract/schema validation and generated-client freshness; vendor-neutral migration reset/seed and constraints; event ordering, concurrency, idempotency, projection consistency; scheduler restart/overlap/lease/outbox recovery; raw-body callback authentication/replay/order; fixed provider targets and kill switches; CareLink failure/backup; reset with zero effects; complete cross-role browser journey; caregiver negative disclosure; responsive/keyboard/reduced-motion behavior; exact-hash FHIR validation; ML reproducibility/parity/fallback; Railway web/API routing, SPA deep links, health/restart behavior, private database wiring, and network-disabled recovery.
 
-- Preserve semantic structure, full keyboard operation, visible focus, large targets, sufficient contrast, and text/icon cues so state is never color-only.
-- Reduced motion preserves all workflow meaning without interaction-blocking animation.
-- Patient/access surfaces work at mobile widths; staff/transport evidence surfaces remain usable on presentation laptops.
-- Polling/refetch is bounded and visibility-aware; provider-pending UI cannot block navigation or duplicate commands.
-- Keep function bundles and dependencies narrow, avoid per-request ML training/validator startup, and bound DB connections, query count, claim batch, payload size, and runtime.
-- The frontend specialist owns exact layout, typography, color, motion, and component treatment through the design gate.
-- The public surface contains no patient record and makes no production-auth, hospital-connectivity, FHIR-writeback, clinical-validation, compliance, or autonomous-decision claim.
-
-## Observability and evidence
-
-The append-only event history, provider attempt/webhook records, outbox state, cron tick/lease evidence, projection-version checks, FHIR validator report, and ML artifact/evaluation manifest are primary evidence.
-
-Use structured logs with correlation/event/aggregate identifiers, function/route/provider status classes, latency, retry count, cold-start/tick batch context, and redacted error detail. Do not log secrets, authorization values, full patient free text, unnecessary phone/location data, voice transcripts, or audio. Preflight reports configuration presence and webhook reachability without values.
-
-Required health/preflight evidence includes Vercel deployment/rewrites, active Supabase project status, connectivity/migration state/pool behavior, database size below the Free-plan limit, named Vault-entry presence without values, Supabase Cron job/cadence and latest `pg_net` response, tick authentication at the canonical origin, webhook origin, adapter enabled/disabled and kill-switch state, pinned FHIR validator availability, and ML artifact compatibility. A green health check is not provider-success evidence; only governed outcomes are.
-
-## Verification architecture
-
-LAUNCH-001 uses FULL independent testing because durable state, privacy projections, serverless concurrency, external actions, webhooks, interoperability evidence, and cross-language ML artifacts cross multiple trust boundaries.
-
-Verification covers contract/schema validation and generated-client freshness; deterministic database reset/seed and constraints; event ordering, concurrency, idempotency, projection rebuild/consistency; cron authentication/overlap/lease/outbox recovery; raw-body webhook authentication/replay/order; provider allowlists/kill switches; CareLink failure and backup; reset with zero external actions; the complete cross-role browser journey; caregiver negative disclosure; responsive/keyboard/reduced-motion behavior; exact-hash pinned FHIR validation; ML reproducibility/leakage/calibration and Python/TypeScript parity/fallback; Vercel production routing/build; and network-disabled recovery.
-
-After integration, independent FULL testing runs first. Repository verification binds evidence to the integrated commit. The required focused security review then approves that exact verified commit before final product/engineering review.
-
-## Deliberate non-goals
-
-- No production auth/authorization or real-data tenancy is inferred from the finals scenario token and actor/action policy.
-- No autonomous clinical or treatment decision is permitted.
-- No active Uber Health or Lyft Concierge integration exists.
-- No valid FHIR bundle is represented as Epic/Ochsner connectivity.
-- No project-controlled model is represented as clinically validated, causal, or an eligibility decision.
-- No persistent server, distributed worker, event-sourcing framework, broker, cache, microservice split, or speculative scale layer is added.
+Required preflight evidence includes the exact Railway project/environment/service IDs, successful `web` and `api` deployments, public domains, private `DATABASE_URL` reference, current migrations, bounded database pool, fresh scheduler heartbeat with no stuck claims, callback origins, provider switches/allowlists, FHIR validator availability, and ML artifact compatibility. A green service health check is not provider-success evidence; only authenticated governed outcomes are.

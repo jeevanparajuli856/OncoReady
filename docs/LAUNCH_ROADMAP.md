@@ -4,7 +4,7 @@
 
 **Planning history:** drafted on `feature/PLAN-001-launch-roadmap`; governed execution continues on `feature/LAUNCH-001-finals-treatment-continuity-launch`
 
-**Primary inputs:** `ONCOREADY_WINNING_STRATEGY.md` and [`TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md)
+**Authoritative inputs:** [`PROJECT.md`](./PROJECT.md), [`features/LAUNCH-001.md`](./features/LAUNCH-001.md), and [`TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md`](./TRANSPORTATION_RESEARCH_AND_FINALS_DECISION.md). Earlier strategy research has been incorporated here and removed from the active repository context.
 **Approved sprint handoff:** [`LAUNCH_SPRINT.md`](./LAUNCH_SPRINT.md) defines the two-day execution order, agent ownership, contract authority, verification gates, and Day 3 freeze.
 **Implementation state:** Source-of-truth reconciliation and governed contract preparation are authorized. Production code begins only after `LAUNCH-001` passes `BUILD_READY`, is committed, advances to `IMPLEMENTATION`, and completes its required frontend design gate.
 
@@ -37,7 +37,7 @@ The presentation should feel like a coherent launch product, not a prototype or 
 
 ### Confirmed human direction
 
-- Follow the must-build product direction in `ONCOREADY_WINNING_STRATEGY.md`.
+- Follow the must-build product direction governed by `docs/PROJECT.md`, `docs/features/LAUNCH-001.md`, and this reconciled roadmap.
 - Remove the detailed Treatment Readiness Workspace and patient record from the public landing page.
 - Rename the public navigation item `Business model` to `Pricing`.
 - Publish one centrally editable **Small Infusion Center Pilot** price of **$18,000/year** (`$1,500/month`, billed annually). Larger programs and health systems use custom pricing.
@@ -176,9 +176,9 @@ The pilot price is an initial market-positioning hypothesis for a small infusion
 ### Recommended stack
 
 - Keep React + TypeScript + Vite for the frontend.
-- Deploy the existing React/Vite frontend and TypeScript Vercel Node.js Functions as one Vercel project for workflow commands, projections, vendor adapters/webhooks, FHIR generation, and exported LightGBM inference.
-- Add Supabase PostgreSQL as persistence only; real identity/authentication remains outside the finals build.
-- Use Git-tracked SQL migrations under `supabase/migrations`.
+- Deploy the existing React/Vite frontend and a long-running TypeScript Node.js API as separate services in one Railway project for workflow commands, projections, vendor adapters/webhooks, FHIR generation, and exported LightGBM inference.
+- Add Railway PostgreSQL as private persistence only; real identity/authentication remains outside the finals build.
+- Use Git-tracked SQL migrations under `database/migrations`.
 - Use an append-only workflow event table with current-state projections and an outbox/idempotency table.
 - Use one scheduler/worker mechanism for T−7/T−3/T−1 outreach and SLA deadlines.
 - Do not add Redis, Kafka, microservices, or a general-purpose queue unless measured behavior later proves they are required.
@@ -190,9 +190,9 @@ React/Vite role workspaces
 Generated OpenAPI client
         │
         ▼
-TypeScript Vercel Node.js Functions
+TypeScript Node.js API on Railway
         ├── deterministic timeline, routing, SLA, and transport policies
-        ├── authenticated Cron tick + bounded scheduled/outbox drain
+        ├── bounded in-process scheduler/outbox drain
         ├── Twilio messaging adapter + signed callbacks
         ├── ElevenLabs/Twilio voice adapter + signed callbacks
         ├── custom Partner Dispatch portal + normalized transport events
@@ -216,10 +216,10 @@ Because the branded access page is not real authentication, the controlled final
 - test-phone allowlist;
 - configured `partner_dispatch` enforcement; Uber Health and Lyft Concierge adapters remain disabled and have no finals credentials;
 - vendor-action kill switches;
-- Vercel Hobby for the React application and Functions, plus Supabase Free Cron (`pg_cron` + `pg_net`) for the one-minute scheduler; no Vercel Cron job or paid Vercel plan is required;
-- Supabase Vault entries `oncoready_tick_url` and `oncoready_cron_secret`, with the identical opaque secret stored as Vercel's server-only `CRON_SECRET`;
-- Free-project preflight for active status, database size below 500 MB, current migrations, Vault entry presence, named Cron cadence, and the latest successful `pg_net` response; migrations and deterministic seed/reset are recovery authority because automated backups are not included;
-- durable scheduled/outbox rows are committed before delivery; consequential provider delivery completes inside the bounded authenticated tick rather than post-response background work;
+- one Railway project with `web`, single-replica `api`, and private `Postgres` services; API sleep is disabled and restart-on-failure is enabled;
+- `DATABASE_URL` is a Railway reference to the Postgres service, while browser traffic reaches the API through its stable public HTTPS domain;
+- preflight checks current migrations, API health, scheduler activity, private database connectivity, restart behavior, and the authenticated manual tick;
+- durable scheduled/outbox rows are committed before delivery; consequential provider delivery runs through the bounded poller with database locks, claims, leases, and reconciliation before retry;
 - secrets stored server-side and outside Git;
 - no arbitrary phone number or ride destination accepted from the public browser.
 
@@ -249,7 +249,7 @@ The following IDs are capability milestones inside the single governed `LAUNCH-0
 The dependency order remains authoritative, but independent implementation work may proceed concurrently after LAUNCH-001 freezes the shared event and API contracts:
 
 - database specialist: PostgreSQL migrations, append-only events, projections, outbox/idempotency, and deterministic reseed;
-- server specialist: TypeScript Vercel Functions for commands, role projections, Cron/outbox draining, Twilio/ElevenLabs webhooks, custom dispatch commands, metrics/FHIR, and the exported ML inference boundary;
+- server specialist: long-running TypeScript Node.js API for commands, role projections, scheduler/outbox draining, Twilio/ElevenLabs webhooks, custom dispatch commands, metrics/FHIR, and the exported ML inference boundary;
 - frontend specialist: approved access/pricing design, patient/staff/caregiver/transport workspaces, live state presentation, and finals visual polish;
 - focused integration workstreams: communications, the custom transportation portal, and LightGBM/SHAP artifacts against the frozen contracts;
 - orchestrator: source-of-truth control, branch integration, verification, security/review routing, and the seven-minute rehearsal.
@@ -263,7 +263,7 @@ Parallel agents must not invent endpoints or event names independently. Each sli
 Before production code:
 
 - update `docs/PROJECT.md` with the new early-continuity mission, launch journey, non-goals, and backlog;
-- update `docs/architecture/SYSTEM.md` with the Vercel Functions/PostgreSQL/event/adapters shape;
+- update `docs/architecture/SYSTEM.md` with the Railway Node.js/PostgreSQL/event/adapters shape;
 - enable backend and database in `.ai/project.json` and add backend/database verification commands;
 - create one ADR for the launch stack and event-state boundary;
 - create `docs/features/LAUNCH-001.md`, `.ai/tasks/LAUNCH-001/task.json`, and the governed HTTP/event contracts;
@@ -440,7 +440,7 @@ The research and provider decision are documented in [`docs/TRANSPORTATION_RESEA
 - fit a sigmoid calibrator on the distinct calibration partition by default;
 - isotonic calibration may be evaluated only when the calibration sample is sufficiently large and it wins on held-out calibration without overfitting;
 - persist model, calibrator, feature schema, generator seed, training timestamp, and evaluation manifest as one versioned artifact set.
-- export a TypeScript-consumable predictor and calibrator plus a SHAP explanation bound to the exact finals feature-snapshot hash; the deployed Vercel application does not train models.
+- export a TypeScript-consumable predictor and calibrator plus a SHAP explanation bound to the exact finals feature-snapshot hash; the deployed Railway API does not train models.
 
 Scikit-learn recommends calibrating on data independent from model fitting, and warns that isotonic calibration can overfit when calibration samples are much smaller than 1,000: <https://scikit-learn.org/stable/modules/calibration.html>.
 
@@ -534,7 +534,7 @@ landing contains no patient record
 | 0:35–1:05 | Show the public value proposition, one Small Infusion Center Pilot price, and the branded role gateway | The product has a clear buyer, entry point, and commercial motion |
 | 1:05–1:50 | Open the patient workspace, show the real Twilio message, and reply `2` and `3` | One low-friction response enters the same working system |
 | 1:50–2:30 | Receive the bounded ElevenLabs call and verified structured callback outcome | Voice is a controlled accessibility/recovery channel, not a clinical chatbot |
-| 2:30–3:20 | Open the staff workspace and show the clinical/transport split, owners, SLA, and durable event IDs | TypeScript Vercel Functions and PostgreSQL create accountable cross-role work rather than screen-only state |
+| 2:30–3:20 | Open the staff workspace and show the clinical/transport split, owners, SLA, and durable event IDs | The TypeScript Railway API and PostgreSQL create accountable cross-role work rather than screen-only state |
 | 3:20–4:05 | Open `Why flagged?` with the calibrated score, timestamped inputs, and SHAP contributors | The ML pipeline is real, inspectable, and limited to supportive outreach prioritization |
 | 4:05–5:20 | Enter the custom CareLink portal, review eligibility and return planning, show one vendor failure, and assign a backup; briefly show Uber Health/Lyft Concierge under `Planned adapters` | OncoReady owns closed-loop local dispatch today and has a truthful provider-expansion boundary |
 | 5:20–5:55 | Open Ana's caregiver view | Server-generated data minimization shares logistics without exposing clinical text |
@@ -567,7 +567,7 @@ The approved execution timebox provides **32 coding hours per implementation spe
 
 | Day | Integrated objective |
 |---:|---|
-| 1 (H0–H16) | Freeze governed contracts and design; land PostgreSQL/Vercel Functions foundation, deterministic seed/reset, generated frontend client, cross-role workflow, Twilio/ElevenLabs callbacks, and CareLink failure/recovery checkpoint |
+| 1 (H0–H16) | Freeze governed contracts and design; land the Railway PostgreSQL/Node.js foundation, deterministic seed/reset, generated frontend client, cross-role workflow, Twilio/ElevenLabs callbacks, and CareLink failure/recovery checkpoint |
 | 2 (H0–H16) | Complete event evidence, FHIR, offline ML export and TypeScript inference, cross-role integration, FULL testing, exact-commit verification, focused security review, final review, and build freeze |
 | 3 (protected) | Preflight external services, run five rehearsals including one failure, capture the backup run, record the seven-minute journey, and submit; no planned feature development |
 
@@ -578,7 +578,7 @@ Human approval is requested for:
 1. The access mapping: Google → patient, Microsoft → caregiver, Apple → hospital staff, email → transportation coordinator.
 2. Removal of the complete public patient/workspace preview.
 3. One Small Infusion Center Pilot price of $18,000/year ($1,500/month billed annually), with custom pricing for larger organizations.
-4. One Vercel project containing React/Vite plus TypeScript Node.js Functions, backed by Supabase PostgreSQL and without real authentication in the finals build.
+4. One Railway project containing separate React/Vite web, long-running TypeScript Node.js API, and private PostgreSQL services without real authentication in the finals build.
 5. One allowlisted team phone for both SMS and voice proof.
 6. The custom CareLink Partner Dispatch portal as the only finals transportation path; Uber Health and Lyft Concierge appear only as clearly labeled post-finals planned adapters.
 7. Direct LightGBM as the only trained classifier, with calibration and SHAP, implemented last.
