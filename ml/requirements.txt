@@ -1,0 +1,7 @@
+lightgbm==4.6.0
+numpy==2.2.6
+pandas==2.2.3
+scipy==1.15.3
+scikit-learn==1.6.1
+shap==0.47.2
+pytest==8.3.5

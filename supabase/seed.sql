@@ -1,12 +1,5 @@
--- seed.sql
--- Development/test seed DATA ONLY.
---
--- Supabase applies seed data after migrations during local reset workflows.
--- Keep schema changes in supabase/migrations/, not here.
---
--- Use synthetic/de-identified development data only.
--- Never commit production secrets or real sensitive records.
---
--- Example:
--- insert into public.example (id)
--- values ('00000000-0000-0000-0000-000000000001');
+-- Deterministic controlled-finals seed. This contains illustrative data only.
+-- The same routine is called by the reset command so local reset and the
+-- product reset path cannot drift. It deletes only the one fixed finals
+-- scenario and proves that no external action survives or is enqueued.
+select public.reset_finals_scenario();

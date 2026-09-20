@@ -2,28 +2,63 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "agent": "codex-database",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Implemented the authoritative Supabase workflow/event store, deterministic inert seed/reset, guarded projections, idempotency/outbox/provider/lease state, Vault-backed one-minute Supabase Cron trigger, and reproducible portable LightGBM/calibration/SHAP artifact set.",
+  "files_changed": [
+    "supabase/migrations/20260920172033_launch_workflow_core.sql",
+    "supabase/migrations/20260920174405_install_supabase_cron_tick.sql",
+    "supabase/seed.sql",
+    "ml/requirements.txt",
+    "ml/train.py",
+    "artifacts/ml/supportive-outreach-v1/model.json",
+    "artifacts/ml/supportive-outreach-v1/evaluation.json",
+    "artifacts/ml/supportive-outreach-v1/golden-vectors.json",
+    "artifacts/ml/supportive-outreach-v1/manifest.json",
+    "tests/database/launch_workflow.sql",
+    "tests/database/supabase_cron_preflight.sql",
+    "tests/database/test_migrations.py",
+    "tests/ml/test_pipeline.py",
+    ".ai/tasks/LAUNCH-001/database-report.json"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/openapi.yaml",
+    "contracts/events/workflow-event.schema.json",
+    "contracts/events/workflow-event-payloads.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "/tmp/oncoready-ml-venv.QoDzO2/bin/python ml/train.py",
+      "/tmp/oncoready-ml-venv.QoDzO2/bin/python -m pytest -q tests/ml tests/database/test_migrations.py",
+      "PostgreSQL 17 scratch cluster: apply core migration + seed + psql -f tests/database/launch_workflow.sql",
+      "pglast parse of both migrations, seed, and database SQL tests",
+      "python3 scripts/validate-contracts.py"
+    ],
+    "notes": "9 Python/database migration tests passed; the portable artifact reproduced byte-for-byte; PostgreSQL integration covered deterministic reset, immutable/ordered events, idempotency uniqueness, provider allowlists, schedule/outbox claims, safe stale-lease retry, and outcome-unknown reconciliation. Contract validation passed. The Supabase Cron migration was syntax-parsed and statically checked for its exact cadence, Vault names, bearer GET, restricted execution, and absence of embedded origins/secrets."
   },
-  "blockers": [],
-  "notes_for_next_agent": [],
+  "blockers": [
+    "Docker was unavailable, so `supabase db reset` could not run against the local Supabase stack; the core migration/seed/tests passed against an isolated PostgreSQL 17 scratch cluster instead.",
+    "No controlled Supabase DEV project credentials or operator-provisioned Vault entries were available, so migrations were not pushed remotely and the live named Cron job, advisors, pg_net response, database size, and authenticated Vercel tick remain operator preflight work."
+  ],
+  "notes_for_next_agent": [
+    "Backend commands should use one parameterized transaction for idempotency lookup/lock, workflow event append, projection/schedule/outbox updates, and idempotency completion. The workflow_events trigger enforces consecutive aggregate versions with SQLSTATE 40001.",
+    "The fixed finals scenario UUID is 11111111-1111-4111-8111-111111111111. `reset_finals_scenario()` is the only reset path; it restores fixed IDs/timestamps/projections and the exact inert T-3/T-1 schedule while proving no outbox, provider-attempt, or webhook state survives.",
+    "Call `try_scheduler_lock(scenario_id)` before the bounded tick, then `claim_scheduled_actions` and `claim_outbox`. `recover_stale_claims` returns internal unattempted work to pending but makes possibly accepted provider work outcome_unknown and reconciliation-required.",
+    "The cron job is `oncoready-minute-tick` at `* * * * *`; its durable command contains only `select oncoready_private.invoke_minute_tick();`. Operators must provision Vault names oncoready_tick_url and oncoready_cron_secret before applying/activating and then run tests/database/supabase_cron_preflight.sql without printing values.",
+    "The runtime ML loader must verify artifacts/ml/supportive-outreach-v1/manifest.json and every file hash, preserve the artifact feature order/missing-value routing, run golden-vector parity, and fail closed to Score unavailable on mismatch."
+  ],
   "database_changes": {
-    "provider": "",
+    "provider": "Supabase PostgreSQL",
     "environment": "development",
     "mcp_used": false,
-    "migration_files": [],
+    "migration_files": [
+      "supabase/migrations/20260920172033_launch_workflow_core.sql",
+      "supabase/migrations/20260920174405_install_supabase_cron_tick.sql"
+    ],
     "applied_migrations": [],
-    "rls_reviewed": false,
-    "indexes_reviewed": false,
+    "rls_reviewed": true,
+    "indexes_reviewed": true,
     "advisors_checked": false,
-    "live_verification": "NOT_RUN"
+    "live_verification": "NOT_RUN: no linked controlled DEV project or Vault values; local Supabase Docker unavailable. Core SQL was verified on an isolated PostgreSQL 17 cluster."
   }
 }
