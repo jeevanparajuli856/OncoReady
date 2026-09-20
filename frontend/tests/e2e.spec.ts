@@ -52,6 +52,30 @@ test.describe('OncoReady UI-001 product experience', () => {
     expect(revealStates.every((state) => state === 'visible')).toBe(true);
   });
 
+  test('landing uses static fallbacks when IntersectionObserver is unavailable', async ({ page }) => {
+    const pageErrors: string[] = [];
+    page.on('pageerror', (error) => pageErrors.push(error.message));
+    await page.addInitScript(() => {
+      Object.defineProperty(window, 'IntersectionObserver', {
+        configurable: true,
+        value: undefined,
+      });
+    });
+    await page.reload();
+
+    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+    await expect(page.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeVisible();
+    await expect(page.getByText('Treatment-day corridor')).toBeVisible();
+    await expect(page.locator('.ride-map-boundary svg[viewBox="0 0 640 320"]')).toBeVisible();
+
+    const revealStates = await page.locator('[data-reveal-state]').evaluateAll((nodes) =>
+      nodes.map((node) => node.getAttribute('data-reveal-state')),
+    );
+    expect(revealStates.length).toBeGreaterThan(0);
+    expect(revealStates.every((state) => state === 'visible')).toBe(true);
+    expect(pageErrors).toEqual([]);
+  });
+
   test('mobile workspace dock keeps 44px targets without horizontal overflow', async ({ page }) => {
     for (const viewport of [
       { width: 320, height: 568 },

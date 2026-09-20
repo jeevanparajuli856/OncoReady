@@ -3,7 +3,7 @@
   "task_id": "UI-001",
   "agent": "codex-frontend",
   "status": "COMPLETE",
-  "summary": "Extended the approved Clinical Glass system across the complete OncoReady experience, added accessible one-time landing reveals with monotonic per-mount completion, delivered a buyer-oriented SaaS model, removed costly scroll treatments, and completed mobile dock accessibility corrections without changing the deterministic Maria journey or caregiver privacy boundary.",
+  "summary": "Extended the approved Clinical Glass system across the complete OncoReady experience, added accessible one-time landing reveals with monotonic per-mount completion and fail-open static fallbacks, delivered a buyer-oriented SaaS model, removed costly scroll treatments, and completed mobile dock accessibility corrections without changing the deterministic Maria journey or caregiver privacy boundary.",
   "files_changed": [
     "docs/design/DESIGN_SYSTEM.md",
     "frontend/playwright.config.ts",
@@ -26,6 +26,7 @@
     "frontend/src/index.css",
     "frontend/src/lib/useDialogFocus.ts",
     "frontend/tests/component.test.tsx",
+    "frontend/tests/continuity-field.test.tsx",
     "frontend/tests/e2e.spec.ts",
     "frontend/tests/scroll-reveal.test.tsx",
     ".ai/tasks/UI-001/frontend-report.json"
@@ -44,19 +45,22 @@
       "PLAYWRIGHT_PORT=4180 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
       "node --input-type=module -e '<Playwright footer clearance, focus, full-target hit-test, dock geometry, and overflow audit at 320x568, 390x844, and 768x1024>'",
       "npx vitest run tests/scroll-reveal.test.tsx",
+      "npx vitest run tests/scroll-reveal.test.tsx tests/continuity-field.test.tsx tests/component.test.tsx -t \"IntersectionObserver|reveals once|keyboard focus|effective reduced motion\" --reporter=verbose",
+      "PLAYWRIGHT_PORT=4188 npx playwright test tests/e2e.spec.ts -g \"static fallbacks when IntersectionObserver\"",
       "python3 scripts/agentctl.py scope check UI-001 frontend",
       "git diff --check"
     ],
-    "notes": "TypeScript completed successfully. The focused ScrollReveal suite passed 5/5, covering one-time observer completion, focus completion, no-observer fallback, effective reduced motion, and distinct variants. Observer-completed and focus-completed instances remain revealed through reduced-motion on/off transitions without another observe call; an instance initially mounted under reduced motion remains visibly final and is never observed when motion is later re-enabled. The latest production Vite build passed after the document-clearance correction, and the focused mobile-dock Playwright regression passed. Earlier focused Vitest and full Playwright coverage passed the reveal, SaaS positioning, reduced-motion, all-staff-route, complete Maria journey, and caregiver clinical-data exclusion scenarios."
+    "notes": "TypeScript completed successfully. The focused observer-fallback Vitest pass ran 9 selected tests across 3 files: ScrollReveal stayed final when the API was absent or its constructor threw, ContinuityField rendered a static field without scheduling animation in both cases, and the complete landing retained visible reveal content plus its static corridor. The fresh production build transformed 8,481 modules in 3m51s. The isolated production Playwright fallback scenario passed with IntersectionObserver removed before navigation: no page errors, the landing and Continuity Field remained visible, every reveal was final, and RideMap retained its dimensionally stable static corridor. Earlier focused and full coverage remains passing for motion toggles, responsive dock accessibility, SaaS positioning, all staff routes, the complete Maria journey, and caregiver clinical-data exclusion."
   },
   "blockers": [],
   "notes_for_next_agent": [
-    "The reveal primitive uses IntersectionObserver progressive enhancement, unobserves completed targets, promotes focused content immediately, renders final content without observer support or under either reduced-motion source, and treats any final visibility path as terminal for that mounted instance so motion preference changes cannot hide or replay content.",
+    "The reveal primitive uses IntersectionObserver progressive enhancement, unobserves completed targets, promotes focused content immediately, renders final content when the observer API is missing or throws, and treats any final visibility path as terminal for that mounted instance so motion preference changes cannot hide or replay content.",
     "The SaaS section states the buyer, subscribed capability, configuration shape, and expansion path without pricing, fabricated integrations, or demo/prototype framing.",
     "Clinical Glass tokens now cover public, gateway, patient, staff, caregiver, system, modal, navigation, and mobile-dock surfaces while preserving operational labels and workflow semantics.",
     "Fixed body backgrounds, broad repeated blur, the staff nested vertical scroller, and eager live-map mounting were removed or bounded; the document owns workspace scrolling and the stable map fallback remains available.",
     "Caregiver rendering remains transportation-only, and browser coverage confirms clinical symptom text is absent after the staff resolution flow.",
     "The mobile Workspace dock now uses explicit 44x44 CSS-pixel interactive targets while retaining compact 16px icons, accessible labels, visible focus styling, safe-area spacing, mobile no-overflow behavior, and the existing desktop breakpoint behavior.",
-    "The shared mobile app shell reserves document-end clearance for the fixed dock footprint, viewport offset, focus ring, and safe area; the footer motion control is fully visible and hit-testable above the dock at both required mobile widths."
+    "The shared mobile app shell reserves document-end clearance for the fixed dock footprint, viewport offset, focus ring, and safe area; the footer motion control is fully visible and hit-testable above the dock at both required mobile widths.",
+    "ContinuityField and RideMap now catch missing or failing IntersectionObserver construction: the field stays on a static drawn/fallback state with no animation loop, while the map remains on its existing labeled static corridor; supported browsers retain observer-driven pausing and near-viewport live-map promotion."
   ]
 }

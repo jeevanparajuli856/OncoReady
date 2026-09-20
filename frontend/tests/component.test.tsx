@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, beforeAll } from 'vitest';
+import { describe, it, expect, beforeEach, beforeAll, afterEach, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { App } from '../src/App';
 
@@ -10,6 +10,31 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
 
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it.each([
+    ['is unavailable', undefined],
+    ['construction fails', class {
+      constructor() {
+        throw new Error('IntersectionObserver unavailable');
+      }
+    }],
+  ])('keeps the full landing and static fallbacks visible when IntersectionObserver %s', (_label, observerImpl) => {
+    vi.stubGlobal('IntersectionObserver', observerImpl);
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
+    expect(screen.getByText('Treatment-day corridor')).toBeDefined();
+    expect(document.querySelector('.ride-map-boundary svg')).not.toBeNull();
+
+    const reveals = Array.from(document.querySelectorAll('[data-reveal-state]'));
+    expect(reveals.length).toBeGreaterThan(0);
+    expect(reveals.every((node) => node.getAttribute('data-reveal-state') === 'visible')).toBe(true);
   });
 
   it('renders the OncoReady enterprise landing page and workspace entry', () => {

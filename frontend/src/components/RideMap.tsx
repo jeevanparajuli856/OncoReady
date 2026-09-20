@@ -37,21 +37,25 @@ export const RideMap: React.FC<RideMapProps> = (props) => {
 
   useEffect(() => {
     const boundary = boundaryRef.current;
-    if (!boundary || typeof window.IntersectionObserver !== 'function') {
-      setNearViewport(true);
-      return undefined;
+    if (!boundary || typeof window.IntersectionObserver !== 'function') return undefined;
+
+    let observer: IntersectionObserver | null = null;
+    try {
+      observer = new window.IntersectionObserver(
+        ([entry]) => {
+          if (!entry.isIntersecting) return;
+          setNearViewport(true);
+          observer?.unobserve(entry.target);
+        },
+        { rootMargin: '250px 0px', threshold: 0.01 },
+      );
+      observer.observe(boundary);
+    } catch {
+      observer?.disconnect();
+      observer = null;
     }
 
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setNearViewport(true);
-        observer.unobserve(entry.target);
-      },
-      { rootMargin: '250px 0px', threshold: 0.01 },
-    );
-    observer.observe(boundary);
-    return () => observer.disconnect();
+    return () => observer?.disconnect();
   }, []);
 
   return (

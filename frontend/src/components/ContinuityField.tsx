@@ -272,16 +272,28 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
     };
 
     const resizeObserver = new ResizeObserver(resize);
-    const intersectionObserver = new IntersectionObserver(
-      ([entry]) => {
-        visible = entry.isIntersecting;
-        startAnimation();
-      },
-      { threshold: 0.08 },
-    );
+    let intersectionObserver: IntersectionObserver | null = null;
+
+    if (typeof window.IntersectionObserver === 'function') {
+      try {
+        intersectionObserver = new window.IntersectionObserver(
+          ([entry]) => {
+            visible = entry.isIntersecting;
+            startAnimation();
+          },
+          { threshold: 0.08 },
+        );
+        intersectionObserver.observe(container);
+      } catch {
+        intersectionObserver?.disconnect();
+        intersectionObserver = null;
+        visible = false;
+      }
+    } else {
+      visible = false;
+    }
 
     resizeObserver.observe(container);
-    intersectionObserver.observe(container);
     container.addEventListener('pointermove', handlePointerMove);
     container.addEventListener('pointerleave', handlePointerLeave);
     document.addEventListener('visibilitychange', handleVisibility);
@@ -290,7 +302,7 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
     return () => {
       window.cancelAnimationFrame(animationFrame);
       resizeObserver.disconnect();
-      intersectionObserver.disconnect();
+      intersectionObserver?.disconnect();
       container.removeEventListener('pointermove', handlePointerMove);
       container.removeEventListener('pointerleave', handlePointerLeave);
       document.removeEventListener('visibilitychange', handleVisibility);

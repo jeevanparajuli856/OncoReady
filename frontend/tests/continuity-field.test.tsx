@@ -12,6 +12,12 @@ class IntersectionObserverStub {
   disconnect() {}
 }
 
+class ThrowingIntersectionObserverStub {
+  constructor() {
+    throw new Error('IntersectionObserver unavailable');
+  }
+}
+
 const canvasContext = {
   clearRect: vi.fn(),
   fillText: vi.fn(),
@@ -65,5 +71,22 @@ describe('ContinuityField reduced motion', () => {
     fireEvent.pointerMove(getByRole('img'), { clientX: 120, clientY: 160, pointerType: 'mouse' });
 
     expect(requestAnimationFrame).toHaveBeenCalledTimes(scheduledBeforePointerMove);
+  });
+
+  it.each([
+    ['the API is unavailable', undefined],
+    ['construction fails', ThrowingIntersectionObserverStub],
+  ])('renders a static field when IntersectionObserver %s', (_label, observerImpl) => {
+    vi.stubGlobal('ResizeObserver', ResizeObserverStub);
+    vi.stubGlobal('IntersectionObserver', observerImpl);
+    const requestAnimationFrame = vi.spyOn(window, 'requestAnimationFrame').mockReturnValue(1);
+    vi.spyOn(window, 'cancelAnimationFrame').mockImplementation(() => undefined);
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(canvasContext);
+
+    const { getByRole } = render(<ContinuityField />);
+
+    expect(getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
+    expect(canvasContext.fillText).toHaveBeenCalled();
+    expect(requestAnimationFrame).not.toHaveBeenCalled();
   });
 });

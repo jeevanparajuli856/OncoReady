@@ -16,30 +16,44 @@ const releaseObserverIfIdle = () => {
   }
 };
 
-const getRevealObserver = () => {
+const getRevealObserver = (): IntersectionObserver | null => {
   if (revealObserver) return revealObserver;
 
-  revealObserver = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const reveal = revealCallbacks.get(entry.target);
-        if (!reveal) return;
-        revealCallbacks.delete(entry.target);
-        revealObserver?.unobserve(entry.target);
-        reveal();
-      });
-      releaseObserverIfIdle();
-    },
-    { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
-  );
+  try {
+    revealObserver = new window.IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          const reveal = revealCallbacks.get(entry.target);
+          if (!reveal) return;
+          revealCallbacks.delete(entry.target);
+          revealObserver?.unobserve(entry.target);
+          reveal();
+        });
+        releaseObserverIfIdle();
+      },
+      { threshold: 0.18, rootMargin: '0px 0px -8% 0px' },
+    );
+  } catch {
+    revealObserver = null;
+  }
 
   return revealObserver;
 };
 
 const observeReveal = (element: Element, callback: RevealCallback) => {
+  const observer = getRevealObserver();
+  if (!observer) return false;
+
   revealCallbacks.set(element, callback);
-  getRevealObserver().observe(element);
+  try {
+    observer.observe(element);
+    return true;
+  } catch {
+    revealCallbacks.delete(element);
+    releaseObserverIfIdle();
+    return false;
+  }
 };
 
 const stopObservingReveal = (element: Element) => {
@@ -78,10 +92,15 @@ export const ScrollReveal: React.FC<ScrollRevealProps> = ({
     }
 
     setState('pending');
-    observeReveal(element, () => {
+    const observing = observeReveal(element, () => {
       completedRef.current = true;
       setState('revealed');
     });
+    if (!observing) {
+      completedRef.current = true;
+      setState('visible');
+      return undefined;
+    }
 
     return () => stopObservingReveal(element);
   }, [reducedMotion]);

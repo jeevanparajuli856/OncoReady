@@ -113,6 +113,23 @@ describe('ScrollReveal progressive enhancement', () => {
     ).toBe('visible');
   });
 
+  it('keeps content visible when IntersectionObserver construction fails', () => {
+    vi.stubGlobal('IntersectionObserver', class {
+      constructor() {
+        throw new Error('IntersectionObserver unavailable');
+      }
+    });
+    const { container } = render(
+      <ScrollReveal variant="staff">
+        <button type="button">Staff workspace</button>
+      </ScrollReveal>,
+    );
+
+    expect(
+      container.querySelector('[data-reveal-variant="staff"]')?.getAttribute('data-reveal-state'),
+    ).toBe('visible');
+  });
+
   it('skips pending motion when effective reduced motion is active', () => {
     vi.stubGlobal('IntersectionObserver', IntersectionObserverStub);
     const { container, rerender } = render(
