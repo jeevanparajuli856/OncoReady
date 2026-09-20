@@ -94,8 +94,8 @@
 .launch-projection-meta button { min-height: 2.5rem; padding: .5rem .7rem; display: inline-flex; align-items: center; gap: .4rem; border: 1px solid #cbd5e1; border-radius: .7rem; background: white; color: #0f172a; }
 .launch-projection-meta svg { width: .9rem; height: .9rem; }
 .launch-workspace__content { padding-top: .5rem; }
-.launch-stack { display: grid; gap: 1.25rem; }
-.launch-panel { padding: clamp(1.15rem, 2.5vw, 1.7rem); border: 1px solid #e2e8f0; border-radius: 1.25rem; background: rgba(255,255,255,.96); box-shadow: 0 18px 48px -42px rgba(15,23,42,.52); }
+.launch-stack { min-width: 0; display: grid; gap: 1.25rem; }
+.launch-panel { min-width: 0; padding: clamp(1.15rem, 2.5vw, 1.7rem); border: 1px solid #e2e8f0; border-radius: 1.25rem; background: rgba(255,255,255,.96); box-shadow: 0 18px 48px -42px rgba(15,23,42,.52); }
 .launch-treatment { display: grid; gap: 1.25rem; background: #0f172a; color: #f8fafc; }
 .launch-treatment h2 { margin: .3rem 0 .7rem; font-family: 'Outfit', sans-serif; font-size: clamp(1.55rem, 3vw, 2.25rem); }
 .launch-treatment p:not(.launch-kicker) { margin: 0; display: flex; align-items: center; gap: .45rem; color: #cbd5e1; }

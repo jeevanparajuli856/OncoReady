@@ -573,6 +573,13 @@ export interface components {
             permitted_recovery: "none" | "await_callback" | "refresh_status" | "reconcile_provider" | "activate_backup" | "escalate_manually";
         };
         PatientTransportSummary: {
+            /**
+             * Format: uuid
+             * @description Fixed-scenario command identity used for Maria's guarded plan acknowledgment.
+             */
+            transport_request_id: string;
+            /** @description Current transport aggregate version for optimistic concurrency. */
+            aggregate_version: number;
             status: components["schemas"]["TransportStatus"];
             provider_display_name: string;
             pickup_window?: components["schemas"]["TimeWindow"];

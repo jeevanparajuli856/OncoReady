@@ -32,6 +32,8 @@ const projections = {
     next_action: 'Complete the T-3 readiness check-in.',
     communications: [],
     transport: {
+      transport_request_id: '44444444-4444-4444-8444-444444444444',
+      aggregate_version: 0,
       status: 'need_detected',
       provider_display_name: 'CareLink Partner Dispatch',
       plan_version: 1,
@@ -210,5 +212,70 @@ test.describe('OncoReady LAUNCH-001 frontend', () => {
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
     await expect(page.locator('.launch-app')).toHaveClass(/motion-reduce/);
+  });
+
+  test('Maria acknowledges the complete ride plan while coordinator waits without a patient command', async ({ page }) => {
+    const ride = {
+      transport_request_id: '44444444-4444-4444-8444-444444444444',
+      aggregate_version: 8,
+      status: 'patient_notified',
+      provider_display_name: 'CareLink Partner Dispatch',
+      pickup_window: treatment.arrival_window,
+      return_window: treatment.arrival_window,
+      driver_alias: 'Driver C',
+      vehicle_description: 'Accessible blue van',
+      plan_version: 3,
+      acknowledgment_required: true,
+    };
+    const patient = { ...projections.patient, readiness_status: 'action_in_progress', transport: ride };
+    const transportCoordinator = {
+      ...projections.transport_coordinator,
+      request: { ...projections.transport_coordinator.request, aggregate_version: 8, status: 'patient_notified', acknowledgment_status: 'requested' },
+    };
+    let postedBody: Record<string, unknown> | null = null;
+    await mockProjectionApi(page, { patient, transport_coordinator: transportCoordinator });
+    await page.route('**/api/v1/transport/requests/*/commands', async (route) => {
+      postedBody = route.request().postDataJSON();
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ command_id: crypto.randomUUID(), disposition: 'accepted', scenario_id: projections.patient.scenario_id, aggregate_id: ride.transport_request_id, aggregate_version: 9, emitted_events: [] }) });
+    });
+
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Email/i }).click();
+    await expect(page.getByRole('heading', { name: 'Waiting for Maria' })).toBeVisible();
+    await expect(page.getByText('Awaiting patient')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Record patient acknowledgment/i })).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Switch workspace/i }).click();
+    await page.getByRole('button', { name: /Continue with Google/i }).click();
+    await page.getByRole('button', { name: 'Acknowledge complete ride plan' }).click();
+    await expect.poll(() => postedBody).toMatchObject({
+      actor_role: 'patient',
+      action: 'acknowledge_patient',
+      expected_aggregate_version: 8,
+    });
+  });
+
+  test('coordinator completes from pickup with evidence and escalates unresolved return state', async ({ page }) => {
+    const posted: Array<Record<string, unknown>> = [];
+    const pickedUp = { ...projections.transport_coordinator, request: { ...projections.transport_coordinator.request, aggregate_version: 10, status: 'picked_up' } };
+    await mockProjectionApi(page, { transport_coordinator: pickedUp });
+    await page.route('**/api/v1/transport/requests/*/commands', async (route) => {
+      posted.push(route.request().postDataJSON());
+      await route.fulfill({ contentType: 'application/json', body: JSON.stringify({ command_id: crypto.randomUUID(), disposition: 'accepted', scenario_id: projections.patient.scenario_id, aggregate_id: pickedUp.request.transport_request_id, aggregate_version: 11, emitted_events: [] }) });
+    });
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Email/i }).click();
+    await page.getByRole('button', { name: 'Complete both-leg fulfillment' }).focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => posted[0]).toMatchObject({ action: 'complete', closure_evidence: expect.any(String) });
+
+    await page.unroute('**/api/v1/scenarios/finals?role=*');
+    const returnPending = { ...pickedUp, request: { ...pickedUp.request, status: 'return_pending', aggregate_version: 11 } };
+    await mockProjectionApi(page, { transport_coordinator: returnPending });
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Return leg unresolved' })).toBeVisible();
+    await page.getByRole('button', { name: 'Escalate to navigator' }).focus();
+    await page.keyboard.press('Enter');
+    await expect.poll(() => posted[1]).toMatchObject({ action: 'escalate_to_navigator', reason: expect.any(String) });
   });
 });
