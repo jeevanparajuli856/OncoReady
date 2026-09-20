@@ -2,29 +2,32 @@
   "schema_version": "1.0",
   "task_id": "UI-001",
   "agent": "codex-tester",
-  "status": "COMPLETE",
-  "summary": "Independent targeted testing passes on corrected integrated commit ad1c323: the finished SaaS landing, reveal and reduced-motion behavior, all workspaces and the Maria/caregiver journey retain prior comprehensive passing evidence, while final production-browser retesting confirms exact 44px mobile dock targets, visible keyboard focus, full footer-control clearance and hit-testing, safe responsive behavior, and zero horizontal overflow.",
+  "status": "CHANGES_REQUIRED",
+  "summary": "Independent targeted refresh on production commit 4e9fc9a confirms the reviewer-blocking reveal replay defect is fixed across observer, keyboard-focus, and initially reduced-motion completion paths, but UI-001 cannot pass because the integrated app renders blank when IntersectionObserver is unavailable even though the isolated ScrollReveal fallback remains final across motion changes.",
   "files_changed": [
     ".ai/tasks/UI-001/test-report.json"
   ],
   "contracts_used": [],
   "tests": {
-    "passed": true,
+    "passed": false,
     "commands": [
-      "git diff 51965c4..ad1c323 -- frontend/src/index.css frontend/tests/e2e.spec.ts .ai/tasks/UI-001/frontend-report.json",
-      "cd frontend && npx tsc --noEmit",
-      "cd frontend && PLAYWRIGHT_PORT=4181 npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
-      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4182",
-      "cd frontend && node --input-type=module -e '<Playwright audit at 320x568, 390x844, and 768x1024: exact dock geometry and labels, keyboard focus styling, document-end clearance, six-point footer hit-test, responsive padding/dock visibility, and horizontal overflow>'",
+      "git diff 68b0c8f..4e9fc9a --",
+      "cd frontend && npx vitest run tests/scroll-reveal.test.tsx --reporter=verbose",
+      "cd frontend && npm run build",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4186",
+      "cd frontend && node --input-type=module -e '<production Playwright audit: observer completion, keyboard-focus completion, initially reduced-motion mount, effective-motion on/off transitions, and per-variant observe-call counts>'",
+      "cd frontend && npx vitest run tests/.ui001-fallback-toggle.test.tsx --reporter=verbose (temporary independent test removed after execution)",
+      "cd frontend && node --input-type=module -e '<production Playwright no-IntersectionObserver diagnostic with pageerror and body/reveal inspection>'",
       "python3 scripts/agentctl.py scope check UI-001 tester"
     ],
-    "notes": "Reviewed exact integrated commit ad1c3231697556ec77d3fb4c4a9ef21c4ae63821. The production change since the preceding tester report is limited to a shared mobile document-end clearance rule in frontend/src/index.css; the other changes are focused browser coverage and the frontend report. TypeScript passed, and the isolated-port focused Playwright regression passed 1/1. Direct production-browser measurement confirmed Home, Patient, Staff, Caregiver, and Graph are each exactly 44x44 CSS px at both 320x568 and 390x844, have the expected accessible names, accept keyboard focus, and render a 2px solid outline with 3px offset. The app reserves 82.25px mobile document-end padding. The focused footer Reduce motion control clears the dock by 74.203125px at 320x568 and 74.890625px at 390x844; all six sampled points across the control, including bottom center, hit-test to the BUTTON. At both widths, document scrollWidth equals clientWidth. At 768x1024, the dock is hidden, shared clearance resolves to 0px, and width remains exact. An initial ad-hoc audit attempted programmatic focus immediately after mouse interaction and correctly did not establish focus-visible keyboard modality; the decisive rerun pressed Tab before focus and passed every focus assertion. Prior independent comprehensive evidence remains applicable to unaffected behavior: focused Vitest passed 4 files/14 tests, TypeScript and the production build passed, isolated full Playwright passed all 3 original scenarios covering reveal/SaaS/overflow, OS reduced motion, all eight staff destinations, the complete Maria journey, caregiver DOM exclusion, and reset, and a full 1440x900 landing wheel trace recorded no long tasks. Subsequent production changes were confined to mobile dock target sizing and document-end clearance, each independently retested here."
+    "notes": "Reviewed exact production commit 4e9fc9af819335256b1c721db342f16e57281635 and diff 68b0c8f..4e9fc9a. The focused ScrollReveal suite passed 5/5. The exact production build passed after transforming 8,481 modules. In the production browser, observer-completed patient/staff/caregiver cards remained [revealed, revealed, revealed] after Reduce motion was enabled and then disabled; observe counts stayed patient=1, staff=1, caregiver=1, workflow=3, saas=4, proving no hiding, re-observation, or replay. A patient card completed by keyboard focus also remained revealed through the same toggle sequence with identical observe counts. Instances mounted under OS reduced motion remained [visible, visible, visible] after switching to no-preference and recorded zero reveal observe calls. A temporary isolated component test passed 1/1 and proved a ScrollReveal mounted without IntersectionObserver stays visible through reduced-motion on/off rerenders; that temporary file was removed. The integrated production fallback nevertheless fails: defining window.IntersectionObserver as unavailable before navigation emits TypeError: IntersectionObserver is not a constructor from the compiled app, leaves body text empty, and produces zero reveal nodes. Source inspection identifies unguarded constructors in ContinuityField.tsx and RideMap.tsx. Prior comprehensive dock/layout/SaaS/workspace/Maria/caregiver evidence remains applicable because 68b0c8f..4e9fc9a changes only ScrollReveal, its focused tests, and the frontend report, but it cannot override this explicit fallback acceptance failure. Human approval of the motion feel is recorded and does not substitute for the failed technical fallback gate."
   },
-  "blockers": [],
+  "blockers": [
+    "Integrated no-IntersectionObserver fallback: before page load, set window.IntersectionObserver to undefined and navigate to the production build. The app throws TypeError: IntersectionObserver is not a constructor, renders an empty body, and creates no reveal nodes because ContinuityField and RideMap construct IntersectionObserver without availability guards. Add narrow guards that keep ContinuityField static and RideMap on its existing static fallback when the API is unavailable; do not change normal supported-browser motion behavior."
+  ],
   "notes_for_next_agent": [
-    "Run repository verification against the exact post-report commit; this report establishes independent TARGETED evidence for the current implementation revision.",
-    "The final mobile geometry is intentionally explicit: 44x44 dock targets, 82.25px mobile document-end clearance in the tested environment, more than 74px between the focused footer control and dock, and no page overflow at 320px or 390px.",
-    "The shared clearance disables at the 768px breakpoint alongside the mobile dock, avoiding unnecessary desktop spacing.",
-    "No tester-owned test file was needed because the frontend's focused Playwright regression plus an independent production-browser geometry/hit-test decisively cover the corrected boundary."
+    "The original review blocker is resolved: completed ScrollReveal instances are monotonic for the mounted session and do not hide, re-observe, or replay when effective motion changes.",
+    "Keep the fix narrow: guard the ContinuityField and RideMap observer setup, retain their static/offscreen-safe fallbacks, and add one integrated no-IntersectionObserver browser regression.",
+    "After the guard lands, rerun the focused ScrollReveal suite, exact production build, production no-observer fallback check, and the motion-toggle browser audit; unaffected prior comprehensive journey and responsive evidence can still be reused."
   ]
 }
