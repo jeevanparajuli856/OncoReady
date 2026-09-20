@@ -34,6 +34,8 @@ export interface WebhookWrite {
   providerEventId: string;
   scenarioId: string;
   event: WorkflowEvent;
+  rawBodySha256: string;
+  providerReference?: string;
 }
 
 export interface WorkflowRepository {
@@ -46,6 +48,23 @@ export interface WorkflowRepository {
   getFhir(scenarioId: string): Promise<Record<string, unknown>>;
   getPriority(scenarioId: string): Promise<Record<string, unknown>>;
   runTick(maxItems: number, dispatch: (item: OutboxItem) => Promise<{providerReference: string}>): Promise<Record<string, unknown>>;
+}
+
+function select(source:Record<string,unknown>|undefined,keys:string[]):Record<string,unknown>{
+  return Object.fromEntries(keys.filter((key)=>source&&Object.hasOwn(source,key)).map((key)=>[key,source![key]]));
+}
+
+export function minimizeCaregiverProjection(source:Record<string,unknown>):Record<string,unknown>{
+  const permission=source.permission as Record<string,unknown>|undefined;
+  const allowed=permission?.transport_logistics_allowed===true;
+  const result:Record<string,unknown>={
+    ...select(source,["scenario_id","scenario_version","role","as_of","readiness_status"]),
+    treatment:select(source.treatment as Record<string,unknown>|undefined,["treatment_id","starts_at","arrival_window","location_display_name","transport_notice_cutoff"]),
+    caregiver:select(source.caregiver as Record<string,unknown>|undefined,["display_name"]),
+    permission:{transport_logistics_allowed:allowed},
+  };
+  if(allowed)result.transport=select(source.transport as Record<string,unknown>|undefined,["status","provider_display_name","pickup_window","return_window","driver_alias","vehicle_description","acknowledgment_status"]);
+  return result;
 }
 
 export function semanticHash(input: unknown): string {
@@ -63,7 +82,7 @@ export class MemoryWorkflowRepository implements WorkflowRepository {
   constructor(private readonly projections: Record<ActorRole, Record<string, unknown>>) {}
 
   async getProjection(_scenarioId: string, role: ActorRole): Promise<Record<string, unknown>> {
-    return structuredClone(this.projections[role]);
+    const projection=structuredClone(this.projections[role]);return role==="caregiver"?minimizeCaregiverProjection(projection):projection;
   }
 
   async executeCommand(input: ExecuteCommandInput, decide: (snapshot: CommandSnapshot) => CommandDecision): Promise<CommandReceipt> {
@@ -119,12 +138,13 @@ export function createSeedProjections(scenarioId: string): Record<ActorRole, Rec
   const starts = "2026-10-15T14:00:00.000Z";
   const window = {starts_at: "2026-10-15T13:15:00.000Z", ends_at: "2026-10-15T13:45:00.000Z"};
   const treatment = {treatment_id: "22222222-2222-4222-8222-222222222222", starts_at: starts, arrival_window: window, location_display_name: "Benson Cancer Center", transport_notice_cutoff: "2026-10-12T22:00:00.000Z"};
+  const reconciliation = {state: "not_required", last_attempt_at: null, attempt_reference: null, provenance: "none", permitted_recovery: "none"};
   const transport = {status: "need_detected", provider_display_name: "CareLink Partner Dispatch", plan_version: 1, acknowledgment_required: true};
   const base = {scenario_id: scenarioId, scenario_version: 0, as_of: "2026-10-12T14:00:00.000Z", treatment, readiness_status: "not_started"};
   return {
     patient: {...base, role: "patient", patient: {patient_id: "33333333-3333-4333-8333-333333333333", display_name: "Maria Santos"}, blockers: [], next_action: "Complete the T-3 readiness check-in.", communications: [], transport},
     caregiver: {...base, role: "caregiver", caregiver: {display_name: "Ana Santos"}, permission: {transport_logistics_allowed: true}, transport: {status: "need_detected", provider_display_name: "CareLink Partner Dispatch", acknowledgment_status: "not_requested"}},
-    staff: {...base, role: "staff", patient: {patient_id: "33333333-3333-4333-8333-333333333333", display_name: "Maria Santos"}, barriers: [], work_items: [], communications: [], transport: {...transport, transport_request_id: "44444444-4444-4444-8444-444444444444", aggregate_version: 0, eligibility: "not_reviewed", outbound_plan_complete: false, return_plan_complete: false}, timeline: []},
-    transport_coordinator: {...base, role: "transport_coordinator", request: {transport_request_id: "44444444-4444-4444-8444-444444444444", aggregate_version: 0, status: "need_detected", arrival_window: window, notice_cutoff: "2026-10-12T22:00:00.000Z", funding_path: "pilot_sponsored", service_area: "New Orleans pilot service area", mobility: {wheelchair: false, transfer_assistance: false, escort_required: false}, outbound_plan: {location_alias: "maria_home", window}, return_plan: {location_alias: "benson_cancer_center", window, duration_uncertain: true}, notification_permission: true, contact_alias: "finals_allowlisted_phone", acknowledgment_status: "not_requested"}},
+    staff: {...base, role: "staff", patient: {patient_id: "33333333-3333-4333-8333-333333333333", display_name: "Maria Santos"}, barriers: [], work_items: [], communications: [], transport: {...transport, transport_request_id: "44444444-4444-4444-8444-444444444444", aggregate_version: 0, eligibility: "not_reviewed", outbound_plan_complete: false, return_plan_complete: false, reconciliation}, timeline: []},
+    transport_coordinator: {...base, role: "transport_coordinator", request: {transport_request_id: "44444444-4444-4444-8444-444444444444", aggregate_version: 0, status: "need_detected", arrival_window: window, notice_cutoff: "2026-10-12T22:00:00.000Z", funding_path: "pilot_sponsored", service_area: "New Orleans pilot service area", mobility: {wheelchair: false, transfer_assistance: false, escort_required: false}, outbound_plan: {location_alias: "maria_home", window}, return_plan: {location_alias: "benson_cancer_center", window, duration_uncertain: true}, notification_permission: true, contact_alias: "finals_allowlisted_phone", acknowledgment_status: "not_requested", reconciliation}},
   };
 }

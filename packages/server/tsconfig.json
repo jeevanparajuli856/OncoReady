@@ -12,5 +12,5 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["api/**/*.ts", "packages/**/*.ts", "tests/server/**/*.ts", "tests/contracts/**/*.ts", "tests/fhir/**/*.ts"]
+  "include": ["../../api/**/*.ts", "src/**/*.ts", "../../tests/server/**/*.ts", "../../tests/contracts/**/*.ts", "../../tests/fhir/**/*.ts"]
 }

@@ -59,6 +59,10 @@ export function assertRuntimeConfig(config: ServerConfig): void {
   if (!config.databaseUrl || !config.scenarioToken) {
     throw new AppError(503, "dependency_unavailable", "Server persistence or scenario control is not configured.", true);
   }
+  let databaseUrl:URL;
+  try{databaseUrl=new URL(config.databaseUrl);}catch{throw new AppError(503,"dependency_unavailable","Database connection configuration is invalid.",true);}
+  if(!["postgres:","postgresql:"].includes(databaseUrl.protocol))throw new AppError(503,"dependency_unavailable","Database connection must use PostgreSQL.",true);
+  if(!["localhost","127.0.0.1","::1"].includes(databaseUrl.hostname)&&!databaseUrl.searchParams.get("sslmode"))throw new AppError(503,"dependency_unavailable","Remote database connection must explicitly require TLS.",true);
 }
 
 export function assertProviderConfig(config: ServerConfig, provider: "sms" | "voice"): void {

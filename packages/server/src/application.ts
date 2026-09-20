@@ -13,6 +13,10 @@ const plusHours = (hours: number) => new Date(Date.now() + hours * 3_600_000).to
 function bumpProjection(projection: Record<string, unknown>, version: number, readinessStatus?: string): Record<string, unknown> {
   return {...projection, scenario_version: version, as_of: new Date().toISOString(), ...(readinessStatus ? {readiness_status: readinessStatus} : {})};
 }
+function currentScenarioVersion(snapshot:CommandSnapshot):number{return Math.max(...Object.values(snapshot.projections).map((projection)=>Number(projection.scenario_version??0)));}
+function unchangedRoleProjections(snapshot:CommandSnapshot,version:number):Record<ActorRole,Record<string,unknown>>{
+  return {patient:bumpProjection(snapshot.projections.patient,version),caregiver:bumpProjection(snapshot.projections.caregiver,version),staff:bumpProjection(snapshot.projections.staff,version),transport_coordinator:bumpProjection(snapshot.projections.transport_coordinator,version)};
+}
 
 function projectReadiness(snapshot: CommandSnapshot, events: WorkflowEvent[], nextVersion: number): Partial<Record<ActorRole, Record<string, unknown>>> {
   const staff = bumpProjection(snapshot.projections.staff, nextVersion, "at_risk");
@@ -54,10 +58,11 @@ export class WorkflowApplication {
       const currentStatus = String(snapshot.aggregate.state.status ?? "open");
       const draft = workItemDraft(command, workItemId, currentStatus, snapshot.aggregate.version + 1);
       const event = eventFromDraft(command, draft, actor(command.actor_role), "web", randomUUID());
-      const staff = bumpProjection(snapshot.projections.staff, Number(snapshot.projections.staff.scenario_version ?? 0) + 1, "action_in_progress");
+      const scenarioVersion=currentScenarioVersion(snapshot);const projections=unchangedRoleProjections(snapshot,scenarioVersion);
+      const staff = bumpProjection(projections.staff,scenarioVersion,"action_in_progress");
       staff.work_items = (staff.work_items as Array<Record<string, unknown>> ?? []).map((item) => item.work_item_id === workItemId ? {...item, status: draft.payload.to_status, aggregate_version: draft.aggregate_version, owner_display_name: command.owner_id ?? item.owner_display_name, closure_evidence: command.closure_evidence ?? item.closure_evidence} : item);
       staff.timeline = [...(staff.timeline as unknown[] ?? []), event];
-      return {aggregateVersion: draft.aggregate_version, aggregateState: {status: draft.payload.to_status}, events: [event], projections: {staff}};
+      projections.staff=staff;return {aggregateVersion: draft.aggregate_version, aggregateState: {status: draft.payload.to_status}, events: [event], projections};
     });
   }
 
@@ -66,33 +71,43 @@ export class WorkflowApplication {
     return this.repository.executeCommand({scenarioId: command.scenario_id, idempotencyKey: command.idempotency_key, semanticInput: command, aggregateType: "transport_request", aggregateId: transportId, expectedVersion: command.expected_aggregate_version}, (snapshot) => {
       const drafts = createTransportDraft(command, transportId);
       const events = drafts.map((draft) => eventFromDraft(command, draft, actor(command.actor_role), "partner_dispatch", randomUUID()));
-      const coordinator = bumpProjection(snapshot.projections.transport_coordinator, Number(snapshot.projections.transport_coordinator.scenario_version ?? 0) + 1, "action_in_progress");
+      const scenarioVersion=currentScenarioVersion(snapshot);const projections=unchangedRoleProjections(snapshot,scenarioVersion);
+      const coordinator = bumpProjection(projections.transport_coordinator,scenarioVersion,"action_in_progress");
       coordinator.request = {transport_request_id: transportId, aggregate_version: 1, status: "eligibility_reviewed", arrival_window: command.treatment_arrival_window, notice_cutoff: command.notice_cutoff, funding_path: command.funding_path, service_area: command.service_area, mobility: command.mobility, outbound_plan: command.outbound_plan, return_plan: command.return_plan, notification_permission: command.notification_permission, contact_alias: "finals_allowlisted_phone", acknowledgment_status: "not_requested", driver_alias: null, vehicle_description: null};
-      return {aggregateVersion: 1, aggregateState: {transport_request_id: transportId, status: "eligibility_reviewed", aggregate_version: 1, work_item_id: command.work_item_id, treatment_arrival_window: command.treatment_arrival_window, notice_cutoff: command.notice_cutoff, funding_path: command.funding_path, service_area: command.service_area, mobility: command.mobility, outbound_plan: command.outbound_plan, return_plan: command.return_plan, notification_permission: command.notification_permission}, events, projections: {transport_coordinator: coordinator}};
+      projections.transport_coordinator=coordinator;return {aggregateVersion: 1, aggregateState: {transport_request_id: transportId, status: "eligibility_reviewed", aggregate_version: 1, work_item_id: command.work_item_id, treatment_arrival_window: command.treatment_arrival_window, notice_cutoff: command.notice_cutoff, funding_path: command.funding_path, service_area: command.service_area, mobility: command.mobility, outbound_plan: command.outbound_plan, return_plan: command.return_plan, notification_permission: command.notification_permission}, events, projections};
     });
   }
 
   transport(transportId: string, command: TransportCommand) {
     return this.repository.executeCommand({scenarioId: command.scenario_id, idempotencyKey: command.idempotency_key, semanticInput: command, aggregateType: "transport_request", aggregateId: transportId, expectedVersion: command.expected_aggregate_version}, (snapshot) => {
       const currentStatus = String(snapshot.aggregate.state.status ?? "need_detected");
-      const planComplete = Boolean(snapshot.aggregate.state.outbound_plan_complete && snapshot.aggregate.state.return_plan_complete);
+      const planComplete = Boolean(snapshot.aggregate.state.outbound_plan_complete && snapshot.aggregate.state.return_plan_complete && snapshot.aggregate.state.acknowledgment_status==="acknowledged" && snapshot.aggregate.state.acknowledged_plan_version===snapshot.aggregate.state.plan_version);
       const draft = transportDraft(command, transportId, currentStatus, snapshot.aggregate.version + 1, planComplete);
       const event = eventFromDraft(command, draft, actor(command.actor_role), "partner_dispatch", randomUUID());
       const nextStatus = draft.event_type === "transport.eligibility_reviewed" ? "eligibility_reviewed" : String(draft.payload.to_status);
-      const aggregateState = {...snapshot.aggregate.state, status: nextStatus, ...(draft.event_type === "transport.eligibility_reviewed" ? draft.payload : {})};
-      const coordinator = bumpProjection(snapshot.projections.transport_coordinator, Number(snapshot.projections.transport_coordinator.scenario_version ?? 0) + 1, nextStatus === "completed" ? "continuity_plan_confirmed" : "action_in_progress");
+      const aggregateState = {...snapshot.aggregate.state, status: nextStatus, ...(draft.event_type === "transport.eligibility_reviewed" ? {eligible:command.eligible,service_area_confirmed:command.service_area_confirmed,operating_window_confirmed:command.operating_window_confirmed,outbound_plan_complete:command.outbound_plan_complete,return_plan_complete:command.return_plan_complete} : {}),...(command.action==="acknowledge_patient"?{acknowledgment_status:"acknowledged",acknowledged_plan_version:snapshot.aggregate.state.plan_version??1}:{})};
+      const scenarioVersion=currentScenarioVersion(snapshot);
+      const coordinator = bumpProjection(snapshot.projections.transport_coordinator,scenarioVersion,nextStatus === "completed" ? "continuity_plan_confirmed" : "action_in_progress");
       coordinator.request = {...(coordinator.request as Record<string, unknown>), status: nextStatus, aggregate_version: draft.aggregate_version, ...(command.driver_alias ? {driver_alias: command.driver_alias} : {}), ...(command.vehicle_description ? {vehicle_description: command.vehicle_description} : {}), ...(command.action === "acknowledge_patient" ? {acknowledgment_status: "acknowledged"} : {})};
-      return {aggregateVersion: draft.aggregate_version, aggregateState, events: [event], projections: {transport_coordinator: coordinator}};
+      const staff=bumpProjection(snapshot.projections.staff,scenarioVersion,nextStatus==="completed"?"continuity_plan_confirmed":"action_in_progress");
+      staff.transport={...(staff.transport as Record<string,unknown>),status:nextStatus,aggregate_version:draft.aggregate_version,...(draft.event_type==="transport.eligibility_reviewed"?{eligibility:command.eligible?"eligible":"ineligible",outbound_plan_complete:command.outbound_plan_complete,return_plan_complete:command.return_plan_complete}:{}),...(command.driver_alias?{driver_alias:command.driver_alias}:{}),...(command.vehicle_description?{vehicle_description:command.vehicle_description}:{}),failure_reason:command.reason??null};
+      staff.timeline=[...((staff.timeline as unknown[])??[]),event];
+      const patient=bumpProjection(snapshot.projections.patient,scenarioVersion,nextStatus==="completed"?"continuity_plan_confirmed":"action_in_progress");
+      patient.transport={...(patient.transport as Record<string,unknown>),status:nextStatus,...(command.driver_alias?{driver_alias:command.driver_alias}:{}),...(command.vehicle_description?{vehicle_description:command.vehicle_description}:{}),acknowledgment_required:!["patient_acknowledged","completed"].includes(nextStatus)};
+      const caregiver=bumpProjection(snapshot.projections.caregiver,scenarioVersion,nextStatus==="completed"?"continuity_plan_confirmed":"action_in_progress");
+      if((caregiver.permission as {transport_logistics_allowed?:boolean}|undefined)?.transport_logistics_allowed===true)caregiver.transport={...(caregiver.transport as Record<string,unknown>),status:nextStatus,...(command.driver_alias?{driver_alias:command.driver_alias}:{}),...(command.vehicle_description?{vehicle_description:command.vehicle_description}:{}),acknowledgment_status:command.action==="acknowledge_patient"?"acknowledged":command.action==="notify_patient"?"awaiting_patient":(caregiver.transport as Record<string,unknown>)?.acknowledgment_status??"not_requested"}; else delete caregiver.transport;
+      return {aggregateVersion: draft.aggregate_version, aggregateState, events: [event], projections: {transport_coordinator: coordinator,staff,patient,caregiver}};
     });
   }
 
   communication(channel: "sms" | "voice", command: CommunicationCommand) {
     if (command.actor_role !== "staff") throw new AppError(403, "forbidden_action", "Only staff may queue external communications.");
     const communicationId = randomUUID();
-    return this.repository.executeCommand({scenarioId: command.scenario_id, idempotencyKey: command.idempotency_key, semanticInput: {...command, channel}, aggregateType: "communication", aggregateId: communicationId, expectedVersion: command.expected_aggregate_version}, (_snapshot) => {
+    return this.repository.executeCommand({scenarioId: command.scenario_id, idempotencyKey: command.idempotency_key, semanticInput: {...command, channel}, aggregateType: "communication", aggregateId: communicationId, expectedVersion: command.expected_aggregate_version}, (snapshot) => {
       const version = 1;
       const event = eventFromDraft(command, {aggregate_type: "communication", aggregate_id: communicationId, aggregate_version: 1, event_type: "communication.queued", payload: {communication_id: communicationId, channel, purpose: command.purpose, destination_alias: command.destination_alias}}, actor(command.actor_role), "web", randomUUID());
-      return {aggregateVersion: version, events: [event], projections: {}, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, purpose: command.purpose}}]};
+      const projections=unchangedRoleProjections(snapshot,currentScenarioVersion(snapshot));projections.staff.timeline=[...((projections.staff.timeline as unknown[])??[]),event];
+      return {aggregateVersion: version, events: [event], projections, outbox: [{scenario_id: command.scenario_id, action_type: channel, stable_action_id: communicationId, payload: {communication_id: communicationId, purpose: command.purpose}}]};
     });
   }
 

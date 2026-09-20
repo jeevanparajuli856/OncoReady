@@ -47,10 +47,14 @@ function deterministicUuid(value:string):string{
 
 export function createHttpHandler(repository:WorkflowRepository,config:ServerConfig){
   const app=new WorkflowApplication(repository,config);
+  const requestBuckets=new Map<string,{window:number;count:number}>();
   return async function handle(request:Request):Promise<Response>{
     const traceId=randomUUID();
     try{
       const url=new URL(request.url); const path=url.pathname;
+      const clientKey=request.headers.get("x-forwarded-for")?.split(",")[0]?.trim()??"local";
+      const window=Math.floor(Date.now()/60_000); const bucket=requestBuckets.get(clientKey);
+      if(bucket?.window===window){bucket.count+=1;if(bucket.count>240)throw new AppError(429,"rate_limited","Request rate exceeds the controlled-environment limit.",true);}else requestBuckets.set(clientKey,{window,count:1});
       const origin=request.headers.get("origin");
       if(origin&&!config.allowedOrigins.includes(origin)) throw new AppError(403,"forbidden_action","Origin is not allowed.");
       const cors=origin?{"access-control-allow-origin":origin,"vary":"Origin"}:{};
@@ -61,13 +65,14 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
         const value=Object.fromEntries(params.entries());
         if(path.endsWith("/inbound-message")){
           const input=parse(twilioInbound,value); const aggregateId=deterministicUuid(`twilio:${input.MessageSid}`); const responseKind=classifySms(input.Body);
+          if(!config.allowlistedPhone||input.From!==config.allowlistedPhone)throw new AppError(403,"forbidden_action","Inbound sender is not the configured finals recipient.");
           const event=callbackEvent({scenarioId:FINALS_SCENARIO_ID,aggregateId,version:1,eventType:"communication.response_recorded",payload:{communication_id:aggregateId,channel:"sms",response_kind:responseKind,verbatim_text:responseKind==="unstructured"?input.Body:null},provenance:"twilio_callback"});
-          await repository.recordWebhook({provider:"twilio_sms",providerEventId:input.MessageSid,scenarioId:FINALS_SCENARIO_ID,event}); return new Response(null,{status:204,headers:cors});
+          await repository.recordWebhook({provider:"twilio_sms",providerEventId:input.MessageSid,providerReference:input.MessageSid,scenarioId:FINALS_SCENARIO_ID,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
         }
         const input=parse(twilioStatus,value); const action=await repository.findProviderAction(input.MessageSid);
         if(!action) throw new AppError(404,"not_found","Provider action was not found.");
         const event=callbackEvent({scenarioId:action.scenarioId,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.status_changed",payload:{communication_id:action.aggregateId,channel:"sms",provider:"twilio",status:input.MessageStatus,provider_reference:input.MessageSid,failure_code:input.ErrorCode??null},provenance:"twilio_callback",correlationId:action.correlationId});
-        await repository.recordWebhook({provider:"twilio_sms",providerEventId:`${input.MessageSid}:${input.MessageStatus}`,scenarioId:action.scenarioId,event}); return new Response(null,{status:204,headers:cors});
+        await repository.recordWebhook({provider:"twilio_sms",providerEventId:`${input.MessageSid}:${input.MessageStatus}`,providerReference:input.MessageSid,scenarioId:action.scenarioId,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
       }
 
       if(path.startsWith("/api/v1/callbacks/elevenlabs/")){
@@ -75,34 +80,39 @@ export function createHttpHandler(repository:WorkflowRepository,config:ServerCon
         const parsed=JSON.parse(raw) as unknown;
         if(path.endsWith("/post-call")){
           const input=parse(elevenLabsPostCall,parsed); const action=await repository.findProviderAction(input.call_id); if(!action) throw new AppError(404,"not_found","Provider action was not found.");
+          if(action.scenarioId!==input.scenario_id||action.correlationId!==input.correlation_id)throw new AppError(403,"forbidden_action","Voice callback does not match the governed provider action.");
           const map={ready:"ready",ride_help:"ride_help",scheduling_help:"scheduling_help",human_callback:"call_me",unsupported_or_uncertain:"unstructured"} as const;
           const event=callbackEvent({scenarioId:input.scenario_id,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.response_recorded",payload:{communication_id:action.aggregateId,channel:"voice",response_kind:map[input.outcome],verbatim_text:null},provenance:"elevenlabs_callback",correlationId:input.correlation_id,occurredAt:input.occurred_at});
-          await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,scenarioId:input.scenario_id,event}); return new Response(null,{status:204,headers:cors});
+          await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,providerReference:input.call_id,scenarioId:input.scenario_id,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
         }
         const input=parse(elevenLabsFailure,parsed); const action=await repository.findProviderAction(input.call_id); if(!action) throw new AppError(404,"not_found","Provider action was not found.");
+        if(action.scenarioId!==input.scenario_id||action.correlationId!==input.correlation_id)throw new AppError(403,"forbidden_action","Voice callback does not match the governed provider action.");
         const event=callbackEvent({scenarioId:input.scenario_id,aggregateId:action.aggregateId,version:action.aggregateVersion+1,eventType:"communication.status_changed",payload:{communication_id:action.aggregateId,channel:"voice",provider:"elevenlabs_twilio",status:"failed",provider_reference:input.call_id,failure_code:input.failure_code},provenance:"elevenlabs_callback",correlationId:input.correlation_id,occurredAt:input.occurred_at});
-        await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,scenarioId:input.scenario_id,event}); return new Response(null,{status:204,headers:cors});
+        await repository.recordWebhook({provider:"elevenlabs_twilio",providerEventId:input.event_id,providerReference:input.call_id,scenarioId:input.scenario_id,event,rawBodySha256:createHash("sha256").update(raw).digest("hex")}); return new Response(null,{status:204,headers:cors});
       }
 
       if(path==="/api/v1/operations/tick"){
         if(request.method!=="GET") throw new AppError(404,"not_found","Route not found.");
+        assertRuntimeConfig(config);if(!config.cronSecret)throw new AppError(503,"dependency_unavailable","Scheduler authentication is not configured.",true);
         if(!secureEqual(request.headers.get("authorization"),`Bearer ${config.cronSecret}`)) throw new AppError(401,"unauthorized","Cron credential is invalid.");
-        const max=Math.min(100,Math.max(1,Number(url.searchParams.get("max_items")??25))); return json(await app.tick(max),200,cors);
+        const requestedMax=Number(url.searchParams.get("max_items")??25);if(!Number.isInteger(requestedMax)||requestedMax<1||requestedMax>100)throw new AppError(400,"invalid_request","max_items must be an integer from 1 through 100.");
+        return json(await app.tick(requestedMax),200,cors);
       }
 
       assertRuntimeConfig(config);
       if(!secureEqual(request.headers.get("x-oncoready-scenario-token"),config.scenarioToken)) throw new AppError(401,"unauthorized","Scenario credential is invalid.");
-      const body=async()=>{try{return await request.json();}catch{throw new AppError(400,"invalid_request","Request body must be valid JSON.");}};
+      const body=async()=>{try{return JSON.parse(await rawBody(request,32*1024)) as unknown;}catch(error){if(error instanceof AppError)throw error;throw new AppError(400,"invalid_request","Request body must be valid JSON.");}};
+      const governed=<T extends {scenario_id:string}>(command:T):T=>{if(command.scenario_id!==FINALS_SCENARIO_ID)throw new AppError(403,"forbidden_action","Only the controlled finals scenario is available.");return command;};
       if(request.method==="GET"&&path==="/api/v1/scenarios/finals") return json(await app.projection(FINALS_SCENARIO_ID,parse(role,url.searchParams.get("role"))),200,cors);
-      if(request.method==="POST"&&path==="/api/v1/scenarios/finals/reset") return json(await app.reset(parse(resetCommand,await body())),200,cors);
-      if(request.method==="POST"&&path==="/api/v1/readiness-submissions") return json(await app.readiness(parse(readinessCommand,await body())),202,cors);
+      if(request.method==="POST"&&path==="/api/v1/scenarios/finals/reset") return json(await app.reset(governed(parse(resetCommand,await body()))),200,cors);
+      if(request.method==="POST"&&path==="/api/v1/readiness-submissions") return json(await app.readiness(governed(parse(readinessCommand,await body()))),202,cors);
       let match=path.match(/^\/api\/v1\/work-items\/([0-9a-f-]+)\/commands$/i);
-      if(request.method==="POST"&&match) return json(await app.workItem(match[1]!,parse(workItemCommand,await body())),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/transport/requests") return json(await app.createTransport(parse(createTransportCommand,await body())),202,cors);
+      if(request.method==="POST"&&match) return json(await app.workItem(match[1]!,governed(parse(workItemCommand,await body()))),202,cors);
+      if(request.method==="POST"&&path==="/api/v1/transport/requests") return json(await app.createTransport(governed(parse(createTransportCommand,await body()))),202,cors);
       match=path.match(/^\/api\/v1\/transport\/requests\/([0-9a-f-]+)\/commands$/i);
-      if(request.method==="POST"&&match) return json(await app.transport(match[1]!,parse(transportCommand,await body())),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/communications/sms") return json(await app.communication("sms",parse(communicationCommand,await body())),202,cors);
-      if(request.method==="POST"&&path==="/api/v1/communications/voice") return json(await app.communication("voice",parse(communicationCommand,await body())),202,cors);
+      if(request.method==="POST"&&match) return json(await app.transport(match[1]!,governed(parse(transportCommand,await body()))),202,cors);
+      if(request.method==="POST"&&path==="/api/v1/communications/sms") return json(await app.communication("sms",governed(parse(communicationCommand,await body()))),202,cors);
+      if(request.method==="POST"&&path==="/api/v1/communications/voice") return json(await app.communication("voice",governed(parse(communicationCommand,await body()))),202,cors);
       if(request.method==="GET"&&path==="/api/v1/evidence/metrics") return json(await app.metrics(FINALS_SCENARIO_ID),200,cors);
       if(request.method==="GET"&&path==="/api/v1/evidence/fhir") return json(await app.fhir(FINALS_SCENARIO_ID),200,cors);
       if(request.method==="GET"&&path==="/api/v1/evidence/priority") return json(await app.priority(FINALS_SCENARIO_ID),200,cors);

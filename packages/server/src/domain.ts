@@ -64,11 +64,15 @@ const workTransitions: Record<WorkItemCommand["action"], string> = {
   record_action: "actioned", escalate: "escalated", inform_patient: "patient_informed",
   acknowledge_patient: "patient_acknowledged", close: "closed",
 };
+const permittedWorkFrom:Record<WorkItemCommand["action"],string[]>={
+  assign:["open"],acknowledge:["assigned"],accept:["open","assigned","acknowledged"],request_information:["assigned","acknowledged","accepted"],record_action:["acknowledged","accepted","needs_information"],escalate:["open","assigned","acknowledged","needs_information","accepted","actioned"],inform_patient:["actioned"],acknowledge_patient:["patient_informed"],close:["actioned","patient_acknowledged"],
+};
 
 export function workItemDraft(command: WorkItemCommand, workItemId: string, currentStatus: string, nextVersion: number): EventDraft {
   requireRole(command.actor_role, ["staff", "transport_coordinator"]);
   const toStatus = workTransitions[command.action];
   if (!toStatus) throw new AppError(422, "invalid_transition", "Unsupported work item transition.");
+  if(!permittedWorkFrom[command.action].includes(currentStatus))throw new AppError(422,"invalid_transition",`Cannot ${command.action} a work item from ${currentStatus}.`);
   if (command.action === "close" && !command.closure_evidence?.trim()) throw new AppError(422, "validation_failed", "Closure evidence is required.");
   return {aggregate_type: "work_item", aggregate_id: workItemId, aggregate_version: nextVersion, event_type: "work_item.transitioned", payload: {work_item_id: workItemId, from_status: currentStatus, to_status: toStatus, owner_id: command.owner_id ?? null, note: command.note ?? null, closure_evidence: command.closure_evidence ?? null}};
 }
@@ -84,10 +88,14 @@ const transportTransitions: Record<Exclude<TransportCommand["action"], "review_e
   notify_patient: "patient_notified", acknowledge_patient: "patient_acknowledged", mark_en_route: "en_route", arrive: "arrived",
   pick_up: "picked_up", complete: "completed", mark_return_pending: "return_pending", escalate_to_navigator: "escalated_to_navigator",
 };
+const permittedTransportFrom:Record<TransportCommand["action"],string[]>={
+  review_eligibility:["need_detected","eligibility_reviewed"],mark_request_ready:["eligibility_reviewed"],offer:["request_ready"],accept:["offered"],assign_driver:["accepted"],notify_patient:["driver_assigned"],acknowledge_patient:["patient_notified"],mark_en_route:["patient_acknowledged"],arrive:["en_route"],pick_up:["arrived"],complete:["picked_up"],mark_return_pending:["picked_up"],mark_provider_unavailable:["request_ready","offered","accepted","driver_assigned","patient_notified","patient_acknowledged","en_route"],decline:["offered"],cancel:["accepted","driver_assigned","patient_notified","patient_acknowledged"],activate_backup:["provider_unavailable","declined","cancelled","backup_required"],escalate_to_navigator:["provider_unavailable","declined","cancelled","stale_assignment","return_pending","backup_required","backup_activated"],
+};
 
 export function transportDraft(command: TransportCommand, transportId: string, currentStatus: string, nextVersion: number, planComplete: boolean): EventDraft {
   const patientAck = command.action === "acknowledge_patient";
   requireRole(command.actor_role, patientAck ? ["patient", "staff"] : ["staff", "transport_coordinator"]);
+  if(!permittedTransportFrom[command.action].includes(currentStatus))throw new AppError(422,"invalid_transition",`Cannot ${command.action} transport from ${currentStatus}.`);
   if (command.action === "review_eligibility") {
     if ([command.eligible, command.service_area_confirmed, command.operating_window_confirmed, command.outbound_plan_complete, command.return_plan_complete].some((v) => v == null)) {
       throw new AppError(422, "validation_failed", "Eligibility review requires all eligibility and plan checks.");
@@ -109,4 +117,9 @@ export function classifySms(body: string): "ready" | "ride_help" | "call_me" | "
   if (/\b(repeat|again)\b/.test(normalized)) return "repeat";
   if (/\b(ready|yes|confirmed)\b/.test(normalized)) return "ready";
   return "unstructured";
+}
+
+export function isProviderStatusRegression(currentStatus:string,nextStatus:string):boolean{
+  const ranks:Record<string,number>={queued:0,sent:1,delivered:2,undelivered:2,failed:2,answered:2,no_answer:2,opted_out:2,completed:3,outcome_unknown:2};
+  return currentStatus!==nextStatus&&(ranks[nextStatus]??-1)<=(ranks[currentStatus]??-1);
 }

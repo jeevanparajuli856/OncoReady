@@ -1,11 +1,12 @@
 import {createHash, randomUUID} from "node:crypto";
 import {Pool, type PoolClient} from "pg";
 import {generateFhirEvidence} from "./evidence.js";
+import {isProviderStatusRegression} from "./domain.js";
 import {scorePriority} from "./ml.js";
 import type {ActorRole, CommandReceipt, OutboxItem, WorkflowEvent} from "./types.js";
 import {AppError} from "./types.js";
 import type {CommandDecision, CommandSnapshot, ExecuteCommandInput, WebhookWrite, WorkflowRepository} from "./repository.js";
-import {semanticHash} from "./repository.js";
+import {minimizeCaregiverProjection,semanticHash} from "./repository.js";
 
 const FINALS_SCENARIO_ID = "11111111-1111-4111-8111-111111111111";
 const roles: ActorRole[] = ["patient", "caregiver", "staff", "transport_coordinator"];
@@ -15,13 +16,36 @@ function asReceipt(value: unknown): CommandReceipt { return value as CommandRece
 export class PostgresWorkflowRepository implements WorkflowRepository {
   private readonly pool: Pool;
   constructor(databaseUrl: string) {
-    this.pool = new Pool({connectionString: databaseUrl, max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 5_000, ssl: databaseUrl.includes("localhost") ? false : {rejectUnauthorized: false}});
+    this.pool = new Pool({connectionString: databaseUrl, max: 3, idleTimeoutMillis: 10_000, connectionTimeoutMillis: 5_000});
   }
 
   async getProjection(scenarioId: string, role: ActorRole): Promise<Record<string, unknown>> {
     const result = await this.pool.query<{projection: Record<string, unknown>}>("select projection from public.role_projections where scenario_id = $1 and role = $2", [scenarioId, role]);
     if (!result.rows[0]) throw new AppError(404, "not_found", "Scenario projection not found.");
-    return result.rows[0].projection;
+    const projection = structuredClone(result.rows[0].projection);
+    if (role === "caregiver") {
+      return minimizeCaregiverProjection(projection);
+    }
+    const reconciliation = (status?: string | null, attemptAt?: string | null, reference?: string | null) => {
+      if (status === "outcome_unknown") return {state:"reconciliation_required",last_attempt_at:attemptAt??null,attempt_reference:reference??null,provenance:"none",permitted_recovery:"reconcile_provider"};
+      if (status === "reconciled") return {state:"reconciled",last_attempt_at:attemptAt??null,attempt_reference:reference??null,provenance:"provider_lookup",permitted_recovery:"none"};
+      return {state:"not_required",last_attempt_at:attemptAt??null,attempt_reference:reference??null,provenance:reference?"provider_callback":"none",permitted_recovery:"none"};
+    };
+    if (role === "staff") {
+      const attempts = await this.pool.query<{stable_action_id:string;status:string;started_at:string;provider_reference:string|null}>("select distinct on (stable_action_id) stable_action_id,status,started_at,provider_reference from public.provider_attempts where scenario_id=$1 order by stable_action_id,attempt_number desc",[scenarioId]);
+      const byId = new Map(attempts.rows.map((row)=>[row.stable_action_id,row]));
+      projection.communications = ((projection.communications as Array<Record<string,unknown>>|undefined)??[]).map((communication)=>{
+        const attempt=byId.get(String(communication.communication_id));
+        const outcomeUnknown=attempt?.status==="outcome_unknown";
+        return {...communication,status:outcomeUnknown?"outcome_unknown":communication.status,reconciliation:reconciliation(attempt?.status,attempt?.started_at,attempt?.provider_reference)};
+      });
+      const transport=projection.transport as Record<string,unknown>|undefined;
+      if(transport) transport.reconciliation=reconciliation(transport.status==="outcome_unknown"?"outcome_unknown":null,null,null);
+    } else if (role === "transport_coordinator") {
+      const request=projection.request as Record<string,unknown>|undefined;
+      if(request) request.reconciliation=reconciliation(request.status==="outcome_unknown"?"outcome_unknown":null,null,null);
+    }
+    return projection;
   }
 
   private async loadSnapshot(client: PoolClient, input: ExecuteCommandInput): Promise<CommandSnapshot> {
@@ -94,7 +118,7 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
         await client.query("update public.role_projections set scenario_version=$3,as_of=$4,projection=$5,updated_at=clock_timestamp() where scenario_id=$1 and role=$2", [input.scenarioId,role,projection.scenario_version,projection.as_of,projection]);
       }
       const scenarioVersion = Math.max(...Object.values(decision.projections).map((projection) => Number(projection?.scenario_version ?? 0)), input.aggregateType === "scenario" ? decision.aggregateVersion : 0);
-      if (scenarioVersion) await client.query("update public.scenarios set aggregate_version=$2,readiness_status=coalesce($3,readiness_status),updated_at=clock_timestamp() where scenario_id=$1", [input.scenarioId,scenarioVersion,decision.projections.staff?.readiness_status ?? decision.projections.patient?.readiness_status ?? null]);
+      if (scenarioVersion) await client.query("update public.scenarios set aggregate_version=case when $4 then $2 else aggregate_version end,readiness_status=coalesce($3,readiness_status),updated_at=clock_timestamp() where scenario_id=$1", [input.scenarioId,scenarioVersion,decision.projections.staff?.readiness_status ?? decision.projections.patient?.readiness_status ?? null,input.aggregateType==="scenario"]);
       for (const queued of decision.outbox ?? []) {
         const eventId = decision.events.find((event) => event.aggregate_id === queued.stable_action_id)?.event_id ?? null;
         await client.query(`insert into public.outbox (scenario_id,event_id,provider,action_type,destination_alias,stable_action_id,payload) values ($1,$2,$3,$4,'finals_allowlisted_phone',$5,$6)`, [queued.scenario_id,eventId,queued.action_type === "sms" ? "twilio_sms" : "elevenlabs_twilio",queued.action_type,queued.stable_action_id,queued.payload]);
@@ -120,10 +144,18 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
     const client = await this.pool.connect();
     try {
       await client.query("begin");
-      const receipt = await client.query(`insert into public.webhook_receipts (scenario_id,provider,provider_event_id,signature_verified,raw_body_sha256,provider_occurred_at,correlation_id,safe_payload) values ($1,$2,$3,true,$4,$5,$6,$7) on conflict (provider,provider_event_id) do nothing returning webhook_receipt_id`, [input.scenarioId,input.provider,input.providerEventId,createHash("sha256").update(JSON.stringify(input.event.payload)).digest("hex"),input.event.occurred_at,input.event.correlation_id,input.event.payload]);
+      const receipt = await client.query(`insert into public.webhook_receipts (scenario_id,provider,provider_event_id,signature_verified,raw_body_sha256,provider_occurred_at,correlation_id,safe_payload) values ($1,$2,$3,true,$4,$5,$6,$7) on conflict (provider,provider_event_id) do nothing returning webhook_receipt_id`, [input.scenarioId,input.provider,input.providerEventId,input.rawBodySha256,input.event.occurred_at,input.event.correlation_id,input.event.payload]);
       if (!receipt.rows[0]) { await client.query("rollback"); return "duplicate"; }
       const head = await client.query<{aggregate_version:number}>("select aggregate_version from public.aggregate_heads where scenario_id=$1 and aggregate_type=$2 and aggregate_id=$3 for update", [input.scenarioId,input.event.aggregate_type,input.event.aggregate_id]);
       const current = head.rows[0]?.aggregate_version ?? 0;
+      if(input.event.event_type==="communication.status_changed"){
+        const currentProjection=await client.query<{status:string}>("select status from public.communication_projections where scenario_id=$1 and communication_id=$2",[input.scenarioId,input.event.aggregate_id]);
+        const currentStatus=currentProjection.rows[0]?.status;const nextStatus=String(input.event.payload.status);
+        if(currentStatus&&isProviderStatusRegression(currentStatus,nextStatus)){
+          await client.query("update public.webhook_receipts set status='out_of_order' where provider=$1 and provider_event_id=$2",[input.provider,input.providerEventId]);
+          await client.query("commit");return "out_of_order";
+        }
+      }
       if (input.event.aggregate_version !== current + 1) {
         await client.query("update public.webhook_receipts set status='out_of_order' where provider=$1 and provider_event_id=$2", [input.provider,input.providerEventId]);
         await client.query("commit"); return "out_of_order";
@@ -131,8 +163,16 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
       await this.insertEvent(client,input.event);
       if (input.event.event_type === "communication.status_changed") {
         await client.query(`insert into public.communication_projections (communication_id,scenario_id,aggregate_version,channel,purpose,destination_alias,status,provenance,provider_reference,failure_code,occurred_at) select $1,$2,$3,$4,coalesce(o.payload->>'purpose','readiness'),'finals_allowlisted_phone',$5,'provider_callback',$6,$7,$8 from public.outbox o where o.stable_action_id=$1::text on conflict (communication_id) do update set aggregate_version=excluded.aggregate_version,status=excluded.status,provider_reference=excluded.provider_reference,failure_code=excluded.failure_code,occurred_at=excluded.occurred_at`, [input.event.aggregate_id,input.scenarioId,input.event.aggregate_version,input.event.payload.channel,input.event.payload.status,input.event.payload.provider_reference,input.event.payload.failure_code,input.event.occurred_at]);
-        await client.query("update public.provider_attempts set status=case when $2 in ('delivered','answered','completed') then 'definitive_success' else 'definitive_failure' end,completed_at=clock_timestamp(),reconciliation_required=false where provider_reference=$1", [input.event.payload.provider_reference,input.event.payload.status]);
-        await client.query("update public.outbox set status=case when $2 in ('delivered','answered','completed') then 'acknowledged' else 'failed' end,completed_at=clock_timestamp(),claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null where stable_action_id=$1::text", [input.event.aggregate_id,input.event.payload.status]);
+        await client.query("update public.provider_attempts set status=case when $2 in ('queued','sent') then 'accepted' when $2 in ('delivered','answered','completed') then 'definitive_success' else 'definitive_failure' end,completed_at=case when $2 in ('queued','sent') then null else clock_timestamp() end,reconciliation_required=false where provider_reference=$1", [input.event.payload.provider_reference,input.event.payload.status]);
+        await client.query("update public.outbox set status=case when $2 in ('queued','sent') then 'dispatched' when $2 in ('delivered','answered','completed') then 'acknowledged' else 'failed' end,completed_at=case when $2 in ('queued','sent') then null else clock_timestamp() end,claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null where stable_action_id=$1::text", [input.event.aggregate_id,input.event.payload.status]);
+      } else if (input.event.event_type === "communication.response_recorded") {
+        const responseKind=String(input.event.payload.response_kind);
+        const status=responseKind==="opt_out"?"opted_out":"completed";
+        await client.query(`insert into public.communication_projections (communication_id,scenario_id,aggregate_version,channel,purpose,destination_alias,status,provenance,provider_reference,occurred_at) values ($1,$2,$3,$4,'readiness','finals_allowlisted_phone',$5,'provider_callback',$6,$7) on conflict (communication_id) do update set aggregate_version=excluded.aggregate_version,status=excluded.status,provenance='provider_callback',occurred_at=excluded.occurred_at`,[input.event.aggregate_id,input.scenarioId,input.event.aggregate_version,input.event.payload.channel,status,input.providerReference??input.providerEventId,input.event.occurred_at]);
+        if(input.provider==="elevenlabs_twilio"){
+          await client.query("update public.provider_attempts set status='definitive_success',completed_at=clock_timestamp(),reconciliation_required=false where provider_reference=$1",[input.providerReference]);
+          await client.query("update public.outbox set status='acknowledged',completed_at=clock_timestamp() where stable_action_id=$1::text",[input.event.aggregate_id]);
+        }
       }
       await client.query("update public.webhook_receipts set status='processed',translated_event_id=$3,processed_at=clock_timestamp() where provider=$1 and provider_event_id=$2", [input.provider,input.providerEventId,input.event.event_id]);
       await client.query("commit"); return "accepted";
@@ -178,30 +218,53 @@ export class PostgresWorkflowRepository implements WorkflowRepository {
   }
 
   async runTick(maxItems: number, dispatch: (item: OutboxItem) => Promise<{providerReference:string}>): Promise<Record<string, unknown>> {
-    const client = await this.pool.connect(); const tickId=randomUUID(); const started=new Date(); let succeeded=0,failed=0,claimed=0;
+    const authority = await this.pool.connect(); const tickId=randomUUID(); const started=new Date(); let succeeded=0,failed=0,claimed=0;
     try {
-      await client.query("begin");
-      const lock=await client.query<{locked:boolean}>("select public.try_scheduler_lock($1) locked",[FINALS_SCENARIO_ID]);
+      // Keep one short-lived authority transaction open while consequential
+      // calls run through separately committed intent/result transactions.
+      await authority.query("begin");
+      const lock=await authority.query<{locked:boolean}>("select public.try_scheduler_lock($1) locked",[FINALS_SCENARIO_ID]);
       if (!lock.rows[0]?.locked) throw new AppError(409,"version_conflict","Another scheduler tick holds authority.",true);
-      await client.query("select * from public.recover_stale_claims(clock_timestamp())");
-      const rows=await client.query("select * from public.claim_outbox($1,$2,30)",[tickId,maxItems]); claimed=rows.rowCount ?? 0;
+      const claimClient=await this.pool.connect();
+      let rows:{rows:Array<Record<string,any>>;rowCount:number|null};
+      try {
+        await claimClient.query("begin");
+        await claimClient.query("select * from public.recover_stale_claims(clock_timestamp())");
+        const scheduled=await claimClient.query("select * from public.claim_scheduled_actions($1,$2,30)",[tickId,maxItems]);
+        for(const action of scheduled.rows){
+          const provider=action.payload.provider;
+          const actionType=action.payload.action_type;
+          if(!["twilio_sms","elevenlabs_twilio"].includes(provider)||!["sms","voice"].includes(actionType)){
+            await claimClient.query("update public.scheduled_actions set status='failed',last_error_code='invalid_scheduled_payload',claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where scheduled_action_id=$1",[action.scheduled_action_id]);
+            continue;
+          }
+          await claimClient.query(`insert into public.outbox (scenario_id,scheduled_action_id,provider,action_type,destination_alias,stable_action_id,payload) values ($1,$2,$3,$4,'finals_allowlisted_phone',$5,$6) on conflict (stable_action_id) do nothing`,[action.scenario_id,action.scheduled_action_id,provider,actionType,action.stable_action_id,action.payload]);
+          await claimClient.query("update public.scheduled_actions set status='completed',completed_at=clock_timestamp(),claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where scheduled_action_id=$1",[action.scheduled_action_id]);
+          await claimClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='scheduled_action' and resource_id=$1 and status='active'",[action.scheduled_action_id]);
+        }
+        rows=await claimClient.query("select * from public.claim_outbox($1,$2,30)",[tickId,maxItems]);
+        await claimClient.query("commit");
+      } catch(error) {await claimClient.query("rollback");throw error;} finally {claimClient.release();}
+      claimed=rows.rowCount ?? 0;
       for (const row of rows.rows) {
         const attemptId=randomUUID(); const requestHash=createHash("sha256").update(JSON.stringify(row.payload)).digest("hex");
-        await client.query(`insert into public.provider_attempts (provider_attempt_id,scenario_id,outbox_id,provider,stable_action_id,attempt_number,status,request_hash) values ($1,$2,$3,$4,$5,$6,'in_flight',$7)`,[attemptId,row.scenario_id,row.outbox_id,row.provider,row.stable_action_id,row.attempt_count,requestHash]);
+        // This commit is deliberately before the network boundary. If the
+        // function stops after acceptance, lease recovery sees an in-flight
+        // attempt and moves it to outcome_unknown instead of resending.
+        await this.pool.query(`insert into public.provider_attempts (provider_attempt_id,scenario_id,outbox_id,provider,stable_action_id,attempt_number,status,request_hash) values ($1,$2,$3,$4,$5,$6,'in_flight',$7)`,[attemptId,row.scenario_id,row.outbox_id,row.provider,row.stable_action_id,row.attempt_count,requestHash]);
         try {
           const accepted=await dispatch({outbox_id:row.outbox_id,scenario_id:row.scenario_id,action_type:row.action_type,stable_action_id:row.stable_action_id,payload:row.payload,attempts:row.attempt_count});
-          await client.query("update public.provider_attempts set status='accepted',provider_reference=$2 where provider_attempt_id=$1",[attemptId,accepted.providerReference]);
-          await client.query("update public.outbox set status='dispatched',claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where outbox_id=$1",[row.outbox_id]); succeeded++;
+          const resultClient=await this.pool.connect();
+          try{await resultClient.query("begin");await resultClient.query("update public.provider_attempts set status='accepted',provider_reference=$2 where provider_attempt_id=$1",[attemptId,accepted.providerReference]);await resultClient.query("update public.outbox set status='dispatched',claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where outbox_id=$1",[row.outbox_id]);await resultClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='outbox' and resource_id=$1 and status='active'",[row.outbox_id]);await resultClient.query("commit");}catch(error){await resultClient.query("rollback");throw error;}finally{resultClient.release();} succeeded++;
         } catch (error) {
           const definitive=error instanceof AppError && !error.retryable;
-          await client.query("update public.provider_attempts set status=$2,error_code=$3,completed_at=case when $2='definitive_failure' then clock_timestamp() else null end,reconciliation_required=($2='outcome_unknown') where provider_attempt_id=$1",[attemptId,definitive?"definitive_failure":"outcome_unknown",error instanceof AppError?error.code:"provider_network_unknown"]);
-          await client.query("update public.outbox set status=$2,last_error_code=$3,completed_at=case when $2='failed' then clock_timestamp() else null end,claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where outbox_id=$1",[row.outbox_id,definitive?"failed":"outcome_unknown",error instanceof AppError?error.code:"provider_network_unknown"]); failed++;
+          const resultClient=await this.pool.connect();
+          try{await resultClient.query("begin");await resultClient.query("update public.provider_attempts set status=$2,error_code=$3,completed_at=case when $2='definitive_failure' then clock_timestamp() else null end,reconciliation_required=($2='outcome_unknown') where provider_attempt_id=$1",[attemptId,definitive?"definitive_failure":"outcome_unknown",error instanceof AppError?error.code:"provider_network_unknown"]);await resultClient.query("update public.outbox set status=$2,last_error_code=$3,completed_at=case when $2='failed' then clock_timestamp() else null end,claim_token=null,claim_owner=null,claimed_at=null,lease_expires_at=null,updated_at=clock_timestamp() where outbox_id=$1",[row.outbox_id,definitive?"failed":"outcome_unknown",error instanceof AppError?error.code:"provider_network_unknown"]);await resultClient.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='outbox' and resource_id=$1 and status='active'",[row.outbox_id]);await resultClient.query("commit");}catch(resultError){await resultClient.query("rollback");throw resultError;}finally{resultClient.release();} failed++;
         }
-        await client.query("update public.claim_leases set status='released',released_at=clock_timestamp() where resource_type='outbox' and resource_id=$1 and status='active'",[row.outbox_id]);
       }
-      const remaining=await client.query<{count:number}>("select count(*)::int count from public.outbox where status='pending' and available_at<=clock_timestamp()",[]);
-      await client.query("commit");
+      const remaining=await this.pool.query<{count:number}>("select count(*)::int count from public.outbox where status='pending' and available_at<=clock_timestamp()",[]);
+      await authority.query("commit");
       return {tick_id:tickId,started_at:started.toISOString(),completed_at:new Date().toISOString(),claimed,succeeded,failed,remaining_due:remaining.rows[0]?.count??0};
-    } catch(error){await client.query("rollback");throw error;} finally{client.release();}
+    } catch(error){await authority.query("rollback");throw error;} finally{authority.release();}
   }
 }

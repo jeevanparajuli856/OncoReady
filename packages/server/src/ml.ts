@@ -23,6 +23,9 @@ const sha = (value:string|Buffer) => createHash("sha256").update(value).digest("
 function canonical(value:unknown):string{
   if(Array.isArray(value))return`[${value.map(canonical).join(",")}]`;
   if(value&&typeof value==="object")return`{${Object.entries(value as Record<string,unknown>).sort(([a],[b])=>a.localeCompare(b)).map(([key,child])=>`${JSON.stringify(key)}:${canonical(child)}`).join(",")}}`;
+  // Python's canonical export preserves float-ness (1.0) while JavaScript's
+  // JSON.stringify collapses it to 1. Feature snapshots are all floats.
+  if(typeof value==="number"&&Number.isInteger(value))return `${value}.0`;
   return JSON.stringify(value);
 }
 
@@ -64,6 +67,9 @@ export async function scorePriority(snapshot: Record<string, number | null>, mod
   try{JSON.parse(raw);}catch{return unavailable("artifact_malformed");}
   const validated=await loadValidated(modelPath); if(!validated)return unavailable("schema_mismatch");
   const {model,golden}=validated;
+  const trainedAt=new Date(model.training.training_timestamp).getTime();
+  if(!Number.isFinite(trainedAt))return unavailable("artifact_malformed");
+  if(now.getTime()-trainedAt>365*86_400_000)return unavailable("artifact_stale");
   let values:Array<number|null>;
   try{values=model.features.map((feature)=>{const value=snapshot[feature.name];if(value==null)return null;if(!Number.isFinite(value)||value<feature.minimum||value>feature.maximum)throw new Error("snapshot mismatch");return value;});}catch{return unavailable("snapshot_mismatch");}
   const snapshotObject=Object.fromEntries(model.features.map((feature,index)=>[feature.name,values[index]]));
