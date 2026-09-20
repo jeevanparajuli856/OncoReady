@@ -3,12 +3,19 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-database",
   "status": "COMPLETE",
-  "summary": "Converted the durable workflow schema and deterministic seed to vendor-neutral Railway PostgreSQL migrations, removed retired platform scheduling artifacts, and verified advisory-lock, bounded-claim, durable-lease, and outcome-unknown recovery behavior on PostgreSQL 17.",
+  "summary": "Verified the Railway PostgreSQL workflow foundation and upgraded the governed supportive-outreach artifact to a reproducible 12,000-case longitudinal synthetic cohort with structured missingness, temporal shift validation, calibration gates, and Python-to-TypeScript parity.",
   "files_changed": [
     "database/migrations/20260920172033_launch_workflow_core.sql",
     "database/migrations/20260920174500_seed_finals_scenario.sql",
+    "ml/MODEL_CARD.md",
+    "ml/train.py",
+    "artifacts/ml/supportive-outreach-v1/evaluation.json",
+    "artifacts/ml/supportive-outreach-v1/golden-vectors.json",
+    "artifacts/ml/supportive-outreach-v1/manifest.json",
+    "artifacts/ml/supportive-outreach-v1/model.json",
     "tests/database/launch_workflow.sql",
     "tests/database/test_migrations.py",
+    "tests/ml/test_pipeline.py",
     ".ai/tasks/LAUNCH-001/database-report.json"
   ],
   "contracts_used": [
@@ -20,9 +27,13 @@
     "passed": true,
     "commands": [
       "python3 -m pytest -q tests/database/test_migrations.py",
-      "PostgreSQL 17 scratch cluster: apply database/migrations/*.sql in timestamp order and run psql -f tests/database/launch_workflow.sql"
+      "PostgreSQL 17 scratch cluster: apply database/migrations/*.sql in timestamp order and run psql -f tests/database/launch_workflow.sql",
+      "/tmp/oncoready-ml-venv.QoDzO2/bin/python ml/train.py",
+      "/tmp/oncoready-ml-venv.QoDzO2/bin/python -m pytest -q tests/ml",
+      "npx vitest run tests/server/ml-runtime.test.ts",
+      "npm run test:server"
     ],
-    "notes": "Six migration-path and portability tests passed. A fresh PostgreSQL 17 cluster applied both migrations and passed the transactional database suite covering deterministic inert reset, immutable and consecutively versioned events, idempotency uniqueness, provider allowlists, transaction-scoped scheduler lock acquisition, bounded SKIP LOCKED claims, one active lease per resource, stale-claim recovery, outcome_unknown conversion, and reconciliation-before-retry. The optional pglast parser was unavailable, but PostgreSQL itself parsed and executed all migration and test SQL."
+    "notes": "Database evidence remains current: six migration tests and the PostgreSQL 17 transactional suite passed. The v2 artifact regenerated exactly from 12,000 synthetic encounters across 6,000 patient-disjoint identities; seven ML tests, two focused TypeScript runtime parity/fail-closed tests, and all 33 broader server/contract/FHIR tests passed. The 2,400-case future holdout achieved ROC AUC 0.7024, Brier 0.1657, log loss 0.5055, and expected calibration error 0.0163; every reviewed cadence, barrier, missingness, profile, and future-window subgroup passed. No public, restricted, or real patient dataset was downloaded or committed."
   },
   "blockers": [],
   "notes_for_next_agent": [
@@ -30,7 +41,9 @@
     "The in-process API poller should call try_scheduler_lock(scenario_id) inside its claim transaction, then use claim_scheduled_actions and claim_outbox with bounded limits. PostgreSQL due times, claims, and leases remain scheduler authority.",
     "recover_stale_claims makes unattempted expired work retryable but converts any possibly accepted provider send to outcome_unknown and marks its provider attempt reconciliation_required. Do not retry that action until provider identity, signed callback, or manual recovery establishes the outcome.",
     "The fixed finals scenario UUID remains 11111111-1111-4111-8111-111111111111. reset_finals_scenario() restores fixed seed state and the inert T-3/T-1 schedule without leaving outbox, provider-attempt, or webhook effects.",
-    "The Railway connection role owns runtime least-privilege configuration. Platform-specific client roles, extension-based schedulers, secret stores, and database-owned HTTP scheduling are not part of this target."
+    "The Railway connection role owns runtime least-privilege configuration. Platform-specific client roles, extension-based schedulers, secret stores, and database-owned HTTP scheduling are not part of this target.",
+    "The runtime artifact path remains artifacts/ml/supportive-outreach-v1 while model_version advances to supportive-outreach-2.0.0; the feature schema and portable format remain compatible with the fail-closed TypeScript loader.",
+    "ml/MODEL_CARD.md records the official public-source review and why adjacent access, communication, screening, adherence, and intervention datasets cannot truthfully supply the exact pre-treatment supportive-outreach-acceptance target."
   ],
   "database_changes": {
     "provider": "Railway PostgreSQL",

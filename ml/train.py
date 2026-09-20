@@ -28,10 +28,12 @@ from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 
 SEED = 20260920
 TRAINING_TIMESTAMP = "2026-09-20T00:00:00Z"
-MODEL_VERSION = "supportive-outreach-1.0.0"
+MODEL_VERSION = "supportive-outreach-2.0.0"
 FEATURE_SCHEMA_VERSION = "supportive-outreach-features-1"
 FORMAT_VERSION = "oncoready-lightgbm-portable-v1"
 DEFAULT_OUTPUT = Path(__file__).resolve().parents[1] / "artifacts" / "ml" / "supportive-outreach-v1"
+DEFAULT_CASE_COUNT = 12_000
+ENCOUNTERS_PER_PATIENT = 2
 
 
 @dataclass(frozen=True)
@@ -94,54 +96,137 @@ def sigmoid(value: np.ndarray | float) -> np.ndarray | float:
     return 1.0 / (1.0 + np.exp(-np.clip(value, -40.0, 40.0)))
 
 
-def generate_synthetic_rows(count: int = 1200) -> dict[str, Any]:
+def expected_calibration_error(labels: np.ndarray, probabilities: np.ndarray, bins: int = 10) -> float:
+    edges = np.linspace(0.0, 1.0, bins + 1)
+    bucket = np.clip(np.digitize(probabilities, edges[1:-1], right=True), 0, bins - 1)
+    error = 0.0
+    for bin_index in range(bins):
+        mask = bucket == bin_index
+        if mask.any():
+            error += float(mask.mean()) * abs(float(labels[mask].mean()) - float(probabilities[mask].mean()))
+    return error
+
+
+def generate_synthetic_rows(count: int = DEFAULT_CASE_COUNT) -> dict[str, Any]:
+    if count < DEFAULT_CASE_COUNT or count % ENCOUNTERS_PER_PATIENT:
+        raise ValueError(f"count must be at least {DEFAULT_CASE_COUNT} and divisible by {ENCOUNTERS_PER_PATIENT}")
+
     rng = np.random.default_rng(SEED)
     start = datetime(2024, 1, 1, tzinfo=UTC)
     values = np.empty((count, len(FEATURES)), dtype=float)
+    latent_values = np.empty_like(values)
     patient_ids: list[str] = []
     observed_at: list[datetime] = []
     outcome_at: list[datetime] = []
+    scenario_profiles: list[str] = []
+    calendar_regimes: list[str] = []
+    patient_count = count // ENCOUNTERS_PER_PATIENT
 
-    for index in range(count):
-        hours_to_treatment = float(rng.choice([24, 72, 168]) + rng.normal(0, 5))
-        transport_help = int(rng.random() < 0.24)
-        callback_requested = int(rng.random() < 0.31)
-        prior_unresolved = int(rng.integers(0, 4))
-        prior_failures = int(rng.integers(0, 4))
-        since_contact = float(rng.uniform(4, 240))
-        cutoff_hours = float(hours_to_treatment - rng.uniform(12, 48))
-        caregiver_permission = int(rng.random() < 0.55)
-        nonurgent_concern = int(rng.random() < 0.28)
-        values[index] = (
-            np.clip(hours_to_treatment, 0, 168),
-            transport_help,
-            callback_requested,
-            prior_unresolved,
-            prior_failures,
-            since_contact,
-            np.clip(cutoff_hours, -24, 168),
-            caregiver_permission,
-            nonurgent_concern,
-        )
-        feature_time = start + timedelta(hours=index * 18)
-        patient_ids.append(f"synthetic-patient-{index:04d}")
-        observed_at.append(feature_time)
-        outcome_at.append(feature_time + timedelta(hours=48))
+    profile_names = np.asarray(("routine", "access_friction", "low_contact", "caregiver_supported"))
+    for patient_index in range(patient_count):
+        patient_fraction = patient_index / max(patient_count - 1, 1)
+        profile = str(rng.choice(profile_names, p=(0.46, 0.22, 0.19, 0.13)))
+        if patient_fraction < 0.35:
+            regime = "baseline"
+        elif patient_fraction < 0.60:
+            regime = "transport_disruption"
+        elif patient_fraction < 0.80:
+            regime = "recovery"
+        else:
+            regime = "future_channel_shift"
+
+        patient_access_friction = rng.beta(2.0, 5.0) + (0.32 if profile == "access_friction" else 0.0)
+        patient_contact_friction = rng.beta(2.2, 4.8) + (0.34 if profile == "low_contact" else 0.0)
+        caregiver_support = rng.beta(4.0, 2.5) + (0.25 if profile == "caregiver_supported" else 0.0)
+        continuity_complexity = rng.beta(2.1, 3.5)
+        patient_id = f"synthetic-patient-{patient_index:05d}"
+        patient_start = start + timedelta(hours=patient_index * 3)
+
+        for encounter_index in range(ENCOUNTERS_PER_PATIENT):
+            index = patient_index * ENCOUNTERS_PER_PATIENT + encounter_index
+            cadence = (168, 72, 24)[(patient_index + encounter_index) % 3]
+            hours_to_treatment = float(np.clip(cadence + rng.normal(0, 7), 0, 168))
+            disruption = 0.12 if regime == "transport_disruption" else 0.0
+            transport_probability = np.clip(0.08 + 0.48 * patient_access_friction + disruption, 0.03, 0.86)
+            callback_probability = np.clip(
+                0.10 + 0.42 * patient_contact_friction + 0.10 * continuity_complexity,
+                0.03,
+                0.82,
+            )
+            transport_help = int(rng.random() < transport_probability)
+            callback_requested = int(rng.random() < callback_probability)
+            prior_unresolved = int(np.clip(rng.poisson(0.4 + 2.1 * continuity_complexity), 0, 6))
+            prior_failures = int(np.clip(rng.poisson(0.25 + 2.0 * patient_contact_friction), 0, 5))
+            since_contact = float(np.clip(rng.gamma(2.1, 37.0 + 20.0 * patient_contact_friction), 0, 336))
+            cutoff_hours = float(np.clip(hours_to_treatment - rng.uniform(10, 58), -24, 168))
+            caregiver_permission = int(rng.random() < np.clip(0.20 + 0.64 * caregiver_support, 0.05, 0.92))
+            nonurgent_concern = int(rng.random() < np.clip(0.10 + 0.36 * continuity_complexity, 0.04, 0.64))
+            latent_values[index] = (
+                hours_to_treatment,
+                transport_help,
+                callback_requested,
+                prior_unresolved,
+                prior_failures,
+                since_contact,
+                cutoff_hours,
+                caregiver_permission,
+                nonurgent_concern,
+            )
+            values[index] = latent_values[index]
+
+            # Missingness is structured and feature-time safe. Explicit barrier
+            # fields stay observed because deterministic workflow rules, not the
+            # model, must always act on those declarations.
+            missing_probabilities = {
+                3: 0.025 + 0.035 * continuity_complexity,
+                4: 0.035 + 0.050 * patient_contact_friction,
+                5: 0.055 + 0.090 * patient_contact_friction + (0.035 if regime == "future_channel_shift" else 0.0),
+                6: 0.050 + (0.085 if not transport_help else 0.015) + disruption,
+                7: 0.055 + 0.100 * (1.0 - min(caregiver_support, 1.0)),
+                8: 0.020,
+            }
+            for feature_index, probability in missing_probabilities.items():
+                if rng.random() < probability:
+                    values[index, feature_index] = np.nan
+
+            feature_time = patient_start + timedelta(hours=encounter_index)
+            patient_ids.append(patient_id)
+            observed_at.append(feature_time)
+            outcome_at.append(feature_time + timedelta(hours=float(rng.uniform(24, 72))))
+            scenario_profiles.append(profile)
+            calendar_regimes.append(regime)
 
     # Synthetic propensity for accepting optional supportive outreach. This is
     # not a clinical outcome, treatment recommendation, or eligibility label.
+    # The regime and interaction terms create a deliberately imperfect future
+    # shift so the chronological holdout tests more than IID interpolation.
+    profile_offset = np.asarray(
+        [
+            {"routine": 0.0, "access_friction": 0.18, "low_contact": -0.22, "caregiver_supported": 0.12}[profile]
+            for profile in scenario_profiles
+        ]
+    )
+    regime_offset = np.asarray(
+        [
+            {"baseline": 0.0, "transport_disruption": 0.16, "recovery": -0.08, "future_channel_shift": -0.18}[regime]
+            for regime in calendar_regimes
+        ]
+    )
     z = (
-        -1.8
-        + 0.85 * values[:, 1]
-        + 0.7 * values[:, 2]
-        + 0.24 * values[:, 3]
-        + 0.34 * values[:, 4]
-        + 0.004 * values[:, 5]
-        - 0.006 * values[:, 0]
-        - 0.004 * values[:, 6]
-        + 0.38 * values[:, 8]
-        - 0.18 * values[:, 7]
-        + rng.normal(0, 0.25, count)
+        -1.95
+        + 0.92 * latent_values[:, 1]
+        + 0.78 * latent_values[:, 2]
+        + 0.23 * latent_values[:, 3]
+        + 0.31 * latent_values[:, 4]
+        + 0.0038 * latent_values[:, 5]
+        - 0.0055 * latent_values[:, 0]
+        - 0.0035 * latent_values[:, 6]
+        + 0.34 * latent_values[:, 8]
+        - 0.16 * latent_values[:, 7]
+        + 0.26 * latent_values[:, 1] * latent_values[:, 2]
+        + profile_offset
+        + regime_offset
+        + rng.normal(0, 0.42, count)
     )
     probability = sigmoid(z)
     labels = rng.binomial(1, probability).astype(int)
@@ -151,17 +236,24 @@ def generate_synthetic_rows(count: int = 1200) -> dict[str, Any]:
         "patient_ids": patient_ids,
         "feature_observed_at": observed_at,
         "outcome_observed_at": outcome_at,
+        "scenario_profiles": np.asarray(scenario_profiles),
+        "calendar_regimes": np.asarray(calendar_regimes),
     }
 
 
 def partition_rows(data: dict[str, Any]) -> dict[str, np.ndarray]:
-    count = len(data["labels"])
-    train_end = int(count * 0.60)
-    calibration_end = int(count * 0.80)
+    patient_ids = np.asarray(data["patient_ids"])
+    ordered_patients = list(dict.fromkeys(data["patient_ids"]))
+    train_end = int(len(ordered_patients) * 0.60)
+    calibration_end = int(len(ordered_patients) * 0.80)
+    groups = {
+        "train": set(ordered_patients[:train_end]),
+        "calibration": set(ordered_patients[train_end:calibration_end]),
+        "test": set(ordered_patients[calibration_end:]),
+    }
     return {
-        "train": np.arange(0, train_end),
-        "calibration": np.arange(train_end, calibration_end),
-        "test": np.arange(calibration_end, count),
+        name: np.flatnonzero(np.isin(patient_ids, list(patient_group)))
+        for name, patient_group in groups.items()
     }
 
 
@@ -210,7 +302,7 @@ def build_artifacts(output: Path) -> dict[str, str]:
     model.fit(x[split["train"]], y[split["train"]], feature_name=FEATURE_NAMES)
 
     calibration_margin = model.booster_.predict(x[split["calibration"]], raw_score=True)
-    calibrator = LogisticRegression(C=1_000_000, solver="lbfgs", random_state=SEED)
+    calibrator = LogisticRegression(C=100, solver="liblinear", random_state=SEED)
     calibrator.fit(calibration_margin.reshape(-1, 1), y[split["calibration"]])
     coefficient = float(calibrator.coef_[0, 0])
     intercept = float(calibrator.intercept_[0])
@@ -233,27 +325,71 @@ def build_artifacts(output: Path) -> dict[str, str]:
         for feature_time, outcome_time in zip(data["feature_observed_at"], data["outcome_observed_at"], strict=True)
     )
     leakage_names = sorted(set(FEATURE_NAMES) & DISALLOWED_LEAKAGE_COLUMNS)
+    time_ranges = {
+        name: {
+            "first_feature_at": min(data["feature_observed_at"][int(index)] for index in indexes).isoformat().replace("+00:00", "Z"),
+            "last_feature_at": max(data["feature_observed_at"][int(index)] for index in indexes).isoformat().replace("+00:00", "Z"),
+        }
+        for name, indexes in split.items()
+    }
+    chronological_split = (
+        max(data["feature_observed_at"][int(index)] for index in split["train"])
+        < min(data["feature_observed_at"][int(index)] for index in split["calibration"])
+        and max(data["feature_observed_at"][int(index)] for index in split["calibration"])
+        < min(data["feature_observed_at"][int(index)] for index in split["test"])
+    )
 
     cadence = x[split["test"], 0]
+    test_missing = np.isnan(x[split["test"]]).any(axis=1)
+    test_profiles = data["scenario_profiles"][split["test"]]
+    temporal_midpoint = len(test_labels) // 2
+    early_future = np.zeros(len(test_labels), dtype=bool)
+    early_future[:temporal_midpoint] = True
     subgroup_masks = {
         "t_minus_1": cadence <= 48,
         "t_minus_3": (cadence > 48) & (cadence <= 120),
         "t_minus_7": cadence > 120,
         "explicit_barrier": (x[split["test"], 1] == 1) | (x[split["test"], 2] == 1),
         "no_explicit_barrier": (x[split["test"], 1] == 0) & (x[split["test"], 2] == 0),
+        "any_missing_feature": test_missing,
+        "complete_case": ~test_missing,
+        "access_friction_profile": test_profiles == "access_friction",
+        "low_contact_profile": test_profiles == "low_contact",
+        "future_early": early_future,
+        "future_late": ~early_future,
     }
     subgroup_metrics: dict[str, Any] = {}
     for name, mask in subgroup_masks.items():
         subgroup_y = test_labels[mask]
         subgroup_probability = test_probability[mask]
+        subgroup_brier = float(brier_score_loss(subgroup_y, subgroup_probability))
+        subgroup_ece = expected_calibration_error(subgroup_y, subgroup_probability)
         subgroup_metrics[name] = {
             "count": int(mask.sum()),
             "positive_rate": float(subgroup_y.mean()),
             "mean_probability": float(subgroup_probability.mean()),
-            "brier_score": float(brier_score_loss(subgroup_y, subgroup_probability)),
+            "brier_score": subgroup_brier,
+            "expected_calibration_error": subgroup_ece,
             "roc_auc": float(roc_auc_score(subgroup_y, subgroup_probability)) if len(np.unique(subgroup_y)) == 2 else None,
-            "passed": int(mask.sum()) >= 50 and float(brier_score_loss(subgroup_y, subgroup_probability)) <= 0.25,
+            "passed": int(mask.sum()) >= 100 and subgroup_brier <= 0.25 and subgroup_ece <= 0.10,
         }
+
+    feature_missingness = {
+        feature.name: {
+            "count": int(np.isnan(x[:, feature_index]).sum()),
+            "rate": float(np.isnan(x[:, feature_index]).mean()),
+        }
+        for feature_index, feature in enumerate(FEATURES)
+    }
+    profile_counts = {
+        name: int((data["scenario_profiles"] == name).sum())
+        for name in sorted(set(data["scenario_profiles"].tolist()))
+    }
+    regime_counts = {
+        name: int((data["calendar_regimes"] == name).sum())
+        for name in sorted(set(data["calendar_regimes"].tolist()))
+    }
+    overall_ece = expected_calibration_error(test_labels, test_probability)
 
     evaluation = {
         "schema_version": "1.0",
@@ -262,9 +398,18 @@ def build_artifacts(output: Path) -> dict[str, str]:
             "kind": "deterministic_synthetic_supportive_outreach",
             "generator_seed": SEED,
             "row_count": len(y),
+            "patient_count": len(set(data["patient_ids"])),
+            "encounters_per_patient": ENCOUNTERS_PER_PATIENT,
             "contains_real_patient_data": False,
             "partition_policy": "chronological_and_patient_disjoint",
             "partitions": {name: int(len(indexes)) for name, indexes in split.items()},
+            "scenario_profile_counts": profile_counts,
+            "calendar_regime_counts": regime_counts,
+            "missingness": {
+                "overall_cell_rate": float(np.isnan(x).mean()),
+                "rows_with_any_missing": int(np.isnan(x).any(axis=1).sum()),
+                "by_feature": feature_missingness,
+            },
         },
         "purpose": "staff_only_optional_supportive_outreach_ordering",
         "prohibited_uses": [
@@ -279,20 +424,35 @@ def build_artifacts(output: Path) -> dict[str, str]:
             "roc_auc": float(roc_auc_score(test_labels, test_probability)),
             "brier_score": float(brier_score_loss(test_labels, test_probability)),
             "log_loss": float(log_loss(test_labels, test_probability)),
+            "expected_calibration_error": overall_ece,
         },
         "acceptance_gates": {
             "minimum_roc_auc": 0.65,
             "maximum_brier_score": 0.25,
-            "minimum_subgroup_rows": 50,
+            "maximum_expected_calibration_error": 0.08,
+            "minimum_subgroup_rows": 100,
             "maximum_subgroup_brier_score": 0.25,
+            "maximum_subgroup_expected_calibration_error": 0.10,
             "patient_overlap_must_be_zero": True,
             "feature_timestamp_violations_must_be_zero": True,
+            "splits_must_be_strictly_chronological": True,
         },
         "leakage_review": {
             "patient_overlap": overlap,
             "feature_timestamp_violations": int(timestamp_violations),
             "disallowed_feature_names_present": leakage_names,
-            "passed": all(value == 0 for value in overlap.values()) and timestamp_violations == 0 and not leakage_names,
+            "passed": (
+                all(value == 0 for value in overlap.values())
+                and timestamp_violations == 0
+                and not leakage_names
+                and chronological_split
+            ),
+        },
+        "temporal_validation": {
+            "strictly_chronological": chronological_split,
+            "time_ranges": time_ranges,
+            "future_holdout_regime": sorted(set(data["calendar_regimes"][split["test"]].tolist())),
+            "passed": chronological_split,
         },
         "subgroups": subgroup_metrics,
     }
@@ -300,6 +460,8 @@ def build_artifacts(output: Path) -> dict[str, str]:
         raise RuntimeError("synthetic held-out AUC failed the reviewed gate")
     if evaluation["metrics"]["brier_score"] > evaluation["acceptance_gates"]["maximum_brier_score"]:
         raise RuntimeError("synthetic held-out Brier score failed the reviewed gate")
+    if evaluation["metrics"]["expected_calibration_error"] > evaluation["acceptance_gates"]["maximum_expected_calibration_error"]:
+        raise RuntimeError("synthetic held-out calibration error failed the reviewed gate")
     if not evaluation["leakage_review"]["passed"]:
         raise RuntimeError("leakage review failed")
     if not all(group["passed"] for group in subgroup_metrics.values()):
@@ -357,6 +519,9 @@ def build_artifacts(output: Path) -> dict[str, str]:
                 "shap": shap.__version__,
             },
             "data_kind": "synthetic",
+            "row_count": len(y),
+            "patient_count": len(set(data["patient_ids"])),
+            "partition_policy": "chronological_and_patient_disjoint",
         },
         "evaluation_manifest_sha256": evaluation_hash,
     }
@@ -370,14 +535,26 @@ def build_artifacts(output: Path) -> dict[str, str]:
 
     model_hash = write_json(output / "model.json", model_artifact)
 
-    vector_indexes = [int(split["test"][index]) for index in (0, 17, 53, 101, 173, 239)]
+    test_indexes = [int(index) for index in split["test"]]
+    complete_indexes = [index for index in test_indexes if not np.isnan(x[index]).any()]
+    missing_indexes = [index for index in test_indexes if np.isnan(x[index]).any()]
+    if len(complete_indexes) < 3 or len(missing_indexes) < 3:
+        raise RuntimeError("golden vectors require both complete and missing held-out cases")
+    vector_indexes = [
+        complete_indexes[0],
+        missing_indexes[0],
+        complete_indexes[len(complete_indexes) // 2],
+        missing_indexes[len(missing_indexes) // 2],
+        complete_indexes[-1],
+        missing_indexes[-1],
+    ]
     golden_rows = x[vector_indexes]
     shap_values = np.asarray(explainer(golden_rows).values, dtype=float)
     if shap_values.ndim == 3:
         shap_values = shap_values[:, :, -1]
     golden_vectors: list[dict[str, Any]] = []
     for vector_index, row, contributions in zip(vector_indexes, golden_rows, shap_values, strict=True):
-        feature_values = [float(value) for value in row]
+        feature_values = [None if np.isnan(value) else float(value) for value in row]
         raw_margin = portable_raw_margin(model_artifact, feature_values)
         calibrated = float(sigmoid(coefficient * raw_margin + intercept))
         if not math.isclose(expected_value + float(np.sum(contributions)), raw_margin, rel_tol=0.0, abs_tol=1e-7):
