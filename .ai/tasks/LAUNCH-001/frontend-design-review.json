@@ -5,7 +5,7 @@
   "status": "APPROVED",
   "summary": "The Phase A design is compatible with LAUNCH-001's approved requirements, Vercel Hobby plus Supabase Free/Cron architecture, governed role-projection contracts, high-risk trust boundaries, established Clinical Glass design system, and required responsive, accessible, reduced-motion, provider-recovery, evidence, and privacy states. The two reported contract blockers were reconciled before approval: staff/transport projections now expose durable provider reconciliation state, and a revoked caregiver projection omits transport logistics at the server boundary.",
   "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
-  "reviewed_design_sha256": "36daaf6fac263dcb3e68090cb59f6f96b137e2e749435655abd8d0424e4656d7",
+  "reviewed_design_sha256": "aaeb50197c4272c89f0996f606bdee3a24a12885b33573b20ca39faeb26c0101",
   "checks": {
     "requirements": "PASS",
     "architecture_and_contracts": "PASS",
