@@ -103,21 +103,11 @@
     "Add launch status semantics: mint only for verified resolved facts; amber for unresolved; rose for failure/invalid/destructive warning; neutral ink/amber for uncertainty; provider callback and deterministic replay receive distinct provenance labels.",
     "Preserve the existing public/patient/staff/caregiver/system density, color, typography, radius, focus, motion, and scroll-performance rules; Phase A changes only this report, and the extension may be incorporated into docs/design/DESIGN_SYSTEM.md during Phase B after the digest gate without changing direction."
   ],
-  "blockers": [
-    {
-      "type": "CONTRACT_CHANGE_REQUIRED",
-      "description": "Architecture and acceptance evidence require a durable provider outcome-unknown state with reconciliation/manual recovery, but CommunicationSummary and TransportStatus expose only definitive queued/sent/delivered/failed and transport lifecycle values. The frontend cannot truthfully restore or render persistent outcome-unknown state after refresh from the current role projections.",
-      "suggestion": "Have the orchestrator reconcile the governed contract before Phase B by exposing an explicit outcome_unknown/reconciliation-required field or state, its last-known attempt/provenance, and the permitted recovery action in the relevant staff/transport projection. Do not infer provider success or enable blind resend client-side."
-    },
-    {
-      "type": "CONTRACT_CHANGE_REQUIRED",
-      "description": "CaregiverProjection always requires a populated transport object even when permission.transport_logistics_allowed is false, while architecture makes caregiver revocation acceptance-critical and requires unauthorized logistics to be excluded server-side rather than hidden in React.",
-      "suggestion": "Make the caregiver transport payload conditionally absent/minimized when permission is false, or define a separate privacy-locked projection variant that contains no logistics fields. Frontend will render the no-sharing state and must not receive or cache revoked logistics."
-    }
-  ],
+  "blockers": [],
   "notes_for_codex": [
     "Phase A inspected the current landing, gateway, shared chrome/dock, patient readiness and acknowledgment, staff shell/queue/case, caregiver, graph, timeline, runtime tokens, OpenAPI projection/command/evidence schemas, event schemas, architecture, feature acceptance criteria, and existing design-system evidence. No production frontend code or design-system document was changed.",
-    "Phase B must begin only after the orchestrator performs the exact digest-bound compatibility review, reconciles the two contract blockers or explicitly changes upstream requirements, syncs the frontend worktree, and the frontend design gate passes.",
+    "The former contract blockers are resolved upstream: provider-facing staff/transport projections expose outcome_unknown plus ProviderReconciliationSummary state, attempt provenance, and permitted_recovery; CaregiverProjection uses permission-granted and permission-revoked variants so transport is absent when transport_logistics_allowed is false.",
+    "Phase B must begin only after the orchestrator performs a fresh exact digest-bound compatibility review of this amended report, syncs the frontend worktree, and the frontend design gate passes.",
     "The access buttons are local route selectors, not OAuth/social sign-in. They must not collect credentials, load provider SDKs, make identity-provider requests, or imply verified identity; invalid local route/session state returns to /access before role data mounts.",
     "Remove all public patient/workspace proof rather than visually hiding it, and verify absence across DOM, accessibility tree, page metadata, browser find, and built static output. Pricing must come from one configuration and use only Request a pilot / Talk to us actions.",
     "Replace the reducer/localStorage business authority completely for governed launch state. Browser storage may retain only reduced-motion or safe presentation preferences and a clearly unsent non-sensitive draft; role projections must be evicted on route/session change to prevent cross-role flash.",
