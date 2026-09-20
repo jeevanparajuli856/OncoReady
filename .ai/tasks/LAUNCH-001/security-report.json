@@ -2,36 +2,36 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "reviewer": "codex-security",
-  "reviewed_commit": "d6608bfa2464a477a198c5258a2a7c5ea9a453f5",
-  "status": "CHANGES_REQUIRED",
-  "summary": "The exact verified launch revision correctly limits anonymous callers to a fixed illustrative scenario and database-local effects; protects reset, communication initiation, and manual tick routes with separate server-side credentials; validates provider signatures over raw bounded bodies; deduplicates and orders callbacks; parameterizes SQL; minimizes caregiver data; fails ML closed; excludes secrets from the browser bundle and tracked files; and has zero reported production dependency vulnerabilities. Approval is withheld because the scheduled-action path can create provider outbox work without an operator-authenticated communication authorization, public PostgreSQL URLs accept sslmode=disable, and the consequential manual-tick credential has no enforced minimum strength.",
+  "reviewed_commit": "e1545fe1f965a539e2ecf6cbd7c89364004d1122",
+  "status": "APPROVED",
+  "summary": "Focused re-review of the three prior blockers approves the exact verified revision. Due scheduled cadence is retained as inert internal state and is failed without creating provider outbox work; dispatchable outbox rows must carry operator_control provenance, match their stable communication identity, and resolve to the persisted communication.queued event before the network boundary. Public PostgreSQL URLs now reject disable, allow, prefer, missing, duplicate, and unknown sslmode values while accepting Railway-private/local connections and require/verify-ca/verify-full. CRON_SECRET now fails closed unless it contains at least 32 bytes and at least 128 estimated entropy bits. The independent remediation suite passed 3/3, and verification-report.json records PASSED evidence for implementation commit 7b1fc2aa8c7c2225fd3be032581c4a2521f3ef72. No unresolved blocking security finding remains.",
   "findings": [
     {
-      "severity": "high",
+      "severity": "info",
       "category": "external-action authorization",
       "file": "packages/server/src/postgres-repository.ts",
-      "description": "runTick materializes every due scheduled_action directly into the provider outbox at lines 258-274 without verifying or persisting authorization_source=operator_control. The deterministic reset seeds two such SMS schedules in database/migrations/20260920172033_launch_workflow_core.sql even though reset records external_actions_suppressed=true. This bypasses the architecture rule that provider dispatch authorization originates only in an operator-authenticated communication command.",
-      "impact": "After the global and SMS switches are enabled, a due or overdue reset-seeded action can send to the allowlisted real recipient solely because the scheduler is running; there is no auditable per-action operator communication authorization and reset can indirectly lead to a later external effect.",
-      "remediation": "Keep reset-created cadence records inert. Require every outbox row capable of provider dispatch to reference an authorization record produced by POST /api/v1/communications/{sms|voice}, persist and constrain authorization_source=operator_control at the database boundary, and make scheduled materialization reject or retain unauthorized work without crossing the provider boundary. Add integration/database tests proving reset and due schedules cannot produce dispatchable outbox work until an operator-authenticated communication command authorizes the exact stable action.",
-      "blocking": true
+      "description": "Resolved: runTick never materializes scheduled cadence into outbox work and rejects unauthorized or forged legacy rows before provider dispatch. Authorized rows require operator_control, communication_id equal to stable_action_id, and a matching persisted communication.queued event for the same event, scenario, aggregate, and channel.",
+      "impact": "Reset-seeded schedules and public database-local commands cannot cross the provider boundary; only the operator-authenticated communication path creates dispatchable work.",
+      "remediation": "None required for this task; retain the focused scheduler authorization regression tests.",
+      "blocking": false
     },
     {
-      "severity": "medium",
+      "severity": "info",
       "category": "database transport security",
       "file": "packages/server/src/config.ts",
-      "description": "assertDatabaseUrl treats the mere presence of an sslmode query parameter as sufficient for a non-local, non-Railway-private PostgreSQL host. A public URL with sslmode=disable is accepted even though the error contract says public connections must require TLS.",
-      "impact": "A deployment misconfiguration can send database credentials and controlled workflow data over a non-TLS public connection while health/config validation reports success.",
-      "remediation": "Reject sslmode values that do not require certificate-protected transport (including disable, allow, and prefer), or construct the pg client with an explicit reviewed TLS policy for every non-local, non-.railway.internal host. Add positive private-Railway/local cases and a negative sslmode=disable test.",
-      "blocking": true
+      "description": "Resolved: non-local, non-Railway-private PostgreSQL URLs must declare exactly one sslmode in require, verify-ca, or verify-full; disable, allow, prefer, missing, duplicate, and unknown modes fail closed.",
+      "impact": "The runtime no longer accepts a public database URL that explicitly disables or weakens TLS.",
+      "remediation": "None required for this task; keep Railway PostgreSQL private as documented.",
+      "blocking": false
     },
     {
-      "severity": "medium",
+      "severity": "info",
       "category": "privileged endpoint authentication",
-      "file": "packages/server/src/http.ts",
-      "description": "The manual scheduler endpoint rejects an empty CRON_SECRET but accepts any non-empty value; unlike ONCOREADY_OPERATOR_TOKEN, no minimum strength is enforced even though project setup requires at least 32 random bytes.",
-      "impact": "A weak or accidentally truncated deployment value can be guessed to invoke a consequential scheduler cycle, which may process provider work once external actions are enabled.",
-      "remediation": "Fail closed unless CRON_SECRET meets the same reviewed minimum entropy/length policy as the operator token, validate it during privileged-route/runtime preflight, and add tests showing short values return dependency_unavailable rather than authenticating.",
-      "blocking": true
+      "file": "packages/server/src/config.ts",
+      "description": "Resolved: runtime and manual-tick preflight require CRON_SECRET to contain at least 32 bytes and at least 128 estimated entropy bits before constant-time bearer comparison.",
+      "impact": "Short, empty, repetitive, or accidentally truncated scheduler credentials cannot authenticate or leave runtime health appearing ready.",
+      "remediation": "None required for this task; generate and store the secret through Railway's sealed server variables.",
+      "blocking": false
     }
   ]
 }
