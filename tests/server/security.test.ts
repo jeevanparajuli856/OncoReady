@@ -1,19 +1,29 @@
 import {describe,expect,it} from "vitest";
 import {createHttpHandler} from "../../packages/server/src/http.js";
-import {assertRuntimeConfig,loadConfig} from "../../packages/server/src/config.js";
+import {assertDatabaseUrl,assertRuntimeConfig,loadConfig} from "../../packages/server/src/config.js";
 import {MemoryWorkflowRepository,createSeedProjections} from "../../packages/server/src/repository.js";
 
 const scenario="11111111-1111-4111-8111-111111111111" as const;
 const operatorToken="operator-control-token-000000000000";
-const enabledConfig=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_OPERATOR_TOKEN:operatorToken,ONCOREADY_ALLOWED_ORIGINS:"https://finals.example",ONCOREADY_PUBLIC_ORIGIN:"https://finals.example",CRON_SECRET:"cron-secret",EXTERNAL_ACTIONS_ENABLED:"false",TWILIO_SMS_ENABLED:"false",ELEVENLABS_VOICE_ENABLED:"false"});
-const disabledConfig=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"false",ONCOREADY_OPERATOR_TOKEN:operatorToken,CRON_SECRET:"cron-secret"});
+const cronSecret="R8vK3xQ7mP2sT9wL4cN6hF1yD5jB0zG!";
+const enabledConfig=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_OPERATOR_TOKEN:operatorToken,ONCOREADY_ALLOWED_ORIGINS:"https://finals.example",ONCOREADY_PUBLIC_ORIGIN:"https://finals.example",CRON_SECRET:cronSecret,EXTERNAL_ACTIONS_ENABLED:"false",TWILIO_SMS_ENABLED:"false",ELEVENLABS_VOICE_ENABLED:"false"});
+const disabledConfig=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"false",ONCOREADY_OPERATOR_TOKEN:operatorToken,CRON_SECRET:cronSecret});
 
 const readinessBody=(overrides:Record<string,unknown>={})=>({scenario_id:scenario,actor_role:"patient",idempotency_key:"public-readiness-001",expected_aggregate_version:0,channel:"web",transport_status:"needs_help",clinical_concern_verbatim:"Mild tingling",callback_requested:true,...overrides});
 
 describe("HTTP trust boundary",()=>{
   it("accepts Railway private-network PostgreSQL without a public TLS query flag",()=>{
-    const privateConfig=loadConfig({DATABASE_URL:"postgresql://user:secret@postgres.railway.internal:5432/railway"});
+    const privateConfig=loadConfig({DATABASE_URL:"postgresql://user:secret@postgres.railway.internal:5432/railway",CRON_SECRET:cronSecret});
     expect(()=>assertRuntimeConfig(privateConfig)).not.toThrow();
+  });
+
+  it("requires a TLS-enforcing sslmode for public PostgreSQL hosts",()=>{
+    for(const mode of ["disable","allow","prefer"]){
+      expect(()=>assertDatabaseUrl(`postgresql://user:secret@public.example:5432/oncoready?sslmode=${mode}`)).toThrowError(expect.objectContaining({status:503,code:"dependency_unavailable"}));
+    }
+    expect(()=>assertDatabaseUrl("postgresql://user:secret@public.example:5432/oncoready?sslmode=require")).not.toThrow();
+    expect(()=>assertDatabaseUrl("postgresql://user:secret@public.example:5432/oncoready?sslmode=verify-full")).not.toThrow();
+    expect(()=>assertDatabaseUrl("postgresql://user:secret@localhost:5432/oncoready?sslmode=disable")).not.toThrow();
   });
 
   it("exposes database-backed health independently of demo enablement",async()=>{
@@ -92,10 +102,15 @@ describe("HTTP trust boundary",()=>{
     expect((await handler(new Request("https://finals.example/api/v1/scenarios/finals?role=patient",{headers:{origin:"https://evil.example"}}))).status).toBe(403);
   });
 
-  it("requires CRON_SECRET and remains scheduler-provider agnostic",async()=>{
+  it("requires a strong CRON_SECRET and remains scheduler-provider agnostic",async()=>{
+    const weakHandler=createHttpHandler(new MemoryWorkflowRepository(createSeedProjections(scenario)),loadConfig({DATABASE_URL:"postgres://localhost/oncoready",CRON_SECRET:"short-secret"}));
+    const weak=await weakHandler(new Request("https://finals.example/api/v1/operations/tick?max_items=25",{headers:{authorization:"Bearer short-secret"}}));
+    expect(weak.status).toBe(503);expect(await weak.json()).toMatchObject({code:"dependency_unavailable"});
+    expect(()=>assertRuntimeConfig(loadConfig({DATABASE_URL:"postgres://localhost/oncoready",CRON_SECRET:"short-secret"}))).toThrowError(expect.objectContaining({status:503,code:"dependency_unavailable"}));
+    expect(()=>assertRuntimeConfig(loadConfig({DATABASE_URL:"postgres://localhost/oncoready",CRON_SECRET:"0".repeat(64)}))).toThrowError(expect.objectContaining({status:503,code:"dependency_unavailable"}));
     const handler=createHttpHandler(new MemoryWorkflowRepository(createSeedProjections(scenario)),enabledConfig);
     expect((await handler(new Request("https://finals.example/api/v1/operations/tick?max_items=25"))).status).toBe(401);
-    const accepted=await handler(new Request("https://finals.example/api/v1/operations/tick?max_items=25",{headers:{authorization:"Bearer cron-secret"}}));
+    const accepted=await handler(new Request("https://finals.example/api/v1/operations/tick?max_items=25",{headers:{authorization:`Bearer ${cronSecret}`}}));
     expect(accepted.status).toBe(200);expect(await accepted.json()).toMatchObject({claimed:0,succeeded:0,failed:0});
   });
 });

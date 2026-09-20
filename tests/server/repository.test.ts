@@ -1,10 +1,11 @@
-import {describe,expect,it} from "vitest";
+import {describe,expect,it,vi} from "vitest";
 import {MemoryWorkflowRepository,createSeedProjections} from "../../packages/server/src/repository.js";
 import {WorkflowApplication} from "../../packages/server/src/application.js";
 import {loadConfig} from "../../packages/server/src/config.js";
+import type {OutboxItem} from "../../packages/server/src/types.js";
 
 const scenario="11111111-1111-4111-8111-111111111111" as const;
-const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_OPERATOR_TOKEN:"operator-control-token-000000000000",CRON_SECRET:"cron"});
+const config=loadConfig({DATABASE_URL:"postgres://localhost/oncoready",ONCOREADY_PUBLIC_DEMO_ENABLED:"true",ONCOREADY_OPERATOR_TOKEN:"operator-control-token-000000000000",CRON_SECRET:"Q6mT2xR9vK4pL8sN3wF7dH1yC5jB0zG!"});
 
 describe("application transaction semantics",()=>{
   it("returns the prior semantic result for a repeated idempotency key",async()=>{
@@ -66,5 +67,22 @@ describe("application transaction semantics",()=>{
     }))).rejects.toMatchObject({status:403,code:"forbidden_action"});
     expect(repo.events).toHaveLength(0);
     expect(repo.outbox).toHaveLength(0);
+  });
+
+  it("never dispatches a provider item without persisted operator authorization",async()=>{
+    const repo=new MemoryWorkflowRepository(createSeedProjections(scenario));
+    repo.outbox.push({outbox_id:"unauthorized-outbox",scenario_id:scenario,action_type:"sms",stable_action_id:"unauthorized-action",payload:{purpose:"readiness"},attempts:0});
+    const dispatch=vi.fn(async(_item:OutboxItem)=>({providerReference:"must-not-exist"}));
+    await expect(repo.runTick(25,dispatch)).resolves.toMatchObject({claimed:1,succeeded:0,failed:1});
+    expect(dispatch).not.toHaveBeenCalled();
+  });
+
+  it("dispatches only outbox work created with operator authorization provenance",async()=>{
+    const repo=new MemoryWorkflowRepository(createSeedProjections(scenario));const app=new WorkflowApplication(repo,config);
+    await app.communication("sms",{scenario_id:scenario,actor_role:"staff",idempotency_key:"operator-dispatch-001",expected_aggregate_version:0,purpose:"readiness",destination_alias:"finals_allowlisted_phone"});
+    const dispatch=vi.fn(async(_item:OutboxItem)=>({providerReference:"provider-reference-001"}));
+    await expect(repo.runTick(25,dispatch)).resolves.toMatchObject({claimed:1,succeeded:1,failed:0});
+    expect(dispatch).toHaveBeenCalledTimes(1);
+    expect(dispatch.mock.calls[0]?.[0].payload.authorization_source).toBe("operator_control");
   });
 });

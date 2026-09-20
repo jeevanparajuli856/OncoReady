@@ -84,6 +84,15 @@ function integerInRange(value: string | undefined, fallback: number, minimum: nu
 
 export function assertRuntimeConfig(config: ServerConfig): void {
   assertDatabaseUrl(config.databaseUrl);
+  assertControlSecret(config.cronSecret,"CRON_SECRET");
+}
+
+export function assertControlSecret(value:string,name:string):void{
+  const bytes=Buffer.from(value,"utf8");
+  const frequencies=new Map<number,number>();
+  for(const byte of bytes)frequencies.set(byte,(frequencies.get(byte)??0)+1);
+  const entropyBits=[...frequencies.values()].reduce((total,count)=>{const probability=count/bytes.length;return total-probability*Math.log2(probability);},0)*bytes.length;
+  if(bytes.length<32||entropyBits<128)throw new AppError(503,"dependency_unavailable",`${name} must contain at least 32 high-entropy bytes.`,true);
 }
 
 export function assertDatabaseUrl(value: string): void {
@@ -92,7 +101,11 @@ export function assertDatabaseUrl(value: string): void {
   try{databaseUrl=new URL(value);}catch{throw new AppError(503,"dependency_unavailable","Database connection configuration is invalid.",true);}
   if(!["postgres:","postgresql:"].includes(databaseUrl.protocol))throw new AppError(503,"dependency_unavailable","Database connection must use PostgreSQL.",true);
   const privateRailwayHost = databaseUrl.hostname.endsWith(".railway.internal");
-  if(!["localhost","127.0.0.1","::1","[::1]"].includes(databaseUrl.hostname)&&!privateRailwayHost&&!databaseUrl.searchParams.get("sslmode"))throw new AppError(503,"dependency_unavailable","Public database connections must explicitly require TLS.",true);
+  const localHost=["localhost","127.0.0.1","::1","[::1]"].includes(databaseUrl.hostname);
+  if(!localHost&&!privateRailwayHost){
+    const modes=databaseUrl.searchParams.getAll("sslmode").map((mode)=>mode.toLowerCase());
+    if(modes.length!==1||!["require","verify-ca","verify-full"].includes(modes[0]!))throw new AppError(503,"dependency_unavailable","Public database connections must explicitly require TLS.",true);
+  }
 }
 
 export function assertProviderConfig(config: ServerConfig, provider: "sms" | "voice"): void {
