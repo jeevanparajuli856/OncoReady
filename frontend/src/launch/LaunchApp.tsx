@@ -148,8 +148,8 @@ const LaunchHeader: React.FC<{
       <button className="launch-brand" onClick={() => navigate('/')} aria-label="OncoReady home"><Logo size={34} /></button>
       {workspace ? (
         <nav aria-label="Workspace navigation" className="launch-header__nav">
-          <button onClick={() => navigate('/access')}><UsersRound aria-hidden="true" /> Switch workspace</button>
-          <button onClick={() => setReducedMotion(!reducedMotion)} aria-pressed={reducedMotion}>{reducedMotion ? 'Motion off' : 'Reduce motion'}</button>
+          <button onClick={() => navigate('/access')}><UsersRound aria-hidden="true" /><span>Switch workspace</span></button>
+          <button onClick={() => setReducedMotion(!reducedMotion)} aria-pressed={reducedMotion}><Sparkles aria-hidden="true" /><span>{reducedMotion ? 'Motion off' : 'Reduce motion'}</span></button>
         </nav>
       ) : (
         <>

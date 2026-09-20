@@ -140,6 +140,15 @@ test.describe('OncoReady LAUNCH-001 frontend', () => {
     await expect(page.getByText('Live provider action held')).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'No live send' })).toHaveCount(2);
     await expect(page.getByRole('button', { name: 'No live send' }).first()).toBeDisabled();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    const headerTargets = page.locator('.launch-header').getByRole('button');
+    const targetSizes = await headerTargets.evaluateAll((buttons) => buttons.map((button) => {
+      const bounds = button.getBoundingClientRect();
+      return { width: bounds.width, height: bounds.height };
+    }));
+    expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 
   test('verified delivery and outcome-unknown voice remain visually distinct', async ({ page }) => {

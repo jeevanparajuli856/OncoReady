@@ -191,7 +191,7 @@
 .launch-provider__recovery { padding: .75rem; display: flex; flex-wrap: wrap; align-items: center; gap: .6rem; border-radius: .75rem; background: #fffbeb; color: #92400e; }
 .launch-provider__recovery svg { width: 1rem; }
 .launch-provider__recovery p { flex: 1; color: inherit; }
-.launch-provider__recovery .launch-button { color: #78350f; }
+.launch-provider__recovery .launch-button { color: white; }
 .launch-provider__recovery .launch-button svg { width: .9rem; height: .9rem; }
 
 .launch-communications { display: grid; gap: 1rem; }
