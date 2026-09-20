@@ -54,6 +54,8 @@ Real values belong in an ignored local `.env` or Railway variables. Never put se
 | `ELEVENLABS_VOICE_ENABLED` | No | `false` initially |
 | `TWILIO_ACCOUNT_SID` | No | Account SID beginning `AC` |
 | `TWILIO_AUTH_TOKEN` | Yes | Current Auth Token for callback validation |
+| `TWILIO_API_KEY_SID` | No | Preferred REST API key SID beginning `SK` |
+| `TWILIO_API_KEY_SECRET` | Yes | REST API key secret shown only when created |
 | `TWILIO_MESSAGING_SERVICE_SID` | No | Messaging Service SID beginning `MG` |
 | `TWILIO_FROM_NUMBER` | Sensitive | Optional E.164 sender if selected instead of a Messaging Service |
 | `FINALS_ALLOWLISTED_PHONE` | Sensitive | One consented team-controlled E.164 recipient |
@@ -136,7 +138,7 @@ Human steps:
 3. Obtain explicit consent from one team-controlled recipient.
 4. Complete applicable sender registration: US local senders generally require A2P 10DLC; toll-free senders require toll-free verification.
 5. Create a Messaging Service, add the number to its Sender Pool, and keep standard STOP/HELP handling enabled.
-6. Store the Twilio variables on `api`; never commit the number or token.
+6. Store the Twilio variables on `api`; never commit the number or credentials. Prefer the API key SID/secret for REST management while retaining the Account Auth Token for standard webhook signature validation.
 
 Configure `POST` callbacks on the exact API origin:
 
