@@ -2,32 +2,27 @@
   "schema_version": "1.0",
   "task_id": "UI-001",
   "agent": "codex-tester",
-  "status": "CHANGES_REQUIRED",
-  "summary": "Independent targeted refresh on production commit 4e9fc9a confirms the reviewer-blocking reveal replay defect is fixed across observer, keyboard-focus, and initially reduced-motion completion paths, but UI-001 cannot pass because the integrated app renders blank when IntersectionObserver is unavailable even though the isolated ScrollReveal fallback remains final across motion changes.",
+  "status": "COMPLETE",
+  "summary": "Independent targeted testing passes on production commit 768c268: missing and failing IntersectionObserver paths now keep the complete landing visible with final reveal content, a static Continuity Field, and the static ride corridor, while observer- and keyboard-completed reveals remain monotonic across motion-mode changes.",
   "files_changed": [
     ".ai/tasks/UI-001/test-report.json"
   ],
   "contracts_used": [],
   "tests": {
-    "passed": false,
+    "passed": true,
     "commands": [
-      "git diff 68b0c8f..4e9fc9a --",
-      "cd frontend && npx vitest run tests/scroll-reveal.test.tsx --reporter=verbose",
-      "cd frontend && npm run build",
-      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4186",
-      "cd frontend && node --input-type=module -e '<production Playwright audit: observer completion, keyboard-focus completion, initially reduced-motion mount, effective-motion on/off transitions, and per-variant observe-call counts>'",
-      "cd frontend && npx vitest run tests/.ui001-fallback-toggle.test.tsx --reporter=verbose (temporary independent test removed after execution)",
-      "cd frontend && node --input-type=module -e '<production Playwright no-IntersectionObserver diagnostic with pageerror and body/reveal inspection>'",
+      "git diff 34125de..768c268 -- frontend .ai/tasks/UI-001/frontend-report.json",
+      "cd frontend && npx vitest run tests/scroll-reveal.test.tsx tests/continuity-field.test.tsx tests/component.test.tsx -t \"IntersectionObserver|reveals once|keyboard focus|effective reduced motion\" --reporter=verbose",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 4189",
+      "cd frontend && node --input-type=module -e '<production Playwright audit: missing and throwing IntersectionObserver, page errors, final reveal states, ContinuityField RAF scheduling, static RideMap corridor, and observer/focus completion across effective-motion toggles>'",
       "python3 scripts/agentctl.py scope check UI-001 tester"
     ],
-    "notes": "Reviewed exact production commit 4e9fc9af819335256b1c721db342f16e57281635 and diff 68b0c8f..4e9fc9a. The focused ScrollReveal suite passed 5/5. The exact production build passed after transforming 8,481 modules. In the production browser, observer-completed patient/staff/caregiver cards remained [revealed, revealed, revealed] after Reduce motion was enabled and then disabled; observe counts stayed patient=1, staff=1, caregiver=1, workflow=3, saas=4, proving no hiding, re-observation, or replay. A patient card completed by keyboard focus also remained revealed through the same toggle sequence with identical observe counts. Instances mounted under OS reduced motion remained [visible, visible, visible] after switching to no-preference and recorded zero reveal observe calls. A temporary isolated component test passed 1/1 and proved a ScrollReveal mounted without IntersectionObserver stays visible through reduced-motion on/off rerenders; that temporary file was removed. The integrated production fallback nevertheless fails: defining window.IntersectionObserver as unavailable before navigation emits TypeError: IntersectionObserver is not a constructor from the compiled app, leaves body text empty, and produces zero reveal nodes. Source inspection identifies unguarded constructors in ContinuityField.tsx and RideMap.tsx. Prior comprehensive dock/layout/SaaS/workspace/Maria/caregiver evidence remains applicable because 68b0c8f..4e9fc9a changes only ScrollReveal, its focused tests, and the frontend report, but it cannot override this explicit fallback acceptance failure. Human approval of the motion feel is recorded and does not substitute for the failed technical fallback gate."
+    "notes": "Reviewed exact production commit 768c268ca3d26a6ace34972d434a12acb439ad49 and its focused diff from tester blocker commit 34125de. The selected Vitest run passed 9/9 executed tests across ScrollReveal, ContinuityField, and the complete App landing; 5 unrelated tests were intentionally skipped by the focused name filter. It proved visible fail-open behavior when IntersectionObserver is missing or its constructor throws, static ContinuityField rendering without requestAnimationFrame, complete landing content, final reveals, and the retained static ride corridor. The fresh production assets built immediately before commit 768c268 were then tested independently in Chromium. With IntersectionObserver undefined and with a throwing constructor, both runs produced zero page errors, 10/10 reveal nodes in visible final state, zero requestAnimationFrame calls, a visible Continuity Field, and the labeled dimensionally stable static corridor. In the normal observer path, patient/staff/caregiver cards remained [revealed, revealed, revealed] after Reduce motion was enabled and disabled; per-variant observe counts remained patient=1, staff=1, caregiver=1, workflow=3, saas=4. A patient card completed by keyboard focus likewise stayed revealed with its observe count fixed at one. The implementation therefore closes both the original replay blocker and the integrated no-observer fallback blocker without changing supported-browser behavior. Prior independent comprehensive evidence remains applicable to unaffected SaaS copy, scroll performance, responsive dock/layout, all workspace routes, the complete Maria journey, caregiver DOM exclusion, reset, and persistence behavior. Human approval of the motion feel is also recorded."
   },
-  "blockers": [
-    "Integrated no-IntersectionObserver fallback: before page load, set window.IntersectionObserver to undefined and navigate to the production build. The app throws TypeError: IntersectionObserver is not a constructor, renders an empty body, and creates no reveal nodes because ContinuityField and RideMap construct IntersectionObserver without availability guards. Add narrow guards that keep ContinuityField static and RideMap on its existing static fallback when the API is unavailable; do not change normal supported-browser motion behavior."
-  ],
+  "blockers": [],
   "notes_for_next_agent": [
-    "The original review blocker is resolved: completed ScrollReveal instances are monotonic for the mounted session and do not hide, re-observe, or replay when effective motion changes.",
-    "Keep the fix narrow: guard the ContinuityField and RideMap observer setup, retain their static/offscreen-safe fallbacks, and add one integrated no-IntersectionObserver browser regression.",
-    "After the guard lands, rerun the focused ScrollReveal suite, exact production build, production no-observer fallback check, and the motion-toggle browser audit; unaffected prior comprehensive journey and responsive evidence can still be reused."
+    "The independent TARGETED gate is complete for production revision 768c268: observer fallback, constructor-failure fallback, reveal monotonicity, and static rendering all pass.",
+    "ContinuityField remains static with no animation loop when observer setup is unavailable; RideMap stays on its existing labeled static corridor; supported browsers retain observer-driven optimization.",
+    "Run repository verification against the exact post-report commit, then refresh final review against that verified revision; no additional independent broad suite is required unless production behavior changes."
   ]
 }
