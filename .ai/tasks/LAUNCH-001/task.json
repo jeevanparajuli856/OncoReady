@@ -286,7 +286,7 @@
     "Maria's T-3 submission preserves her clinical words and creates separately owned clinical, transportation, and callback work with deadlines; explicit barriers bypass ML ordering.",
     "Every accepted command appends a versioned event and atomically updates projections, schedules, and outbox records; stale or invalid transitions fail and repeated idempotency keys return the prior semantic result.",
     "Patient, staff, caregiver, transport, graph, timeline, metrics, and evidence views derive from the same persisted event history and remain consistent after refresh.",
-    "The authenticated Vercel Cron tick is bounded and idempotent; overlapping ticks have one active authority, stale claims recover safely, and uncertain provider sends are reconciled or escalated rather than blindly resent.",
+    "Supabase Cron invokes the authenticated bounded Vercel tick once per minute through pg_net; overlapping invocations have one active authority, stale claims recover safely, and uncertain provider sends are reconciled or escalated rather than blindly resent.",
     "Twilio and ElevenLabs live statuses appear only after valid signed callbacks; invalid signatures, duplicates, out-of-order callbacks, STOP, no-answer, and provider failure remain safe and visible.",
     "CareLink records notice cutoff, eligibility and funding, service area, accommodations, outbound and return plans, offer, acceptance, assignment, notification, acknowledgment, failure, backup, escalation, and completion as distinct states.",
     "Transport assignment alone cannot close the blocker; provider failure or appointment change reopens affected work and Maria must acknowledge the complete current plan before closure.",
@@ -298,7 +298,7 @@
     "Reset restores the exact starting scenario, projections, schedule, and presentation route without sending SMS, placing a call, creating a transport request, accepting a provider callback, or draining outbox work.",
     "Network, provider, validator, or model failure never becomes false success; the affected dependency remains unresolved or unavailable and the governed recovery path remains operable.",
     "Frontend states are complete at mobile and presentation widths, keyboard operable, semantic, visibly focused, non-color-dependent, and equivalent under reduced motion.",
-    "The Vercel production build, function routing, deep links, raw-body callback verification, Cron authentication/cadence, environment checks, and Supabase pooled connection behavior pass controlled-deployment preflight.",
+    "The Vercel Hobby production build, function routing, deep links, raw-body callback verification, tick authentication, Supabase Cron cadence and HTTP response, Free-project activity and size checks, environment checks, and Supabase pooled connection behavior pass controlled-deployment preflight.",
     "FULL independent testing, current repository verification, focused HIGH-risk security approval, final review, five consecutive rehearsals including one failure, backup recording, human merge, and control-plane closure are required before DONE."
   ],
   "created_by": "human"

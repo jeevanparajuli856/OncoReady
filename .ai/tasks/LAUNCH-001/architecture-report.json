@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-architect",
   "status": "COMPLETE",
-  "summary": "Reconciled LAUNCH-001 into one governed React-to-TypeScript-Vercel-Functions-to-PostgreSQL treatment-continuity slice with append-only workflow events, role-filtered projections, a transactional outbox and protected idempotent cron tick, bounded provider adapters, deterministic recovery, event-derived FHIR/metrics evidence, and cross-language verified ML prioritization.",
+  "summary": "Reconciled LAUNCH-001 to the approved zero-paid-scheduler topology: Vercel Hobby hosts the React application and TypeScript Functions while Supabase Free Cron invokes the existing bearer-authenticated bounded tick through pg_net; PostgreSQL events, locks, claims, leases, and outbox state remain workflow authority.",
   "files_changed": [
     "docs/features/LAUNCH-001.md",
     "docs/architecture/SYSTEM.md",
@@ -21,7 +21,10 @@
     "Treat the existing CORE-001 React reducer and browser persistence as the completed frontend baseline, not LAUNCH-001 business authority; launch workflow state moves behind a generated OpenAPI client to TypeScript Vercel Node.js Functions.",
     "Use Supabase PostgreSQL with timestamped Git-tracked migrations for append-only workflow events, role/evidence projections, scheduled actions, transactional outbox, webhook receipts, provider attempts, claim leases, idempotency records, and deterministic finals seed/reset.",
     "Append governed events and update affected projections, schedules, and outbox rows atomically; use per-aggregate expected versions plus idempotency keys to reject stale writes and return stable duplicate-command results.",
-    "Invoke one authenticated, bounded scheduler/outbox tick through Vercel Cron at the approved per-minute cadence, which requires the selected Pro plan; use a PostgreSQL advisory lock and durable row claims/leases so overlaps and retries cannot become parallel scheduler authority.",
+    "Use Supabase Cron (pg_cron) plus pg_net to invoke the existing GET /api/v1/operations/tick endpoint once per minute while Vercel Hobby hosts the frontend and Functions; use a PostgreSQL advisory lock and durable row claims/leases so overlaps and retries cannot become parallel scheduler authority.",
+    "Keep one operator-owned opaque tick secret in exactly two runtime locations: Vercel's server-only CRON_SECRET for verification and Supabase Vault entry oncoready_cron_secret for invocation; keep the canonical endpoint in Vault as oncoready_tick_url and never commit or log either secret value.",
+    "Assign the database specialist a timestamped migration that enables pg_cron/pg_net, defines a restricted Vault-backed invoker, and installs the named one-minute job without environment-specific values; the human operator owns Vault provisioning/rotation and post-preflight activation or pause.",
+    "Accept Supabase Free only for controlled illustrative data: stay below 500 MB, treat possible inactivity pause as an explicit preflight/resume condition, and use Git-tracked migrations plus deterministic seed/reset as recovery because automated backups are unavailable.",
     "Treat an interrupted possibly accepted provider action as outcome-unknown and reconcile it through provider identity/webhook or manual recovery; never blindly resend a consequential action solely because a lease expired.",
     "Keep Vercel HTTP/webhook handlers thin and stateless; workflow policy, role projections, transport lifecycle, evidence generation, and adapter translation belong in shared TypeScript application/domain modules and cannot depend on warm memory or post-response work.",
     "Make Twilio SMS, ElevenLabs-through-Twilio voice, and CareLink Partner Dispatch narrow server-only adapters with fixed allowlists, authenticated raw-body webhooks, idempotency, kill switches, and visible failure states. Uber Health and Lyft Concierge remain disabled planned metadata only.",
@@ -62,13 +65,18 @@
     },
     {
       "severity": "medium",
-      "description": "Vercel Cron retries/overlap or function termination around a provider call could duplicate an action or leave its outcome ambiguous.",
-      "mitigation": "Authenticate cron, take a PostgreSQL advisory lock, use durable claims/leases and pre-call attempt records, pass stable provider identities, and reconcile outcome-unknown actions before any retry."
+      "description": "Supabase Cron, pg_net, network, or manual retries/overlap plus function termination around a provider call could duplicate an action or leave its outcome ambiguous.",
+      "mitigation": "Authenticate the tick with the Vault-backed bearer secret, take a PostgreSQL advisory lock, use durable claims/leases and pre-call attempt records, pass stable provider identities, and reconcile outcome-unknown actions before any retry."
     },
     {
       "severity": "medium",
       "description": "Serverless concurrency, cold starts, or connection fan-out could exhaust Supabase connections or exceed function duration before state is committed.",
       "mitigation": "Use the supported pooled connection, strict transaction/query/runtime budgets, bounded cron batches, parameterized SQL, database constraints, and deployment-level load/concurrency checks."
+    },
+    {
+      "severity": "medium",
+      "description": "The Supabase Free project could pause after inactivity, approach its 500 MB limit, or lose dashboard-only state without automated backups, interrupting the controlled journey.",
+      "mitigation": "Use controlled illustrative data and bounded retention, keep schema/Cron configuration in Git-tracked migrations, recover from deterministic seed/reset, and require active-project, size, migration, Vault, Cron, pg_net response, and authenticated-tick checks before every rehearsal or review and after any resume."
     },
     {
       "severity": "medium",
@@ -102,8 +110,10 @@
     "The registered OpenAPI and event schemas are authoritative for endpoint/event names, shapes, errors, expected-version conflicts, idempotency replay, raw-webhook authentication inputs, cron behavior, and role projections. Workers must consume those artifacts and report CONTRACT_CHANGE_REQUIRED rather than infer wire details from architecture prose.",
     "The frontend specialist must complete design Phase A and the digest-bound compatibility gate before production UI changes. Preserve the established system while designing access, transport, provider-pending/failure/outcome-unknown/recovery, evidence, and ML states.",
     "Database implementation should establish deterministic seed/reset, immutable events, aggregate/version/idempotency constraints, projections, scheduled actions, outbox, webhook receipts, provider attempts, claims/leases, and only query-justified indexes before provider functions depend on them.",
-    "Backend implementation should use shared TypeScript domain modules, a supported pooled Supabase transaction connection, exact raw-body webhook verification, authenticated cron, bounded batches, no post-response work, and provider reconciliation before retrying an uncertain action.",
-    "The controlled finals deployment requires the Vercel plan that supports per-minute Cron. Validate plan, deployed schedule, secret authentication, actual invocation, deep-link rewrites, function routing, and callback URLs during preflight; do not silently lower cadence.",
+    "Backend implementation should preserve GET /api/v1/operations/tick with opaque bearer authentication, shared TypeScript domain modules, a supported pooled Supabase transaction connection, exact raw-body webhook verification, bounded batches, no post-response work, and provider reconciliation before retrying an uncertain action.",
+    "Database implementation must add the Git-tracked Supabase Cron/pg_net/Vault-backed invoker migration without embedding environment values. Validate active Free-project state, database size, migrated named job, one-minute cadence, Vault entry presence, latest pg_net response, secret authentication, actual invocation, deep-link rewrites, function routing, and callback URLs during preflight; do not silently lower cadence.",
+    "No scheduler wire-contract change is required: GET /api/v1/operations/tick, max_items, CronSecret bearer security, responses, and receipt remain compatible with Supabase Cron. The orchestrator should update the non-wire OpenAPI description from Called by Vercel Cron to scheduler-neutral wording so the authoritative contract documentation is current.",
+    "Before frontend Phase B, the orchestrator should reconcile two real projection-contract blockers: expose durable outcome_unknown/reconciliation state plus last-known attempt/provenance and permitted recovery in staff/transport projections; and make caregiver transport nullable/absent when transport_logistics_allowed is false so revoked logistics never cross the server boundary.",
     "Offline Python owns ML training/calibration/SHAP evaluation and export. TypeScript runtime may load only the fixed reviewed artifact, and Python/TypeScript inference plus explanation parity must pass before score presentation.",
     "Reset, network failure, provider failure/outcome unknown, invalid webhook, stale aggregate version, cron overlap/stale lease, appointment change, caregiver revocation, FHIR hash mismatch, and missing/stale/parity-failing ML artifacts are acceptance-critical states, not optional polish.",
     "FULL depth requires an independent tester after integration. Verification must be current on the integrated commit before the mandatory focused HIGH-risk security review, and final review must assess that same current revision.",

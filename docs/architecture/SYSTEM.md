@@ -41,13 +41,15 @@ Supabase PostgreSQL
   ├─ append-only workflow events
   ├─ current role/evidence projections
   ├─ scheduled actions + transactional outbox
-  └─ idempotency keys + callback receipts + leases
+  ├─ idempotency keys + callback receipts + leases
+  └─ Supabase Cron + pg_net
              ▲
-             │ protected, bounded, idempotent tick
-Vercel Cron (per-minute cadence requires the selected Pro plan)
+             │ HTTPS every minute; bearer-authenticated
+             │
+GET /api/v1/operations/tick on Vercel Hobby
 ```
 
-There is one shared TypeScript domain/application package, not a set of services. Each function is short-lived and stateless between invocations. The protected cron endpoint attempts a PostgreSQL advisory lock and claims bounded due work; concurrent or retried cron invocations exit or resume from durable state rather than becoming parallel scheduler authority.
+There is one shared TypeScript domain/application package, not a set of services. Each function is short-lived and stateless between invocations. Supabase Cron is only the wake-up trigger: the protected endpoint attempts a PostgreSQL advisory lock and claims bounded due work, so concurrent or retried HTTP invocations exit or resume from durable state rather than becoming parallel scheduler authority.
 
 ## Components and responsibilities
 
@@ -111,11 +113,11 @@ Required data classes:
 
 Database constraints enforce unique idempotency/callback identifiers, aggregate ordering, the configured provider/scenario, and required closure evidence. Indexes are limited to aggregate replay, primary projection reads, due work/outbox claims, and callback/idempotency lookup. Schema changes are migrations; dashboard edits or direct tool mutations are never the only record.
 
-### Cron scheduler and outbox tick
+### Supabase Cron trigger and outbox tick
 
-Vercel Cron invokes one authenticated endpoint on the approved per-minute schedule. Each invocation:
+Supabase Cron (`pg_cron`) runs once per minute and uses `pg_net` to invoke the existing Vercel `GET /api/v1/operations/tick?max_items=25` endpoint. Each invocation:
 
-1. verifies the platform cron secret and external-action configuration;
+1. sends `Authorization: Bearer <secret>` over HTTPS and the Vercel function verifies the bearer value plus external-action configuration;
 2. attempts a scenario-specific PostgreSQL advisory lock;
 3. atomically claims a bounded batch of due scheduled/outbox rows with row locking and a lease;
 4. records dispatch intent/attempt before crossing a provider boundary;
@@ -123,9 +125,11 @@ Vercel Cron invokes one authenticated endpoint on the approved per-minute schedu
 6. records a definitive result through the same command/event boundary, then releases/completes the claim;
 7. exits before the function duration budget rather than opening a long poll or background loop.
 
-Only one tick holds scheduler authority at a time, even if Vercel retries or overlaps invocations. Stale leases are recoverable. If a function fails after a provider may have accepted an action but before local confirmation, that action enters `outcome_unknown`: the adapter reconciles through a provider identifier/callback when supported, otherwise it requires manual recovery. It is never blindly resent merely because a lease expired.
+Only one tick holds scheduler authority at a time, even if Supabase Cron, `pg_net`, an operator, or the network retries or overlaps invocations. Stale leases are recoverable. If a function fails after a provider may have accepted an action but before local confirmation, that action enters `outcome_unknown`: the adapter reconciles through a provider identifier/callback when supported, otherwise it requires manual recovery. It is never blindly resent merely because a lease expired.
 
-This tick replaces a continuously running worker. The finals deployment requires the Vercel plan that supports the selected per-minute cadence; a lower cadence or unavailable cron is a failed preflight, not silent behavioral drift.
+This tick replaces a continuously running worker. Vercel Hobby hosts the frontend and functions; it has no schedule configured. The human project operator owns one generated opaque secret and stores the identical value in two approved locations: Vercel's server-only `CRON_SECRET` for verification and Supabase Vault as `oncoready_cron_secret` for invocation. The canonical tick URL is stored in Vault as `oncoready_tick_url` so no secret or environment-specific origin is committed. The database specialist owns a timestamped migration that enables `pg_cron`/`pg_net`, defines a least-privilege invoker that reads only those named Vault entries, and installs the named one-minute job; the operator provisions/rotates Vault values and activates or pauses the job after preflight. The job, invoker, or logs must not print the authorization header.
+
+The Supabase Free project contains controlled illustrative data only. Its 500 MB limit is sufficient for the bounded finals scenario, but growth is checked during preflight and event/provider evidence retention remains deliberately bounded. The plan may pause after inactivity and supplies no automated backups. Git-tracked migrations plus deterministic seed/reset are therefore the recovery authority, not dashboard state. Before rehearsal, verification, or review, preflight must confirm the project is active, migrations and projections are current, both Vault entries resolve, the named Cron job is active at one-minute cadence, the latest `pg_net` response is successful, and an authenticated tick reaches the current canonical Vercel origin. After any pause, resume the project, wait for database health, rerun those checks and deterministic reset/seed verification, then enable external actions.
 
 ### Provider adapters and webhooks
 
@@ -236,12 +240,12 @@ Architecture prose and implementation may explain or consume these contracts but
 | Patient free text → staff rendering/logs | Script injection or unnecessary sensitive logging | Treat as inert text, no raw HTML, bounded length, preserve verbatim for human review, redact/minimize logs |
 | Patient/staff state → caregiver/transport | Clinical or internal detail leakage | Server-side explicit allowlists; negative tests across response, DOM, accessibility, search, export, outbound content, and logs |
 | Vercel Functions → Supabase | Connection exhaustion, overprivileged SQL, partial state | Supported pooler, strict connection/time budgets, least-privilege credentials, parameterized SQL, transactions, constraints |
-| Vercel Cron → scheduler tick | Forged invocation, overlap, retry, or cadence drift | Cron-secret authentication, PostgreSQL advisory lock, durable claims/leases, bounded batches, Pro-plan cadence preflight |
+| Supabase Cron/`pg_net` → Vercel tick | Vault exposure, forged invocation, overlap, retry, stale origin, or cadence drift | Named Vault entries, bearer authentication, least-privilege invoker, HTTPS canonical origin, PostgreSQL advisory lock, durable claims/leases, bounded batches, cadence/response preflight |
 | Functions → Twilio/ElevenLabs/CareLink | Consequential action to arbitrary target; duplicate/uncertain send | Server-only credentials, fixed recipient/provider/pickup/destination, consent, kill switches, stable action identity, reconcile-before-retry |
 | Provider webhook → domain | Forged, replayed, duplicate, or out-of-order outcome | Official raw-request signature/HMAC verification before parse, receipt uniqueness, replay policy, transition/version guard |
 | Reset/reseed → persistence/outbox | Destructive misuse or external action during reset | Controlled finals token/action, bounded scenario transaction, external actions disabled, deterministic proof, no production target |
 | ML/FHIR artifact → product claim | Cross-language mismatch, leakage, stale evidence, false clinical/interoperability claim | Immutable version/hash manifest, Python/TypeScript golden vectors, held-out/leakage gates, safe-unavailable state, exact-hash validator evidence |
-| Secrets/logging → repository/operator | Credential exposure | Vercel server-only environment, ignored local env, presence checks without values, redacted logs/reports/screenshots |
+| Secrets/logging → repository/operator | Credential exposure | Vercel server-only environment plus Supabase Vault for the shared tick secret, ignored local env, presence checks without values, redacted logs/reports/screenshots |
 
 The task is HIGH risk because it performs external communication/transport actions and exposes public webhooks, cron, reset, and role-dependent boundaries in a clinical context. A dedicated security review is mandatory on the exact verified integrated commit.
 
@@ -270,8 +274,8 @@ The task is HIGH risk because it performs external communication/transport actio
 The minimum launch environment contains:
 
 - one Vercel project serving the React/Vite build and Node.js Functions with deep-link rewrites;
-- one Supabase development/finals PostgreSQL project containing controlled illustrative data only;
-- one protected Vercel Cron schedule invoking the bounded scheduler/outbox tick, on the plan required for per-minute cadence;
+- one Supabase Free development/finals PostgreSQL project containing controlled illustrative data only, with the accepted 500 MB, possible inactivity-pause, and no-automated-backup constraints;
+- one protected Supabase Cron job using `pg_net` to invoke the bounded Vercel tick once per minute;
 - public HTTPS Twilio, ElevenLabs, and CareLink webhook functions;
 - server-only Vercel environment variables for the scenario token, cron secret, allowed origins, pooled database connection, provider credentials, fixed recipient/location/provider, limits, and kill switches;
 - a pinned FHIR validator in verification/freeze tooling and a fixed versioned ML runtime artifact set.
@@ -305,7 +309,7 @@ The append-only event history, provider attempt/webhook records, outbox state, c
 
 Use structured logs with correlation/event/aggregate identifiers, function/route/provider status classes, latency, retry count, cold-start/tick batch context, and redacted error detail. Do not log secrets, authorization values, full patient free text, unnecessary phone/location data, voice transcripts, or audio. Preflight reports configuration presence and webhook reachability without values.
 
-Required health/preflight evidence includes Vercel deployment/rewrites, Supabase connectivity/migration state/pool behavior, cron plan/cadence/authentication, webhook origin, adapter enabled/disabled and kill-switch state, pinned FHIR validator availability, and ML artifact compatibility. A green health check is not provider-success evidence; only governed outcomes are.
+Required health/preflight evidence includes Vercel deployment/rewrites, active Supabase project status, connectivity/migration state/pool behavior, database size below the Free-plan limit, named Vault-entry presence without values, Supabase Cron job/cadence and latest `pg_net` response, tick authentication at the canonical origin, webhook origin, adapter enabled/disabled and kill-switch state, pinned FHIR validator availability, and ML artifact compatibility. A green health check is not provider-success evidence; only governed outcomes are.
 
 ## Verification architecture
 
