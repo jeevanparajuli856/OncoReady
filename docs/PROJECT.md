@@ -1,12 +1,12 @@
 # OncoReady Product Definition
 
 > Classification labels:
-> - **Confirmed** — explicitly established by the approved direction or source research
-> - **Assumption** — a working premise that remains to be validated
-> - **Recommendation** — an implementation choice selected for rapid delivery
-> - **Open question** — a material unknown that does not block the first slice unless stated
+> - **Confirmed** — explicitly approved product or delivery direction
+> - **Assumption** — a working premise that still needs external validation
+> - **Recommendation** — a selected implementation choice for this launch
+> - **Open question** — a material unknown that does not authorize invented behavior
 
-## 1. Product Identity
+## 1. Product identity
 
 ### Product name
 
@@ -14,307 +14,259 @@
 
 ### One-sentence description
 
-OncoReady helps patients and oncology teams identify what could derail an upcoming treatment, route each concern to the right human, and visibly confirm the plan.
+OncoReady detects threats to an upcoming oncology treatment early, gives every dependency a human owner and deadline, executes bounded recovery actions, and proves the continuity plan closed.
 
 ### Status
 
-Active inception; first product slice approved.
+**Confirmed:** the completed CORE-001, LAND-001, and UI-001 frontend foundation is the starting point. `LAUNCH-001 — Finals Treatment Continuity Launch` is the approved next vertical slice.
 
 ### Product presentation rule
 
-Present OncoReady as the treatment-readiness product it is. Do not label user-facing surfaces as a prototype, demo app, experiment, or portfolio project. Do not imply production Ochsner integration, clinical validation, compliance, real patient use, or outcomes that do not exist.
+Present OncoReady as the treatment-continuity product it is. Do not call user-facing surfaces a prototype, demo, toy, practice app, or portfolio project. Do not claim production Ochsner/Epic connectivity, real authentication, HIPAA compliance, clinical validation, real patient use, approved Uber Health or Lyft Concierge access, or measured outcomes.
 
-## 2. Problem Statement
+## 2. Problem and opportunity
 
 ### Confirmed
 
-- Cancer treatment can be disrupted when transportation, medication access, cost, caregiving, communication, or a clinical concern threatens a time-sensitive appointment.
-- Ochsner already provides navigation, portal communication, supportive services, urgent clinical pathways, virtual care, and Chemotherapy Care Companion; OncoReady must connect and activate existing services rather than duplicate them.
-- A useful workflow must show ownership, deadline, action, acknowledgment, and closure rather than stop at screening or referral.
+- Transportation, medication access, cost, caregiving, communication, and clinical concerns can disrupt time-sensitive cancer treatment.
+- A reminder or referral is not closure. The useful unit of work is a treatment-anchored dependency with an owner, deadline, action, acknowledgment, fallback, and closure evidence.
+- Clinical and practical concerns require different human owners and rules while remaining visible in one continuity plan.
+- Ochsner already has navigation, portal communication, supportive services, urgent clinical pathways, virtual care, and Chemotherapy Care Companion. OncoReady must orchestrate and expose accountable handoffs rather than pretend to replace those systems.
 
 ### Assumptions
 
-- Some cross-domain pre-treatment concerns may not share one visible resolution plan inside Ochsner today.
-- A treatment-anchored exception workflow could reduce reconciliation and duplicate outreach instead of adding another inbox.
+- Cross-domain pre-treatment concerns do not always share one visible, appointment-specific resolution plan.
+- Earlier outreach at T−7, T−3, and T−1 can create enough lead time to recover a practical barrier before a treatment cutoff.
+- A focused Small Infusion Center Pilot can establish buyer value before broader health-system configuration.
 
-## 3. Intended Users and Outcome
+## 3. Intended users and outcomes
 
-| Actor / User | Need | Desired outcome |
+| Actor | Need | Desired outcome |
 |---|---|---|
-| Patient receiving active treatment | A simple way to report what threatens the next treatment | Know who is helping, what happens next, and whether the plan is confirmed |
-| Authorized caregiver | Only the tasks and status the patient permits | Help without receiving blanket clinical access |
-| Oncology navigator | A prioritized view of practical barriers | Resolve a barrier before the treatment deadline and prove closure |
-| Triage nurse | Preserve and receive clinical concerns through an approved pathway | Review the original report without an AI making a clinical decision |
-| Operations leader | Visibility into aging exceptions and resolution | Understand ownership, workload, and continuity metrics |
+| Patient receiving active treatment | Low-friction readiness outreach and a visible plan | Know who is helping, what happens next, and whether the continuity plan is confirmed |
+| Authorized caregiver | Only the logistics the patient permits | Help with transportation without blanket clinical access |
+| Oncology navigator | Prioritized, deadline-aware practical work | Resolve or escalate a barrier before the treatment cutoff |
+| Triage nurse | Original patient wording through a human-controlled pathway | Review and disposition the concern without automated clinical judgment |
+| Transportation coordinator | Eligibility, trip requirements, assignment, failure, and return-plan context | Fulfill or recover one controlled CareLink partner trip |
+| Operations leader | Event-derived workload and closure evidence | Inspect lead time, ownership, aging, attempts, blockers, and final disposition |
 
 ### Primary product outcome
 
-A patient-reported clinical concern and transportation failure become two correctly owned workflows, both reach a defined disposition, and the patient sees a confirmed plan for the upcoming treatment.
+Maria's T−3 response creates separately owned clinical, callback, and transportation work; verified communication and CareLink actions advance the same durable workflow; Ana receives only authorized logistics; Maria acknowledges the recovered plan; and the graph, timeline, metrics, and FHIR artifact agree.
 
-### Non-goals
-
-- General cancer chat, education, diagnosis, prognosis, or treatment recommendations.
-- Autonomous symptom triage, treatment modification, or emergency disposition.
-- Replacing MyOchsner, Chemotherapy Care Companion, nurse navigation, or urgent clinical pathways.
-- Production authentication, PHI, Ochsner/Epic/FHIR connectivity, live messaging, maps, resource APIs, or clinical protocols.
-- A statewide resource marketplace, billing system, analytics suite, or all-journey cancer platform.
-
-## 4. Hero User Journey
+## 4. Signature launch journey
 
 ```text
-Maria sees an infusion scheduled for tomorrow
-  ↓
-She completes a short readiness check and reports a cancelled ride plus a clinical concern
-  ↓
-Deterministic rules preserve and split the report into triage and navigation work
-  ↓
-The Treatment Readiness Graph shows two blockers, owners, deadlines, and actions
-  ↓
-Staff acknowledge the clinical concern and confirm a simulated transportation plan
-  ↓
-Ana receives only the transportation update Maria authorized
-  ↓
-Maria confirms receipt and the treatment plan becomes ready
+Public landing and focused pilot pricing
+  → branded local role-entry gateway
+  → T−3 Twilio readiness outreach to one allowlisted test phone
+  → Maria replies that she needs a ride and requests a call
+  → deterministic rules create clinical, callback, and transport work
+  → bounded ElevenLabs call through Twilio returns a verified outcome
+  → staff sees owners, SLA, cutoff, channel history, and early-warning evidence
+  → CareLink Partner Dispatch records eligibility, outbound/return plan, assignment, failure, and backup
+  → Ana sees transportation logistics but no clinical or nurse-only text
+  → Maria acknowledges the recovered plan
+  → graph, timeline, metrics, and FHIR evidence resolve from the same events
+  → staff may inspect a calibrated supportive-outreach score and SHAP explanation
 ```
+
+### Hero moment
+
+One low-friction patient response visibly splits into the right human-owned work, survives a transportation failure, and closes only when the patient acknowledges the recovered continuity plan.
 
 ### Demo-critical path
 
-The reliable path is: reset → treatment home → readiness check → submit two concerns → split into two owned tasks → open staff case → acknowledge clinical task → confirm transportation → show permission-limited caregiver update → patient confirms → readiness graph and audit timeline resolve.
+Preflight → reset/reseed → public page → access mapping → patient response → durable work split → authenticated communication callbacks → staff review → CareLink failure/recovery → caregiver projection → patient acknowledgment → confirmed graph/timeline/metrics → validated FHIR evidence → supportive-outreach explanation.
 
-### Failure states that must still feel complete
+### Failure states that must feel complete
 
-- Input validation explains what remains before submission.
-- Task actions have explicit disabled and success states.
-- Refresh restores the scripted demonstration state when practical.
-- A one-click reset always returns to the known opening state.
-- Reduced-motion mode preserves all state meaning without animation.
-- If optional AI behavior is represented, its failure cannot block routing or task creation.
+- Invalid or duplicate commands return stable errors and do not create duplicate events.
+- Undelivered SMS or failed/no-answer voice outreach stays unresolved and creates the approved fallback work.
+- Invalid webhook signatures are rejected without changing workflow state.
+- Provider decline, cancellation, unavailable capacity, stale assignment, or missing return plan keeps transportation at risk and enables backup or human escalation.
+- Missing or incompatible ML artifacts display `Score unavailable`; deterministic routing continues.
+- Failed FHIR validation is inspectable and never displays `Validated`.
+- Reset restores the known scenario without sending a message, placing a call, or creating a trip.
 
-## 5. Product Impression Strategy
+## 5. Product impression strategy
 
-### First 30-second impression
+### First 30 seconds
 
-Viewers should immediately understand that tomorrow's treatment has two blockers and that OncoReady turns them into accountable, time-bound action rather than another message or questionnaire.
+Viewers should understand that tomorrow's treatment has recoverable dependencies and that OncoReady turns them into accountable, time-bound action rather than another message or dashboard.
 
-### Visual hook
+### Visual and interaction hook
 
-The Treatment Readiness Graph makes the upcoming treatment the central event and displays every unresolved dependency, owner, due time, action, and proof of closure. The Codex frontend specialist owns the exact visual system and composition.
+The established Clinical Glass / Continuity Aurora system remains authoritative. The Treatment Readiness Graph anchors the upcoming treatment and shows unresolved dependencies, owners, deadlines, actions, fallbacks, and proof of closure. Exact composition, motion, responsive behavior, and component expression remain the frontend specialist's responsibility through the required design gate.
 
-### Interaction hook
+### Data-storytelling hook
 
-Maria's single report visibly separates into clinical and practical work; subsequent human actions propagate through the graph, timeline, patient status, and caregiver view.
-
-### Data / storytelling hook
-
-An append-only event timeline tells a causal story from detection through assignment, acknowledgment, action, patient confirmation, and resolution, with transparent synthetic timestamps and ownership.
+An append-only event timeline makes causality inspectable from signal through assignment, communication, dispatch recovery, patient acknowledgment, and closure. Metrics and FHIR evidence are projections of those events rather than separately staged numbers.
 
 ### Experience principles
 
-- Calm urgency: make deadlines legible without increasing patient anxiety.
-- Human authority: always show the person or role responsible for consequential action.
-- Closure over referral: a recommendation or sent message is not success.
-- Low cognitive burden: one clear action at a time and plain language.
-- Truthful simulation: synthetic data and simulated integrations remain visible.
+- Calm urgency: make cutoffs and SLAs legible without increasing anxiety.
+- Human authority: consequential clinical and operational decisions remain assigned to people.
+- Closure over referral: sent, assigned, and acknowledged are different states.
+- One clear action: reduce cognitive load for patient and caregiver surfaces.
+- Truthful evidence: show provider success only when a verified callback or disclosed deterministic replay supports it.
+- Data minimization: each role receives only what it needs.
 
-## 6. Technical Credibility
+## 6. Launch scope
 
-### Core real engineering capability
+### In scope for LAUNCH-001
 
-A typed, deterministic workflow state machine converts readiness input into separate owned tasks and enforces valid transitions from detection to resolution. All visible surfaces derive from the same event state, so the graph, queue, caregiver permissions, and audit timeline remain consistent.
+- Public landing privacy cleanup, `Pricing` navigation, and centrally configured Small Infusion Center Pilot pricing.
+- Local branded role mapping: Google → patient, Microsoft → caregiver, Apple → staff, email → transportation.
+- React + TypeScript role workspaces integrated through generated OpenAPI types/client.
+- One Railway project containing separate Vite web, long-running Node.js API, and private PostgreSQL services.
+- Railway PostgreSQL append-only workflow events, projections, outbox, scheduling, callback receipts, idempotency, deterministic seed, and safe reset.
+- T−7/T−3/T−1 outreach timing, business-day transportation cutoff, separate clinical/transport/callback work, SLA and escalation.
+- Twilio SMS and ElevenLabs voice through Twilio, bounded to one allowlisted team-controlled number.
+- Custom CareLink Partner Dispatch workflow with eligibility, outbound/return plan, assignment, failure/recovery, notification, and patient acknowledgment.
+- Event-derived operational metrics and a generated FHIR R4 artifact validated by a pinned validator.
+- A calibrated LightGBM supportive-outreach classifier with SHAP explanation, implemented last and never used for clinical or access decisions.
+- Deterministic offline/replay recovery, production-quality responsive presentation, accessibility, reduced motion, FULL testing, exact-commit verification, focused security review, and final review.
 
-### Minimum real backend / data / integration
+### Explicit non-goals
 
-- No backend is needed for the first slice.
-- Synthetic fixtures and browser-side persistence support the complete journey.
-- Deterministic routing and state transitions are real application behavior, not pre-rendered screen swaps.
-- FHIR-shaped identifiers or a static mapping explanation may demonstrate a credible future boundary, but no live server is claimed.
+- Production authentication, SMART-on-FHIR, Ochsner/Epic writeback, production PHI, or real patient care.
+- Autonomous diagnosis, triage, treatment clearance, cancellation, rescheduling, or transport eligibility decisions.
+- Uber Health or Lyft Concierge implementation, credentials, live-looking assignment, or callback state; they remain planned adapters only.
+- Self-serve checkout, billing, CRM, a statewide resource marketplace, a fleet operation, or broad hospital analytics.
+- Redis, Kafka, Celery, microservices, Kubernetes, generalized workflow engines, or infrastructure that does not strengthen the finals journey.
+- Additional patient journeys or broad admin/configuration depth before the Maria path is reliable.
 
-| Technology / subsystem | Needed? | Product/technical reason |
-|---|---:|---|
-| Database | No | One deterministic synthetic journey can persist locally |
-| Authentication | No | Role switching is part of the scripted synthetic experience, not real access control |
-| External API | No | Live dependencies would reduce deadline reliability |
-| Queue/cache/realtime | No | The browser state machine supplies the required transitions |
-| IaC/container platform | No | A static frontend build is sufficient |
+## 7. Core engineering capability
 
-## 7. Core Capabilities
+### Authoritative mechanism
 
-### Confirmed
+A typed, deterministic workflow command model appends versioned events and derives server-side role projections. Guarded transitions, expected aggregate versions, idempotency keys, authenticated callbacks, scheduled actions, and transactional outbox delivery keep the graph, queues, communications, caregiver view, transportation state, evidence, and audit history consistent.
 
-- Treatment-anchored patient home and countdown.
-- Two-minute readiness check covering transportation and a patient-reported clinical concern.
-- Deterministic split routing into one triage task and one navigation task.
-- Exception-only staff queue with Maria as the complete interactive case.
-- Treatment Readiness Graph with owner, deadline, state, fallback, and closure evidence.
-- Simulated transport selection and confirmation.
-- Permission-limited caregiver update.
-- Patient confirmation, event timeline, synthetic-data disclosure, and one-click reset.
-
-### Recommended / proposed
-
-- A controlled optional AI-timeout proof only after the golden path is flawless.
-- A small static FHIR mapping panel for technical explanation, not as a primary screen.
-
-## 8. Scope
-
-### In scope
-
-- Five connected responsive surfaces: treatment home, readiness check, exception queue, case/readiness graph, patient/caregiver resolution.
-- Real local state changes for every step of the hero journey.
-- Synthetic Maria/Ana scenario plus a few static queue cases for context.
-- Polished loading, validation, disabled, focus, pressed, success, and reduced-motion states.
-- Local build, deterministic reset, and a critical-path smoke test.
-
-### Out of scope
-
-- Backend, database, authentication, live AI, live SMS/voice, maps, resource capacity, or production integrations.
-- Storm Mode, bilingual urgent content, multiple complete journeys, admin settings, and broad analytics.
-
-### Future / possible scope
-
-- More synthetic cases and FIFO-versus-readiness prioritization.
-- Unavailable-resource and unacknowledged-task failure paths.
-- Low-connectivity behavior and a validated synthetic FHIR export.
-- Storm Mode using the same readiness engine.
-
-## 9. Functional Requirements
-
-### Confirmed
-
-- A readiness submission with a clinical concern and transportation failure creates two distinct tasks.
-- Clinical text remains visible verbatim and no AI may set or downgrade clinical urgency.
-- Every task shows source, owner, due time, state, next action, and closure evidence.
-- A transportation suggestion cannot close the task until staff confirms the action and the patient acknowledges the plan.
-- Ana sees only transportation status authorized by Maria.
-- All relevant views update from the same workflow state.
-- Reset returns the application to a deterministic opening state.
-- All people, messages, integrations, resources, protocols, and outcomes are labeled synthetic or simulated where shown.
-
-### Assumptions
-
-- Role switching within one browser is acceptable for the draft product experience.
-- Maria's single scenario is sufficient to establish the mechanism before additional cases are built.
-
-## 10. Quality and Non-Functional Requirements
-
-### Confirmed
-
-- The hero journey must work locally without network services after dependencies are installed.
-- Intended screens must be complete at mobile and presentation-laptop sizes.
-- Keyboard navigation, visible focus, semantic structure, sufficient contrast, large controls, non-color state cues, and reduced-motion behavior are required.
-- No obvious starter branding, lorem ipsum, dead navigation, exposed secrets, real PHI, or unsupported product claims.
-
-### Recommended
-
-- Keep the initial JavaScript bundle and motion restrained enough for instant demo transitions.
-- Use a single source of truth for workflow state and typed fixtures.
-- Run build/type checks and one automated critical-path smoke test before handoff.
-
-## 11. Data, Privacy, and Trust Boundaries
-
-### Data involved
-
-- Synthetic patient, caregiver, appointment, message, staff, resource, task, permission, and audit-event data.
-
-### Sensitive / regulated data
-
-- None. No real PHI or production credentials are permitted.
-
-### Trust boundaries
-
-- Patient-entered text is untrusted browser input and must render as text, never executable markup.
-- Role switching simulates perspectives and must not be described as production authorization.
-- Caregiver visibility rules are enforced in application state to demonstrate the intended permission boundary.
-
-### Baseline safety requirements
-
-- No committed or exposed secrets.
-- No diagnosis, prescription, treatment modification, autonomous urgent disposition, or clinical outcome claim.
-- Clinical concerns route to a named human-controlled pathway with monitoring-boundary language.
-- The workflow remains correct if any optional AI representation fails.
-
-### Open questions
-
-- Production identity, authorization, PHI governance, Ochsner integration, and clinical protocol ownership require future Ochsner validation and are not part of the first slice.
-
-## 12. External Systems and Integrations
-
-| System / Provider | Purpose | Status |
-|---|---|---|
-| Ochsner / MyOchsner / Epic | Future appointment, identity, task, and communication integration | Proposed only; simulated in product |
-| FHIR R4 / mCODE | Future standards-shaped data boundary | Proposed; no live connection |
-| SMS / voice provider | Future low-bandwidth delivery | Simulated |
-| Transportation/resource provider | Future fulfillment and capacity | Synthetic catalog |
-| Language model | Optional nonclinical extraction or staff summary | Deferred; not required for safety or demo |
-
-## 13. Architecture Shape
+### Runtime shape
 
 ```text
-React + TypeScript browser application
-   ↓
-Typed synthetic fixtures + deterministic workflow reducer
-   ↓
-Derived readiness graph, exception queue, permissioned views, and audit timeline
-   ↓
-Local browser persistence and one-click reset
+React + TypeScript + Vite role workspaces
+  → generated client from contracts/openapi.yaml
+  → long-running TypeScript Node.js API service on Railway
+  → bounded in-process poller coordinates through PostgreSQL locks, claims, and leases
+  → provider adapters: Twilio, ElevenLabs, CareLink Partner Dispatch
+  → private Railway PostgreSQL events, projections, outbox, scheduled work, callback receipts
+  → event-derived metrics, FHIR bundle/report, and versioned exported ML artifacts
 ```
 
-### Deliberately avoided complexity
+### Minimum infrastructure
 
-- Next.js server features, backend API, Supabase/PostgreSQL, authentication, queues, containers, cloud deployment dependencies, and live vendor integrations.
+| Subsystem | Decision | Product reason |
+|---|---|---|
+| Frontend | React + TypeScript + Vite | Preserve the completed experience and design system |
+| Server runtime | Long-running TypeScript Node.js HTTP service on Railway | One-language command/query/callback boundary with a stable public callback origin |
+| Database | Railway PostgreSQL via Git-tracked migrations | Durable cross-role state, event history, idempotency, scheduling, and reset over private networking |
+| Worker | Bounded in-process poller coordinated by PostgreSQL advisory locks, row claims, and leases | Timely deadline and delivery behavior without another scheduler, queue, or cache service |
+| External providers | Twilio, ElevenLabs, configured CareLink partner workflow | Real controlled communication and transportation proof |
+| ML | Offline Python LightGBM/calibration/SHAP build; versioned runtime export consumed by TypeScript | Preserve the approved real pipeline while keeping the deployed API runtime in Node.js |
 
-## 14. Delivery Strategy
+## 8. Contract and source-of-truth policy
 
-| Order | Task ID | Vertical slice | User-visible outcome | Depends on |
-|---:|---|---|---|---|
-| 1 | CORE-001 | Treatment readiness golden path | Maria's two barriers become owned actions and a confirmed treatment plan | — |
-| 2 | RESILIENCE-001 | Failure and low-connectivity proof | The workflow survives unavailable resources, missed acknowledgment, and optional AI failure | CORE-001 |
-| 3 | FINALS-001 | Multi-case operational proof | Staff compare exception prioritization and closure metrics across synthetic cases | CORE-001 |
+- `contracts/openapi.yaml` is authoritative for HTTP commands, queries, callbacks, errors, and shared boundary schemas.
+- `contracts/events/*.schema.json` is authoritative for workflow event envelopes and payloads.
+- `.ai/tasks/LAUNCH-001/task.json` records the governed contract files and role write permissions.
+- Frontend consumes generated contract types/client; backend boundary models implement the contract exactly.
+- Database internals may add fields but may not redefine public event meaning.
+- A worker that needs an incompatible endpoint, event, enum, or required field stops with `CONTRACT_CHANGE_REQUIRED`.
 
-### Recommended first slice
+## 9. Trust boundaries and safety
 
-**CORE-001 — Treatment Readiness Golden Path**
+### Controlled finals environment
 
-Reason: it delivers the complete signature patient-to-staff-to-caregiver outcome, proves the state-machine mechanism, and supplies the strongest competition demonstration without external dependencies.
+- Only controlled illustrative data is permitted; no real PHI.
+- Local role-entry buttons do not authenticate users. The server-managed finals scenario token and action allowlists are environment controls, not production authorization.
+- The allowlisted phone, pickup, destination, provider, origin set, rate limits, request-size limits, and external-action kill switches are server-managed.
+- Twilio callbacks require official raw-request signature verification; ElevenLabs callbacks require HMAC verification.
+- Patient text remains inert, preserved verbatim, and routed to a named human pathway. No AI sets clinical urgency or closes clinical work.
+- Caregiver projections are allowlisted server-side and exclude clinical content from visual, accessibility, search, export, and outbound surfaces.
+- Secrets remain server-side and outside Git, logs, reports, screenshots, and frontend bundles.
 
-## 15. Stop Condition
+### Security classification
 
-The first slice is complete when the hero journey works end to end, every state transition is genuine local behavior, intended surfaces are visually complete and responsive, reset is deterministic, the smoke test and project verification pass, and no dead or misleading surface remains in the journey.
+`LAUNCH-001` is **HIGH** risk for the governed workflow because it introduces externally triggered callbacks, controlled real messages/calls, privileged reset/reseed, provider actions, and data-minimization boundaries. A dedicated security review is required even though the scenario data is illustrative.
 
-## 16. Success Criteria
+## 10. Reliability, accessibility, and performance
 
-- A judge can retell the patient, problem, mechanism, and outcome after one viewing.
-- The complete reset-to-closure flow succeeds repeatedly without network services.
-- The graph, queue, caregiver view, and timeline remain consistent through every transition.
-- Clinical authority, synthetic data, and simulated integration boundaries are truthful and understandable.
-- The product feels cohesive and premium on mobile and presentation-laptop viewports.
+- The primary journey must remain repeatable after deterministic reset and across refresh/deep links.
+- External network failure may delay or degrade the journey but must never silently become success.
+- Every mutation is guarded by idempotency and expected version where applicable.
+- Callback retries and out-of-order delivery cannot duplicate or regress workflow state.
+- Semantic structure, keyboard operation, visible focus, sufficient contrast, large patient/public controls, non-color cues, and reduced-motion equivalence are required.
+- Patient surfaces are complete at 320px/mobile widths; operational workspaces are complete at presentation-laptop widths.
+- The existing continuity field remains capped, offscreen/hidden-pausing, and static under reduced motion.
 
-## 17. Assumptions Register
+## 11. Commercial boundary
 
-| ID | Assumption | Why needed | Validation needed |
+### Confirmed launch pricing
+
+- **Small Infusion Center Pilot:** `$18,000/year` (`$1,500/month`, billed annually).
+- Larger oncology programs and health systems: **Custom pricing**.
+- Carrier, voice, and transportation charges are usage-based and separate.
+- No self-serve checkout: use `Request a pilot` and `Talk to us`.
+
+This price is a positioning hypothesis, not a validated industry or Ochsner price.
+
+## 12. Delivery map
+
+### Governed launch task
+
+`LAUNCH-001` integrates seven ordered capability milestones inside one end-to-end slice:
+
+| Order | Milestone | Outcome |
+|---:|---|---|
+| 1 | LAND | Public privacy, pricing, and local role entry |
+| 2 | FLOW | Durable early warning, ownership, deadlines, and closure |
+| 3 | SMS | Allowlisted Twilio readiness messaging and verified callbacks |
+| 4 | VOICE | Bounded ElevenLabs fallback through Twilio |
+| 5 | RIDE | CareLink Partner Dispatch, failure/recovery, and acknowledgment |
+| 6 | EVIDENCE | Event-derived metrics and validated FHIR R4 artifact |
+| 7 | ML | Calibrated supportive-outreach score and SHAP explanation |
+
+### Timebox
+
+**Confirmed:** the implementation map uses two 16-hour coding days (32 coding hours per implementation specialist), followed by one protected finalization day with no planned feature development. The long days increase available execution time; they do not relax contract, security, verification, or truthfulness gates.
+
+Detailed ownership and hour-by-hour sequencing live in [`LAUNCH_SPRINT.md`](./LAUNCH_SPRINT.md). [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md) remains the approved rationale and milestone map.
+
+## 13. Stop condition
+
+Stop adding scope when the one finals journey is visually complete, genuinely event-driven, repeatable after reset, truthful about integrations and authority, and protected by the selected gates. Do not spend remaining time on generalized infrastructure, extra personas, decorative dashboards, speculative adapters, or production hardening unrelated to an acceptance criterion or material risk.
+
+## 14. Definition of launch success
+
+- A viewer can retell the patient, threat, mechanism, owner, recovery, and outcome after one viewing.
+- Public pages expose no patient record and pricing/access entry are coherent.
+- The same persisted events drive every relevant role projection, graph state, timeline entry, metric, and FHIR artifact.
+- Live-looking provider states are backed by authenticated callbacks; replay states are distinguishable in evidence.
+- CareLink assignment alone cannot close transportation; Maria's acknowledgment is required.
+- Ana receives authorized transportation logistics and no clinical content.
+- ML is reproducible, calibrated, inspectable, safely unavailable when invalid, and limited to supportive-outreach ordering.
+- FULL tests, current verification, required security review, final review, five rehearsals, and the backup recording pass before merge.
+
+## 15. Open questions
+
+| ID | Question | Why it matters | Blocks LAUNCH-001 planning? |
 |---|---|---|---|
-| A-001 | Ochsner may have a cross-domain pre-treatment closure gap | Establishes the product opportunity | Validate with an Ochsner workflow owner before expanding beyond the first slice |
-| A-002 | A browser-local workflow is sufficient for the draft | Protects delivery speed and reliability | Demonstrate genuine state changes and describe production integration honestly |
-| A-003 | One complete case is more persuasive than several shallow cases | Keeps scope centered on the signature experience | Rehearse with uninvolved viewers and confirm they understand the mechanism |
+| Q-001 | Which production identity, consent, and authorization model would Ochsner approve? | Required before real users or PHI | No; production use remains out of scope |
+| Q-002 | Which clinical concern categories, owners, SLAs, and escalation language are approved? | Required before clinical deployment | No; finals concern remains clearly non-urgent and illustrative |
+| Q-003 | Which existing Ochsner staff surface should OncoReady replace or augment? | Prevents another inbox | No |
+| Q-004 | Are Twilio, ElevenLabs, Railway project/database, and callback-domain credentials available by Day 1 H2? | Required for live external proof | No for contract planning; yes for corresponding implementation gates |
 
-## 18. Recommended Decisions
+## 16. Approved decisions
 
-| ID | Recommendation | Rationale | Human approval needed? |
-|---|---|---|---|
-| R-001 | Use React, TypeScript, and Vite | Fastest reliable fit for the empty frontend scaffold | Approved |
-| R-002 | Use no backend or database for CORE-001 | External persistence adds no value to the judged journey | Approved |
-| R-003 | Make the Readiness Graph the signature surface | It communicates novelty, technical depth, and closure in one view | Approved |
-| R-004 | Keep AI optional and off the critical path | Deterministic routing is safer and more credible | Approved |
-
-## 19. Open Questions
-
-| ID | Question | Why it matters | Blocks first slice? |
-|---|---|---|---|
-| Q-001 | Does Ochsner already close this exact appointment-specific cross-domain workflow? | Determines long-term novelty and adoption | No |
-| Q-002 | Which treatment cohort, owners, timings, and response boundaries would support a pilot? | Determines future operational configuration | No |
-| Q-003 | Which existing staff surface would this replace or augment? | Prevents another inbox | No |
-
-## 20. Project-Level Decisions Already Approved
-
-- The product direction, five-screen hero journey, clickable interaction scope, simulated boundaries, visual opportunity areas, skipped features, frontend stack, and delivery priority were approved on August 23, 2026.
-- Prototype-submission logistics are managed by the human and are outside product implementation scope.
+| ID | Decision | Status |
+|---|---|---|
+| D-001 | Preserve React, TypeScript, Vite, and the established design system | Confirmed |
+| D-002 | Deploy separate Vite web, long-running TypeScript API, and private PostgreSQL services in one Railway project | Confirmed; amended 2026-09-20 |
+| D-003 | Run a bounded API-process poller coordinated by PostgreSQL locks, claims, and leases; keep the authenticated tick only for manual preflight and add no Redis, Kafka, Celery, or microservices | Confirmed; amended 2026-09-20 |
+| D-004 | Use CareLink Partner Dispatch as the only active finals transportation path | Confirmed |
+| D-005 | Keep Uber Health and Lyft Concierge as visibly planned, disconnected adapters | Confirmed |
+| D-006 | Use one allowlisted team-controlled phone for Twilio and ElevenLabs proof | Confirmed, credentials pending human supply |
+| D-007 | Implement LightGBM calibration and SHAP last, after workflow/contracts are stable | Confirmed |
+| D-008 | Execute two 16-hour coding days, then protect Day 3 for freeze/rehearsal/recording/submission | Confirmed |

@@ -1,13 +1,1072 @@
 openapi: 3.1.0
 
 info:
-  title: Project API
-  version: 0.1.0
+  title: OncoReady Finals Treatment Continuity API
+  version: 1.0.0
+  description: |
+    Governed HTTP boundary for LAUNCH-001. The API serves one controlled,
+    illustrative finals scenario. The branded role gateway is not production
+    authentication. Public demo operations are fixed-scenario and database-only;
+    operator, provider callback, and scheduler operations retain separate
+    authentication. Provider success is recorded only after a verified callback
+    or an explicitly identified deterministic replay.
 
 servers:
-  - url: http://localhost:8000
+  - url: http://localhost:3000
+    description: Local Node.js API development
+  - url: https://{deployment}.up.railway.app
+    description: Controlled Railway API deployment
+    variables:
+      deployment:
+        default: oncoready-api
 
-paths: {}
+tags:
+  - name: Scenario
+  - name: Workflow
+  - name: Transportation
+  - name: Communications
+  - name: Provider callbacks
+  - name: Evidence
+  - name: Operations
+
+paths:
+  /api/v1/scenarios/finals:
+    get:
+      tags: [Scenario]
+      operationId: getFinalsScenario
+      summary: Return a role-minimized projection of the finals scenario
+      description: Public read of the fixed illustrative finals scenario; no protected or real patient data is available.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/Role'
+      responses:
+        '200':
+          description: Projection for the requested local role
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RoleProjection'
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/scenarios/finals/reset:
+    post:
+      tags: [Scenario]
+      operationId: resetFinalsScenario
+      summary: Deterministically reseed the finals scenario without external effects
+      description: |
+        Privileged controlled-environment action. The server must suppress SMS,
+        voice, and transportation side effects while reseeding.
+      security:
+        - OperatorControlToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResetCommand'
+      responses:
+        '200':
+          description: Scenario reseeded; repeated idempotency keys replay this receipt
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/readiness-submissions:
+    post:
+      tags: [Workflow]
+      operationId: submitReadiness
+      summary: Record one readiness response and create separately owned work
+      description: Public fixed-scenario demo mutation with database-only effects; it cannot authorize provider outbox work.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReadinessSubmissionCommand'
+      responses:
+        '202':
+          description: Submission accepted or idempotently replayed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/work-items/{work_item_id}/commands:
+    post:
+      tags: [Workflow]
+      operationId: commandWorkItem
+      summary: Apply a guarded command to one human-owned work item
+      description: Public fixed-scenario demo mutation with database-only effects; the claimed role is checked against the route, resource, action, and current state.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/WorkItemId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkItemCommand'
+      responses:
+        '202':
+          description: Command accepted or idempotently replayed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/transport/requests:
+    post:
+      tags: [Transportation]
+      operationId: createTransportRequest
+      summary: Create the configured CareLink Partner Dispatch request
+      description: Public fixed-scenario database-only demo mutation. The server derives the allowlisted plan, pickup, destination, provider, and permission state; arbitrary client-selected plan fields are forbidden.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTransportRequestCommand'
+      responses:
+        '202':
+          description: Transport request accepted or idempotently replayed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/transport/requests/{transport_request_id}/commands:
+    post:
+      tags: [Transportation]
+      operationId: commandTransportRequest
+      summary: Advance, recover, or escalate the controlled transport lifecycle
+      description: Public fixed-scenario demo mutation with database-only effects; the server enforces the action-specific role and transition policy.
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/TransportRequestId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransportCommand'
+      responses:
+        '202':
+          description: Transport command accepted or idempotently replayed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '404': {$ref: '#/components/responses/NotFound'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/communications/sms:
+    post:
+      tags: [Communications]
+      operationId: queueReadinessSms
+      summary: Queue one allowlisted SMS through the transactional outbox
+      security:
+        - OperatorControlToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationCommand'
+      responses:
+        '202':
+          description: SMS queued or idempotently replayed; this does not mean delivered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/communications/voice:
+    post:
+      tags: [Communications]
+      operationId: queueReadinessVoiceCall
+      summary: Queue one bounded allowlisted voice call through the transactional outbox
+      security:
+        - OperatorControlToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommunicationCommand'
+      responses:
+        '202':
+          description: Call queued or idempotently replayed; this does not mean answered or completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommandReceipt'
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '422': {$ref: '#/components/responses/Unprocessable'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/callbacks/twilio/inbound-message:
+    post:
+      tags: [Provider callbacks]
+      operationId: receiveTwilioInboundMessage
+      summary: Receive an inbound Twilio message after raw-request signature verification
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/TwilioSignature'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwilioInboundMessage'
+      responses:
+        '204': {description: Callback accepted or duplicate safely ignored}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/callbacks/twilio/message-status:
+    post:
+      tags: [Provider callbacks]
+      operationId: receiveTwilioMessageStatus
+      summary: Receive a Twilio delivery callback after raw-request signature verification
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/TwilioSignature'
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/TwilioMessageStatus'
+      responses:
+        '204': {description: Callback accepted or duplicate safely ignored}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/callbacks/elevenlabs/post-call:
+    post:
+      tags: [Provider callbacks]
+      operationId: receiveElevenLabsPostCall
+      summary: Receive an allowlisted structured voice outcome after HMAC verification
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ElevenLabsSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElevenLabsPostCall'
+      responses:
+        '200': {description: Callback accepted or duplicate safely ignored}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/callbacks/elevenlabs/failure:
+    post:
+      tags: [Provider callbacks]
+      operationId: receiveElevenLabsFailure
+      summary: Record voice initiation or execution failure after HMAC verification
+      security: []
+      parameters:
+        - $ref: '#/components/parameters/ElevenLabsSignature'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ElevenLabsFailure'
+      responses:
+        '200': {description: Callback accepted or duplicate safely ignored}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
+        '413': {$ref: '#/components/responses/PayloadTooLarge'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+
+  /api/v1/evidence/metrics:
+    get:
+      tags: [Evidence]
+      operationId: getWorkflowMetrics
+      summary: Return operational metrics derived from workflow events
+      description: Public evidence read for the fixed illustrative finals scenario.
+      security: []
+      responses:
+        '200':
+          description: Current event-derived metrics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MetricsEvidence'
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/evidence/fhir:
+    get:
+      tags: [Evidence]
+      operationId: getFhirEvidence
+      summary: Return the generated FHIR R4 bundle and validator state
+      description: Public evidence read for the fixed illustrative finals scenario; it does not imply a live hospital connection.
+      security: []
+      responses:
+        '200':
+          description: Generated bundle and inspectable validation report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FhirEvidence'
+        '403': {$ref: '#/components/responses/Forbidden'}
+        '503': {$ref: '#/components/responses/Unavailable'}
+
+  /api/v1/evidence/priority:
+    get:
+      tags: [Evidence]
+      operationId: getPriorityEvidence
+      summary: Return a versioned supportive-outreach score or an explicit unavailable result
+      description: Public evidence read for the fixed illustrative finals scenario; the score is non-clinical and staff-supportive only.
+      security: []
+      responses:
+        '200':
+          description: Score evidence; never a clinical, eligibility, cancellation, or rescheduling decision
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PriorityEvidence'
+        '403': {$ref: '#/components/responses/Forbidden'}
+
+  /api/v1/operations/tick:
+    get:
+      tags: [Operations]
+      operationId: runScheduledWorkTick
+      summary: Claim and process a bounded batch of due scheduled and outbox work
+      description: Called by the configured authenticated scheduler. Durable work exists in PostgreSQL before this endpoint runs.
+      security:
+        - CronSecret: []
+      parameters:
+        - $ref: '#/components/parameters/MaxTickItems'
+      responses:
+        '200':
+          description: Bounded drain summary
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OperationsTickReceipt'
+        '401': {$ref: '#/components/responses/Unauthorized'}
+        '409': {$ref: '#/components/responses/Conflict'}
+        '429': {$ref: '#/components/responses/RateLimited'}
+        '503': {$ref: '#/components/responses/Unavailable'}
 
 components:
-  schemas: {}
+  securitySchemes:
+    OperatorControlToken:
+      type: apiKey
+      in: header
+      name: X-OncoReady-Operator-Token
+      description: Server-only controlled operator credential for reset and fixed-recipient provider initiation; never sent to the browser.
+    CronSecret:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque-cron-secret
+
+  parameters:
+    Role:
+      name: role
+      in: query
+      required: true
+      schema:
+        $ref: '#/components/schemas/ActorRole'
+    WorkItemId:
+      name: work_item_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    TransportRequestId:
+      name: transport_request_id
+      in: path
+      required: true
+      schema: {type: string, format: uuid}
+    TwilioSignature:
+      name: X-Twilio-Signature
+      in: header
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 512}
+    ElevenLabsSignature:
+      name: ElevenLabs-Signature
+      in: header
+      required: true
+      schema: {type: string, minLength: 1, maxLength: 1024}
+    MaxTickItems:
+      name: max_items
+      in: query
+      required: false
+      schema: {type: integer, minimum: 1, maximum: 100, default: 25}
+
+  responses:
+    BadRequest:
+      description: Malformed request
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Unauthorized:
+      description: Missing or invalid controlled-environment credential
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    InvalidCallbackSignature:
+      description: Provider callback signature is invalid
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Forbidden:
+      description: Role or environment policy forbids this action
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    NotFound:
+      description: Requested aggregate does not exist
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Conflict:
+      description: Expected version or transition conflicts with current state
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    PayloadTooLarge:
+      description: Callback exceeds the configured request-size limit
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Unprocessable:
+      description: Valid syntax but domain validation or transition guard failed
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    RateLimited:
+      description: Request rate exceeds the controlled-environment limit
+      headers:
+        Retry-After:
+          schema: {type: integer, minimum: 1}
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+    Unavailable:
+      description: Required dependency or artifact is unavailable; no success state was recorded
+      content: {application/json: {schema: {$ref: '#/components/schemas/Problem'}}}
+
+  schemas:
+    FinalsScenarioId:
+      type: string
+      format: uuid
+      const: 11111111-1111-4111-8111-111111111111
+      description: Fixed identifier for the controlled illustrative finals scenario.
+
+    ActorRole:
+      type: string
+      enum: [patient, caregiver, staff, transport_coordinator]
+
+    CommandContext:
+      type: object
+      required: [scenario_id, actor_role, idempotency_key, expected_aggregate_version]
+      properties:
+        scenario_id: {$ref: '#/components/schemas/FinalsScenarioId'}
+        actor_role:
+          allOf:
+            - $ref: '#/components/schemas/ActorRole'
+          description: Claimed demo provenance only; it is not authenticated identity or sufficient authorization.
+        idempotency_key: {type: string, minLength: 8, maxLength: 128, pattern: '^[A-Za-z0-9._:-]+$'}
+        expected_aggregate_version: {type: integer, minimum: 0}
+
+    ResetCommand:
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [confirmation]
+          properties:
+            actor_role: {const: staff}
+            confirmation: {const: RESET_FINALS_SCENARIO}
+
+    ReadinessSubmissionCommand:
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [channel, transport_status, callback_requested]
+          properties:
+            actor_role: {const: patient}
+            channel: {const: web}
+            transport_status: {type: string, enum: [confirmed, needs_help, unknown]}
+            clinical_concern_verbatim: {type: [string, 'null'], maxLength: 2000}
+            callback_requested: {type: boolean}
+
+    WorkItemCommand:
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+              enum: [assign, acknowledge, accept, request_information, record_action, escalate, inform_patient, acknowledge_patient, close]
+            owner_id: {type: [string, 'null'], maxLength: 120}
+            note: {type: [string, 'null'], maxLength: 2000}
+            closure_evidence: {type: [string, 'null'], maxLength: 2000}
+
+    CreateTransportRequestCommand:
+      unevaluatedProperties: false
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [work_item_id]
+          properties:
+            actor_role: {type: string, enum: [staff, transport_coordinator]}
+            work_item_id: {type: string, format: uuid}
+
+    TransportCommand:
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [action]
+          properties:
+            action:
+              type: string
+              enum: [review_eligibility, mark_request_ready, offer, accept, assign_driver, mark_provider_unavailable, decline, cancel, activate_backup, notify_patient, acknowledge_patient, mark_en_route, arrive, pick_up, complete, mark_return_pending, escalate_to_navigator]
+            eligible: {type: [boolean, 'null']}
+            service_area_confirmed: {type: [boolean, 'null']}
+            operating_window_confirmed: {type: [boolean, 'null']}
+            outbound_plan_complete: {type: [boolean, 'null']}
+            return_plan_complete: {type: [boolean, 'null']}
+            driver_alias: {type: [string, 'null'], maxLength: 120}
+            vehicle_description: {type: [string, 'null'], maxLength: 200}
+            reason: {type: [string, 'null'], maxLength: 500}
+            closure_evidence: {type: [string, 'null'], maxLength: 1000}
+
+    CommunicationCommand:
+      allOf:
+        - $ref: '#/components/schemas/CommandContext'
+        - type: object
+          required: [purpose, destination_alias]
+          properties:
+            actor_role: {const: staff}
+            purpose: {type: string, enum: [readiness, fallback, plan_update, human_callback]}
+            destination_alias: {const: finals_allowlisted_phone}
+
+    CommandReceipt:
+      type: object
+      additionalProperties: false
+      required: [command_id, disposition, scenario_id, aggregate_id, aggregate_version, emitted_events]
+      properties:
+        command_id: {type: string, format: uuid}
+        disposition: {type: string, enum: [accepted, replayed]}
+        scenario_id: {type: string, format: uuid}
+        aggregate_id: {type: string, format: uuid}
+        aggregate_version: {type: integer, minimum: 0}
+        emitted_events:
+          type: array
+          items: {$ref: './events/workflow-event.schema.json'}
+
+    TimeWindow:
+      type: object
+      additionalProperties: false
+      required: [starts_at, ends_at]
+      properties:
+        starts_at: {type: string, format: date-time}
+        ends_at: {type: string, format: date-time}
+
+    MobilityNeeds:
+      type: object
+      additionalProperties: false
+      required: [wheelchair, transfer_assistance, escort_required]
+      properties:
+        wheelchair: {type: boolean}
+        transfer_assistance: {type: boolean}
+        escort_required: {type: boolean}
+        notes: {type: [string, 'null'], maxLength: 500}
+
+    TripLegPlan:
+      type: object
+      additionalProperties: false
+      required: [location_alias, window]
+      properties:
+        location_alias: {type: string, enum: [maria_home, benson_cancer_center]}
+        window: {$ref: '#/components/schemas/TimeWindow'}
+        duration_uncertain: {type: boolean, default: false}
+
+    RoleProjection:
+      oneOf:
+        - $ref: '#/components/schemas/PatientProjection'
+        - $ref: '#/components/schemas/CaregiverProjection'
+        - $ref: '#/components/schemas/StaffProjection'
+        - $ref: '#/components/schemas/TransportProjection'
+      discriminator:
+        propertyName: role
+        mapping:
+          patient: '#/components/schemas/PatientProjection'
+          caregiver: '#/components/schemas/CaregiverProjection'
+          staff: '#/components/schemas/StaffProjection'
+          transport_coordinator: '#/components/schemas/TransportProjection'
+
+    ProjectionBase:
+      type: object
+      required: [scenario_id, scenario_version, role, as_of, treatment, readiness_status]
+      properties:
+        scenario_id: {type: string, format: uuid}
+        scenario_version: {type: integer, minimum: 0}
+        role: {$ref: '#/components/schemas/ActorRole'}
+        as_of: {type: string, format: date-time}
+        treatment: {$ref: '#/components/schemas/TreatmentSummary'}
+        readiness_status: {type: string, enum: [not_started, at_risk, action_in_progress, continuity_plan_confirmed]}
+
+    PatientProjection:
+      allOf:
+        - $ref: '#/components/schemas/ProjectionBase'
+        - type: object
+          required: [role, patient, blockers, next_action, communications, transport]
+          properties:
+            role: {const: patient}
+            patient: {$ref: '#/components/schemas/PatientSummary'}
+            blockers: {type: array, items: {$ref: '#/components/schemas/PatientBlocker'}}
+            next_action: {type: [string, 'null'], maxLength: 300}
+            communications: {type: array, items: {$ref: '#/components/schemas/CommunicationSummary'}}
+            transport: {$ref: '#/components/schemas/PatientTransportSummary'}
+
+    CaregiverProjection:
+      description: Allowlisted logistics projection. When permission is revoked, transport is absent at the server boundary. Clinical text, clinical work, nurse notes, scores, and evidence are not members of this schema.
+      allOf:
+        - $ref: '#/components/schemas/ProjectionBase'
+        - oneOf:
+            - type: object
+              required: [role, caregiver, permission, transport]
+              properties:
+                role: {const: caregiver}
+                caregiver: {type: object, additionalProperties: false, required: [display_name], properties: {display_name: {type: string, maxLength: 120}}}
+                permission: {type: object, additionalProperties: false, required: [transport_logistics_allowed], properties: {transport_logistics_allowed: {const: true}}}
+                transport: {$ref: '#/components/schemas/CaregiverTransportSummary'}
+            - type: object
+              required: [role, caregiver, permission]
+              not: {required: [transport]}
+              properties:
+                role: {const: caregiver}
+                caregiver: {type: object, additionalProperties: false, required: [display_name], properties: {display_name: {type: string, maxLength: 120}}}
+                permission: {type: object, additionalProperties: false, required: [transport_logistics_allowed], properties: {transport_logistics_allowed: {const: false}}}
+
+    StaffProjection:
+      allOf:
+        - $ref: '#/components/schemas/ProjectionBase'
+        - type: object
+          required: [role, patient, barriers, work_items, communications, transport, timeline]
+          properties:
+            role: {const: staff}
+            patient: {$ref: '#/components/schemas/PatientSummary'}
+            barriers: {type: array, items: {$ref: '#/components/schemas/BarrierSummary'}}
+            work_items: {type: array, items: {$ref: '#/components/schemas/WorkItemSummary'}}
+            communications: {type: array, items: {$ref: '#/components/schemas/StaffCommunicationSummary'}}
+            transport: {$ref: '#/components/schemas/StaffTransportSummary'}
+            timeline: {type: array, items: {$ref: './events/workflow-event.schema.json'}}
+
+    TransportProjection:
+      description: Fulfillment projection with only trip, mobility, contact-alias, and acknowledgment data.
+      allOf:
+        - $ref: '#/components/schemas/ProjectionBase'
+        - type: object
+          required: [role, request]
+          properties:
+            role: {const: transport_coordinator}
+            request: {$ref: '#/components/schemas/TransportCoordinatorRequest'}
+
+    TreatmentSummary:
+      type: object
+      additionalProperties: false
+      required: [treatment_id, starts_at, arrival_window, location_display_name, transport_notice_cutoff]
+      properties:
+        treatment_id: {type: string, format: uuid}
+        starts_at: {type: string, format: date-time}
+        arrival_window: {$ref: '#/components/schemas/TimeWindow'}
+        location_display_name: {type: string, maxLength: 160}
+        transport_notice_cutoff: {type: string, format: date-time}
+
+    PatientSummary:
+      type: object
+      additionalProperties: false
+      required: [patient_id, display_name]
+      properties:
+        patient_id: {type: string, format: uuid}
+        display_name: {type: string, maxLength: 120}
+
+    PatientBlocker:
+      type: object
+      additionalProperties: false
+      required: [barrier_id, label, status, owner_role, due_at]
+      properties:
+        barrier_id: {type: string, format: uuid}
+        label: {type: string, maxLength: 160}
+        status: {type: string, enum: [open, in_progress, awaiting_patient, resolved]}
+        owner_role: {type: string, maxLength: 120}
+        due_at: {type: string, format: date-time}
+
+    BarrierSummary:
+      type: object
+      additionalProperties: false
+      required: [barrier_id, barrier_type, status, source]
+      properties:
+        barrier_id: {type: string, format: uuid}
+        barrier_type: {type: string, enum: [clinical_concern, transportation, scheduling, communication]}
+        status: {type: string, enum: [open, in_progress, resolved, escalated]}
+        source: {type: string, maxLength: 120}
+        patient_verbatim: {type: [string, 'null'], maxLength: 2000}
+
+    WorkItemSummary:
+      type: object
+      additionalProperties: false
+      required: [work_item_id, work_item_type, owner_role, status, due_at, aggregate_version]
+      properties:
+        work_item_id: {type: string, format: uuid}
+        work_item_type: {type: string, enum: [clinical_review, transport_navigation, human_callback, scheduling_support]}
+        owner_role: {type: string, enum: [triage_nurse, navigator, transport_coordinator, scheduling_team]}
+        owner_display_name: {type: [string, 'null'], maxLength: 120}
+        status: {type: string, enum: [open, assigned, acknowledged, needs_information, accepted, actioned, patient_informed, patient_acknowledged, escalated, closed]}
+        due_at: {type: string, format: date-time}
+        aggregate_version: {type: integer, minimum: 0}
+        next_action: {type: [string, 'null'], maxLength: 300}
+        closure_evidence: {type: [string, 'null'], maxLength: 2000}
+
+    CommunicationSummary:
+      type: object
+      additionalProperties: false
+      required: [communication_id, channel, purpose, status, provenance]
+      properties:
+        communication_id: {type: string, format: uuid}
+        channel: {type: string, enum: [sms, voice]}
+        purpose: {type: string, enum: [readiness, fallback, plan_update, human_callback]}
+        status: {type: string, enum: [queued, sent, delivered, undelivered, answered, no_answer, failed, opted_out, completed, outcome_unknown]}
+        provenance: {type: string, enum: [provider_callback, deterministic_replay]}
+        occurred_at: {type: string, format: date-time}
+        reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    StaffCommunicationSummary:
+      allOf:
+        - $ref: '#/components/schemas/CommunicationSummary'
+        - type: object
+          required: [reconciliation]
+          properties:
+            reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    ProviderReconciliationSummary:
+      description: Durable provider-attempt state. Outcome-unknown work cannot be blindly resent; only the declared recovery is permitted.
+      type: object
+      additionalProperties: false
+      required: [state, last_attempt_at, attempt_reference, provenance, permitted_recovery]
+      properties:
+        state: {type: string, enum: [not_required, outcome_unknown, reconciliation_required, reconciled, manual_recovery_required]}
+        last_attempt_at: {type: [string, 'null'], format: date-time}
+        attempt_reference: {type: [string, 'null'], maxLength: 255}
+        provenance: {type: string, enum: [none, provider_callback, provider_lookup, deterministic_replay, manual_recovery]}
+        permitted_recovery: {type: string, enum: [none, await_callback, refresh_status, reconcile_provider, activate_backup, escalate_manually]}
+
+    PatientTransportSummary:
+      type: object
+      required: [transport_request_id, aggregate_version, status, provider_display_name, plan_version, acknowledgment_required]
+      properties:
+        transport_request_id:
+          type: string
+          format: uuid
+          description: Fixed-scenario command identity used for Maria's guarded plan acknowledgment.
+        aggregate_version:
+          type: integer
+          minimum: 0
+          description: Current transport aggregate version for optimistic concurrency.
+        status: {$ref: '#/components/schemas/TransportStatus'}
+        provider_display_name: {type: string, maxLength: 160}
+        pickup_window: {$ref: '#/components/schemas/TimeWindow'}
+        return_window: {$ref: '#/components/schemas/TimeWindow'}
+        driver_alias: {type: [string, 'null'], maxLength: 120}
+        vehicle_description: {type: [string, 'null'], maxLength: 200}
+        plan_version: {type: integer, minimum: 1}
+        acknowledgment_required: {type: boolean}
+
+    CaregiverTransportSummary:
+      type: object
+      additionalProperties: false
+      required: [status, provider_display_name, acknowledgment_status]
+      properties:
+        status: {$ref: '#/components/schemas/TransportStatus'}
+        provider_display_name: {type: string, maxLength: 160}
+        pickup_window: {$ref: '#/components/schemas/TimeWindow'}
+        return_window: {$ref: '#/components/schemas/TimeWindow'}
+        driver_alias: {type: [string, 'null'], maxLength: 120}
+        vehicle_description: {type: [string, 'null'], maxLength: 200}
+        acknowledgment_status: {type: string, enum: [not_requested, awaiting_patient, acknowledged]}
+
+    StaffTransportSummary:
+      allOf:
+        - $ref: '#/components/schemas/PatientTransportSummary'
+        - type: object
+          required: [transport_request_id, aggregate_version, eligibility, outbound_plan_complete, return_plan_complete, reconciliation]
+          properties:
+            transport_request_id: {type: string, format: uuid}
+            aggregate_version: {type: integer, minimum: 0}
+            eligibility: {type: string, enum: [not_reviewed, eligible, ineligible, needs_review]}
+            outbound_plan_complete: {type: boolean}
+            return_plan_complete: {type: boolean}
+            failure_reason: {type: [string, 'null'], maxLength: 500}
+            reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    TransportCoordinatorRequest:
+      type: object
+      additionalProperties: false
+      required: [transport_request_id, aggregate_version, status, arrival_window, notice_cutoff, funding_path, service_area, mobility, outbound_plan, return_plan, notification_permission, acknowledgment_status, reconciliation]
+      properties:
+        transport_request_id: {type: string, format: uuid}
+        aggregate_version: {type: integer, minimum: 0}
+        status: {$ref: '#/components/schemas/TransportStatus'}
+        arrival_window: {$ref: '#/components/schemas/TimeWindow'}
+        notice_cutoff: {type: string, format: date-time}
+        funding_path: {type: string, enum: [pilot_sponsored, hospital_supported, patient_self_pay, eligibility_review_required]}
+        service_area: {type: string, maxLength: 160}
+        mobility: {$ref: '#/components/schemas/MobilityNeeds'}
+        outbound_plan: {$ref: '#/components/schemas/TripLegPlan'}
+        return_plan: {$ref: '#/components/schemas/TripLegPlan'}
+        notification_permission: {type: boolean}
+        contact_alias: {const: finals_allowlisted_phone}
+        acknowledgment_status: {type: string, enum: [not_requested, awaiting_patient, acknowledged]}
+        driver_alias: {type: [string, 'null'], maxLength: 120}
+        vehicle_description: {type: [string, 'null'], maxLength: 200}
+        reconciliation: {$ref: '#/components/schemas/ProviderReconciliationSummary'}
+
+    TransportStatus:
+      type: string
+      enum: [need_detected, eligibility_reviewed, request_ready, offered, accepted, driver_assigned, patient_notified, patient_acknowledged, en_route, arrived, picked_up, completed, declined, cancelled, provider_unavailable, outcome_unknown, stale_assignment, return_pending, backup_required, backup_activated, escalated_to_navigator]
+
+    TwilioInboundMessage:
+      type: object
+      additionalProperties: true
+      required: [MessageSid, From, To, Body]
+      properties:
+        MessageSid: {type: string, minLength: 1, maxLength: 64}
+        From: {type: string, minLength: 3, maxLength: 32}
+        To: {type: string, minLength: 3, maxLength: 32}
+        Body: {type: string, maxLength: 2000}
+
+    TwilioMessageStatus:
+      type: object
+      additionalProperties: true
+      required: [MessageSid, MessageStatus]
+      properties:
+        MessageSid: {type: string, minLength: 1, maxLength: 64}
+        MessageStatus: {type: string, enum: [queued, sent, delivered, undelivered, failed]}
+        ErrorCode: {type: [string, 'null'], maxLength: 32}
+
+    ElevenLabsPostCall:
+      type: object
+      description: Official signed ElevenLabs post-call transcription envelope. Transcript and audio content are not persisted by OncoReady.
+      additionalProperties: true
+      required: [type, event_timestamp, data]
+      properties:
+        type: {const: post_call_transcription}
+        event_timestamp: {type: integer, minimum: 0}
+        data:
+          type: object
+          additionalProperties: true
+          required: [agent_id, conversation_id, status, analysis]
+          properties:
+            agent_id: {type: string, minLength: 1, maxLength: 255}
+            conversation_id: {type: string, minLength: 1, maxLength: 255}
+            status: {type: string, minLength: 1, maxLength: 64}
+            analysis:
+              type: object
+              additionalProperties: true
+              required: [data_collection_results]
+              properties:
+                data_collection_results:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    oncoready_outcome:
+                      $ref: '#/components/schemas/ElevenLabsOutcomeResult'
+
+    ElevenLabsOutcomeResult:
+      type: object
+      additionalProperties: true
+      required: [data_collection_id, value]
+      properties:
+        data_collection_id: {const: oncoready_outcome}
+        value: {type: string, enum: [ready, ride_help, scheduling_help, human_callback, unsupported_or_uncertain]}
+        rationale: {type: [string, 'null'], maxLength: 2000}
+
+    ElevenLabsFailure:
+      type: object
+      description: Official signed ElevenLabs call-initiation-failure envelope.
+      additionalProperties: true
+      required: [type, event_timestamp, data]
+      properties:
+        type: {const: call_initiation_failure}
+        event_timestamp: {type: integer, minimum: 0}
+        data:
+          type: object
+          additionalProperties: true
+          required: [agent_id, conversation_id, failure_reason, metadata]
+          properties:
+            agent_id: {type: string, minLength: 1, maxLength: 255}
+            conversation_id: {type: string, minLength: 1, maxLength: 255}
+            failure_reason: {type: string, enum: [busy, no-answer, unknown]}
+            metadata:
+              type: object
+              additionalProperties: true
+              required: [type, body]
+              properties:
+                type: {type: string, enum: [twilio, sip]}
+                body: {type: object, additionalProperties: true}
+
+    MetricsEvidence:
+      type: object
+      additionalProperties: false
+      required: [scenario_id, as_of, source_event_version, lead_time_hours, unresolved_blockers, contact_attempts, final_disposition]
+      properties:
+        scenario_id: {type: string, format: uuid}
+        as_of: {type: string, format: date-time}
+        source_event_version: {type: integer, minimum: 0}
+        lead_time_hours: {type: number, minimum: 0}
+        time_to_owner_minutes: {type: [number, 'null'], minimum: 0}
+        time_to_acceptance_minutes: {type: [number, 'null'], minimum: 0}
+        time_to_first_action_minutes: {type: [number, 'null'], minimum: 0}
+        time_to_closure_minutes: {type: [number, 'null'], minimum: 0}
+        unresolved_blockers:
+          type: object
+          additionalProperties: false
+          required: [at_t72, at_t24, at_t4, current]
+          properties:
+            at_t72: {type: integer, minimum: 0}
+            at_t24: {type: integer, minimum: 0}
+            at_t4: {type: integer, minimum: 0}
+            current: {type: integer, minimum: 0}
+        sla_breaches: {type: integer, minimum: 0}
+        contact_attempts: {type: integer, minimum: 0}
+        final_disposition: {type: string, enum: [kept, clinically_rescheduled, administratively_rescheduled, cancelled, unknown]}
+
+    FhirEvidence:
+      type: object
+      additionalProperties: false
+      required: [scenario_id, generated_at, source_event_version, status, validator, bundle, report]
+      properties:
+        scenario_id: {type: string, format: uuid}
+        generated_at: {type: string, format: date-time}
+        source_event_version: {type: integer, minimum: 0}
+        status: {type: string, enum: [generated, validated, invalid]}
+        validator:
+          type: object
+          additionalProperties: false
+          required: [name, version, passed]
+          properties:
+            name: {type: string, maxLength: 120}
+            version: {type: string, maxLength: 120}
+            passed: {type: boolean}
+        bundle: {type: object, additionalProperties: true}
+        report:
+          type: array
+          items:
+            type: object
+            additionalProperties: false
+            required: [severity, message]
+            properties:
+              severity: {type: string, enum: [information, warning, error, fatal]}
+              message: {type: string, maxLength: 2000}
+
+    PriorityEvidence:
+      oneOf:
+        - $ref: '#/components/schemas/PriorityScoreAvailable'
+        - $ref: '#/components/schemas/PriorityScoreUnavailable'
+      discriminator:
+        propertyName: status
+
+    PriorityScoreAvailable:
+      type: object
+      additionalProperties: false
+      required: [status, use, model_version, feature_schema_version, feature_snapshot_hash, scored_at, calibrated_probability, contributors]
+      properties:
+        status: {const: available}
+        use: {const: supportive_outreach_ordering_only}
+        model_version: {type: string, minLength: 1}
+        feature_schema_version: {type: string, minLength: 1}
+        feature_snapshot_hash: {type: string, pattern: '^[a-f0-9]{64}$'}
+        scored_at: {type: string, format: date-time}
+        calibrated_probability: {type: number, minimum: 0, maximum: 1}
+        contributors:
+          type: array
+          maxItems: 8
+          items:
+            type: object
+            additionalProperties: false
+            required: [feature, value, direction, raw_margin_contribution, observed_at]
+            properties:
+              feature: {type: string, maxLength: 120}
+              value: {}
+              direction: {type: string, enum: [increases_priority, decreases_priority]}
+              raw_margin_contribution: {type: number}
+              observed_at: {type: string, format: date-time}
+
+    PriorityScoreUnavailable:
+      type: object
+      additionalProperties: false
+      required: [status, use, reason]
+      properties:
+        status: {const: unavailable}
+        use: {const: supportive_outreach_ordering_only}
+        reason: {type: string, enum: [artifact_missing, artifact_malformed, artifact_stale, schema_mismatch, snapshot_mismatch, runtime_error]}
+
+    OperationsTickReceipt:
+      type: object
+      additionalProperties: false
+      required: [tick_id, started_at, completed_at, claimed, succeeded, failed, remaining_due]
+      properties:
+        tick_id: {type: string, format: uuid}
+        started_at: {type: string, format: date-time}
+        completed_at: {type: string, format: date-time}
+        claimed: {type: integer, minimum: 0}
+        succeeded: {type: integer, minimum: 0}
+        failed: {type: integer, minimum: 0}
+        remaining_due: {type: integer, minimum: 0}
+
+    Problem:
+      type: object
+      additionalProperties: false
+      required: [type, title, status, code, detail, trace_id, retryable]
+      properties:
+        type: {type: string, format: uri-reference}
+        title: {type: string, maxLength: 160}
+        status: {type: integer, minimum: 400, maximum: 599}
+        code:
+          type: string
+          enum: [invalid_request, unauthorized, invalid_callback_signature, forbidden_action, not_found, version_conflict, invalid_transition, validation_failed, payload_too_large, rate_limited, dependency_unavailable, artifact_unavailable, internal_error]
+        detail: {type: string, maxLength: 2000}
+        trace_id: {type: string, minLength: 1, maxLength: 128}
+        retryable: {type: boolean}
+        current_aggregate_version: {type: [integer, 'null'], minimum: 0}

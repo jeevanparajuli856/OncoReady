@@ -1,0 +1,46 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAUNCH-001",
+  "reviewer": "codex-security",
+  "reviewed_commit": "805f7c71d3dbe441708ea2e73205d40840a3b571",
+  "status": "APPROVED",
+  "summary": "Focused re-review approves the exact current evidence revision. The patient acknowledgment surface uses the server-projected transport request ID and aggregate version, submits the patient actor and acknowledge_patient action only from patient_notified, and leaves the coordinator in a non-actionable waiting state; server policy rejects the coordinator claim and applies state/version guards. Caregiver output continues through the server-side minimization allowlist and receives logistics status without the patient command identity, aggregate version, clinical text, work items, or model evidence. Sequential staff work-item transitions now preserve the existing aggregate state, including work_item_type, while advancing only the governed status/version fields. Transport completion is accepted only from picked_up with nonblank closure evidence; return_pending remains unresolved and routes to manual escalation. verification-report.json records PASSED evidence for implementation commit 211d9e4952d4002a9081ffc3a78207290a989464, including the focused 3/3 regression evidence. No unresolved blocking security finding remains.",
+  "findings": [
+    {
+      "severity": "info",
+      "category": "patient transport authorization",
+      "file": "packages/server/src/application.ts",
+      "description": "Resolved and verified: the patient workspace sends acknowledge_patient with the current server-projected transport_request_id and aggregate_version. The transition is valid only from patient_notified; the coordinator surface exposes no such command and a forged coordinator actor claim is rejected by the server-side action policy.",
+      "impact": "The controlled flow records acknowledgment against the current transport aggregate without allowing the coordinator UI or stale command state to impersonate Maria's acknowledgment.",
+      "remediation": "None required for this task; retain the patient/current-version and coordinator-denial regression coverage.",
+      "blocking": false
+    },
+    {
+      "severity": "info",
+      "category": "caregiver data minimization",
+      "file": "packages/server/src/repository.ts",
+      "description": "Verified: caregiver projections are reconstructed from an explicit server-side allowlist. When logistics permission is present, transport output includes only status, provider display, trip windows, driver/vehicle aliases, and acknowledgment status; transport command identity/version and patient, clinical, internal-work, and model fields are excluded.",
+      "impact": "Adding patient command identity to the patient projection does not broaden the anonymous caregiver response or move privacy enforcement into React.",
+      "remediation": "None required for this task; preserve the explicit projection allowlist as fields evolve.",
+      "blocking": false
+    },
+    {
+      "severity": "info",
+      "category": "work-item policy state",
+      "file": "packages/server/src/application.ts",
+      "description": "Resolved and verified: work-item transitions merge status, version, owner, and closure evidence into the existing aggregate state instead of replacing it. work_item_type therefore remains available for the next server-side resource/actor/action policy decision.",
+      "impact": "Sequential assign and acknowledge commands remain governed by the original work-item type and cannot accidentally bypass or fail the type-specific role policy because policy state was discarded.",
+      "remediation": "None required for this task; retain the open-to-assign-to-acknowledge regression.",
+      "blocking": false
+    },
+    {
+      "severity": "info",
+      "category": "transport completion integrity",
+      "file": "packages/server/src/domain.ts",
+      "description": "Verified: complete is permitted only from picked_up, requires the full plan/acknowledgment guard and nonblank closure_evidence, and remains restricted to the transport coordinator. return_pending is not accepted as completion and is routed to escalate_to_navigator.",
+      "impact": "An unresolved return leg cannot be represented as completed or continuity_plan_confirmed without the required state and human evidence.",
+      "remediation": "None required for this task; retain the blank-evidence denial and return-pending escalation regressions.",
+      "blocking": false
+    }
+  ]
+}

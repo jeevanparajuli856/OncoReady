@@ -53,7 +53,7 @@ def baseline_security_check():
             continue
         if name == ".env" or name.startswith(".env.") or name == "credentials.json" or name.endswith(".pem") or name.endswith(".key"):
             bad.append(rel)
-        if rel.startswith("supabase/.temp/") or rel.startswith("supabase/.branches/"):
+        if rel.startswith(".railway/"):
             bad.append(rel)
     return {
         "name":"tracked-secret-file-baseline",

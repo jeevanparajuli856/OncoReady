@@ -28,7 +28,7 @@ Follow `permissions.frontend` in `.ai/tasks/<TASK-ID>/task.json`. It normally pe
 - `.ai/tasks/<TASK-ID>/frontend-design-report.json`
 - `.ai/tasks/<TASK-ID>/frontend-report.json`
 
-Do not modify backend/database/Supabase paths, contracts, `task.json`, or `frontend-design-review.json` unless the orchestrator explicitly changes the permission boundary.
+Do not modify backend/database paths, contracts, `task.json`, or `frontend-design-review.json` unless the orchestrator explicitly changes the permission boundary.
 
 ## Before frontend work
 

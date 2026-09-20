@@ -1,0 +1,14 @@
+[build]
+builder = "RAILPACK"
+buildCommand = "npm ci && npm run build:server"
+watchPatterns = ["package.json", "package-lock.json", "packages/server/**", "contracts/**", "database/**", "artifacts/ml/**", "railway/api.toml"]
+
+[deploy]
+preDeployCommand = "npm run migrate:server"
+startCommand = "npm run start:server"
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+numReplicas = 1
+restartPolicyType = "ON_FAILURE"
+restartPolicyMaxRetries = 10
+sleepApplication = false

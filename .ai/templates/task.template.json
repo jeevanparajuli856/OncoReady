@@ -19,8 +19,7 @@
   "contracts": [],
   "scope": {
     "database": [
-      "database/**",
-      "supabase/**"
+      "database/**"
     ],
     "backend": [
       "backend/**"
@@ -44,7 +43,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "tests/**",
         "docs/standards/**",
         ".ai/tasks/AUTH-001/frontend-design-report.json"
@@ -63,7 +61,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "docs/standards/**",
         ".ai/tasks/AUTH-001/task.json"
       ],
@@ -74,7 +71,6 @@
     "database": {
       "allowed_write_paths": [
         "database/**",
-        "supabase/**",
         ".ai/tasks/AUTH-001/database-report.json"
       ],
       "read_only_paths": [
@@ -99,7 +95,6 @@
         "contracts/**",
         "docs/**",
         "database/**",
-        "supabase/**",
         ".ai/tasks/AUTH-001/task.json",
         ".ai/tasks/AUTH-001/architecture-report.json",
         ".ai/tasks/AUTH-001/database-report.json"
@@ -134,7 +129,6 @@
       "forbidden_paths": [
         "backend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         ".ai/tasks/AUTH-001/task.json"
       ]
@@ -148,7 +142,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "docs/**",
         ".ai/tasks/AUTH-001/**"
@@ -157,7 +150,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         ".ai/tasks/AUTH-001/task.json"
       ]
@@ -170,7 +162,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "docs/**",
         "tests/**",
@@ -180,7 +171,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "tests/**",
         ".ai/tasks/AUTH-001/task.json"
@@ -194,7 +184,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "docs/**",
         "tests/**",
@@ -204,7 +193,6 @@
         "backend/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "tests/**",
         ".ai/tasks/AUTH-001/task.json"

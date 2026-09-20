@@ -1,0 +1,51 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAUNCH-001",
+  "agent": "codex-tester",
+  "status": "COMPLETE",
+  "summary": "Focused independent testing at 80482aade9a4c8c61ad67dc13f62713148645d6d confirms all three final-review regressions: staff open-to-assign-to-acknowledge, patient-only current-version transport acknowledgment with coordinator waiting, and picked-up completion with evidence while return-pending escalates.",
+  "files_changed": [
+    "tests/server/launch-journey.test.ts",
+    "tests/frontend/no-secret-bundle.test.mjs",
+    "tests/frontend/playwright.config.mjs",
+    "tests/frontend/transport-workspace.spec.mjs",
+    "tests/server/security-remediation.test.ts",
+    "tests/server/final-review-regressions.test.ts",
+    ".ai/tasks/LAUNCH-001/test-report.json"
+  ],
+  "contracts_used": [
+    "contracts/openapi.yaml",
+    "contracts/events/workflow-event.schema.json",
+    "contracts/events/workflow-event-payloads.schema.json"
+  ],
+  "tests": {
+    "passed": true,
+    "commands": [
+      "npx vitest run tests/server/final-review-regressions.test.ts (80482aade9a4c8c61ad67dc13f62713148645d6d: 3/3 passed)",
+      "npx vitest run tests/server/final-review-regressions.test.ts",
+      "cd frontend && npx vitest run tests/workflow-commands.test.ts",
+      "cd frontend && npm run build && npx playwright test tests/e2e.spec.ts --grep \"Maria acknowledges|coordinator completes\"",
+      "python3 -c 'import importlib.util; s=importlib.util.spec_from_file_location(\"oncoready_verify\", \"scripts/verify.py\"); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); r=m.baseline_security_check(); print(r); assert r[\"status\"] == \"PASSED\", r'",
+      "npm run build:server && npx vitest run tests/server/security-remediation.test.ts tests/server/scheduler.test.ts tests/server/repository.test.ts tests/server/security.test.ts tests/server/launch-journey.test.ts && npm run test:security",
+      "python3 scripts/validate-contracts.py && .venv/bin/python -m pytest -q tests/database",
+      "npm run build:server && npm run test:server && npm run test:security && npm audit --audit-level=high",
+      "python3 scripts/validate-contracts.py",
+      "PATH=\"$PWD/.venv/bin:$PATH\" python3 -m pytest -q tests/ml",
+      ".venv/bin/python -m pytest -q tests/database tests/ml",
+      "python3 -m pytest -q tests/agentic",
+      "cd frontend && npm run api:check && npm run build && npm run test:smoke && npm run test:e2e && npm audit --audit-level=high",
+      "node tests/frontend/no-secret-bundle.test.mjs",
+      "frontend/node_modules/.bin/playwright test --config tests/frontend/playwright.config.mjs",
+      "PostgreSQL 17 scratch cluster: apply database/migrations/*.sql in lexical order and run psql -f tests/database/launch_workflow.sql",
+      ".venv/bin/python ml/train.py --output <temporary-directory> and cmp model.json evaluation.json golden-vectors.json manifest.json against artifacts/ml/supportive-outreach-v1"
+    ],
+    "notes": "Only the requested independent regression file was rerun after the backend repair. At exact implementation commit 80482aade9a4c8c61ad67dc13f62713148645d6d, all 3/3 cases passed: work-item aggregate state preserves work_item_type across open-to-assign and assigned-to-acknowledge; only the patient can acknowledge the current patient_notified request while the coordinator waits; and picked_up completes only with nonblank closure evidence while return_pending escalates. Earlier focused frontend evidence remains unchanged. No frontend or broad suite, live provider call, or Railway operation was repeated."
+  },
+  "blockers": [],
+  "notes_for_next_agent": [
+    "Run repository verification with the pinned ML environment active (for example PATH=\"$PWD/.venv/bin:$PATH\") so the configured python3 ML check resolves numpy, LightGBM, scikit-learn, and SHAP.",
+    "The independent browser supplement closes transport-role coverage and confirms the static browser sends neither Authorization nor operator/scenario token headers.",
+    "Provider switches remained false and all network-facing provider behavior was exercised only through deterministic signed-callback fixtures.",
+    "All three final-review regressions are independently green at implementation commit 80482aade9a4c8c61ad67dc13f62713148645d6d."
+  ]
+}

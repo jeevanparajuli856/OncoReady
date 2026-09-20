@@ -37,9 +37,8 @@ temp/
 .ai/runtime/
 .ai/cache/
 
-# Supabase generated/local state
-supabase/.temp/
-supabase/.branches/
+# Railway CLI local link state
+.railway/
 
 # Local worktrees
 .worktrees/

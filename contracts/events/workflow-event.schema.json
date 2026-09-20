@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oncoready.local/contracts/events/workflow-event.schema.json",
+  "title": "OncoReady Workflow Event",
+  "allOf": [
+    {"$ref": "#/$defs/envelope"},
+    {
+      "oneOf": [
+        {"$ref": "#/$defs/scenario_reset"},
+        {"$ref": "#/$defs/readiness_submission_recorded"},
+        {"$ref": "#/$defs/barrier_detected"},
+        {"$ref": "#/$defs/work_item_created"},
+        {"$ref": "#/$defs/work_item_transitioned"},
+        {"$ref": "#/$defs/communication_queued"},
+        {"$ref": "#/$defs/communication_status_changed"},
+        {"$ref": "#/$defs/communication_response_recorded"},
+        {"$ref": "#/$defs/caregiver_permission_changed"},
+        {"$ref": "#/$defs/transport_eligibility_reviewed"},
+        {"$ref": "#/$defs/transport_status_changed"},
+        {"$ref": "#/$defs/patient_plan_acknowledged"},
+        {"$ref": "#/$defs/appointment_changed"},
+        {"$ref": "#/$defs/evidence_generated"},
+        {"$ref": "#/$defs/priority_scored"},
+        {"$ref": "#/$defs/priority_score_unavailable"}
+      ]
+    }
+  ],
+  "$defs": {
+    "envelope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "schema_version", "scenario_id", "aggregate_type", "aggregate_id", "aggregate_version", "event_type", "payload", "occurred_at", "recorded_at", "actor", "provenance", "correlation_id", "causation_id"],
+      "properties": {
+        "event_id": {"type": "string", "format": "uuid"},
+        "schema_version": {"const": "1.0"},
+        "scenario_id": {"type": "string", "format": "uuid"},
+        "aggregate_type": {"enum": ["scenario", "readiness_submission", "barrier", "work_item", "communication", "transport_request", "caregiver_permission", "evidence", "priority_score"]},
+        "aggregate_id": {"type": "string", "format": "uuid"},
+        "aggregate_version": {"type": "integer", "minimum": 1},
+        "event_type": {"type": "string"},
+        "payload": {"type": "object"},
+        "occurred_at": {"type": "string", "format": "date-time"},
+        "recorded_at": {"type": "string", "format": "date-time"},
+        "actor": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["role", "actor_id"],
+          "properties": {
+            "role": {"enum": ["patient", "caregiver", "staff", "transport_coordinator", "system", "provider_callback"]},
+            "actor_id": {"type": "string", "minLength": 1, "maxLength": 120}
+          }
+        },
+        "provenance": {"enum": ["web", "sms", "voice", "twilio_callback", "elevenlabs_callback", "partner_dispatch", "scheduler", "deterministic_replay", "reset", "ml_pipeline"]},
+        "correlation_id": {"type": "string", "format": "uuid"},
+        "causation_id": {"type": ["string", "null"], "format": "uuid"},
+        "idempotency_key": {"type": ["string", "null"], "minLength": 8, "maxLength": 128}
+      }
+    },
+    "scenario_reset": {"properties": {"event_type": {"const": "scenario.reset"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/scenario_reset"}}},
+    "readiness_submission_recorded": {"properties": {"event_type": {"const": "readiness.submission_recorded"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/readiness_submission_recorded"}}},
+    "barrier_detected": {"properties": {"event_type": {"const": "barrier.detected"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/barrier_detected"}}},
+    "work_item_created": {"properties": {"event_type": {"const": "work_item.created"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/work_item_created"}}},
+    "work_item_transitioned": {"properties": {"event_type": {"const": "work_item.transitioned"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/work_item_transitioned"}}},
+    "communication_queued": {"properties": {"event_type": {"const": "communication.queued"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/communication_queued"}}},
+    "communication_status_changed": {"properties": {"event_type": {"const": "communication.status_changed"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/communication_status_changed"}}},
+    "communication_response_recorded": {"properties": {"event_type": {"const": "communication.response_recorded"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/communication_response_recorded"}}},
+    "caregiver_permission_changed": {"properties": {"event_type": {"const": "caregiver.permission_changed"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/caregiver_permission_changed"}}},
+    "transport_eligibility_reviewed": {"properties": {"event_type": {"const": "transport.eligibility_reviewed"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/transport_eligibility_reviewed"}}},
+    "transport_status_changed": {"properties": {"event_type": {"const": "transport.status_changed"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/transport_status_changed"}}},
+    "patient_plan_acknowledged": {"properties": {"event_type": {"const": "patient.plan_acknowledged"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/patient_plan_acknowledged"}}},
+    "appointment_changed": {"properties": {"event_type": {"const": "appointment.changed"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/appointment_changed"}}},
+    "evidence_generated": {"properties": {"event_type": {"const": "evidence.generated"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/evidence_generated"}}},
+    "priority_scored": {"properties": {"event_type": {"const": "priority.scored"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/priority_scored"}}},
+    "priority_score_unavailable": {"properties": {"event_type": {"const": "priority.score_unavailable"}, "payload": {"$ref": "workflow-event-payloads.schema.json#/$defs/priority_score_unavailable"}}}
+  }
+}
