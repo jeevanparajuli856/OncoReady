@@ -3,7 +3,7 @@
   "task_id": "LAUNCH-001",
   "title": "Finals Treatment Continuity Launch",
   "type": "feature",
-  "status": "REVIEW",
+  "status": "DONE",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
