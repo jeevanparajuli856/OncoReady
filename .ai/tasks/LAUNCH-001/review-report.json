@@ -2,8 +2,33 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "",
+  "reviewed_commit": "5ee1aa802387be5a8c0f6e9e4559e06e6c27ff72",
   "status": "CHANGES_REQUIRED",
-  "summary": "",
-  "findings": []
+  "summary": "The integrated revision has strong current verification, FULL independent test evidence, approved HIGH-risk security evidence, a truthful staged SMS/voice surface, reproducible synthetic ML artifacts, and deployment-ready Railway documentation. Final approval is withheld because the primary staff/CareLink demonstration journey cannot execute through the frontend against the backend's guarded transition policy: new work items send an invalid first action, patient acknowledgment is attempted under a disallowed role with no patient alternative, and the displayed return-leg completion action conflicts with the backend transition and required payload. These are release-blocking acceptance failures in the user-visible vertical slice, not deferred provider or deployment work.",
+  "findings": [
+    {
+      "severity": "high",
+      "category": "primary journey",
+      "file": "frontend/src/launch/LaunchApp.tsx",
+      "description": "New readiness work items are projected with status `open`, but StaffWork maps both `open` and `assigned` to the `acknowledge` action (lines 301-304). The backend permits `acknowledge` only from `assigned` and requires `assign` from `open` (`packages/server/src/domain.ts`, lines 71-88). Therefore the first visible staff action for every newly created clinical, transportation, and callback item returns `invalid_transition`, preventing the acceptance-criteria ownership/action journey from progressing.",
+      "recommendation": "Align the UI action sequence with the domain transition matrix (including the required owner identity for assignment), and add an integrated frontend-to-handler regression that starts from an `open` readiness-created item and reaches the intended acted/closed state.",
+      "blocking": true
+    },
+    {
+      "severity": "high",
+      "category": "CareLink acknowledgment",
+      "file": "frontend/src/launch/LaunchApp.tsx",
+      "description": "At `patient_notified`, the transportation workspace offers `acknowledge_patient`, but every transport command is sent with `actor_role: transport_coordinator` (lines 332-346). The backend allows that action only for `patient` or `staff` (`packages/server/src/domain.ts`, lines 102-115), while PatientTransport renders only an informational acknowledgment-required state and no command (lines 255-282). The controlled journey therefore cannot record Maria's required acknowledgment or advance to `patient_acknowledged`.",
+      "recommendation": "Expose the acknowledgment through an authorized patient/staff surface with the current transport command identity/version, or deliberately route the existing control through an allowed actor consistent with the product claim; cover the real UI/API boundary in the complete CareLink journey test.",
+      "blocking": true
+    },
+    {
+      "severity": "high",
+      "category": "CareLink completion",
+      "file": "frontend/src/launch/LaunchApp.tsx",
+      "description": "The UI intentionally advances `picked_up` to `return_pending` and then offers `complete`, but the backend permits and validates `complete` only from `picked_up` (`packages/server/src/domain.ts`, lines 96-125). In addition, the UI sends no `closure_evidence`, which the backend requires. Thus the displayed final action always fails, and the distinct return-pending state can never reach `completed` or `continuity_plan_confirmed` through the product UI.",
+      "recommendation": "Define one coherent return-leg completion transition in the domain and UI, supply explicit closure evidence through the governed interface, and test the actual browser command sequence through `return_pending` to `completed` rather than calling the domain directly from `picked_up`.",
+      "blocking": true
+    }
+  ]
 }
