@@ -1,187 +1,214 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
 
-test.describe('OncoReady UI-001 product experience', () => {
-  test.beforeEach(async ({ page }) => {
+const treatment = {
+  treatment_id: '22222222-2222-4222-8222-222222222222',
+  starts_at: '2026-09-24T14:00:00.000Z',
+  arrival_window: {
+    starts_at: '2026-09-24T13:15:00.000Z',
+    ends_at: '2026-09-24T13:45:00.000Z',
+  },
+  location_display_name: 'Benson Cancer Center',
+  transport_notice_cutoff: '2026-09-22T17:00:00.000Z',
+};
+
+const reconciliation = {
+  state: 'not_required',
+  last_attempt_at: null,
+  attempt_reference: null,
+  provenance: 'none',
+  permitted_recovery: 'none',
+};
+
+const projections = {
+  patient: {
+    scenario_id: '11111111-1111-4111-8111-111111111111',
+    scenario_version: 0,
+    role: 'patient',
+    as_of: '2026-09-20T18:00:00.000Z',
+    treatment,
+    readiness_status: 'not_started',
+    patient: { patient_id: '33333333-3333-4333-8333-333333333333', display_name: 'Maria Santos' },
+    blockers: [],
+    next_action: 'Complete the T-3 readiness check-in.',
+    communications: [],
+    transport: {
+      status: 'need_detected',
+      provider_display_name: 'CareLink Partner Dispatch',
+      plan_version: 1,
+      acknowledgment_required: false,
+    },
+  },
+  caregiver: {
+    scenario_id: '11111111-1111-4111-8111-111111111111',
+    scenario_version: 0,
+    role: 'caregiver',
+    as_of: '2026-09-20T18:00:00.000Z',
+    treatment,
+    readiness_status: 'at_risk',
+    caregiver: { display_name: 'Ana Santos' },
+    permission: { transport_logistics_allowed: false },
+  },
+  staff: {
+    scenario_id: '11111111-1111-4111-8111-111111111111',
+    scenario_version: 3,
+    role: 'staff',
+    as_of: '2026-09-20T18:00:00.000Z',
+    treatment,
+    readiness_status: 'action_in_progress',
+    patient: { patient_id: '33333333-3333-4333-8333-333333333333', display_name: 'Maria Santos' },
+    barriers: [],
+    work_items: [],
+    communications: [],
+    transport: {
+      status: 'need_detected',
+      provider_display_name: 'CareLink Partner Dispatch',
+      plan_version: 1,
+      acknowledgment_required: false,
+      transport_request_id: '44444444-4444-4444-8444-444444444444',
+      aggregate_version: 0,
+      eligibility: 'not_reviewed',
+      outbound_plan_complete: false,
+      return_plan_complete: false,
+      reconciliation,
+    },
+    timeline: [],
+  },
+  transport_coordinator: {
+    scenario_id: '11111111-1111-4111-8111-111111111111',
+    scenario_version: 0,
+    role: 'transport_coordinator',
+    as_of: '2026-09-20T18:00:00.000Z',
+    treatment,
+    readiness_status: 'at_risk',
+    request: {
+      transport_request_id: '44444444-4444-4444-8444-444444444444',
+      aggregate_version: 0,
+      status: 'need_detected',
+      arrival_window: treatment.arrival_window,
+      notice_cutoff: treatment.transport_notice_cutoff,
+      funding_path: 'pilot_sponsored',
+      service_area: 'Greater New Orleans',
+      mobility: { wheelchair: false, transfer_assistance: false, escort_required: false, notes: null },
+      outbound_plan: { location_alias: 'maria_home', window: treatment.arrival_window, duration_uncertain: false },
+      return_plan: { location_alias: 'benson_cancer_center', window: treatment.arrival_window, duration_uncertain: true },
+      notification_permission: true,
+      contact_alias: 'finals_allowlisted_phone',
+      acknowledgment_status: 'not_requested',
+      driver_alias: null,
+      vehicle_description: null,
+      reconciliation,
+    },
+  },
+};
+
+const mockProjectionApi = async (page: Page, overrides: Partial<Record<keyof typeof projections, unknown>> = {}) => {
+  await page.route('**/api/v1/scenarios/finals?role=*', async (route) => {
+    const role = new URL(route.request().url()).searchParams.get('role') as keyof typeof projections;
+    await route.fulfill({
+      contentType: 'application/json',
+      body: JSON.stringify(overrides[role] ?? projections[role]),
+    });
+  });
+};
+
+test.describe('OncoReady LAUNCH-001 frontend', () => {
+  test('public landing stays buyer-safe, responsive, and centrally priced', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 760 });
     await page.goto('/');
-    await page.evaluate(() => localStorage.clear());
-    await page.reload();
+
+    await expect(page.getByRole('heading', { name: 'Tomorrow’s treatment deserves a closed plan.' })).toBeVisible();
+    await expect(page.getByText('$18,000/year')).toBeVisible();
+    await expect(page.getByText('$1,500/month billed annually')).toBeVisible();
+    await expect(page.getByText('Custom pricing')).toBeVisible();
+
+    const publicCopy = (await page.locator('body').innerText()).toLowerCase();
+    for (const term of ['maria santos', 'mrn', 'regimen', 'workspace preview', 'readiness graph']) {
+      expect(publicCopy).not.toContain(term);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   });
 
-  test('landing reveals once, presents the SaaS model, and stays horizontally safe', async ({ page }) => {
-    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
-    await expect(page.getByText('SaaS business model')).toBeVisible();
-    await expect(page.getByRole('heading', { name: /One readiness capability, shaped around the oncology operation/i })).toBeVisible();
+  test('staff communication view holds live actions until durable evidence exists', async ({ page }) => {
+    await mockProjectionApi(page);
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Apple/i }).click();
+    await expect(page).toHaveURL(/\/staff$/);
+    await page.getByRole('tab', { name: 'SMS & voice' }).click();
 
-    const landingCopy = (await page.locator('body').innerText()).toLowerCase();
-    for (const term of ['demo', 'prototype', 'preview', 'portfolio', 'training environment']) {
-      expect(landingCopy).not.toContain(term);
-    }
-
-    const roleGrid = page.locator('.landing-role-grid');
-    await roleGrid.scrollIntoViewIfNeeded();
-    const roleReveals = page.locator('.landing-role-grid [data-reveal-variant]');
-    await expect(roleReveals).toHaveCount(3);
-    await expect(roleReveals.nth(0)).toHaveAttribute('data-reveal-variant', 'patient');
-    await expect(roleReveals.nth(1)).toHaveAttribute('data-reveal-variant', 'staff');
-    await expect(roleReveals.nth(2)).toHaveAttribute('data-reveal-variant', 'caregiver');
-    await expect(roleReveals.nth(0)).toHaveAttribute('data-reveal-state', 'revealed');
-    await expect(roleReveals.nth(1)).toHaveAttribute('data-reveal-state', 'revealed');
-    await expect(roleReveals.nth(2)).toHaveAttribute('data-reveal-state', 'revealed');
+    await expect(page.getByRole('heading', { name: 'SMS readiness messages' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Voice readiness calls' })).toBeVisible();
+    await expect(page.getByText('Live provider action held')).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'No live send' })).toHaveCount(2);
+    await expect(page.getByRole('button', { name: 'No live send' }).first()).toBeDisabled();
 
     await page.setViewportSize({ width: 390, height: 844 });
-    await page.locator('#pricing-section').scrollIntoViewIfNeeded();
-    const pageWidths = await page.evaluate(() => ({
-      viewport: document.documentElement.clientWidth,
-      content: document.documentElement.scrollWidth,
-      attachment: getComputedStyle(document.body).backgroundAttachment,
-      headerBlur: getComputedStyle(document.querySelector('.landing-header') as HTMLElement).backdropFilter,
+    const headerTargets = page.locator('.launch-header').getByRole('button');
+    const targetSizes = await headerTargets.evaluateAll((buttons) => buttons.map((button) => {
+      const bounds = button.getBoundingClientRect();
+      return { width: bounds.width, height: bounds.height };
     }));
-    expect(pageWidths.content).toBeLessThanOrEqual(pageWidths.viewport);
-    expect(pageWidths.attachment).not.toBe('fixed');
-    expect(pageWidths.headerBlur).toBe('none');
+    expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 
-  test('system reduced motion exposes final reveal content immediately', async ({ page }) => {
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.reload();
+  test('verified delivery and outcome-unknown voice remain visually distinct', async ({ page }) => {
+    const staff = {
+      ...projections.staff,
+      communications: [
+        {
+          communication_id: '55555555-5555-4555-8555-555555555555',
+          channel: 'sms',
+          purpose: 'readiness',
+          status: 'delivered',
+          provenance: 'provider_callback',
+          occurred_at: '2026-09-20T18:01:00.000Z',
+          reconciliation: { ...reconciliation, state: 'reconciled', provenance: 'provider_callback', attempt_reference: 'SM-redacted' },
+        },
+        {
+          communication_id: '66666666-6666-4666-8666-666666666666',
+          channel: 'voice',
+          purpose: 'human_callback',
+          status: 'outcome_unknown',
+          provenance: 'deterministic_replay',
+          occurred_at: '2026-09-20T18:02:00.000Z',
+          reconciliation: { ...reconciliation, state: 'reconciliation_required', provenance: 'provider_lookup', permitted_recovery: 'reconcile_provider', attempt_reference: 'conversation-redacted' },
+        },
+      ],
+    };
+    await mockProjectionApi(page, { staff });
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Apple/i }).click();
+    await page.getByRole('tab', { name: 'SMS & voice' }).click();
 
-    const revealStates = await page.locator('[data-reveal-state]').evaluateAll((nodes) =>
-      nodes.map((node) => node.getAttribute('data-reveal-state')),
-    );
-    expect(revealStates.length).toBeGreaterThan(0);
-    expect(revealStates.every((state) => state === 'visible')).toBe(true);
+    await expect(page.getByText('Verified provider callback', { exact: false })).toBeVisible();
+    await expect(page.getByText('Outcome not confirmed. The original action will not be resent automatically.')).toBeVisible();
+    await expect(page.getByText('Reconciled')).toBeVisible();
   });
 
-  test('landing uses static fallbacks when IntersectionObserver is unavailable', async ({ page }) => {
-    const pageErrors: string[] = [];
-    page.on('pageerror', (error) => pageErrors.push(error.message));
-    await page.addInitScript(() => {
-      Object.defineProperty(window, 'IntersectionObserver', {
-        configurable: true,
-        value: undefined,
-      });
-    });
-    await page.reload();
+  test('revoked caregiver projection mounts no clinical or prior transport detail', async ({ page }) => {
+    await mockProjectionApi(page);
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Microsoft/i }).click();
 
-    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
-    await expect(page.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeVisible();
-    await expect(page.getByText('Treatment-day corridor')).toBeVisible();
-    await expect(page.locator('.ride-map-boundary svg[viewBox="0 0 640 320"]')).toBeVisible();
-
-    const revealStates = await page.locator('[data-reveal-state]').evaluateAll((nodes) =>
-      nodes.map((node) => node.getAttribute('data-reveal-state')),
-    );
-    expect(revealStates.length).toBeGreaterThan(0);
-    expect(revealStates.every((state) => state === 'visible')).toBe(true);
-    expect(pageErrors).toEqual([]);
-  });
-
-  test('mobile workspace dock keeps 44px targets without horizontal overflow', async ({ page }) => {
-    for (const viewport of [
-      { width: 320, height: 568 },
-      { width: 390, height: 844 },
-    ]) {
-      await page.setViewportSize(viewport);
-
-      const dock = page.getByRole('navigation', { name: 'Workspace dock' });
-      await expect(dock).toBeVisible();
-
-      const targets = dock.getByRole('button');
-      await expect(targets).toHaveCount(5);
-      const targetSizes = await targets.evaluateAll((buttons) =>
-        buttons.map((button) => {
-          const bounds = button.getBoundingClientRect();
-          return { width: bounds.width, height: bounds.height };
-        }),
-      );
-
-      expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
-      expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
-
-      const motionControl = page.locator('footer').getByRole('button', { name: 'Reduce motion' });
-      await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
-      await motionControl.focus();
-
-      const controlBounds = await motionControl.boundingBox();
-      const dockBounds = await dock.boundingBox();
-      expect(controlBounds).not.toBeNull();
-      expect(dockBounds).not.toBeNull();
-      expect(controlBounds!.y + controlBounds!.height + 8).toBeLessThanOrEqual(dockBounds!.y);
-
-      const focusAndHitTest = await motionControl.evaluate((button) => {
-        const bounds = button.getBoundingClientRect();
-        const style = getComputedStyle(button);
-        const samples = [
-          [bounds.left + bounds.width * 0.25, bounds.top + bounds.height * 0.25],
-          [bounds.left + bounds.width * 0.75, bounds.top + bounds.height * 0.25],
-          [bounds.left + bounds.width / 2, bounds.top + bounds.height / 2],
-          [bounds.left + bounds.width * 0.25, bounds.top + bounds.height * 0.75],
-          [bounds.left + bounds.width * 0.75, bounds.top + bounds.height * 0.75],
-          [bounds.left + bounds.width / 2, bounds.bottom - 1],
-        ];
-
-        return {
-          outlineStyle: style.outlineStyle,
-          outlineWidth: style.outlineWidth,
-          targetOwnsEveryPoint: samples.every(([x, y]) => {
-            const hit = document.elementFromPoint(x, y);
-            return hit === button || button.contains(hit);
-          }),
-        };
-      });
-
-      expect(focusAndHitTest.outlineStyle).toBe('solid');
-      expect(focusAndHitTest.outlineWidth).toBe('2px');
-      expect(focusAndHitTest.targetOwnsEveryPoint).toBe(true);
-    }
-  });
-
-  test('workspace routes and the complete Maria journey remain connected', async ({ page }) => {
-    await page.getByRole('button', { name: /Explore the workspace/i }).first().click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await page.getByTestId('auth-patient-card').click();
-
-    await page.getByRole('button', { name: /Start Readiness Check/i }).click();
-    await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
-    await expect(page.getByText(/Your Reported Barriers are Being Resolved/i)).toBeVisible();
-    await page.getByRole('button', { name: /View Staff Workbench/i }).click();
-
-    const routeChecks = [
-      ['Command Center', /Command Center/i],
-      ['Exceptions', /Pre-Treatment Exception Queue/i],
-      ['Patients', /Patient Directory/i],
-      ['Resources', /Resource Directory/i],
-      ['Insights', /Operational Insights/i],
-      ['Integrations', /Proposed Data Flow Mapping/i],
-      ['Admin', /Local Configuration/i],
-    ] as const;
-
-    for (const [route, heading] of routeChecks) {
-      await page.getByRole('button', { name: route, exact: true }).click();
-      await expect(page.getByRole('heading', { name: heading }).first()).toBeVisible();
-    }
-
-    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
-    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
-    await expect(page.getByText(/Task 1: Clinical Symptom Review/i)).toBeVisible();
-    await page.getByRole('button', { name: /Acknowledge Review & Record Disposition/i }).click();
-    await page.getByRole('button', { name: /Confirm & Dispatch Med-Van/i }).click();
-
-    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
-    await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
-    await expect(page.getByText(/Ride Confirmed/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'No logistics shared' })).toBeVisible();
     const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
-    expect(caregiverCopy).not.toContain('fever 100.4');
-    expect(caregiverCopy).not.toContain('tingling in fingers');
+    for (const term of ['fever', 'tingling', 'clinical review', 'nurse note', 'priority score', 'driver pending']) {
+      expect(caregiverCopy).not.toContain(term);
+    }
+  });
 
-    await page.getByRole('button', { name: /Ana Hernandez/i }).click();
-    await page.getByText(/Patient Portal \(Maria Hernandez\)/i).click();
-    await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
-    await page.getByRole('checkbox', { name: /I acknowledge the 7:45 AM Med-Van/i }).check();
-    await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
-    await expect(page.getByText(/Everything is Set for Tomorrow Morning/i)).toBeVisible();
+  test('patient readiness dialog traps focus, closes with Escape, and honors reduced motion', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await mockProjectionApi(page);
+    await page.goto('/access');
+    await page.getByRole('button', { name: /Continue with Google/i }).click();
+    await page.getByRole('button', { name: /Start readiness check/i }).click();
 
-    await page.getByTitle(/Reset Workspace/i).click();
-    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+    const dialog = page.getByRole('dialog', { name: /Tell your team what could affect tomorrow/i });
+    await expect(dialog).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Close readiness check' })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(page.locator('.launch-app')).toHaveClass(/motion-reduce/);
   });
 });
