@@ -11,7 +11,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Return a role-minimized projection of the finals scenario */
+        /**
+         * Return a role-minimized projection of the finals scenario
+         * @description Public read of the fixed illustrative finals scenario; no protected or real patient data is available.
+         */
         get: operations["getFinalsScenario"];
         put?: never;
         post?: never;
@@ -51,7 +54,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Record one readiness response and create separately owned work */
+        /**
+         * Record one readiness response and create separately owned work
+         * @description Public fixed-scenario demo mutation with database-only effects; it cannot authorize provider outbox work.
+         */
         post: operations["submitReadiness"];
         delete?: never;
         options?: never;
@@ -68,7 +74,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Apply a guarded command to one human-owned work item */
+        /**
+         * Apply a guarded command to one human-owned work item
+         * @description Public fixed-scenario demo mutation with database-only effects; the claimed role is checked against the route, resource, action, and current state.
+         */
         post: operations["commandWorkItem"];
         delete?: never;
         options?: never;
@@ -87,7 +96,7 @@ export interface paths {
         put?: never;
         /**
          * Create the configured CareLink Partner Dispatch request
-         * @description The server resolves the allowlisted pickup, destination, and provider; arbitrary public destinations are forbidden.
+         * @description Public fixed-scenario database-only demo mutation. The server derives the allowlisted plan, pickup, destination, provider, and permission state; arbitrary client-selected plan fields are forbidden.
          */
         post: operations["createTransportRequest"];
         delete?: never;
@@ -105,7 +114,10 @@ export interface paths {
         };
         get?: never;
         put?: never;
-        /** Advance, recover, or escalate the controlled transport lifecycle */
+        /**
+         * Advance, recover, or escalate the controlled transport lifecycle
+         * @description Public fixed-scenario demo mutation with database-only effects; the server enforces the action-specific role and transition policy.
+         */
         post: operations["commandTransportRequest"];
         delete?: never;
         options?: never;
@@ -222,7 +234,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Return operational metrics derived from workflow events */
+        /**
+         * Return operational metrics derived from workflow events
+         * @description Public evidence read for the fixed illustrative finals scenario.
+         */
         get: operations["getWorkflowMetrics"];
         put?: never;
         post?: never;
@@ -239,7 +254,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Return the generated FHIR R4 bundle and validator state */
+        /**
+         * Return the generated FHIR R4 bundle and validator state
+         * @description Public evidence read for the fixed illustrative finals scenario; it does not imply a live hospital connection.
+         */
         get: operations["getFhirEvidence"];
         put?: never;
         post?: never;
@@ -256,7 +274,10 @@ export interface paths {
             path?: never;
             cookie?: never;
         };
-        /** Return a versioned supportive-outreach score or an explicit unavailable result */
+        /**
+         * Return a versioned supportive-outreach score or an explicit unavailable result
+         * @description Public evidence read for the fixed illustrative finals scenario; the score is non-clinical and staff-supportive only.
+         */
         get: operations["getPriorityEvidence"];
         put?: never;
         post?: never;
@@ -290,22 +311,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /**
+         * Format: uuid
+         * @description Fixed identifier for the controlled illustrative finals scenario.
+         * @constant
+         */
+        FinalsScenarioId: "11111111-1111-4111-8111-111111111111";
         /** @enum {string} */
         ActorRole: "patient" | "caregiver" | "staff" | "transport_coordinator";
         CommandContext: {
-            /** Format: uuid */
-            scenario_id: string;
+            scenario_id: components["schemas"]["FinalsScenarioId"];
+            /** @description Claimed demo provenance only; it is not authenticated identity or sufficient authorization. */
             actor_role: components["schemas"]["ActorRole"];
             idempotency_key: string;
             expected_aggregate_version: number;
         };
         ResetCommand: components["schemas"]["CommandContext"] & {
             /** @constant */
+            actor_role?: "staff";
+            /** @constant */
             confirmation: "RESET_FINALS_SCENARIO";
         };
         ReadinessSubmissionCommand: components["schemas"]["CommandContext"] & {
-            /** @enum {string} */
-            channel: "web" | "sms" | "voice";
+            /** @constant */
+            actor_role?: "patient";
+            /** @constant */
+            channel: "web";
             /** @enum {string} */
             transport_status: "confirmed" | "needs_help" | "unknown";
             clinical_concern_verbatim?: string | null;
@@ -319,18 +350,10 @@ export interface components {
             closure_evidence?: string | null;
         };
         CreateTransportRequestCommand: components["schemas"]["CommandContext"] & {
+            /** @enum {string} */
+            actor_role?: "staff" | "transport_coordinator";
             /** Format: uuid */
             work_item_id: string;
-            treatment_arrival_window: components["schemas"]["TimeWindow"];
-            /** Format: date-time */
-            notice_cutoff: string;
-            /** @enum {string} */
-            funding_path: "pilot_sponsored" | "hospital_supported" | "patient_self_pay" | "eligibility_review_required";
-            service_area: string;
-            mobility: components["schemas"]["MobilityNeeds"];
-            outbound_plan: components["schemas"]["TripLegPlan"];
-            return_plan: components["schemas"]["TripLegPlan"];
-            notification_permission: boolean;
         };
         TransportCommand: components["schemas"]["CommandContext"] & {
             /** @enum {string} */
@@ -346,6 +369,8 @@ export interface components {
             closure_evidence?: string | null;
         };
         CommunicationCommand: components["schemas"]["CommandContext"] & {
+            /** @constant */
+            actor_role?: "staff";
             /** @enum {string} */
             purpose: "readiness" | "fallback" | "plan_update" | "human_callback";
             /** @constant */
@@ -1277,7 +1302,6 @@ export interface operations {
                     "application/json": components["schemas"]["RoleProjection"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             429: components["responses"]["RateLimited"];
             503: components["responses"]["Unavailable"];
@@ -1336,7 +1360,6 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
@@ -1368,11 +1391,11 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+            429: components["responses"]["RateLimited"];
         };
     };
     createTransportRequest: {
@@ -1398,10 +1421,10 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+            429: components["responses"]["RateLimited"];
             503: components["responses"]["Unavailable"];
         };
     };
@@ -1430,11 +1453,11 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             404: components["responses"]["NotFound"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+            429: components["responses"]["RateLimited"];
             503: components["responses"]["Unavailable"];
         };
     };
@@ -1465,6 +1488,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+            429: components["responses"]["RateLimited"];
             503: components["responses"]["Unavailable"];
         };
     };
@@ -1495,6 +1519,7 @@ export interface operations {
             403: components["responses"]["Forbidden"];
             409: components["responses"]["Conflict"];
             422: components["responses"]["Unprocessable"];
+            429: components["responses"]["RateLimited"];
             503: components["responses"]["Unavailable"];
         };
     };
@@ -1628,7 +1653,6 @@ export interface operations {
                     "application/json": components["schemas"]["MetricsEvidence"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             503: components["responses"]["Unavailable"];
         };
@@ -1651,7 +1675,6 @@ export interface operations {
                     "application/json": components["schemas"]["FhirEvidence"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
             503: components["responses"]["Unavailable"];
         };
@@ -1674,7 +1697,6 @@ export interface operations {
                     "application/json": components["schemas"]["PriorityEvidence"];
                 };
             };
-            401: components["responses"]["Unauthorized"];
             403: components["responses"]["Forbidden"];
         };
     };

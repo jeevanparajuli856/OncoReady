@@ -16,7 +16,8 @@ export type PriorityEvidence = ApiSchemas['PriorityEvidence'];
 export type ReadinessSubmissionCommand = ApiSchemas['ReadinessSubmissionCommand'];
 export type WorkItemCommand = ApiSchemas['WorkItemCommand'];
 export type TransportCommand = ApiSchemas['TransportCommand'];
-export type ResetCommand = ApiSchemas['ResetCommand'];
+
+export const FINALS_SCENARIO_ID = '11111111-1111-4111-8111-111111111111' as const;
 
 export class ApiProblem extends Error {
   status: number;
@@ -85,8 +86,6 @@ export const finalsApi = {
       method: 'POST',
       body: JSON.stringify(body),
     }),
-  reset: (body: ResetCommand) =>
-    request<CommandReceipt>('/api/v1/scenarios/finals/reset', { method: 'POST', body: JSON.stringify(body) }),
   metrics: (signal?: AbortSignal) => request<MetricsEvidence>('/api/v1/evidence/metrics', { signal }),
   fhir: (signal?: AbortSignal) => request<FhirEvidence>('/api/v1/evidence/fhir', { signal }),
   priority: (signal?: AbortSignal) => request<PriorityEvidence>('/api/v1/evidence/priority', { signal }),

@@ -21,7 +21,6 @@ import {
   Network,
   PhoneCall,
   RefreshCw,
-  RotateCcw,
   Route,
   ShieldCheck,
   Sparkles,
@@ -31,7 +30,7 @@ import {
   UsersRound,
   X,
 } from 'lucide-react';
-import { ApiProblem, ApiSchemas, ActorRole, CaregiverProjection, finalsApi, FhirEvidence, MetricsEvidence, newIdempotencyKey, PatientProjection, PriorityEvidence, RoleProjection, StaffProjection, TransportProjection } from '../api/client';
+import { ApiProblem, ApiSchemas, ActorRole, CaregiverProjection, FINALS_SCENARIO_ID, finalsApi, FhirEvidence, MetricsEvidence, newIdempotencyKey, PatientProjection, PriorityEvidence, RoleProjection, StaffProjection, TransportProjection } from '../api/client';
 import { ContinuityField } from '../components/ContinuityField';
 import { Logo } from '../components/Logo';
 import { useDialogFocus } from '../lib/useDialogFocus';
@@ -82,8 +81,6 @@ const routeFromLocation = (): AppPath => {
   return path === '/' || path === '/access' || path in routeRoles ? path as AppPath : '/access';
 };
 
-const expectedRoleForPath = (path: AppPath): ActorRole | null => path in routeRoles ? routeRoles[path as WorkspacePath] : null;
-
 const SessionBoundary = {
   get: () => sessionStorage.getItem('oncoready.workspace') as WorkspacePath | null,
   set: (path: WorkspacePath) => sessionStorage.setItem('oncoready.workspace', path),
@@ -93,7 +90,6 @@ const SessionBoundary = {
 export const LaunchApp: React.FC = () => {
   const [path, setPath] = useState<AppPath>(() => routeFromLocation());
   const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false);
-  const [resetOpen, setResetOpen] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
 
   const navigate: Navigate = (next, establish = false) => {
@@ -122,7 +118,7 @@ export const LaunchApp: React.FC = () => {
   return (
     <div className={`launch-app ${reducedMotion ? 'motion-reduce' : ''}`}>
       <a className="launch-skip" href="#main-content">Skip to main content</a>
-      <LaunchHeader path={path} navigate={navigate} reducedMotion={reducedMotion} setReducedMotion={setReducedMotion} onReset={() => setResetOpen(true)} />
+      <LaunchHeader path={path} navigate={navigate} reducedMotion={reducedMotion} setReducedMotion={setReducedMotion} />
       <main id="main-content">
         {path === '/' && <PublicLanding navigate={navigate} reducedMotion={reducedMotion} headingRef={headingRef} />}
         {path === '/access' && <AccessGateway navigate={navigate} headingRef={headingRef} />}
@@ -132,16 +128,9 @@ export const LaunchApp: React.FC = () => {
             path={path as WorkspacePath}
             navigate={navigate}
             headingRef={headingRef}
-            openReset={() => setResetOpen(true)}
           />
         )}
       </main>
-      {resetOpen && path in routeRoles && (
-        <ResetDialog role={expectedRoleForPath(path)!} onClose={() => setResetOpen(false)} onReset={() => {
-          setResetOpen(false);
-          navigate('/access');
-        }} />
-      )}
     </div>
   );
 };
@@ -151,8 +140,7 @@ const LaunchHeader: React.FC<{
   navigate: Navigate;
   reducedMotion: boolean;
   setReducedMotion: (value: boolean) => void;
-  onReset: () => void;
-}> = ({ path, navigate, reducedMotion, setReducedMotion, onReset }) => {
+}> = ({ path, navigate, reducedMotion, setReducedMotion }) => {
   const [open, setOpen] = useState(false);
   const workspace = path in routeRoles;
   return (
@@ -161,7 +149,6 @@ const LaunchHeader: React.FC<{
       {workspace ? (
         <nav aria-label="Workspace navigation" className="launch-header__nav">
           <button onClick={() => navigate('/access')}><UsersRound aria-hidden="true" /> Switch workspace</button>
-          {path === '/staff' && <button onClick={onReset}><RotateCcw aria-hidden="true" /> Reset scenario</button>}
           <button onClick={() => setReducedMotion(!reducedMotion)} aria-pressed={reducedMotion}>{reducedMotion ? 'Motion off' : 'Reduce motion'}</button>
         </nav>
       ) : (
@@ -221,7 +208,7 @@ const AccessGateway: React.FC<{ navigate: Navigate; headingRef: React.RefObject<
   </section>
 );
 
-const WorkspaceRoute: React.FC<{ path: WorkspacePath; navigate: Navigate; headingRef: React.RefObject<HTMLHeadingElement>; openReset: () => void }> = ({ path, navigate, headingRef, openReset }) => {
+const WorkspaceRoute: React.FC<{ path: WorkspacePath; navigate: Navigate; headingRef: React.RefObject<HTMLHeadingElement> }> = ({ path, navigate, headingRef }) => {
   const role = routeRoles[path];
   const { projection, loading, refreshing, error, refresh } = useProjection(role);
 
@@ -237,7 +224,7 @@ const WorkspaceRoute: React.FC<{ path: WorkspacePath; navigate: Navigate; headin
   if (error && !projection) return <WorkspaceError headingRef={headingRef} error={error} retry={refresh} />;
   if (!projection || projection.role !== role) return <WorkspaceError headingRef={headingRef} error={new Error('The server returned a different role projection. No workspace data was displayed.')} retry={refresh} />;
 
-  return <WorkspaceFrame projection={projection} refreshing={refreshing} refreshError={error} refresh={refresh} openReset={openReset} headingRef={headingRef}>{
+  return <WorkspaceFrame projection={projection} refreshing={refreshing} refreshError={error} refresh={refresh} headingRef={headingRef}>{
     projection.role === 'patient' ? <PatientWorkspace projection={projection} refresh={refresh} />
       : projection.role === 'caregiver' ? <CaregiverWorkspace projection={projection} />
       : projection.role === 'staff' ? <StaffWorkspace projection={projection} refresh={refresh} />
@@ -253,7 +240,7 @@ const WorkspaceError: React.FC<{ headingRef: React.RefObject<HTMLHeadingElement>
   return <section className="launch-workspace launch-shell"><div className="launch-state launch-state--error" role="alert"><AlertCircle /><h1 ref={headingRef} tabIndex={-1}>{denied ? 'Controlled workspace unavailable' : 'Current workspace unavailable'}</h1><p>{denied ? 'Returning to workspace access. No role data was displayed.' : error.message}</p>{!denied && <button className="launch-button" onClick={retry}>Retry current projection</button>}</div></section>;
 };
 
-const WorkspaceFrame: React.FC<{ projection: RoleProjection; refreshing: boolean; refreshError: Error | null; refresh: () => void; openReset: () => void; headingRef: React.RefObject<HTMLHeadingElement>; children: React.ReactNode }> = ({ projection, refreshing, refreshError, refresh, children, headingRef }) => (
+const WorkspaceFrame: React.FC<{ projection: RoleProjection; refreshing: boolean; refreshError: Error | null; refresh: () => void; headingRef: React.RefObject<HTMLHeadingElement>; children: React.ReactNode }> = ({ projection, refreshing, refreshError, refresh, children, headingRef }) => (
   <section className="launch-workspace">
     <div className="launch-projection-bar launch-shell"><div><p className="launch-section-label">{humanize(projection.role)} workspace</p><h1 ref={headingRef} tabIndex={-1}>{projection.role === 'transport_coordinator' ? 'CareLink transportation operations' : projection.role === 'staff' ? 'Treatment continuity hub' : projection.role === 'caregiver' ? 'Authorized ride plan' : 'My treatment readiness'}</h1></div><div className="launch-projection-meta"><span className={`launch-chip ${readinessTone[projection.readiness_status]}`}>{readinessCopy[projection.readiness_status]}</span><span>Version {projection.scenario_version}</span><span>Updated {formatDateTime(projection.as_of)}</span><button onClick={refresh} disabled={refreshing}>{refreshing ? <Loader2 className="launch-spin" /> : <RefreshCw />}<span>{refreshing ? 'Refreshing' : 'Refresh'}</span></button></div></div>
     <div className="launch-shell launch-workspace__content">
@@ -284,7 +271,7 @@ const ReadinessForm: React.FC<{ projection: PatientProjection; close: () => void
     if (concern.length > 2000) { setError('Clinical concern must be 2,000 characters or fewer.'); return; }
     setSubmitting(true);
     try {
-      await finalsApi.submitReadiness({ scenario_id: projection.scenario_id, actor_role: 'patient', idempotency_key: newIdempotencyKey('readiness'), expected_aggregate_version: projection.scenario_version, channel: 'web', transport_status: transport, clinical_concern_verbatim: concern.trim() || null, callback_requested: callback });
+      await finalsApi.submitReadiness({ scenario_id: FINALS_SCENARIO_ID, actor_role: 'patient', idempotency_key: newIdempotencyKey('readiness'), expected_aggregate_version: projection.scenario_version, channel: 'web', transport_status: transport, clinical_concern_verbatim: concern.trim() || null, callback_requested: callback });
       await complete();
     } catch (cause) { setError(cause instanceof Error ? cause.message : 'The readiness check was not submitted.'); }
     finally { setSubmitting(false); }
@@ -314,7 +301,7 @@ const StaffWork: React.FC<{ projection: StaffProjection; refresh: () => void }> 
   const command = async (item: StaffProjection['work_items'][number]) => {
     const action = item.status === 'open' || item.status === 'assigned' ? 'acknowledge' : item.status === 'acknowledged' || item.status === 'accepted' ? 'record_action' : 'close';
     setWorking(item.work_item_id); setMessage(null);
-    try { await finalsApi.commandWorkItem(item.work_item_id, { scenario_id: projection.scenario_id, actor_role: 'staff', idempotency_key: newIdempotencyKey(`work-${action}`), expected_aggregate_version: item.aggregate_version, action, note: action === 'record_action' ? 'Human review/action recorded in the continuity workspace.' : null, closure_evidence: action === 'close' ? item.closure_evidence ?? 'Required human work completed and current closure evidence reviewed.' : null }); await refresh(); setMessage('Current work projection refreshed.'); }
+    try { await finalsApi.commandWorkItem(item.work_item_id, { scenario_id: FINALS_SCENARIO_ID, actor_role: 'staff', idempotency_key: newIdempotencyKey(`work-${action}`), expected_aggregate_version: item.aggregate_version, action, note: action === 'record_action' ? 'Human review/action recorded in the continuity workspace.' : null, closure_evidence: action === 'close' ? item.closure_evidence ?? 'Required human work completed and current closure evidence reviewed.' : null }); await refresh(); setMessage('Current work projection refreshed.'); }
     catch (cause) { setMessage(cause instanceof ApiProblem && cause.code === 'version_conflict' ? 'This work changed elsewhere. Refresh the current state before acting.' : cause instanceof Error ? cause.message : 'The command was not accepted.'); }
     finally { setWorking(null); }
   };
@@ -345,7 +332,7 @@ const EvidencePanels: React.FC<{ scenarioVersion: number }> = ({ scenarioVersion
 const TransportWorkspace: React.FC<{ projection: TransportProjection; refresh: () => void }> = ({ projection, refresh }) => {
   const request = projection.request; const [working, setWorking] = useState(false); const [message, setMessage] = useState<string | null>(null);
   const next = nextTransportAction(request.status, request.reconciliation.permitted_recovery);
-  const act = async () => { if (!next?.action) { refresh(); return; } setWorking(true); setMessage(null); try { await finalsApi.commandTransport(request.transport_request_id, { scenario_id: projection.scenario_id, actor_role: 'transport_coordinator', idempotency_key: newIdempotencyKey(`transport-${next.action}`), expected_aggregate_version: request.aggregate_version, action: next.action, ...(next.action === 'review_eligibility' ? { eligible: true, service_area_confirmed: true, operating_window_confirmed: true, outbound_plan_complete: true, return_plan_complete: true } : {}), ...(next.action === 'assign_driver' ? { driver_alias: 'CareLink assigned driver', vehicle_description: 'CareLink accessible vehicle' } : {}) }); await refresh(); setMessage('Transportation projection refreshed.'); } catch (cause) { setMessage(cause instanceof Error ? cause.message : 'The transport command was not accepted.'); } finally { setWorking(false); } };
+  const act = async () => { if (!next?.action) { refresh(); return; } setWorking(true); setMessage(null); try { await finalsApi.commandTransport(request.transport_request_id, { scenario_id: FINALS_SCENARIO_ID, actor_role: 'transport_coordinator', idempotency_key: newIdempotencyKey(`transport-${next.action}`), expected_aggregate_version: request.aggregate_version, action: next.action, ...(next.action === 'review_eligibility' ? { eligible: true, service_area_confirmed: true, operating_window_confirmed: true, outbound_plan_complete: true, return_plan_complete: true } : {}), ...(next.action === 'assign_driver' ? { driver_alias: 'CareLink assigned driver', vehicle_description: 'CareLink accessible vehicle' } : {}) }); await refresh(); setMessage('Transportation projection refreshed.'); } catch (cause) { setMessage(cause instanceof Error ? cause.message : 'The transport command was not accepted.'); } finally { setWorking(false); } };
   return <div className="launch-stack"><TreatmentCard treatment={projection.treatment} />{message && <div className="launch-inline-status" role="status">{message}</div>}<section className="launch-panel"><div className="launch-section-heading"><div><p className="launch-section-label">CareLink Partner Dispatch</p><h2>Request {request.transport_request_id.slice(0, 8)}</h2></div><span className={`launch-chip ${isTransportFailure(request.status) ? 'launch-chip--danger' : ''}`}>{humanize(request.status)}</span></div><TransportRail status={request.status} /><div className="launch-fact-grid"><Fact label="Notice cutoff" value={formatDateTime(request.notice_cutoff)} /><Fact label="Funding" value={humanize(request.funding_path)} /><Fact label="Service area" value={request.service_area} /><Fact label="Permission" value={request.notification_permission ? 'Patient notification allowed' : 'Not granted'} /><Fact label="Wheelchair" value={request.mobility.wheelchair ? 'Required' : 'Not required'} /><Fact label="Transfer assistance" value={request.mobility.transfer_assistance ? 'Required' : 'Not required'} /></div><div className="launch-plan-grid"><PlanLeg title="Outbound" window={request.outbound_plan.window} /><PlanLeg title="Return" window={request.return_plan.window} /></div><ProviderTruth label="CareLink provider attempt" status={request.status} provenance={request.reconciliation.provenance} occurredAt={request.reconciliation.last_attempt_at ?? undefined} reconciliation={request.reconciliation} refresh={refresh} />{next && <div className="launch-next-command"><div><p className="launch-kicker">Permitted next action</p><h3>{next.label}</h3><p>{next.description}</p></div><button className="launch-button" disabled={working} onClick={act}>{working ? 'Applying guarded command…' : next.button}</button></div>}</section><section aria-labelledby="provider-registry-title"><div className="launch-section-heading"><div><p className="launch-section-label">Provider registry</p><h2 id="provider-registry-title">One active fulfillment path</h2></div></div><div className="launch-provider-registry"><article><CheckCircle2 /><div><h3>CareLink Partner Dispatch</h3><p>Active controlled provider</p></div><span className="launch-chip launch-chip--success">Active</span></article><article aria-disabled="true"><LockKeyhole /><div><h3>Uber Health</h3><p>Planned adapter · no credentials or network actions</p></div><span className="launch-chip">Disabled</span></article><article aria-disabled="true"><LockKeyhole /><div><h3>Lyft Concierge</h3><p>Planned adapter · no credentials or network actions</p></div><span className="launch-chip">Disabled</span></article></div></section></div>;
 };
 
@@ -370,12 +357,3 @@ const TransportRail: React.FC<{ status: TransportStatus }> = ({ status }) => {
 const Fact: React.FC<{ label: string; value: string }> = ({ label, value }) => <div><dt>{label}</dt><dd>{value}</dd></div>;
 const Metric: React.FC<{ label: string; value: string }> = ({ label, value }) => <article><p>{label}</p><strong>{value}</strong></article>;
 const EmptyState: React.FC<{ text: string }> = ({ text }) => <div className="launch-state"><ClipboardCheck /><p>{text}</p></div>;
-
-const ResetDialog: React.FC<{ role: ActorRole; onClose: () => void; onReset: () => void }> = ({ role, onClose, onReset }) => {
-  const dialogRef = useRef<HTMLDivElement>(null);
-  const [confirmation, setConfirmation] = useState(''); const [pending, setPending] = useState(false); const [error, setError] = useState<string | null>(null);
-  const projection = useProjection(role);
-  useDialogFocus(true, dialogRef, onClose);
-  const reset = async () => { if (!projection.projection) return; setPending(true); setError(null); try { await finalsApi.reset({ scenario_id: projection.projection.scenario_id, actor_role: role, idempotency_key: newIdempotencyKey('reset'), expected_aggregate_version: projection.projection.scenario_version, confirmation: 'RESET_FINALS_SCENARIO' }); onReset(); } catch (cause) { setError(cause instanceof Error ? cause.message : 'Reset did not complete.'); } finally { setPending(false); } };
-  return <div className="launch-dialog-backdrop"><div ref={dialogRef} tabIndex={-1} className="launch-dialog launch-dialog--small" role="dialog" aria-modal="true" aria-labelledby="reset-title"><div className="launch-dialog__header"><div><p className="launch-section-label">Controlled action</p><h2 id="reset-title">Restore the starting scenario?</h2></div><button onClick={onClose} aria-label="Close reset dialog"><X /></button></div><div className="launch-dialog__body"><div className="launch-state launch-state--warning"><TriangleAlert /><p>This restores the fixed scenario and presentation route. It will not send SMS, place a call, create a transport request, accept a callback, or drain outbox work.</p></div>{error && <div className="launch-inline-error" role="alert">{error}</div>}<label className="launch-field"><span>Type RESET to continue</span><input value={confirmation} onChange={(event) => setConfirmation(event.target.value)} autoComplete="off" /></label></div><div className="launch-dialog__actions"><button className="launch-button launch-button--secondary" onClick={onClose}>Cancel</button><button className="launch-button launch-button--danger" disabled={confirmation !== 'RESET' || pending || !projection.projection} onClick={reset}>{pending ? 'Restoring safely…' : 'Restore starting scenario'}</button></div></div></div>;
-};
