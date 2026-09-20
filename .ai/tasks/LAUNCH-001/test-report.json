@@ -2,17 +2,40 @@
   "schema_version": "1.0",
   "task_id": "LAUNCH-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Independently verified the integrated launch slice at a8ed8bd with FULL-depth server, contract, PostgreSQL, ML, browser, accessibility, privacy, operator/provider-boundary, scheduler-recovery, and no-secret-bundle evidence; all required suites and added tester-owned checks passed without skipped or flaky tests.",
+  "files_changed": [
+    "tests/server/launch-journey.test.ts",
+    "tests/frontend/no-secret-bundle.test.mjs",
+    "tests/frontend/playwright.config.mjs",
+    "tests/frontend/transport-workspace.spec.mjs",
+    ".ai/tasks/LAUNCH-001/test-report.json"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/openapi.yaml",
+    "contracts/events/workflow-event.schema.json",
+    "contracts/events/workflow-event-payloads.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "npm run build:server && npm run test:server && npm run test:security && npm audit --audit-level=high",
+      "python3 scripts/validate-contracts.py",
+      "PATH=\"$PWD/.venv/bin:$PATH\" python3 -m pytest -q tests/ml",
+      ".venv/bin/python -m pytest -q tests/database tests/ml",
+      "python3 -m pytest -q tests/agentic",
+      "cd frontend && npm run api:check && npm run build && npm run test:smoke && npm run test:e2e && npm audit --audit-level=high",
+      "node tests/frontend/no-secret-bundle.test.mjs",
+      "frontend/node_modules/.bin/playwright test --config tests/frontend/playwright.config.mjs",
+      "PostgreSQL 17 scratch cluster: apply database/migrations/*.sql in lexical order and run psql -f tests/database/launch_workflow.sql",
+      ".venv/bin/python ml/train.py --output <temporary-directory> and cmp model.json evaluation.json golden-vectors.json manifest.json against artifacts/ml/supportive-outreach-v1"
+    ],
+    "notes": "The final pass produced 44/44 server-contract-FHIR tests, including two new integrated journey/boundary tests; 17/17 focused security/webhook tests; 13/13 database and ML tests; 22/22 agent-control tests; 7/7 frontend Vitest checks; 5/5 primary Chromium journeys; and 1/1 independent transport-role Chromium journey. Contract validation and generated-client freshness passed. PostgreSQL 17 applied both migrations and passed the transactional reset, append-only ordering, idempotency, provider allowlist, scheduler lease recovery, outcome-unknown reconciliation, no-blind-retry, and inert-reset rehearsal. ML training reproduced all four committed artifacts byte-for-byte; Python and TypeScript golden-vector parity and fail-closed runtime behavior passed. A sentinel production build embedded only VITE_API_BASE_URL and excluded operator/scenario/database/cron/Twilio/ElevenLabs names and values, with no source maps. Root and frontend npm audits found zero vulnerabilities. The first combined database/ML invocation with the system Python failed during ML collection because numpy was not installed globally; no test was skipped or retried as flaky, and the same required suite passed in the repository's pinned .venv (including the configured python3 command with .venv/bin first on PATH). No live provider call, Railway mutation, real patient data, or external effect occurred."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Run repository verification with the pinned ML environment active (for example PATH=\"$PWD/.venv/bin:$PATH\") so the configured python3 ML check resolves numpy, LightGBM, scikit-learn, and SHAP.",
+    "The independent browser supplement closes transport-role coverage and confirms the static browser sends neither Authorization nor operator/scenario token headers.",
+    "Provider switches remained false and all network-facing provider behavior was exercised only through deterministic signed-callback fixtures."
+  ]
 }
