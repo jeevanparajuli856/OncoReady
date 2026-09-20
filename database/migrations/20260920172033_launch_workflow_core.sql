@@ -1,9 +1,9 @@
--- LAUNCH-001 durable treatment-continuity workflow.
--- This migration intentionally keeps the browser and Supabase REST API out of
--- the trust boundary. Vercel Functions use a server-only pooled PostgreSQL
--- connection and all browser-facing projections are allowlisted by the server.
+-- LAUNCH-001 durable treatment-continuity workflow for Railway PostgreSQL.
+-- The browser stays outside the database trust boundary. The Railway API uses
+-- a private DATABASE_URL and all browser-facing projections are allowlisted by
+-- the server.
 
-create extension if not exists pgcrypto with schema extensions;
+create extension if not exists pgcrypto;
 
 create table public.scenarios (
   scenario_id uuid primary key,
@@ -184,7 +184,7 @@ create table public.role_projections (
 );
 
 create table public.scheduled_actions (
-  scheduled_action_id uuid primary key default extensions.gen_random_uuid(),
+  scheduled_action_id uuid primary key default gen_random_uuid(),
   scenario_id uuid not null references public.scenarios(scenario_id) on delete cascade,
   aggregate_type text not null,
   aggregate_id uuid not null,
@@ -208,7 +208,7 @@ create table public.scheduled_actions (
 );
 
 create table public.outbox (
-  outbox_id uuid primary key default extensions.gen_random_uuid(),
+  outbox_id uuid primary key default gen_random_uuid(),
   scenario_id uuid not null references public.scenarios(scenario_id) on delete cascade,
   scheduled_action_id uuid references public.scheduled_actions(scheduled_action_id) on delete set null,
   event_id uuid references public.workflow_events(event_id),
@@ -257,7 +257,7 @@ create table public.idempotency_records (
 );
 
 create table public.webhook_receipts (
-  webhook_receipt_id uuid primary key default extensions.gen_random_uuid(),
+  webhook_receipt_id uuid primary key default gen_random_uuid(),
   scenario_id uuid not null references public.scenarios(scenario_id) on delete cascade,
   provider text not null check (provider in ('twilio_sms', 'elevenlabs_twilio', 'carelink_partner_dispatch')),
   provider_event_id text not null check (char_length(provider_event_id) between 1 and 255),
@@ -275,7 +275,7 @@ create table public.webhook_receipts (
 );
 
 create table public.provider_attempts (
-  provider_attempt_id uuid primary key default extensions.gen_random_uuid(),
+  provider_attempt_id uuid primary key default gen_random_uuid(),
   scenario_id uuid not null references public.scenarios(scenario_id) on delete cascade,
   outbox_id uuid not null references public.outbox(outbox_id) on delete cascade,
   provider text not null check (provider in ('twilio_sms', 'elevenlabs_twilio', 'carelink_partner_dispatch', 'deterministic_replay')),
@@ -296,7 +296,7 @@ create table public.provider_attempts (
 );
 
 create table public.claim_leases (
-  claim_lease_id uuid primary key default extensions.gen_random_uuid(),
+  claim_lease_id uuid primary key default gen_random_uuid(),
   scenario_id uuid not null references public.scenarios(scenario_id) on delete cascade,
   resource_type text not null check (resource_type in ('scheduled_action', 'outbox')),
   resource_id uuid not null,
@@ -473,7 +473,7 @@ begin
      limit p_limit
   ), claimed as (
     update public.scheduled_actions sa
-       set status = 'claimed', claim_token = extensions.gen_random_uuid(), claim_owner = p_claim_owner,
+       set status = 'claimed', claim_token = gen_random_uuid(), claim_owner = p_claim_owner,
            claimed_at = clock_timestamp(), lease_expires_at = clock_timestamp() + make_interval(secs => p_lease_seconds),
            attempt_count = sa.attempt_count + 1, updated_at = clock_timestamp()
       from candidates c
@@ -524,7 +524,7 @@ begin
      limit p_limit
   ), claimed as (
     update public.outbox o
-       set status = 'claimed', claim_token = extensions.gen_random_uuid(), claim_owner = p_claim_owner,
+       set status = 'claimed', claim_token = gen_random_uuid(), claim_owner = p_claim_owner,
            claimed_at = clock_timestamp(), lease_expires_at = clock_timestamp() + make_interval(secs => p_lease_seconds),
            attempt_count = o.attempt_count + 1, updated_at = clock_timestamp()
       from candidates c
@@ -715,30 +715,7 @@ begin
 end;
 $$;
 
-alter table public.scenarios enable row level security;
-alter table public.aggregate_heads enable row level security;
-alter table public.workflow_events enable row level security;
-alter table public.barrier_projections enable row level security;
-alter table public.work_item_projections enable row level security;
-alter table public.communication_projections enable row level security;
-alter table public.transport_projections enable row level security;
-alter table public.role_projections enable row level security;
-alter table public.scheduled_actions enable row level security;
-alter table public.outbox enable row level security;
-alter table public.idempotency_records enable row level security;
-alter table public.webhook_receipts enable row level security;
-alter table public.provider_attempts enable row level security;
-alter table public.claim_leases enable row level security;
-
-revoke all on all tables in schema public from anon, authenticated;
-revoke all on all functions in schema public from public, anon, authenticated;
-grant usage on schema public to service_role;
-grant select, insert, update, delete on all tables in schema public to service_role;
-revoke update, delete on public.workflow_events from service_role;
-revoke delete on public.scenarios from service_role;
-grant usage, select on all sequences in schema public to service_role;
-grant execute on function public.try_scheduler_lock(uuid) to service_role;
-grant execute on function public.recover_stale_claims(timestamptz) to service_role;
-grant execute on function public.claim_scheduled_actions(text, integer, integer) to service_role;
-grant execute on function public.claim_outbox(text, integer, integer) to service_role;
-grant execute on function public.reset_finals_scenario() to service_role;
+-- Railway supplies one private DATABASE_URL to the API. Runtime least
+-- privilege is configured by the operator for that connection role rather
+-- than by assuming provider-specific client roles exist.
+revoke execute on function public.reset_finals_scenario() from public;

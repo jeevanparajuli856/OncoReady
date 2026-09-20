@@ -23,7 +23,7 @@
   ],
   "scope": {
     "database": [
-      "supabase/**",
+      "database/**",
       "ml/**",
       "artifacts/ml/**",
       "tests/database/**",
@@ -37,7 +37,7 @@
       "tests/fhir/**",
       "package.json",
       "package-lock.json",
-      "vercel.json"
+      "railway/**"
     ],
     "frontend": [
       "frontend/**"
@@ -51,6 +51,12 @@
       "docs/architecture/**",
       "docs/adr/**",
       ".ai/project.json",
+      ".env.example",
+      ".gitignore",
+      ".codex/**",
+      "README.md",
+      "docs/operations/**",
+      "railway/**",
       "scripts/validate-contracts.py"
     ]
   },
@@ -66,6 +72,12 @@
         "docs/PROJECT.md",
         "docs/LAUNCH_ROADMAP.md",
         "docs/LAUNCH_SPRINT.md",
+        ".env.example",
+        ".gitignore",
+        ".codex/**",
+        "README.md",
+        "docs/operations/**",
+        "railway/**",
         "scripts/validate-contracts.py",
         ".ai/tasks/LAUNCH-001/frontend-design-review.json"
       ],
@@ -74,7 +86,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "ml/**",
         "artifacts/ml/**",
         "tests/**",
@@ -96,7 +107,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "docs/standards/**",
         ".ai/tasks/LAUNCH-001/task.json"
       ],
@@ -106,7 +116,7 @@
     },
     "database": {
       "allowed_write_paths": [
-        "supabase/**",
+        "database/**",
         "ml/**",
         "artifacts/ml/**",
         "tests/database/**",
@@ -135,14 +145,13 @@
         "tests/fhir/**",
         "package.json",
         "package-lock.json",
-        "vercel.json",
+        "railway/**",
         ".ai/tasks/LAUNCH-001/backend-report.json"
       ],
       "read_only_paths": [
         "contracts/**",
         "docs/**",
         "database/**",
-        "supabase/**",
         "ml/**",
         "artifacts/ml/**",
         ".ai/tasks/LAUNCH-001/task.json",
@@ -180,7 +189,6 @@
         "api/**",
         "packages/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         ".ai/tasks/LAUNCH-001/task.json"
       ]
@@ -195,7 +203,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "ml/**",
         "artifacts/ml/**",
         "contracts/**",
@@ -207,7 +214,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         ".ai/tasks/LAUNCH-001/task.json"
       ]
@@ -221,7 +227,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "ml/**",
         "artifacts/ml/**",
         "contracts/**",
@@ -234,7 +239,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "tests/**",
         ".ai/tasks/LAUNCH-001/task.json"
@@ -249,7 +253,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "ml/**",
         "artifacts/ml/**",
         "contracts/**",
@@ -262,7 +265,6 @@
         "packages/**",
         "frontend/**",
         "database/**",
-        "supabase/**",
         "contracts/**",
         "tests/**",
         ".ai/tasks/LAUNCH-001/task.json"
@@ -286,7 +288,7 @@
     "Maria's T-3 submission preserves her clinical words and creates separately owned clinical, transportation, and callback work with deadlines; explicit barriers bypass ML ordering.",
     "Every accepted command appends a versioned event and atomically updates projections, schedules, and outbox records; stale or invalid transitions fail and repeated idempotency keys return the prior semantic result.",
     "Patient, staff, caregiver, transport, graph, timeline, metrics, and evidence views derive from the same persisted event history and remain consistent after refresh.",
-    "Supabase Cron invokes the authenticated bounded Vercel tick once per minute through pg_net; overlapping invocations have one active authority, stale claims recover safely, and uncertain provider sends are reconciled or escalated rather than blindly resent.",
+    "The long-running Railway API process polls due work in bounded batches while PostgreSQL advisory locks, row claims, and leases preserve one active scheduler authority; stale claims recover safely and uncertain provider sends are reconciled or escalated rather than blindly resent.",
     "Twilio and ElevenLabs live statuses appear only after valid signed callbacks; invalid signatures, duplicates, out-of-order callbacks, STOP, no-answer, and provider failure remain safe and visible.",
     "CareLink records notice cutoff, eligibility and funding, service area, accommodations, outbound and return plans, offer, acceptance, assignment, notification, acknowledgment, failure, backup, escalation, and completion as distinct states.",
     "Transport assignment alone cannot close the blocker; provider failure or appointment change reopens affected work and Maria must acknowledge the complete current plan before closure.",
@@ -298,7 +300,7 @@
     "Reset restores the exact starting scenario, projections, schedule, and presentation route without sending SMS, placing a call, creating a transport request, accepting a provider callback, or draining outbox work.",
     "Network, provider, validator, or model failure never becomes false success; the affected dependency remains unresolved or unavailable and the governed recovery path remains operable.",
     "Frontend states are complete at mobile and presentation widths, keyboard operable, semantic, visibly focused, non-color-dependent, and equivalent under reduced motion.",
-    "The Vercel Hobby production build, function routing, deep links, raw-body callback verification, tick authentication, Supabase Cron cadence and HTTP response, Free-project activity and size checks, environment checks, and Supabase pooled connection behavior pass controlled-deployment preflight.",
+    "The Railway web, API, and PostgreSQL services pass controlled-deployment preflight, including production builds, deep links, API health, raw-body callback verification, tick authentication, scheduler overlap safety, private database connectivity, environment checks, restart behavior, and public callback reachability.",
     "FULL independent testing, current repository verification, focused HIGH-risk security approval, final review, five consecutive rehearsals including one failure, backup recording, human merge, and control-plane closure are required before DONE."
   ],
   "created_by": "human"

@@ -6,6 +6,9 @@ do $$
 declare
   finals_scenario constant uuid := '11111111-1111-4111-8111-111111111111';
 begin
+  if not public.try_scheduler_lock(finals_scenario) then
+    raise exception 'in-process scheduler could not acquire its transaction advisory lock';
+  end if;
   if (select count(*) from public.scenarios where scenario_id = finals_scenario) <> 1 then
     raise exception 'deterministic finals scenario is missing';
   end if;
@@ -124,6 +127,18 @@ insert into public.scheduled_actions (
   clock_timestamp() - interval '1 minute', 'scheduled-lease-recovery'
 );
 select * from public.claim_scheduled_actions('database-test', 1, 5);
+
+do $$
+begin
+  if (select status from public.scheduled_actions where scheduled_action_id = '10000000-0000-4000-8000-000000000015') <> 'claimed' then
+    raise exception 'due scheduled action was not claimed';
+  end if;
+  if (select count(*) from public.claim_leases where resource_type = 'scheduled_action' and resource_id = '10000000-0000-4000-8000-000000000015' and status = 'active') <> 1 then
+    raise exception 'scheduled action claim has no single active durable lease';
+  end if;
+end;
+$$;
+
 update public.scheduled_actions
    set lease_expires_at = clock_timestamp() - interval '1 second'
  where scheduled_action_id = '10000000-0000-4000-8000-000000000015';
@@ -150,6 +165,17 @@ insert into public.outbox (
 
 select * from public.claim_outbox('database-test', 1, 5);
 
+do $$
+begin
+  if (select status from public.outbox where outbox_id = '10000000-0000-4000-8000-000000000021') <> 'claimed' then
+    raise exception 'due outbox action was not claimed';
+  end if;
+  if (select count(*) from public.claim_leases where resource_type = 'outbox' and resource_id = '10000000-0000-4000-8000-000000000021' and status = 'active') <> 1 then
+    raise exception 'outbox claim has no single active durable lease';
+  end if;
+end;
+$$;
+
 insert into public.provider_attempts (
   provider_attempt_id, scenario_id, outbox_id, provider, stable_action_id,
   attempt_number, status, request_hash
@@ -172,6 +198,9 @@ begin
   end if;
   if not (select reconciliation_required from public.provider_attempts where provider_attempt_id = '10000000-0000-4000-8000-000000000022') then
     raise exception 'uncertain provider attempt does not require reconciliation';
+  end if;
+  if (select count(*) from public.claim_outbox('database-test-retry', 1, 5)) <> 0 then
+    raise exception 'outcome-unknown provider action became blindly retryable';
   end if;
 end;
 $$;

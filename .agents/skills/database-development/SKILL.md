@@ -1,6 +1,6 @@
 ---
 name: database-development
-description: Implement database-impacting tasks using Git-tracked migrations, Supabase CLI migration lifecycle when selected, and scoped MCP for development inspection/verification.
+description: Implement database-impacting tasks using Git-tracked vendor-neutral PostgreSQL migrations and scoped development inspection/verification.
 ---
 
 # Database Development
@@ -11,20 +11,20 @@ Use only when `architecture-report.json.impacts.database=true` and task status i
 
 Git-tracked migration/schema artifacts are authoritative.
 
-For Supabase, prefer this flow:
+For Railway PostgreSQL, prefer this flow:
 
 ```text
-inspect approved DEV state (MCP/CLI)
+inspect the explicitly selected development database
         ↓
-supabase migration new <description>
+create a timestamped migration in database/migrations
         ↓
 write migration SQL
         ↓
-local/reset test when available
+test against an isolated PostgreSQL database
         ↓
-apply pending migration(s) to linked DEV with supabase db push
+apply pending migrations through the project migration runner
         ↓
-inspect/verify resulting DEV state with MCP
+inspect and verify resulting development state
         ↓
 review RLS/indexes/advisors
         ↓
@@ -33,18 +33,17 @@ database-report.json
 
 Do not make direct dashboard/MCP schema edits that are not represented by a migration file.
 
-## Supabase rules
+## Railway PostgreSQL rules
 
-- use timestamped CLI-generated migration names
-- use a linked DEVELOPMENT/TEST project only
-- `supabase db push` promotes pending Git migrations to the currently linked DEV remote
-- MCP is primarily for scoped inspection, diagnostics, advisors, verification, and generated types
-- `execute_sql` is primarily diagnostic/read-only; never use it as the sole schema implementation
-- write-capable MCP calls remain approval-gated
-- never connect normal agent MCP to production
-- never use DEV test data as production seed data
+- use timestamped migration names and vendor-neutral PostgreSQL where practical
+- use an explicitly selected DEVELOPMENT/TEST environment only
+- reference the Railway PostgreSQL connection privately from the API service
+- infrastructure tooling is primarily for scoped inspection, diagnostics, and verification
+- never use an ad hoc SQL/dashboard change as the sole schema implementation
+- never connect normal agent tooling to production without explicit human direction
+- never use development test data as production seed data
 
-If CLI/local Supabase is unavailable, still create/review the migration and record exactly which live checks were not performed.
+If a disposable PostgreSQL target is unavailable, still create and review the migration and record exactly which live checks were not performed.
 
 ## Completion
 

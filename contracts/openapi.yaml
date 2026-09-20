@@ -12,12 +12,12 @@ info:
 
 servers:
   - url: http://localhost:3000
-    description: Local Vercel development
-  - url: https://{deployment}.vercel.app
-    description: Controlled Vercel deployment
+    description: Local Node.js API development
+  - url: https://{deployment}.up.railway.app
+    description: Controlled Railway API deployment
     variables:
       deployment:
-        default: oncoready-finals
+        default: oncoready-api
 
 security:
   - FinalsScenarioToken: []
@@ -292,7 +292,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ElevenLabsPostCall'
       responses:
-        '204': {description: Callback accepted or duplicate safely ignored}
+        '200': {description: Callback accepted or duplicate safely ignored}
         '400': {$ref: '#/components/responses/BadRequest'}
         '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
         '413': {$ref: '#/components/responses/PayloadTooLarge'}
@@ -313,7 +313,7 @@ paths:
             schema:
               $ref: '#/components/schemas/ElevenLabsFailure'
       responses:
-        '204': {description: Callback accepted or duplicate safely ignored}
+        '200': {description: Callback accepted or duplicate safely ignored}
         '400': {$ref: '#/components/responses/BadRequest'}
         '401': {$ref: '#/components/responses/InvalidCallbackSignature'}
         '413': {$ref: '#/components/responses/PayloadTooLarge'}
@@ -857,29 +857,64 @@ components:
 
     ElevenLabsPostCall:
       type: object
-      additionalProperties: false
-      required: [event_id, call_id, occurred_at, status, outcome, scenario_id, correlation_id]
+      description: Official signed ElevenLabs post-call transcription envelope. Transcript and audio content are not persisted by OncoReady.
+      additionalProperties: true
+      required: [type, event_timestamp, data]
       properties:
-        event_id: {type: string, minLength: 1, maxLength: 255}
-        call_id: {type: string, minLength: 1, maxLength: 255}
-        occurred_at: {type: string, format: date-time}
-        status: {const: completed}
-        outcome: {type: string, enum: [ready, ride_help, scheduling_help, human_callback, unsupported_or_uncertain]}
-        scenario_id: {type: string, format: uuid}
-        correlation_id: {type: string, format: uuid}
+        type: {const: post_call_transcription}
+        event_timestamp: {type: integer, minimum: 0}
+        data:
+          type: object
+          additionalProperties: true
+          required: [agent_id, conversation_id, status, analysis]
+          properties:
+            agent_id: {type: string, minLength: 1, maxLength: 255}
+            conversation_id: {type: string, minLength: 1, maxLength: 255}
+            status: {type: string, minLength: 1, maxLength: 64}
+            analysis:
+              type: object
+              additionalProperties: true
+              required: [data_collection_results]
+              properties:
+                data_collection_results:
+                  type: object
+                  additionalProperties: true
+                  properties:
+                    oncoready_outcome:
+                      $ref: '#/components/schemas/ElevenLabsOutcomeResult'
+
+    ElevenLabsOutcomeResult:
+      type: object
+      additionalProperties: true
+      required: [data_collection_id, value]
+      properties:
+        data_collection_id: {const: oncoready_outcome}
+        value: {type: string, enum: [ready, ride_help, scheduling_help, human_callback, unsupported_or_uncertain]}
+        rationale: {type: [string, 'null'], maxLength: 2000}
 
     ElevenLabsFailure:
       type: object
-      additionalProperties: false
-      required: [event_id, call_id, occurred_at, status, failure_code, scenario_id, correlation_id]
+      description: Official signed ElevenLabs call-initiation-failure envelope.
+      additionalProperties: true
+      required: [type, event_timestamp, data]
       properties:
-        event_id: {type: string, minLength: 1, maxLength: 255}
-        call_id: {type: string, minLength: 1, maxLength: 255}
-        occurred_at: {type: string, format: date-time}
-        status: {const: failed}
-        failure_code: {type: string, maxLength: 120}
-        scenario_id: {type: string, format: uuid}
-        correlation_id: {type: string, format: uuid}
+        type: {const: call_initiation_failure}
+        event_timestamp: {type: integer, minimum: 0}
+        data:
+          type: object
+          additionalProperties: true
+          required: [agent_id, conversation_id, failure_reason, metadata]
+          properties:
+            agent_id: {type: string, minLength: 1, maxLength: 255}
+            conversation_id: {type: string, minLength: 1, maxLength: 255}
+            failure_reason: {type: string, enum: [busy, no-answer, unknown]}
+            metadata:
+              type: object
+              additionalProperties: true
+              required: [type, body]
+              properties:
+                type: {type: string, enum: [twilio, sip]}
+                body: {type: object, additionalProperties: true}
 
     MetricsEvidence:
       type: object

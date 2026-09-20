@@ -3,11 +3,11 @@
   "task_id": "LAUNCH-001",
   "agent": "codex-architect",
   "status": "COMPLETE",
-  "summary": "Reconciled LAUNCH-001 to the approved zero-paid-scheduler topology: Vercel Hobby hosts the React application and TypeScript Functions while Supabase Free Cron invokes the existing bearer-authenticated bounded tick through pg_net; PostgreSQL events, locks, claims, leases, and outbox state remain workflow authority.",
+  "summary": "Revised LAUNCH-001 to the human-approved Railway-only topology: Railway hosts the Vite web service, a long-running Node.js/TypeScript API with a bounded PostgreSQL-backed poller, and private PostgreSQL; no hosted cron or database-originated HTTP scheduler is used.",
   "files_changed": [
-    "docs/features/LAUNCH-001.md",
     "docs/architecture/SYSTEM.md",
-    "docs/adr/ADR-0001-vercel-event-boundary.md",
+    "docs/architecture/LAUNCH-001-EXTERNAL-SETUP.md",
+    "docs/adr/ADR-0001-railway-runtime-event-boundary.md",
     ".ai/tasks/LAUNCH-001/architecture-report.json"
   ],
   "impacts": {
@@ -18,106 +18,87 @@
     "infrastructure": true
   },
   "decisions": [
-    "Treat the existing CORE-001 React reducer and browser persistence as the completed frontend baseline, not LAUNCH-001 business authority; launch workflow state moves behind a generated OpenAPI client to TypeScript Vercel Node.js Functions.",
-    "Use Supabase PostgreSQL with timestamped Git-tracked migrations for append-only workflow events, role/evidence projections, scheduled actions, transactional outbox, webhook receipts, provider attempts, claim leases, idempotency records, and deterministic finals seed/reset.",
-    "Append governed events and update affected projections, schedules, and outbox rows atomically; use per-aggregate expected versions plus idempotency keys to reject stale writes and return stable duplicate-command results.",
-    "Use Supabase Cron (pg_cron) plus pg_net to invoke the existing GET /api/v1/operations/tick endpoint once per minute while Vercel Hobby hosts the frontend and Functions; use a PostgreSQL advisory lock and durable row claims/leases so overlaps and retries cannot become parallel scheduler authority.",
-    "Keep one operator-owned opaque tick secret in exactly two runtime locations: Vercel's server-only CRON_SECRET for verification and Supabase Vault entry oncoready_cron_secret for invocation; keep the canonical endpoint in Vault as oncoready_tick_url and never commit or log either secret value.",
-    "Assign the database specialist a timestamped migration that enables pg_cron/pg_net, defines a restricted Vault-backed invoker, and installs the named one-minute job without environment-specific values; the human operator owns Vault provisioning/rotation and post-preflight activation or pause.",
-    "Accept Supabase Free only for controlled illustrative data: stay below 500 MB, treat possible inactivity pause as an explicit preflight/resume condition, and use Git-tracked migrations plus deterministic seed/reset as recovery because automated backups are unavailable.",
-    "Treat an interrupted possibly accepted provider action as outcome-unknown and reconcile it through provider identity/webhook or manual recovery; never blindly resend a consequential action solely because a lease expired.",
-    "Keep Vercel HTTP/webhook handlers thin and stateless; workflow policy, role projections, transport lifecycle, evidence generation, and adapter translation belong in shared TypeScript application/domain modules and cannot depend on warm memory or post-response work.",
-    "Make Twilio SMS, ElevenLabs-through-Twilio voice, and CareLink Partner Dispatch narrow server-only adapters with fixed allowlists, authenticated raw-body webhooks, idempotency, kill switches, and visible failure states. Uber Health and Lyft Concierge remain disabled planned metadata only.",
-    "Derive patient, staff, caregiver, transport, graph, timeline, metrics, FHIR, and ML views from persisted events through server-side role allowlists; caregiver clinical-data exclusion cannot depend on hidden React fields.",
-    "Require Maria's acknowledgment of the current complete outbound-and-return plan for transport closure; assignment, notification, stale plans, provider failure, and appointment changes cannot falsely close the dependency.",
-    "Preserve original clinical text for human review and replace the urgent fixture with a clearly non-urgent concern; no provider, generic acknowledgment, model result, or client heuristic may diagnose, triage, clear, cancel, or reschedule treatment.",
-    "Generate metrics and the FHIR R4 artifact from event state and show FHIR Validated only when a passing pinned-validator report matches the exact current artifact hash; valid FHIR is not represented as Epic/Ochsner connectivity or writeback.",
-    "Keep LightGBM training, sigmoid calibration, SHAP evaluation, leakage/subgroup testing, and export offline in Python; TypeScript runtime validates an immutable versioned artifact and must match Python golden inference/explanation vectors or return Score unavailable.",
-    "Make reset a scenario-scoped deterministic reseed that cannot enqueue or execute SMS, voice, or transport actions, and require deterministic/manual recovery to remain truthful rather than converting provider/network failure into success.",
-    "Bind frontend and function implementation to the registered OpenAPI and event-schema contracts; prose does not define wire shapes and mismatches require CONTRACT_CHANGE_REQUIRED orchestration.",
-    "Do not add FastAPI, a persistent worker, Redis, Kafka, Celery, microservices, a general workflow engine, or arbitrary runtime artifact upload to LAUNCH-001."
+    "Use one Railway project and one explicitly selected controlled launch environment with three services: a public `web` Vite static service, a public long-running `api` Node.js/TypeScript service, and private `Postgres`.",
+    "Retain Node.js/TypeScript for the backend because contracts, shared tooling, runtime artifacts, and current implementation direction are aligned with it. FastAPI is human-permitted and Railway-compatible but rejected for this slice because migration/rewrite risk does not improve the launch journey.",
+    "Set `VITE_API_BASE_URL` on `web` to the public API origin; set `DATABASE_URL=${{Postgres.DATABASE_URL}}` on `api` so database traffic stays on Railway private networking. The browser never receives database/provider secrets.",
+    "Run the normal scheduler inside the long-running API process. The timer only wakes a bounded database operation; PostgreSQL due rows, claims, leases, attempt state, and database time remain authoritative.",
+    "Each scheduler cycle uses a transaction-scoped PostgreSQL advisory lock plus bounded `FOR UPDATE SKIP LOCKED` claims, claim tokens, and leases; it commits provider intent/attempt before network I/O and never holds a transaction across the provider call.",
+    "Keep governed `GET /api/v1/operations/tick?max_items=25` and opaque bearer `CRON_SECRET` unchanged for controlled manual/preflight invocation of the same bounded cycle. It is not called by Railway Cron or another automated scheduler.",
+    "Do not use legacy hosting resources, hosted cron, a database-extension HTTP scheduler, Railway Cron, Redis, Kafka, Celery, a separate worker, or a workflow engine for LAUNCH-001.",
+    "Use vendor-neutral Git-tracked PostgreSQL migrations with migration history/advisory locking. Port portable workflow schema/seed content and remove the retired HTTP scheduler migration from the Railway target sequence.",
+    "Append events and update projections, scheduled actions, outbox, and idempotency state atomically. Preserve per-aggregate expected versions and stable duplicate-command results.",
+    "Treat an interrupted possibly accepted provider action as `outcome_unknown`; reconcile by provider identity/signed callback or manual recovery before retry and never resend solely because a lease expired.",
+    "Keep Twilio SMS, ElevenLabs-through-Twilio voice, and CareLink as narrow server adapters with fixed recipients/providers/locations, authenticated raw-body callbacks, stable action identities, rate limits, consent, and kill switches.",
+    "Derive patient, staff, caregiver, transport, graph, timeline, metrics, FHIR, and ML views from persisted events through server allowlists; caregiver minimization cannot depend on hidden frontend fields.",
+    "Preserve Maria's complete current outbound-and-return plan acknowledgment as the transportation closure guard; assignment, notification, stale plans, provider failure, and appointment changes cannot falsely close it.",
+    "Keep offline Python authoritative for LightGBM/calibration/SHAP training and export; TypeScript runtime accepts only reviewed immutable artifacts and returns `Score unavailable` on invalidity or parity failure.",
+    "Make reset a scenario-scoped deterministic reseed with external effects suppressed and proof of zero provider/outbox dispatch.",
+    "Preserve governed API paths/methods/security/event meanings. The Railway host metadata and official ElevenLabs provider envelope are reconciled in the authoritative OpenAPI contract."
   ],
   "risks": [
     {
       "severity": "high",
-      "description": "The branded role gateway is not identity verification, yet role views contain clinically contextual scenario data.",
-      "mitigation": "Restrict LAUNCH-001 to controlled illustrative data and one server-managed scenario token, enforce actor/action policy and server-side role allowlist projections, and make no production authentication or PHI claim."
+      "description": "The branded role gateway is not identity verification, yet role views contain clinically contextual illustrative data.",
+      "mitigation": "Use controlled illustrative data only, a server-managed scenario token, actor/action allowlists, and server-side role projections; make no production authentication, PHI, or compliance claim."
     },
     {
       "severity": "high",
-      "description": "SMS, voice, reset, cron, and transport commands can create consequential or destructive effects if targets, retries, or privileges are unbounded.",
-      "mitigation": "Fix recipient, provider, pickup, destination, scripts, and scenario in server configuration; apply cron authentication, consent, rate/request limits, least privilege, stable action identities, kill switches, bounded retry, and a reset path proven to create zero external actions."
+      "description": "SMS, voice, reset, manual tick, and transportation actions can create consequential effects if targets, privileges, or retries are unbounded.",
+      "mitigation": "Fix recipient/provider/location/script values in server configuration, require consent and rate limits, keep kill switches off by default, use stable action identities and bounded retry, and prove reset creates zero external effects."
     },
     {
       "severity": "high",
-      "description": "Forged, replayed, duplicate, or out-of-order provider webhooks could create false delivery, call, assignment, or closure state.",
-      "mitigation": "Verify official signatures/HMAC on exact raw requests before parsing, store unique webhook receipts, enforce replay and aggregate-version policy, and prevent webhook translation from bypassing domain transition guards."
+      "description": "Forged, replayed, duplicate, or out-of-order callbacks could create false provider success or closure.",
+      "mitigation": "Verify Twilio/ElevenLabs signatures against exact raw input and canonical URL before parsing, persist unique callback receipts, and apply version/transition guards."
     },
     {
       "severity": "high",
-      "description": "Caregiver or transportation responses, accessibility text, search/export, outbound content, or logs could leak clinical concern or nurse/model detail.",
-      "mitigation": "Construct separate server-side allowlist projections and add negative contract/API/browser tests across serialized data, DOM, accessibility, search, export, outbound content, and logs."
+      "description": "Caregiver, transportation, accessibility, export, outbound, or log surfaces could disclose clinical text, nurse detail, or model output.",
+      "mitigation": "Use separate server-side allowlist schemas and negative contract/API/browser/log tests across every disclosure surface."
     },
     {
       "severity": "high",
-      "description": "Clinical-context workflow or ML language could imply autonomous triage, medical clearance, eligibility, or clinically validated prediction.",
-      "mitigation": "Use a clearly non-urgent fixture, preserve verbatim text for human disposition, keep explicit barriers and deterministic rules authoritative, limit the score to staff outreach ordering, and fail invalid artifacts to Score unavailable."
+      "description": "Clinical-context language or ML evidence could imply autonomous triage, medical clearance, or clinical validation.",
+      "mitigation": "Keep the fixture clearly non-urgent and illustrative, human disposition authoritative, the score staff-only and non-clinical, and invalid artifacts safely unavailable."
     },
     {
       "severity": "medium",
-      "description": "Supabase Cron, pg_net, network, or manual retries/overlap plus function termination around a provider call could duplicate an action or leave its outcome ambiguous.",
-      "mitigation": "Authenticate the tick with the Vault-backed bearer secret, take a PostgreSQL advisory lock, use durable claims/leases and pre-call attempt records, pass stable provider identities, and reconcile outcome-unknown actions before any retry."
+      "description": "Process restart, overlapping poll/manual tick, lease expiry, or failure around provider acceptance could duplicate an action or leave its result ambiguous.",
+      "mitigation": "Use database-time due rows, advisory locking, `SKIP LOCKED`, claim tokens/leases, committed pre-call attempt records, stable provider identities, scheduler heartbeat, and reconcile-before-retry."
     },
     {
       "severity": "medium",
-      "description": "Serverless concurrency, cold starts, or connection fan-out could exhaust Supabase connections or exceed function duration before state is committed.",
-      "mitigation": "Use the supported pooled connection, strict transaction/query/runtime budgets, bounded cron batches, parameterized SQL, database constraints, and deployment-level load/concurrency checks."
+      "description": "A long-running API poller is unavailable while the Railway service is sleeping, crashed, redeploying, or disconnected from PostgreSQL.",
+      "mitigation": "Disable sleeping, configure health/restart behavior, keep one launch replica, persist every due item in PostgreSQL, alert/preflight on stale scheduler heartbeat, and catch up from database time after restart."
     },
     {
       "severity": "medium",
-      "description": "The Supabase Free project could pause after inactivity, approach its 500 MB limit, or lose dashboard-only state without automated backups, interrupting the controlled journey.",
-      "mitigation": "Use controlled illustrative data and bounded retention, keep schema/Cron configuration in Git-tracked migrations, recover from deterministic seed/reset, and require active-project, size, migration, Vault, Cron, pg_net response, and authenticated-tick checks before every rehearsal or review and after any resume."
+      "description": "A retired platform-specific migration path or routing artifact could be reintroduced accidentally after the host decision.",
+      "mitigation": "Keep vendor-neutral migrations and Railway routing authoritative, and make verification reject retired runtime references."
     },
     {
       "severity": "medium",
-      "description": "Event and projection state could diverge, or a stale assignment/appointment could leave the readiness graph falsely confirmed.",
-      "mitigation": "Commit events and projections atomically, enforce per-aggregate versions and closure evidence, verify/rebuild projections from ordered events, and invalidate dependent work when appointment/provider state changes."
+      "description": "Separate public web/API origins can produce CORS failures or invalid provider signatures if domains change or proxy URL reconstruction is wrong.",
+      "mitigation": "Use exact origins, stable domains, canonical forwarded-protocol/host handling, and preflight signed callbacks again after any domain change."
     },
     {
       "severity": "medium",
-      "description": "The existing reducer and localStorage could remain as a second authority during migration and create cross-role or refresh contradictions.",
-      "mitigation": "Migrate one acceptance path at a time behind an API state adapter, prohibit local mutations once API-backed, keep browser storage presentation-only, and remove the competing authority before integrated verification."
-    },
-    {
-      "severity": "medium",
-      "description": "Offline Python and TypeScript runtime inference/explanation could diverge or accept a stale/malformed artifact.",
-      "mitigation": "Use one explicit immutable export schema/hash, fixed feature order and missing-value semantics, Python golden vectors with numeric tolerances, TypeScript parity tests, and fail closed to Score unavailable."
-    },
-    {
-      "severity": "medium",
-      "description": "FHIR evidence could become stale or appear validated when the current generated bundle was never checked.",
-      "mitigation": "Run the pinned validator in verification/freeze tooling, persist an inspectable report keyed to the exact bundle content hash, and project Validated only on an exact passing match."
-    },
-    {
-      "severity": "medium",
-      "description": "The compressed two-day, 16-hours-per-day implementation window could encourage contract drift, skipped validation, or false live-provider confidence.",
-      "mitigation": "Freeze and validate contracts before implementation, parallelize only behind those contracts, preserve FULL independent testing and exact-commit security/review gates, and block rather than fabricate unavailable cron, live, FHIR, or ML proof."
+      "description": "Event/projection state, ML output, or FHIR validation evidence could become stale or inconsistent.",
+      "mitigation": "Use atomic event/projection updates, rebuild checks, exact artifact hashes, cross-language golden vectors, and exact-bundle validator reports."
     }
   ],
   "blockers": [],
   "notes_for_next_agent": [
-    "The orchestrator has reconciled docs/PROJECT.md, docs/LAUNCH_ROADMAP.md, docs/LAUNCH_SPRINT.md, and .ai/project.json with the Vercel Functions decision, replaced the OpenAPI placeholder, added the governed event schemas, registered all three contract paths in task.json, and added contract validation.",
-    "The registered OpenAPI and event schemas are authoritative for endpoint/event names, shapes, errors, expected-version conflicts, idempotency replay, raw-webhook authentication inputs, cron behavior, and role projections. Workers must consume those artifacts and report CONTRACT_CHANGE_REQUIRED rather than infer wire details from architecture prose.",
-    "The frontend specialist must complete design Phase A and the digest-bound compatibility gate before production UI changes. Preserve the established system while designing access, transport, provider-pending/failure/outcome-unknown/recovery, evidence, and ML states.",
-    "Database implementation should establish deterministic seed/reset, immutable events, aggregate/version/idempotency constraints, projections, scheduled actions, outbox, webhook receipts, provider attempts, claims/leases, and only query-justified indexes before provider functions depend on them.",
-    "Backend implementation should preserve GET /api/v1/operations/tick with opaque bearer authentication, shared TypeScript domain modules, a supported pooled Supabase transaction connection, exact raw-body webhook verification, bounded batches, no post-response work, and provider reconciliation before retrying an uncertain action.",
-    "Database implementation must add the Git-tracked Supabase Cron/pg_net/Vault-backed invoker migration without embedding environment values. Validate active Free-project state, database size, migrated named job, one-minute cadence, Vault entry presence, latest pg_net response, secret authentication, actual invocation, deep-link rewrites, function routing, and callback URLs during preflight; do not silently lower cadence.",
-    "No scheduler wire-contract change is required: GET /api/v1/operations/tick, max_items, CronSecret bearer security, responses, and receipt remain compatible with Supabase Cron. The orchestrator should update the non-wire OpenAPI description from Called by Vercel Cron to scheduler-neutral wording so the authoritative contract documentation is current.",
-    "Before frontend Phase B, the orchestrator should reconcile two real projection-contract blockers: expose durable outcome_unknown/reconciliation state plus last-known attempt/provenance and permitted recovery in staff/transport projections; and make caregiver transport nullable/absent when transport_logistics_allowed is false so revoked logistics never cross the server boundary.",
-    "Offline Python owns ML training/calibration/SHAP evaluation and export. TypeScript runtime may load only the fixed reviewed artifact, and Python/TypeScript inference plus explanation parity must pass before score presentation.",
-    "Reset, network failure, provider failure/outcome unknown, invalid webhook, stale aggregate version, cron overlap/stale lease, appointment change, caregiver revocation, FHIR hash mismatch, and missing/stale/parity-failing ML artifacts are acceptance-critical states, not optional polish.",
-    "FULL depth requires an independent tester after integration. Verification must be current on the integrated commit before the mandatory focused HIGH-risk security review, and final review must assess that same current revision.",
-    "Live credentials, a consented allowlisted phone, the configured CareLink path, Vercel/Supabase access, and public HTTPS webhook deployment remain human/external prerequisites. Missing proof blocks live completion and cannot be replaced by an undisclosed fake status."
+    "Environment decisions: web=`VITE_API_BASE_URL`; api=`APP_ENV`, Railway-referenced `DATABASE_URL`, `ONCOREADY_SCENARIO_TOKEN`, exact `ONCOREADY_ALLOWED_ORIGINS`, exact API `ONCOREADY_PUBLIC_ORIGIN`, `CRON_SECRET`, `SCHEDULER_ENABLED=true`, `SCHEDULER_POLL_INTERVAL_MS=15000`, `SCHEDULER_BATCH_SIZE=25`, provider switches false initially, and the documented Twilio/ElevenLabs IDs and secrets.",
+    "Railway service decisions: `web` uses frontend root/static SPA output; `api` keeps repository-root build context for api/packages/contracts/migrations/artifacts, listens on `0.0.0.0:$PORT`, has `/health`, one launch replica, sleep disabled, and restart enabled; `Postgres` remains private.",
+    "The protected tick endpoint and CRON_SECRET remain because they are governed. They are manual/preflight compatibility surfaces, not scheduler infrastructure. Normal scheduled work comes from the in-process poller and PostgreSQL claims.",
+    "Database implementation should port the workflow core into vendor-neutral migrations, retain scheduled_actions/outbox/provider attempts/receipts/idempotency/leases, and delete or exclude the retired HTTP scheduler migration. Do not install platform-specific roles/extensions without a new decision.",
+    "Backend implementation must keep the scheduler cycle in shared application code so the internal poller and protected HTTP tick call the same bounded function; no duplicated scheduling logic.",
+    "Frontend implementation must use the public Railway API origin. No secret or database value may use the VITE_ prefix.",
+    "ElevenLabs setup remains disabled until its Railway variables, agent data-collection field, signed webhook URLs, and controlled recipient are configured and preflighted. Twilio form callbacks allow provider-added parameters and remain suitable for direct official webhook validation.",
+    "The frontend design gate remains required for the task-level visible experience; hosting migration does not authorize the architect/orchestrator to restyle the approved design.",
+    "FULL independent testing, exact-commit verification, HIGH-risk security review, final review, and controlled rehearsals remain mandatory.",
+    "FastAPI is permitted by the human but intentionally not selected. Do not describe Node/TypeScript as a Railway constraint; it is a scope and migration-risk decision for LAUNCH-001."
   ],
   "execution": {
     "contract_required": true,

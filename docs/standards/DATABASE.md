@@ -8,12 +8,10 @@
 - Avoid destructive schema changes without an explicit migration/data-backfill/rollback plan.
 - Never run destructive production statements without human approval.
 
-## Supabase
+## Railway PostgreSQL
 
-When Supabase is selected:
-- create migrations with `supabase migration new <description>` so filenames use the CLI timestamp convention
-- test locally with `supabase db reset` when local Supabase is available
-- deploy pending reviewed migrations to the linked DEV project with `supabase db push`
-- use project-scoped DEV MCP primarily for inspection, diagnostics, advisors, verification, and type generation
-- do not use MCP/direct dashboard edits as the only representation of schema change
-- production deployment promotes the reviewed migrations separately after PR approval/merge
+- Keep vendor-neutral timestamped SQL in `database/migrations/`.
+- Test migrations against an isolated local or temporary PostgreSQL database before deployment.
+- Apply reviewed migrations to the explicitly selected Railway development environment through the migration runner; never mutate schema only through a dashboard or ad hoc SQL session.
+- Use Railway's private `DATABASE_URL` reference from the API service. Do not expose it to the browser or commit resolved credentials.
+- Promote the same reviewed migration sequence deliberately after approval and merge.

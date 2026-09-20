@@ -1,126 +1,63 @@
-# jee-agentic-dev — Rapid Product Baseline
+# OncoReady
 
-Reusable agentic development baseline for shipping polished, technically credible, end-to-end products quickly.
+OncoReady turns an upcoming-treatment readiness response into separately owned
+clinical, transportation, and callback work, then shows the patient when the
+complete plan is confirmed.
 
-- Codex orchestrates product slices and owns architecture, database, backend, frontend, integration, verification, and final review through scoped specialist roles.
-- The Codex frontend specialist owns visual/interaction design and frontend implementation.
-- Contracts, independent testing, and dedicated security review are conditional rather than mandatory phases.
-- Baseline safety, scope isolation, Git evidence, and design-authority gates remain deterministic.
-- The framework prefers a small number of vertical user-visible slices over enterprise-style subsystem decomposition.
+The launch journey uses controlled synthetic data. It does not represent
+production identity, real patient care, Ochsner/Epic connectivity, clinical
+validation, or autonomous clinical authority.
 
-## Core model
+## Launch stack
+
+- React, TypeScript, and Vite frontend
+- long-running Node.js/TypeScript API
+- Railway PostgreSQL with Git-tracked migrations
+- Twilio SMS and ElevenLabs voice through one allowlisted test recipient
+- deterministic CareLink transportation workflow
+- governed OpenAPI and workflow-event contracts
+- offline LightGBM/calibration/SHAP artifact generation with TypeScript runtime checks
+
+The frontend, API, and PostgreSQL run as separate services in one Railway
+project. PostgreSQL is private; browser traffic reaches only the public web and
+API domains.
+
+## Authoritative documentation
+
+- Product and journey: `docs/PROJECT.md`
+- Launch requirements: `docs/features/LAUNCH-001.md`
+- System boundary: `docs/architecture/SYSTEM.md`
+- External account/setup checklist: `docs/architecture/LAUNCH-001-EXTERNAL-SETUP.md`
+- Governed interfaces: `contracts/`
+- Current task state: `.ai/tasks/LAUNCH-001/task.json`
+
+## Local configuration
+
+The ignored root `.env` is for backend/database/provider configuration. Use
+`.env.example` as the variable reference. The ignored `frontend/.env.local`
+contains only the public API base URL; never put provider or database secrets
+in a `VITE_` variable.
+
+Keep these switches disabled until the controlled-provider preflight passes:
 
 ```text
-Raw idea
-  ↓
-Focused product inception
-  ↓
-Hero journey + product impression strategy + minimum credible architecture
-  ↓
-Vertical product slice
-  ↓
-PLANNING → BUILD_READY
-        ├─ contract only if needed
-        ├─ test depth chosen
-        └─ security risk/review chosen
-  ↓
-Codex DB/backend/frontend specialists only when impacted
-  ↓
-Conditional frontend design pass → compatibility gate → frontend implementation
-  ↓
-Integration
-  ├─ independent tester only for TARGETED/FULL
-  ├─ commit-bound verification always
-  └─ security specialist only when required
-  ↓
-Final product/engineering review
-  ↓
-Human merge → DONE
+EXTERNAL_ACTIONS_ENABLED=false
+TWILIO_SMS_ENABLED=false
+ELEVENLABS_VOICE_ENABLED=false
 ```
 
-## Product philosophy
+Never commit or paste API keys, auth tokens, database URLs, webhook secrets,
+scenario tokens, cron secrets, or the allowlisted phone number into chat.
 
-Optimize for:
-1. strong idea and user value
-2. exceptional frontend/product experience
-3. real end-to-end behavior
-4. reliable primary demonstration journey
-5. visible technical credibility
-6. rapid iteration
-7. risk-appropriate hardening
-
-Do not add databases, caches, queues, microservices, Kubernetes, IaC, auth, or other complexity unless they support real product behavior or a deliberate technical objective.
-
-The internal rapid-delivery workflow must not cheapen the user-facing product identity. Present products according to the problem they solve and capabilities they genuinely implement; do not make false production claims.
-
-## First-time setup
+## Agent control plane
 
 ```bash
-python -m pip install -r requirements-agent.txt
-python scripts/agentctl.py bootstrap
+python3 -m pip install -r requirements-agent.txt
+python3 scripts/agentctl.py project validate
+python3 scripts/agentctl.py task validate LAUNCH-001
+python3 scripts/agentctl.py verify LAUNCH-001
 ```
 
-For a new product, give Codex the idea and tell it to use the project-inception skill. Do not create implementation tasks until `.ai/project.json` is `INCEPTION_READY`.
-
-## Main commands
-
-```bash
-python scripts/agentctl.py project validate
-python scripts/agentctl.py task create CORE-001 "Primary user journey"
-python scripts/agentctl.py git prepare CORE-001
-python scripts/agentctl.py task advance CORE-001
-python scripts/agentctl.py worktree create CORE-001 backend
-python scripts/agentctl.py worktree create CORE-001 frontend
-python scripts/agentctl.py worktree sync CORE-001 frontend
-python scripts/agentctl.py frontend design-digest CORE-001 --ref agent/CORE-001-frontend
-python scripts/agentctl.py frontend design-gate CORE-001
-python scripts/agentctl.py scope check CORE-001 backend
-python scripts/agentctl.py verify CORE-001
-```
-
-Normal lifecycle progress uses `task advance`; `task status --force` is recovery only.
-
-## Lifecycle
-
-```text
-PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE
-```
-
-Architecture chooses:
-- `contract_required`: true/false
-- `test_depth`: NONE / SMOKE / TARGETED / FULL
-- `security_risk`: LOW / STANDARD / HIGH
-- `security_review_required`: true/false
-
-This preserves rigor where it matters without making every slice pay the full process cost.
-
-## Important directories
-
-```text
-AGENTS.md                 universal mission/invariants
-frontend/AGENTS.md        Codex frontend authority and workflow
-.agents/skills/           reusable workflows
-.codex/agents/            Codex specialist definitions
-.ai/project.json          operational product configuration
-.ai/tasks/                task state and durable evidence
-contracts/                authoritative interfaces when required
-docs/                     product/architecture/standards/ADRs
-scripts/                  deterministic control plane
-supabase/migrations/      DB migrations when Supabase is selected
-tests/agentic/            framework regression tests
-```
-
-## Supabase
-
-If selected:
-1. use a DEV/TEST Supabase project for agent work
-2. configure the DEV project ref in `.codex/config.toml`
-3. authenticate with `codex mcp login supabase`
-4. use Git-tracked timestamped migrations for schema history
-5. use MCP mainly for scoped inspection/verification/advisors/types
-6. use synthetic/de-identified development data
-7. deploy reviewed migrations to production only through a deliberate human/CI path after merge
-
-Normal agent MCP access must not target production.
-commiting last one
-committing the last one x4
+Normal lifecycle progress uses `task advance`; deployment and production
+promotion remain deliberate human actions after the required verification,
+security review, and final review.
