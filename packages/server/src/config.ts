@@ -84,8 +84,13 @@ export function assertRuntimeConfig(config: ServerConfig): void {
   if (!config.databaseUrl || !config.scenarioToken) {
     throw new AppError(503, "dependency_unavailable", "Server persistence or scenario control is not configured.", true);
   }
+  assertDatabaseUrl(config.databaseUrl);
+}
+
+export function assertDatabaseUrl(value: string): void {
+  if (!value) throw new AppError(503,"dependency_unavailable","Database connection is not configured.",true);
   let databaseUrl:URL;
-  try{databaseUrl=new URL(config.databaseUrl);}catch{throw new AppError(503,"dependency_unavailable","Database connection configuration is invalid.",true);}
+  try{databaseUrl=new URL(value);}catch{throw new AppError(503,"dependency_unavailable","Database connection configuration is invalid.",true);}
   if(!["postgres:","postgresql:"].includes(databaseUrl.protocol))throw new AppError(503,"dependency_unavailable","Database connection must use PostgreSQL.",true);
   const privateRailwayHost = databaseUrl.hostname.endsWith(".railway.internal");
   if(!["localhost","127.0.0.1","::1","[::1]"].includes(databaseUrl.hostname)&&!privateRailwayHost&&!databaseUrl.searchParams.get("sslmode"))throw new AppError(503,"dependency_unavailable","Public database connections must explicitly require TLS.",true);
