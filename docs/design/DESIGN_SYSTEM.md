@@ -4,7 +4,18 @@ Persistent human-readable frontend design source of truth.
 
 ## Status
 
-`ESTABLISHED` — Clinical Glass system for an all-ages, business-centric product.
+`ESTABLISHED · HUMAN-APPROVED · VISUALLY LOCKED` — Clinical Glass system for an all-ages, business-centric product.
+
+### Visual lock
+
+This document and the current runtime UI define the approved OncoReady appearance. Future product work must preserve, not reinterpret, the system.
+
+- The palette and token values, typography, spacing rhythm, geometry, border/shadow language, iconography, logo usage, component character, theme behavior, motion language, layout character, and responsive behavior are locked.
+- New functionality must reuse the existing tokens and components or compose new feature-specific components entirely from the same primitives.
+- A frontend design phase may determine placement and interaction for new content within this system. It may not introduce a rebrand, alternate theme, new global visual trend, or restyle of existing surfaces.
+- No global token or established component-style change is allowed without explicit human approval for the exact proposed change.
+- Accessibility fixes must use the smallest visual delta that satisfies the requirement. Materially visible changes require human approval.
+- Every frontend task captures matching before/after screenshots for the affected viewports. Frontend review rejects unapproved visual drift.
 
 ---
 

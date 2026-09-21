@@ -14,9 +14,9 @@
   },
   "components": {
     "backend": {
-      "enabled": false,
+      "enabled": true,
       "path": "backend",
-      "technology": null
+      "technology": "Python 3 + FastAPI"
     },
     "frontend": {
       "enabled": true,
@@ -24,13 +24,31 @@
       "technology": "React + TypeScript + Vite"
     },
     "database": {
-      "enabled": false,
-      "provider": null,
-      "migration_path": "supabase/migrations"
+      "enabled": true,
+      "provider": "Railway PostgreSQL",
+      "migration_path": "backend/alembic/versions"
     }
   },
   "verification": {
     "checks": [
+      {
+        "name": "project manifest",
+        "command": [
+          "python3",
+          "scripts/validate-project.py"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
+        "name": "OpenAPI contract",
+        "command": [
+          "python3",
+          "scripts/validate-contracts.py"
+        ],
+        "cwd": ".",
+        "required": true
+      },
       {
         "name": "frontend build",
         "command": [
@@ -47,6 +65,16 @@
           "npm",
           "run",
           "test:smoke"
+        ],
+        "cwd": "frontend",
+        "required": true
+      },
+      {
+        "name": "frontend end-to-end",
+        "command": [
+          "npm",
+          "run",
+          "test:e2e"
         ],
         "cwd": "frontend",
         "required": true

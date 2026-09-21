@@ -12,6 +12,17 @@ These rules specialize the root `AGENTS.md`.
 - Do not silently modify backend, security, architecture, or contract scope.
 - Do not let non-authoritative aesthetic suggestions override the approved frontend design.
 
+## Non-negotiable visual lock
+
+The existing OncoReady UI and `docs/design/DESIGN_SYSTEM.md` are human-approved. Preserve them exactly as the visual baseline.
+
+- Do not rebrand, retheme, restyle, or modernize existing surfaces.
+- Do not change global colors or token values, font families or type scale, spacing scale, radii, borders, shadows, icon family, logos, navigation character, page composition, motion language, or light/dark theme behavior without explicit human approval.
+- Build new surfaces by reusing current tokens, components, density patterns, and responsive rules. A new state or component may be composed from those primitives; it does not authorize a new visual system.
+- Do not replace an existing component merely because another design is preferred.
+- Capture pre-change screenshots at the task's required viewports and compare post-change screenshots during frontend review. Unapproved visual drift is a blocker.
+- Accessibility corrections are mandatory but must minimize visual change. Escalate any materially visible correction for human approval.
+
 ## Product presentation
 
 The rapid-delivery workflow is internal. Do not label user-facing surfaces as prototypes, portfolio work, toys, practice apps, or cheap demos. Present real capabilities confidently without inventing customers, scale, compliance, security guarantees, integrations, or behavior.
@@ -40,8 +51,8 @@ When `frontend_design_required=false`, implement with the established design sys
 
 When `frontend_design_required=true`:
 
-1. In the frontend worktree, inspect the existing UI and decide the visual/interaction direction.
-2. Cover layout, hierarchy, typography, color, component presentation, responsive behavior, application states, motion, accessibility, and reduced motion.
+1. In the frontend worktree, inspect the existing UI and document how the new surface extends the locked visual/interaction direction without changing it.
+2. Cover layout, hierarchy, typography, color, component presentation, responsive behavior, application states, motion, accessibility, and reduced motion using the established system; do not propose replacement global styling.
 3. Write `frontend-design-report.json` with `status: DESIGN_READY` before production frontend changes.
 4. Scope-check and commit that design-only handoff on `agent/<TASK-ID>-frontend`.
 5. Return control to the Codex orchestrator for compatibility review bound to the exact canonical design-report digest.
