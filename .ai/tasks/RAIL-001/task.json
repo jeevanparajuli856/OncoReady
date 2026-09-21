@@ -3,7 +3,7 @@
   "task_id": "RAIL-001",
   "title": "Railway web API and PostgreSQL foundation",
   "type": "infra",
-  "status": "BUILD_READY",
+  "status": "IMPLEMENTATION",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
