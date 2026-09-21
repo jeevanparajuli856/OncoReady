@@ -50,6 +50,40 @@
         "required": true
       },
       {
+        "name": "backend fast tests",
+        "command": [
+          "python3",
+          "-m",
+          "pytest",
+          "-c",
+          "backend/pyproject.toml",
+          "-m",
+          "not integration",
+          "tests/backend",
+          "--cov=app",
+          "--cov-report=term-missing",
+          "-q"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
+        "name": "PostgreSQL migration and integration",
+        "command": [
+          "python3",
+          "-m",
+          "pytest",
+          "-c",
+          "backend/pyproject.toml",
+          "-m",
+          "integration",
+          "tests/backend",
+          "-q"
+        ],
+        "cwd": ".",
+        "required": true
+      },
+      {
         "name": "frontend build",
         "command": [
           "npm",

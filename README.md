@@ -20,24 +20,46 @@ The current UI and [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md
 
 See [`ADR-0003`](docs/adr/ADR-0003-human-approved-visual-lock.md) and the frontend instructions before changing any product surface.
 
-## Run the Existing Frontend
+## Run Locally
+
+Start PostgreSQL and create an isolated local database, then install and migrate
+the API:
+
+```bash
+python3 -m venv backend/.venv
+backend/.venv/bin/pip install -e './backend[test]'
+DATABASE_URL='postgresql+psycopg://localhost/oncoready_local' \
+  backend/.venv/bin/alembic -c backend/alembic/alembic.ini upgrade head
+DATABASE_URL='postgresql+psycopg://localhost/oncoready_local' \
+OPERATOR_TOKEN='replace-with-a-local-random-token' \
+CORS_ORIGINS='http://localhost:5173' \
+  backend/.venv/bin/uvicorn app.main:app --app-dir backend --reload --port 8000
+```
+
+In another terminal, start the existing frontend:
 
 ```bash
 cd frontend
 npm ci
-npm run dev
+VITE_API_ORIGIN=http://localhost:8000 npm run dev
 ```
 
 Useful checks:
 
 ```bash
+TEST_DATABASE_URL='postgresql+psycopg://localhost/oncoready_rail_001_test' \
+  backend/.venv/bin/pytest -c backend/pyproject.toml tests/backend
 cd frontend
 npm run build
 npm run test:smoke
 npm run test:e2e
 ```
 
-The FastAPI/PostgreSQL target is approved but not yet scaffolded; `RAIL-001` owns that implementation. Do not invent backend endpoints before its contract is approved.
+The current API surface is intentionally limited to process/dependency health,
+build evidence, and a synthetic persistence proof. Workspace sessions, Epic,
+and treatment-continuity workflow endpoints arrive in their declared slices.
+[`contracts/openapi.yaml`](contracts/openapi.yaml) is authoritative for the
+RAIL-001 boundary.
 
 ## Sources of Truth
 

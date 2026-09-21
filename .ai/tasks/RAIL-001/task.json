@@ -31,6 +31,7 @@
     ],
     "other": [
       ".ai/project.json",
+      ".github/workflows/ci.yml",
       "README.md",
       "docs/operations/**",
       "docs/operator/**"
@@ -46,6 +47,7 @@
         "contracts/**",
         ".ai/tasks/RAIL-001/frontend-design-review.json",
         ".ai/project.json",
+        ".github/workflows/ci.yml",
         "README.md",
         "docs/operations/**",
         "docs/operator/**"
