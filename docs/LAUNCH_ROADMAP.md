@@ -517,25 +517,6 @@ landing contains no patient record
 
 The presenter should rehearse this sequence to approximately 2:45 so one short network delay does not force the closing proof off stage.
 
-## 11. Suggested Delivery Estimate
-
-Rough engineer-day estimates for a small experienced team, excluding vendor approval delays:
-
-| Slice | Estimate |
-|---|---:|
-| Source-of-truth reconciliation | 1–2 days |
-| Landing, access gateway, pricing | 2–3 days |
-| Durable early-warning workflow | 6–9 days |
-| Twilio SMS | 3–5 days |
-| ElevenLabs voice | 3–5 days |
-| Partner Dispatch transportation slice | 4–6 days |
-| Optional Uber Health or Lyft Concierge adapter after approval | 3–5 days |
-| Metrics and FHIR | 3–5 days |
-| LightGBM, calibration, SHAP | 6–9 days |
-| Cross-slice hardening/rehearsal | 3–5 days |
-
-Required finals plan: approximately **31–49 engineer-days**. Add **3–5 engineer-days** only if an approved Uber Health or Lyft Concierge adapter passes the adoption gate, for a maximum plan of approximately **34–54 engineer-days**. Work is parallelized only after contracts are frozen. External onboarding, compliance review, production PHI handling, and real hospital integration are outside this estimate.
-
 ## 12. Approval Checklist
 
 Human approval is requested for:
