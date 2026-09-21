@@ -2,17 +2,26 @@
   "schema_version": "1.0",
   "task_id": "RECOVER-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "Independent TARGETED testing at integrated commit 29939c5069c1cfda2bf6b632ce2cbfbc2d062d8b confirms the production landing build and all eight Chromium journeys pass; desktop and mobile rendering keep ContinuityField, its two surfaces, and all four labels bounded with no horizontal overflow, while public navigation reaches the controlled role gateway.",
+  "files_changed": [
+    ".ai/tasks/RECOVER-001/test-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "cd frontend && npm run build (PASS: TypeScript and Vite production build completed; 1,826 modules transformed; emitted dist/index.html, index-DMwXh4e6.css, and index-CN3NoJQx.js)",
+      "cd frontend && npm run test:e2e -- --grep \"continuity field stays bounded\" (PASS: 1/1 Chromium test passed across its 1920x1080 desktop and 390x844 mobile steps; 0 skipped, 0 flaky, 0 retries)",
+      "cd frontend && npm run preview -- --host 127.0.0.1 --port 5187, then a Playwright Chromium render/evaluate capture against http://127.0.0.1:5187/ at 1920x1080 and 390x844 (PASS: desktop field 642.890625x592 at [1021.109375,287.734375]-[1664,879.734375], mobile field 335.21875x448 at [27.390625,838.578125]-[362.609375,1286.578125]; every label was absolutely positioned within its field; document scrollWidth/clientWidth were 1920/1920 and 390/390; screenshots /tmp/recover-001-desktop.png and /tmp/recover-001-mobile.png were visually inspected)",
+      "cd frontend && npm run test:e2e (PASS: 8/8 Chromium tests passed; 0 skipped, 0 flaky, 0 retries)",
+      "python3 scripts/agentctl.py scope check RECOVER-001 tester (PASS: tester scope check passed)"
+    ],
+    "notes": "The existing integrated regression is materially sufficient and no extra test file was added: it directly asserts relative/hidden field containment, nonzero capped geometry, absolute canvas/fallback containment, four in-bounds absolute labels, document overflow, visible hero copy, How it works and Pricing navigation, and Workspace access routing to the role gateway at both required viewports. Independent full-page inspection showed a coherent desktop two-column hero and readable single-column mobile layout without scattered raw labels. No test was skipped, marked flaky, retried, or hidden. Live Railway deployment state and /health verification are deployment/orchestrator evidence and were not exercised by this local tester run."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Keep the focused geometry regression in frontend/tests/e2e.spec.ts as a deployment gate; removing the restored ContinuityField layout block reproduces the class of failure it guards.",
+    "The orchestrator still needs exact terminal Railway API/web deployment-state evidence, API /health evidence, and a deployed-URL browser smoke because those acceptance criteria are outside this local integrated test run."
+  ]
 }
