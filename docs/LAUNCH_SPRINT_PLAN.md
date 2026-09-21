@@ -42,9 +42,9 @@ This is a launch sprint, not a general platform build. Work that does not improv
 - Epic access is read-only, staff-only, server-backed, expiring, and provenance-preserving. Snapshot fallback is labeled and never represented as live.
 - Patient verbatim text is preserved for human review. The model never interprets clinical urgency, provides advice, or makes treatment decisions.
 - Caregiver and transportation projections are allowlisted and contain no Epic-only clinical data or clinical concern text.
-- CareLink is the active transportation path. SMS, voice, and Uber Health remain `provider_ready` and cannot create unverified vendor success states.
+- CareLink is the active transportation path. SMS/voice target real `live_test` delivery to the verified test contact; Uber Health remains `provider_ready`. No mode may fabricate provider success.
 - The current Clinical Glass design is locked. New screens extend existing tokens and primitives; global restyling is not part of any sprint.
-- No production PHI, real patient data, secrets, production Epic access, real enterprise OAuth, external SMS/voice execution, Uber ride execution, EHR writeback, or compliance claim is authorized.
+- No production PHI, real patient data, secrets, production Epic access, real enterprise OAuth, SMS/voice to unapproved contacts, Uber ride execution, EHR writeback, or compliance claim is authorized.
 
 ## 5. Dependency and integration spine
 
@@ -78,7 +78,7 @@ ML-001 + EVIDENCE-001 + all integrated slices
 | Sprint 1 — Platform | Establish one deployable stateful stack | `RAIL-001` | Web/API/Postgres healthy on Railway; migrations and persistence verified; reset/reseed deterministic |
 | Sprint 2 — Trusted entry and clinical truth | Protect every workspace and show truthful Camila context | `ACCESS-001`, then `EPIC-001` | Role/center sessions enforce destinations; staff-only live/fallback Epic projection passes targeted and security checks |
 | Sprint 3 — Durable rescue spine | Replace client-scripted behavior with owned, deadline-aware workflow state | `FLOW-001` | Exact reply produces two valid threads; all role projections, graph, and timeline remain consistent and idempotent |
-| Sprint 4 — Recovery and intelligence | Complete adaptive engagement and transportation recovery | `RIDE-001` and `ML-001` after event/feature-schema freeze; `OUTREACH-001` integrates after `ML-001` | Provider-ready modes make no external calls; CareLink recovery closes only after acknowledgment; model artifact passes its gate |
+| Sprint 4 — Recovery and intelligence | Complete adaptive engagement and transportation recovery | `RIDE-001` and `ML-001` after event/feature-schema freeze; `OUTREACH-001` integrates after `ML-001` | Inactive/replay modes make no external calls; bounded live SMS/call acceptance passes; CareLink closes only after acknowledgment; both model artifacts pass |
 | Sprint 5 — Evidence and launch | Prove the system and harden the presentation path | `EVIDENCE-001` plus integrated release gate | Metrics derive from events; validator passes; full path, failure paths, preflight, security, review, and recording rehearsal pass |
 
 ### Compressed finals overlay
@@ -101,7 +101,7 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 | `ACCESS-001` | L | High | TARGETED | Yes | Center-scoped server session opens only its configured workspace |
 | `EPIC-001` | XL | High | TARGETED | Yes | Staff-only live/fallback Epic context with atomic provenance |
 | `FLOW-001` | XL | Standard | TARGETED | Yes | One reply becomes separately owned clinical and transport work |
-| `OUTREACH-001` | L | Standard | TARGETED | Yes | Auditable SMS-first policy and provider-ready replay without vendor calls |
+| `OUTREACH-001` | XL | High | TARGETED | Yes | Model-selected SMS and answered voice call reach the verified test phone |
 | `RIDE-001` | XL | High | TARGETED | Yes | CareLink assignment, failure, recovery, return plan, and acknowledgment |
 | `ML-001` | XL | Standard | FULL | Yes | Reproducible calibrated LightGBM/SHAP artifact and Camila trajectory |
 | `EVIDENCE-001` | L | High | TARGETED | Yes | Event-derived metrics, source evidence, and validator-gated FHIR artifact |
@@ -154,11 +154,12 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 ### OUTREACH-001 — Adaptive SMS and voice orchestration
 
 - `OUTREACH-01` Define normalized outreach plan, attempt, consent, opt-out, callback, replay, and provider-capability contracts.
-- `OUTREACH-02` Implement deterministic channel policy using dated engagement features and model priority while allowing explicit requests/barriers to override immediately.
-- `OUTREACH-03` Add Twilio and ElevenLabs/Twilio adapter interfaces, kill switches, allowlist hooks, callback signature/idempotency boundaries, and `provider_ready` implementations that make zero vendor calls.
-- `OUTREACH-04` Add controlled disclosed replay events that use the same normalized workflow path as future verified callbacks.
+- `OUTREACH-02` Consume both model outputs: readiness priority and engagement scores for eligible channel/time pairs; select the learned winner within deterministic constraints and persist its decision, due time, expiry and model version. Explicit requests/barriers override immediately.
+- `OUTREACH-03` Implement Twilio SMS and real telephone dispatch with prepared ElevenLabs script audio, signed callbacks/inbound replies, kill switches, verified-recipient allowlisting, persistent rate/budget limits, and separate inactive/replay/live-test modes.
+- `OUTREACH-04` Execute due choices automatically via the durable scheduler/outbox and controlled adapter, without a second Send/Call click. Revalidate at dispatch, cancel invalidated decisions, preserve idempotency across restart, and rescore on nonresponse. Disclosed replay and later verified callbacks share normalized events.
 - `OUTREACH-05` Extend the outreach composer/timeline with consent, availability, language, response history, empty/queued/scheduled/attempted/responded/opted-out/failed/human-follow-up states.
 - `OUTREACH-06` Verify no clinical advice or symptom interpretation, no arbitrary browser destination, no leaked secret, no fake `Delivered`/`Completed`, and no provider network traffic in `provider_ready` mode.
+- `OUTREACH-07` Complete sender/contact/callback/audio preflight early and prove real SMS reception plus answered voice playback under the HIGH-risk security gate. Live history, opt-out and limits survive reset; replay cannot satisfy this gate.
 
 ### RIDE-001 — CareLink contracted-provider dispatch
 
@@ -175,10 +176,10 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 - `ML-01` Freeze the feature schema, scoring timestamp, target label, navigator capacity `K`, calibration/top-K thresholds, subgroup harm rule, and artifact compatibility contract.
 - `ML-02` Generate at least 75,000 encounters across at least 8,000 fictional patients, 12 fictional centers, and 18 months with repeated encounters, missingness, site effects, controlled drift, and the approved engagement/access signals.
 - `ML-03` Add patient-separated chronological train/calibration/test splits and leakage tests that reject post-cutoff outcomes, final reasons, future notes, and post-score actions.
-- `ML-04` Train one shallow regularized LightGBM classifier, fit sigmoid calibration on the distinct calibration set, and keep the final test set untouched until freeze.
-- `ML-05` Evaluate Brier/calibration, PR-AUC, precision/recall/workload at `K`, deterministic/contact-all/contact-none baselines, and required subgroup counts/performance.
+- `ML-04` Train separate readiness and action-conditioned engagement LightGBM classifiers and calibrators; use the latter to score channel/time response likelihood. Freeze both before final evaluation; record randomized eligible-action assignment in synthetic training data.
+- `ML-05` Evaluate readiness calibration/ranking/workload and engagement calibration plus policy performance against fixed channel/time selection in the frozen synthetic simulator. Apply each model's prespecified subgroup gates; neither result implies real-world effectiveness.
 - `ML-06` Persist model, calibrator, feature schema, seeds, generator version, thresholds, timestamp, metrics, and manifest as one versioned artifact set; publish the data/model card.
-- `ML-07` Produce Camila's held-out T−7/T−2/T−1 path through the normal pipeline and SHAP margin explanation; prove the score, explanation, and channel choice are not hard-coded.
+- `ML-07` Produce Camila's held-out trajectory and candidate-action scores through normal inference. Verify identity-invariance and activity-dependent channel/time choices. The presentation follows the model's actual choice, never a forced SMS-first result.
 - `ML-08` Integrate runtime compatibility/staleness checks and `Score unavailable` degradation while universal deterministic cadence continues; complete FULL independent testing and security review.
 
 ### EVIDENCE-001 — Operational metrics and validated FHIR evidence
@@ -191,6 +192,8 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 - `EVIDENCE-06` Extend the protected system UI with metrics, source evidence, FHIR mapping, and validation state using the locked design.
 - `EVIDENCE-07` Verify metric recomputation, authorization, malformed/invalid bundles, validation failure, provenance claims, final critical path, and dedicated security review.
 
+**Learned outreach amendment:** September 21 human direction adds a second trained engagement model and automatic scheduled execution to ML/OUTREACH. Keep the same task dependency spine and September 25 target; no online-learning infrastructure is added. The human selected real test-phone delivery and confirmed Twilio/ElevenLabs accounts purchased. OUTREACH-001 now includes bounded live activation, HIGH security risk and actual delivery proof; replay is recovery evidence only.
+
 ## 9. Human and external launch gates
 
 These gates apply to the named task, not to the entire backlog before `RAIL-001` planning. Policy, interfaces, and acceptance thresholds must be resolved before affected implementation or evaluation; live access/deployment evidence is required before the corresponding integration acceptance. Do not invent approvals. The human delegated synthetic scenario planning to the agents. Use LAUNCH_SCENARIO_SETTINGS.md, then freeze applicable values in task requirements/contracts; do not request routine configuration approval again. These settings are not clinical policy. Selecting the FHIR validator and documenting its version is an architecture responsibility, not a request for the human to choose a library.
@@ -200,12 +203,12 @@ These gates apply to the named task, not to the entire backlog before `RAIL-001`
 | Railway account/tool access, project, public domains, and variable management | `RAIL-001` | Human grants approved workspace/CLI access; orchestrator checks for existing services before creating any | Local web/API/Postgres verifies code, but launch cannot be called deployed |
 | Exact Epic Non-PRD client configuration, HTTPS redirect URI, enabled scopes, private presenter authorization | `EPIC-001` | Human supplies access through secure environment configuration and completes Epic login privately | Versioned Camila snapshot may preserve the recording only after one authorized successful inventory; it is visibly labeled fallback |
 | Department owner/SLA matrix, treatment clock, business-day calendar, transport cutoff | `FLOW-001` | Architect freezes delegated synthetic settings and closure boundaries | Unresolved scope/clinical decisions stay open; synthetic SLAs are never claimed as hospital policy |
-| Outreach scripts, consent/opt-out language, language variants | `OUTREACH-001` | Task review checks delegated nonclinical copy and consent behavior | No clinical advice, clinical-approval claim, or live vendor execution |
+| Outreach scripts, consent/opt-out language, language variants | `OUTREACH-001` | Task review checks delegated nonclinical copy and consent behavior | No clinical advice or clinical-approval claim; bounded test-contact execution only |
 | CareLink center, contracted provider, service area, coordinator/driver fixtures, funding/eligibility rules | `RIDE-001` | Architect freezes the delegated fictional provider and eligibility configuration | Keep blocker open and show no-option/escalation state |
 | Navigator capacity `K`, calibration/top-K gate, minimum subgroup count, unacceptable-harm rule | `ML-001` | Product/model owner records prespecified values before final test evaluation | Model remains `Score unavailable`; deterministic cadence continues |
 | Pinned FHIR validator/version and approved evidence visibility | `EVIDENCE-001` | Architecture/security select and record before contract freeze | UI cannot show `Validated` |
 
-Twilio, ElevenLabs, Uber Health, real Google/Microsoft/Apple OAuth, production Epic connectivity, and customer production deployment are explicitly deferred and are not launch blockers.
+Twilio/ElevenLabs accounts are purchased; sender readiness, protected credentials, test-contact verification, callbacks and live-delivery evidence are now OUTREACH launch gates. Check sender readiness early. Uber Health, real Google/Microsoft/Apple OAuth, production Epic connectivity and customer production deployment remain deferred.
 
 ## 10. Verification matrix
 
@@ -217,8 +220,9 @@ Twilio, ElevenLabs, Uber Health, real Google/Microsoft/Apple OAuth, production E
 | Backend | Unit and integration tests for business rules, authorization, idempotency, transition ordering, redaction, and failure behavior |
 | Frontend | Component/E2E checks for role routes, loading/error/empty/disabled/success states, accessibility, responsive behavior, and reduced motion |
 | Visual lock | Matching pre/post desktop and mobile screenshots for affected surfaces; no unapproved token/component drift |
-| External adapters | Network-disabled provider-ready tests; signed/idempotent callback boundaries; Epic live/fallback tests in a safe Sandbox environment |
-| Model | Reproducible generator/training, leakage and schema tests, final holdout evaluation, subgroup report, Camila-not-hard-coded test |
+| External adapters | Network-disabled routine tests; bounded live SMS/call acceptance to the verified test phone after security approval; signed/idempotent callbacks; Epic live/fallback checks |
+| Model | Both reproducible artifacts, leakage/action-coverage tests, separate holdout/subgroup reports, and identity-invariance/activity-dependent selection tests |
+| Automatic outreach | Due-action dispatch, pre-dispatch revalidation, restart/idempotency, nonresponse rescoring, opt-out cancellation, and truthful controlled outcome without manual Send/Call |
 | FHIR | Pinned validator pass and inspectable mapping/report; failure suppresses `Validated` |
 | Security | Required specialist review on the exact verified commit for every roadmap task marked for review |
 | Release | Railway deployment reaches `SUCCESS`; `/health`, `/ready`, migrations, CORS, reset, sessions, Epic preflight, model artifact, and the full critical path pass |
@@ -229,7 +233,7 @@ Twilio, ElevenLabs, Uber Health, real Google/Microsoft/Apple OAuth, production E
 2. Confirm Railway `web`, `api`, and PostgreSQL services, domains, latest successful deployments, private database connection, migration revision, and required variables without printing secrets.
 3. Run reset/reseed while preserving valid Epic authorization and the last-known-good snapshot.
 4. Run private Epic preflight: refresh or reauthorize, inventory Camila, atomically publish the snapshot, and select truthful `Live` or accepted `Snapshot fallback` state.
-5. Confirm model artifact/version, provider modes (`CareLink=active`; SMS/voice/Uber=`provider_ready`), deterministic replay, and CareLink fixture state.
+5. Confirm model artifact/version, provider modes (`CareLink=active`; armed SMS/voice=`live_test`; Uber=`provider_ready`), verified contact, actual-time window, limits, sender/callback/audio readiness, disclosed replay, and CareLink fixture state.
 6. Execute public → access → staff → split work → transport → caregiver → patient acknowledgment → confirmed graph. Use sign-out/access between personas, then return through Apple staff access for Epic provenance and FHIR evidence. Patient or caregiver sessions never inherit staff-only evidence access.
 7. Execute one failure rehearsal: CareLink provider failure followed by backup recovery. Confirm clinical text never enters caregiver or transport surfaces.
 8. Run current repository verification and required exact-revision security/final reviews.
@@ -248,4 +252,5 @@ The launch sprint is complete only when every roadmap stop condition is true on 
 - selected tests, migration checks, contract checks, model gate, pinned FHIR validation, deployment checks, and the deterministic recovery path pass;
 - verification, required security reviews, and final review approve the exact current commit;
 - setup/operator documentation supports the private preflight, reset, deployment check, and presentation journey;
-- the human completes final merges and deliberately authorizes any later production or external-provider activation.
+- real SMS/call acceptance passes for the verified test contact; replay cannot replace that proof;
+- the human completes final merges; broader production/vendor activation remains separately scoped.

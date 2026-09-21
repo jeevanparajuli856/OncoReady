@@ -46,10 +46,11 @@ Browser
                    ├── Epic SMART/FHIR read adapter ── HTTPS ──> Epic Sandbox
                    ├── clinical-context normalization and snapshot service
                    ├── CareLink Partner Dispatch adapter (active)
-                   ├── SMS/voice adapters (provider-ready)
+                   ├── SMS/voice adapters (bounded live-test + replay fallback)
                    ├── Uber Health adapter boundary (provider-ready)
                    ├── metrics + OncoReady FHIR export
-                   ├── LightGBM inference + SHAP evidence
+                   ├── readiness + engagement inference, constrained action selection
+                   ├── durable due-action scheduler + SHAP evidence
                    └── private Railway network
                                │
                                ▼
@@ -90,7 +91,8 @@ Responsibilities:
 - route exact patient text into separately owned clinical and practical work without model interpretation;
 - orchestrate provider modes, outbox/idempotency, callback normalization, and kill switches;
 - compute metrics and generate the validated OncoReady FHIR evidence artifact;
-- load versioned model artifacts and produce calibrated priority plus SHAP evidence;
+- load versioned readiness/engagement artifacts, produce calibrated priority and candidate response probabilities, select the highest-scoring eligible channel/time, and schedule execution through the durable outbox;
+- revalidate pending actions at dispatch, cancel superseded attempts, record replay versus verified-provider outcomes, and preserve per-attempt idempotency;
 - provide process health and dependency readiness evidence.
 
 Route names and payload schemas become authoritative only through task-declared contracts. Frontend and backend workers must not invent endpoints independently.
@@ -118,7 +120,7 @@ Database changes require Git-tracked Alembic migrations, constraints for domain 
 |---|---|---|
 | Epic Sandbox | Active read-only target | Staff-only clinical context for Camila through enabled R4 Read/Search APIs; no writeback |
 | CareLink Partner Dispatch | Active controlled provider | Persisted local-provider dispatch and recovery through normalized events |
-| SMS / voice | Provider-ready | Internal planned/replay events only until separately activated and callback-verified |
+| SMS / voice | Bounded live-test target | Twilio SMS/phone transport and reviewed ElevenLabs audio to one verified test contact; signed outcomes, persistent limits, disclosed replay fallback |
 | Uber Health | Provider-ready | No quote, request, assignment, driver, ETA, or completion claim without verified provider interaction |
 | Google / Microsoft / Apple | Seeded access presentation | Server resolves controlled identity/workspace; external OAuth deferred |
 | Ochsner | Not connected | No access, configuration, endorsement, partnership, or production claim |
@@ -242,7 +244,7 @@ Formal task contracts are required where independently implemented components me
 - web ↔ API workflow commands and role-specific projections;
 - API ↔ CareLink/provider normalized transport commands/events;
 - API ↔ generated FHIR evidence artifact;
-- API ↔ model artifact feature schema and inference result.
+- API ↔ separate readiness and action-conditioned engagement schemas/results, candidate decisions, dispatch expiry, and outcome feedback.
 
 `contracts/openapi.yaml` becomes authoritative only for endpoints declared by the relevant task. Internal module types remain implementation details. Contract changes require orchestrator-controlled task scope and validation before `BUILD_READY`.
 
@@ -259,6 +261,12 @@ Formal task contracts are required where independently implemented components me
 - **Sandbox → production interpretation:** visible provenance and technical documentation prevent Sandbox data or seeded identities from being described as production access.
 
 Epic/access/transport implementation tasks require a focused security review on the exact verified commit. No production or real-patient system is an authorized test target.
+
+## Learned outreach boundary
+
+ML-001 produces readiness priority and response probability for each eligible channel/time; OUTREACH-001 schedules and automatically executes the chosen action. Consent, explicit preference, quiet hours, contact limits, deadlines and provider mode constrain the candidate set. They do not force a fixed SMS-first result. FLOW freezes the action/feature envelope before either implementation; ML tests its consumer contract independently, and OUTREACH supplies the end-to-end execution proof.
+
+The API scheduler rechecks current permissions/consent, response state, plan version, expiry and kill switch before adapter invocation. Persist the decision, idempotent dispatch attempt and truthful outcome. Model scores cannot represent actual delivery, a completed call, or patient response. The controlled adapter may execute without network access; a private operator starts/advances a run rather than choosing the model's action. Real test-phone execution is confirmed; both accounts are purchased. OUTREACH-001 owns bounded activation after configuration and HIGH-risk dedicated security review. Live scheduling uses wall time, not accelerated replay time; dispatch history, opt-out and rolling limits survive reset. Follow docs/operations/OUTREACH_TEST_DELIVERY.md. No clinical dialogue or live online model exploration is added.
 
 ## Reliability-Critical Path
 
@@ -314,13 +322,13 @@ Reliability controls:
 - Secrets remain in Railway variables or an approved server-side credential store, never Git.
 - Alembic migrations are reviewed and applied deliberately before readiness passes.
 - A submitted deployment is not considered live until it reaches success and the post-deploy critical path passes.
-- Production deployment, production Epic configuration, and real external-provider activation remain separate human-approved operations.
+- Production deployment, production Epic configuration and broader external-provider activation remain separate human-approved operations. Bounded test-contact Twilio/ElevenLabs delivery is already authorized through OUTREACH-001; configuration and security/live acceptance still apply.
 
 ## Deferred Production Architecture
 
 - Customer-specific Epic Non-PRD/production installation and embedded EHR launch.
 - Real enterprise identity, center membership, provisioning, and account recovery.
 - Production PHI governance, retention, consent, audit policy, incident response, and clinical protocol ownership.
-- Activated Twilio, ElevenLabs, Uber Health, or other vendor execution.
+- General live-patient Twilio/ElevenLabs communication and Uber Health/other vendor execution beyond the approved bounded test-contact scope.
 - Queue/worker infrastructure, high availability, disaster recovery, and scale hardening based on measured requirements.
 - Any EHR writeback or broader clinical workflow requires a new approved architecture, formal contract, risk review, and customer participation.

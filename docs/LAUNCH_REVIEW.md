@@ -42,7 +42,7 @@ These are task-specific gates. They do not prevent RAIL planning, and should not
 | Synthetic scenario settings | Human delegated planning to the agents; concrete defaults are in [LAUNCH_SCENARIO_SETTINGS.md](./LAUNCH_SCENARIO_SETTINGS.md) | Responsible architect freezes applicable version; routine synthetic choices need no repeated human permission |
 | Workflow policy | Use the proposed clock/calendar, owners, operational SLAs, escalation and confirmation rules; architect checks and freezes the scenario contract under delegated planning authority | FLOW BUILD_READY |
 | Transportation fixtures | Review and freeze the proposed synthetic provider, service area, windows, funding, coordinator and backup rules | RIDE policy freeze |
-| Outreach content | Review the proposed bounded nonclinical scripts, consent/opt-out copy, language and cadence; no clinical approval or external activation is implied | OUTREACH acceptance |
+| Outreach content | Review the proposed bounded nonclinical scripts, consent/opt-out copy, language and cadence; no clinical approval is implied; bounded live-test SMS/calls are now authorized | OUTREACH acceptance |
 | Model gate | Freeze the proposed K, calibration/top-K thresholds, subgroup count/rejection rules, split manifest and artifact strategy before final evaluation | Before final holdout evaluation; no thresholds chosen from test results |
 | Railway access | Inspect existing authorized account/services first. No live Railway discovery or deployment was performed in this planning audit | RAIL deployed acceptance |
 | Epic access and inventory | Use secure environment configuration and private human authorization. Prove actual Camila resources and refresh support; a missing field stays absent | EPIC live integration acceptance |
@@ -50,6 +50,27 @@ These are task-specific gates. They do not prevent RAIL planning, and should not
 | Controlled account recovery | Architect specifies an implemented operator-assisted or otherwise approved path; no new email vendor assumed | ACCESS BUILD_READY |
 
 No secret values should be placed in chat or these documents. The September 25 compressed schedule remains high risk from the current backend-empty starting point; do not silently drop ML, interoperability, authorization, or reviews to fit it. Any reduction in approved launch scope requires an explicit human decision.
+
+## Learned outreach amendment — September 21
+
+The human requested that learned channel/time selection actually execute in the demo. This amendment is now reflected in PROJECT, SYSTEM, the roadmap/sprint, ADR-0002, scenario settings, and FLOW/ML/OUTREACH task acceptance. The starting revision for this amendment was `a248022`; earlier baseline test results above/below belong to the preceding planning audit.
+
+- ML-001 now owns two offline-trained classifiers/calibrators: readiness priority and action-conditioned response probability. Both require separate holdout gates; fixed SMS-first behavior is superseded.
+- OUTREACH-001 persists the model's chosen channel/time and automatically executes due work through the configured adapter, with consent/expiry revalidation, cancellation, idempotency and response-driven rescoring. A presenter clicking Send/Call or showing a recommendation alone does not pass.
+- FLOW-001 freezes shared feature/action contracts first, avoiding circular ML/scheduler dependencies. Existing task order remains valid.
+- Behavioral verification must prove that activity changes affect selection and identity-only changes do not. Camila is not hard-coded and synthetic results are not evidence of effectiveness with real patients.
+- The human selected **real SMS/calls to a verified test contact** and confirmed **Twilio and ElevenLabs purchased**. OUTREACH-001 includes bounded live activation and real delivery acceptance; its planned security risk is now HIGH and infrastructure impact includes protected provider variables/callback configuration. Sender/API/contact/callback readiness must still be verified. No vendor configuration or real contact occurred during this planning update.
+- This expands ML/OUTREACH implementation and testing work inside the same September 25 target. The rest of the approved scope is retained; no online learning infrastructure or medical dialogue generation is added.
+
+Planning-only amendment validation: project and all task schemas, OpenAPI structure, dependency graph, local document links and whitespace checks pass. Runtime code is unchanged, so the prior frontend suite was not rerun for these documentation-only edits. No learned model or execution path has yet been implemented or verified.
+
+Self-evaluation for this amendment: accuracy 4/5 (requirements checked, implementation pending); completeness 4/5 (selection/execution criteria defined, delivery mode confirmed; provider configuration not yet verified); clarity 4/5 (model and adapter responsibilities explicit, repeated documents remain); actionability 4/5 (named task ownership and testable criteria, provider accounts purchased; sender/contact setup unverified); conciseness 4/5 (focused extension but synchronized across authoritative artifacts). Overall 4.0/5. Next improvement: check sender readiness early and freeze the task contracts. The implementation runbook is [OUTREACH_TEST_DELIVERY.md](./operations/OUTREACH_TEST_DELIVERY.md). Self-check: the handoff now captures the requested automatic behavior without claiming it already runs.
+
+## Real delivery prerequisites — latest human decision
+
+The human has resolved execution mode and account purchase. Do not ask whether to use replay or buy these accounts again. Start checking sender capability/verification and API access early without exposing credentials. Arrange protected server configuration of credentials and the verified consenting test recipient; these details have not been supplied in this review.
+
+Use Twilio for SMS/telephone transport and prepared ElevenLabs audio for the bounded call. Preserve provider-confirmed results; replay is a fallback, not successful live acceptance. Private run arming sets a real-time test window and bounded spend/attempt budget. Scenario reset/clock acceleration cannot resend or clear the live ledger. The runbook distinguishes answered calls from explicit patient response and requires both real SMS and voice proof across eligible model-driven tests.
 
 ## Coding-agent start
 
@@ -88,4 +109,4 @@ Applied the agent-self-evaluation skill; overall **4.0/5**.
 | Actionability | 4 | RAIL can enter planning with concrete gates; downstream architects must freeze the delegated scenario settings in their contracts |
 | Conciseness | 4 | Findings are summarized here; future edits should avoid expanding duplicate prose across the roadmap/specs |
 
-The two human questions are resolved: September 25 is confirmed and synthetic planning is delegated. Next improvements: freeze task-specific settings, then record real RAIL architecture/contracts and service evidence. Self-check: the user can spawn the coding agent with a clear start and without a false claim that implementation is already build-ready.
+The original two human questions are resolved: September 25 is confirmed and synthetic planning is delegated. Next improvements: freeze task-specific settings, then record real RAIL architecture/contracts and service evidence. Self-check: the user can spawn the coding agent with a clear start and without a false claim that implementation is already build-ready.

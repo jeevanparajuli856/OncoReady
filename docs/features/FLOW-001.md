@@ -15,7 +15,7 @@ This is the core operational slice. It replaces frontend-scripted state changes 
 - Distinct clinical-contact and transportation threads with separate permissions, deadlines, transitions, projections, and closure rules.
 - Appointment-change recomputation, permission revocation, stale-source/scheduler states, and deterministic reset/reseed.
 - API commands/projections integrated into the existing role workspaces, Treatment Readiness Graph, and timeline.
-- Stable feature snapshot contract required by `ML-001`.
+- Stable readiness and engagement feature snapshots plus candidate-action/decision-time envelope required by ML-001 and OUTREACH-001. Define it here to avoid a circular implementation dependency between model inference and scheduling.
 
 ## Out of scope
 

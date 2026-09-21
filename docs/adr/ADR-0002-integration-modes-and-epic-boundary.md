@@ -17,9 +17,13 @@ Every external integration has an explicit mode and truthful product state.
 - A complete last-known-good Camila snapshot may be used only as `Snapshot fallback` with its original synchronization time. Partial refreshes never replace a complete snapshot or appear live.
 - Epic writeback is not approved. OncoReady owns outreach, barriers, work, transportation, permissions, acknowledgment, metrics, and closure.
 - CareLink Partner Dispatch is the active controlled transportation mode.
-- SMS, voice, and Uber Health remain `provider_ready` until credentials, allowlists, external calls/callbacks, targeted tests, and security approval exist.
+- SMS/voice now target bounded `live_test` delivery using the purchased Twilio/ElevenLabs accounts and a verified test contact. They remain inactive until configuration, allowlists, tests and dedicated security review pass. Uber Health remains `provider_ready`.
 - Controlled replay is distinguishable from verified external-provider activity.
 - Camila is the only complete Epic-backed case. Other queue entries remain bounded frontend fixtures and do not trigger Epic requests.
+
+## September 21 learned-outreach clarification
+
+The human subsequently requested learned channel/time selection and automatic execution for the demo. Readiness and engagement models select within allowed actions; the scheduler executes the choice through the configured adapter. This supersedes deterministic channel selection elsewhere, but does not turn replay into verified vendor delivery. The human subsequently selected real SMS/call delivery and confirmed both accounts purchased. OUTREACH-001 owns that bounded activation; real provider outcomes are required, while replay remains a disclosed fallback. See the test-delivery runbook for wall-clock dispatch, reset-safe limits and live acceptance. Uber Health activation remains deferred.
 
 ## Alternatives Considered
 

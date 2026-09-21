@@ -241,7 +241,8 @@
     "Stale scheduler, source, or projection state remains visible and never appears as reassurance.",
     "Reset/reseed restores the exact finals workflow state without deleting valid Epic authorization or the last-known-good Camila snapshot.",
     "The API-backed critical journey preserves the locked visual, accessibility, responsive, and reduced-motion behavior.",
-    "Confirmation requires the approved human-owned clinical disposition, current complete transport plan, and patient acknowledgment; source Epic dates are unchanged and distinguishable from the OncoReady scenario clock."
+    "Confirmation requires the approved human-owned clinical disposition, current complete transport plan, and patient acknowledgment; source Epic dates are unchanged and distinguishable from the OncoReady scenario clock.",
+    "Freeze readiness/engagement feature snapshots and candidate-action decision envelopes for ML and OUTREACH before their implementation; no circular dependency on the later scheduler implementation."
   ],
   "created_by": "human"
 }

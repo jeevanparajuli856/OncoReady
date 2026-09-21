@@ -8,6 +8,8 @@
 
 **Execution plan:** [`LAUNCH_SPRINT_PLAN.md`](./LAUNCH_SPRINT_PLAN.md) decomposes this roadmap into dependency waves, task workspaces, external gates, verification evidence, and the launch-day runbook.
 
+**Learned outreach amendment:** The human now requires trained channel/time selection and automatic execution for the demo. ML-001 includes a second, action-conditioned engagement model; OUTREACH-001 owns scheduling and automatic adapter invocation. The human selected real SMS/call delivery to a verified test contact and confirmed Twilio/ElevenLabs accounts purchased. OUTREACH-001 owns bounded activation and real delivery proof; replay remains fallback. No recommendations-only or hard-coded SMS-first implementation satisfies this amendment.
+
 **Implementation state:** Human approved. `PLAN-002` reconciled the authoritative product, architecture, deterministic configuration, operations, long-lived decisions, and visual-lock instructions. This roadmap remains the approved planning record; the concern-specific source-of-truth files govern implementation. Production code still requires the applicable feature task to reach `BUILD_READY`.
 
 **Confirmed delivery direction:** September 25, 2026; full scope retained. The human delegated synthetic planning to the agents. [`LAUNCH_SCENARIO_SETTINGS.md`](./LAUNCH_SCENARIO_SETTINGS.md) supplies concrete defaults for task-specific freezing, without claiming clinical policy or external activation.
@@ -35,7 +37,7 @@ The product should feel like one coherent hospital application rather than a col
 - Preserve the current approved OncoReady UI as the visual baseline. New work must adapt its existing design language rather than introducing a new theme, palette, typography system, or product-wide restyle.
 - Permit the frontend specialist to source licensed online stock photography and SVG illustrations, icons, diagrams, or decorative assets when they materially improve the product aesthetic and remain consistent with that visual baseline.
 - Core state transitions, deadlines, routing, CareLink assignments, metrics, and model outputs must come from working backend logic and persisted events rather than hard-coded screen swaps.
-- SMS and voice must have complete provider-ready product surfaces and backend adapter contracts. Twilio and ElevenLabs credentials and outbound calls are explicitly deferred until access is purchased and approved.
+- SMS and voice must execute model-selected outreach to the verified test contact using Twilio transport and reviewed ElevenLabs audio. Accounts are purchased; OUTREACH-001 implements configured, bounded live delivery with callback evidence and replay fallback.
 - Uber Health must have a polished provider-ready surface and normalized adapter boundary. It must not issue rides, quotes, assignments, or provider-branded confirmations until approved credentials and verified callbacks exist.
 - CareLink Partner Dispatch is the active transportation path. It must support a hospital's contracted local transportation providers, not only a single OncoReady-operated fleet.
 - Epic Sandbox is the active clinical-context source for Camila in the staff workspace. The integration is read-only and uses the registered Non-PRD client ID through a server-backed standalone SMART on FHIR flow.
@@ -43,7 +45,7 @@ The product should feel like one coherent hospital application rather than a col
 - Only Camila receives the complete Epic-backed, end-to-end journey. Other nurse and transportation queue records remain lightweight OncoReady frontend fixtures and must never be represented as Epic-sourced or fully functional.
 - The FHIR artifact must pass a pinned validator before the product labels it validated.
 - The LightGBM pipeline, calibration, inference, and SHAP explanations must use real generated artifacts and a rich longitudinal synthetic dataset.
-- The primary prerecorded journey must use live Epic Sandbox data when the preflight succeeds and remain deterministic through a visibly labeled Camila snapshot if Epic authorization or availability fails. Messaging, voice, and transportation vendor availability must not control the core story.
+- The primary prerecorded journey must use live Epic Sandbox data when the preflight succeeds and remain deterministic through a visibly labeled Camila snapshot if Epic authorization or availability fails. A disclosed replay/backup preserves the story during an outage, but real SMS/voice acceptance must still pass; replay cannot be counted as live delivery.
 - No surface or presentation may claim a message was delivered, a call was completed, or an Uber Health ride was assigned without the corresponding verified provider event. Provider-ready capability may look complete; provider execution may not be fabricated.
 
 ### Confirmed human direction
@@ -63,7 +65,7 @@ The product should feel like one coherent hospital application rather than a col
 - Use a real read-only Epic Sandbox connection for Camila, with an exact-source timestamp and connection state. Preserve the last successful normalized Camila snapshot as a clearly labeled fallback; never present fallback data as live.
 - Use the enabled R4 APIs for Patient, Appointment, Encounter, Condition, Observation labs, MedicationRequest, Oncology CarePlan, Oncology Plan Day RequestGroup, Location, Practitioner, DiagnosticReport results, patient-reported surgical history, and surgeries.
 - Keep Epic actions read-only. Outreach, patient replies, work ownership, nurse acknowledgment, transportation coordination, caregiver permissions, and closure remain OncoReady-owned events with no Epic writeback claim.
-- Show SMS, voice, and Uber Health as polished provider-ready capabilities while their external adapters remain unconfigured.
+- Show truthful configured SMS/voice live-test capability and outcomes; Uber Health remains provider-ready and inactive.
 - Use CareLink as the active transportation coordination and dispatch path. CareLink must also support local transportation vendors contracted by an infusion center when Uber Health is unavailable or not preferred.
 - Make the ML capability central to the story: it must learn from longitudinal readiness and engagement patterns, identify increasing attendance disruption risk, and drive the timing and channel of supportive outreach.
 - Use Camila's longitudinal pattern as the signature explainable example without hard-coding her model result.
@@ -84,7 +86,7 @@ Use one consistent case across every surface so the audience follows Camila's re
 | Transportation coordinator | CareLink Dispatch | Manages contracted-provider requests, assignment, recovery, and acknowledgment |
 | Active transportation | CareLink Partner Dispatch | Supplies the real persisted dispatch workflow for the final |
 | Provider-ready transportation | Uber Health | Appears as an available integration path but cannot produce live provider events before activation |
-| Provider-ready outreach | SMS and voice | Shows complete channel orchestration and history while Twilio/ElevenLabs activation remains deferred |
+| Verified test-contact outreach | SMS and voice | Model-selected real Twilio SMS/call with reviewed ElevenLabs audio and callback evidence; setup/acceptance required |
 | ML unit | One scheduled oncology treatment encounter | Ranks supportive outreach; never makes clinical, eligibility, or treatment-access decisions |
 | Clinical context | Epic Sandbox through SMART on FHIR | Supplies Camila's read-only clinical context to authorized staff; it does not receive OncoReady writeback |
 
@@ -94,7 +96,7 @@ Use one consistent case across every surface so the audience follows Camila's re
 - In the controlled finals build, provider buttons and seeded email accounts create server-managed sessions for synthetic identities. Real Google, Microsoft, or Apple OAuth is a later activation task.
 - Provider-to-persona mappings remain in server configuration and are never printed on the access screen.
 - Do not place `demo`, `synthetic`, `sandbox`, or similar badges throughout the visible product. A single truthful `Epic Sandbox` connection/provenance treatment inside the protected staff record is required and is not decorative demo labeling.
-- The presenter gives one concise verbal disclosure before the integrated journey: Camila is an Epic Sandbox test patient; the read-only Epic connection, OncoReady workflow, CareLink dispatch, database, ML pipeline, and product state are working; SMS, voice, and Uber Health are provider-ready interfaces awaiting external account activation.
+- The presenter gives one concise verbal disclosure before the integrated journey: Camila is an Epic Sandbox test patient; the read-only Epic connection, OncoReady workflow, CareLink dispatch, database, ML pipeline, and product state are working; SMS and voice reach a consenting test phone through Twilio/ElevenLabs when live acceptance passes; Uber Health remains provider-ready. Any replay is disclosed as such.
 - Provider mode, fixture provenance, and adapter activation state remain explicit in server configuration, audit data, tests, and technical documentation.
 - No real patient data may be used. Epic Sandbox data is the only externally sourced clinical test data in scope. Until another vendor adapter is activated, the backend must reject external execution even if the polished controls are visible.
 - CareLink may represent an infusion center's contracted local vendor network. The product must not state or imply that Ochsner or another real health system uses OncoReady unless that relationship becomes real and approved.
@@ -116,7 +118,9 @@ Public landing page
   → Staff sees Epic-sourced appointment, oncology plan, labs, medication orders, diagnostic results, procedure history, and source timestamp
   → Staff queue reveals Camila's rising readiness-disruption pattern at T−2
   → Why flagged? shows dated signals, calibrated probability, and SHAP contributors
-  → Outreach orchestration selects SMS first, with voice escalation based on response history and time remaining
+  → The engagement model scores allowed channel/time choices from past activity
+  → The backend schedules and automatically executes the winning choice through the configured live-test adapter
+  → Nonresponse updates the history and triggers a fresh permitted choice; no fixed SMS-first rule
   → At T−1 Camila replies: “My ride was cancelled—and I’m not feeling well today.”
   → One response preserves Camila's exact words and creates separately owned clinical-contact and transportation work
   → Staff sees owners, SLA, transport cutoff, and a unified channel timeline
@@ -321,8 +325,8 @@ Browser
                        ├── workflow + adaptive outreach policy
                        ├── read-only Epic SMART/FHIR adapter ── HTTPS ──> Epic Sandbox
                        ├── CareLink Partner Dispatch adapter (active)
-                       ├── SMS adapter contract (provider-ready)
-                       ├── voice adapter contract (provider-ready)
+                       ├── Twilio SMS adapter (bounded live-test)
+                       ├── Twilio voice + ElevenLabs audio (bounded live-test)
                        ├── Uber Health adapter contract (provider-ready)
                        ├── metrics + FHIR projection
                        ├── LightGBM inference + SHAP evidence
@@ -352,10 +356,10 @@ Browser
 - Provision `web`, `api`, and one PostgreSQL service in the same Railway project; check the service list before creation to prevent duplicates.
 - Keep secrets in Railway variables, never in Git, browser bundles, screenshots, reports, or chat.
 - Use separate variables for integration activation, including an Epic mode plus `SMS_PROVIDER_MODE`, `VOICE_PROVIDER_MODE`, and `TRANSPORT_PROVIDER_MODE`.
-- Default Epic to live Sandbox with an explicit snapshot fallback, SMS and voice to `provider_ready`, CareLink to `active`, and Uber Health to `provider_ready`.
+- Default SMS/voice inactive until configured, then privately arm `live_test` for the verified contact; retain separate replay mode. Epic uses live Sandbox with labeled fallback, CareLink is active controlled dispatch, and Uber remains provider-ready.
 - Treat a detached Railway upload as queued, not deployed; the submitted deployment must reach `SUCCESS` before it is reported as live.
 - Verify the public web URL, API health, database migration revision, CORS, reset/reseed, and one full critical path after every finals deployment.
-- Configure only the approved Epic Non-PRD identifiers, registered redirect URI, and confidential-client credential material needed by `EPIC-001`; do not configure Twilio, ElevenLabs, or Uber Health secrets until the corresponding activation task is separately approved.
+- Configure approved Epic Non-PRD material for EPIC-001 and protected Twilio/ElevenLabs credentials for the human-authorized OUTREACH-001 test-contact activation; Uber Health credentials/activation remain deferred.
 
 ### Controlled-environment safeguards
 
@@ -380,7 +384,7 @@ Browser
 | 3 | EPIC-001 | Read-only Epic Sandbox clinical context | Camila's live Epic record appears in the authorized staff workspace with truthful fallback provenance | ACCESS-001 |
 | 4 | FLOW-001 | Durable early-warning and department ownership | Camila's barriers become separately owned work | EPIC-001 |
 | 5 | ML-001 | Rich longitudinal LightGBM pipeline and Camila explanation | Real calibrated score, SHAP evidence, and adaptive outreach input | FLOW-001; integrates before OUTREACH-001 |
-| 6 | OUTREACH-001 | Adaptive SMS/voice orchestration and provider-ready surfaces | Model-informed channel timing without vendor dependency | FLOW-001, ML-001 |
+| 6 | OUTREACH-001 | Adaptive SMS/voice and real test-contact delivery | Learned channel/time choice and automatic verified delivery | FLOW-001, ML-001 |
 | 7 | RIDE-001 | CareLink contracted-provider dispatch and Uber-ready surface | Real local-vendor assignment, recovery, and acknowledgment | FLOW-001 |
 | 8 | EVIDENCE-001 | Computed metrics and validated FHIR artifact | Inspectable operational and interoperability evidence | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
 
@@ -394,7 +398,7 @@ The table is a portfolio, not a strictly sequential execution list: after FLOW-0
 | ACCESS-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
 | EPIC-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
 | FLOW-001 | Yes | Yes | Yes | Yes | No | Yes | TARGETED | STANDARD; security review |
-| OUTREACH-001 | Yes | Yes | Yes | Yes | No | Yes | TARGETED | STANDARD; security review |
+| OUTREACH-001 | Yes | Yes | Yes | Yes | Yes | Yes | TARGETED | HIGH; security review |
 | RIDE-001 | Yes | Yes | Yes | Yes | No | Yes | TARGETED | HIGH; security review |
 | EVIDENCE-001 | Yes | Yes | Yes | Yes | No | Yes | TARGETED | HIGH; security review |
 | ML-001 | Yes | Yes | Yes | Yes | No | Yes | FULL | STANDARD; security review |
@@ -563,26 +567,27 @@ appointment changed → cutoff and dependent work recomputed/reopened
 
 ### OUTREACH-001 — Adaptive SMS and voice orchestration
 
-**User outcome:** OncoReady uses Camila's recent engagement and readiness pattern to choose supportive outreach timing and escalate from SMS to voice when necessary, while remaining usable before messaging providers are activated.
+**User outcome:** OncoReady uses Camila's recent engagement and readiness pattern to choose supportive outreach timing and escalate from SMS to voice when necessary, with real delivery to the verified test phone and disclosed replay fallback.
 
-**Provider-ready experience:**
+**Live test-contact experience with disclosed replay fallback:**
 
-- a unified outreach composer and timeline for SMS, voice, response, consent, delivery state, failure, and escalation;
+- a unified outreach composer and timeline for model choice, scheduled time, automatic execution, SMS, voice, response, consent, delivery state, failure and escalation;
 - visible channel availability, preferred language, last successful channel, typical response delay, attempts, and next recommended action;
 - complete empty, queued, scheduled, attempted, responded, opted-out, failed, and human-follow-up presentation;
-- adapter contracts for Twilio messaging and ElevenLabs/Twilio voice, with signature validation and idempotent callback design ready for later activation;
+- active test-contact Twilio SMS/voice adapters, prepared ElevenLabs audio, signature validation, bounded scheduling and callback/inbound response handling;
 - controlled event replay that exercises normalized workflow events without invoking an external vendor.
 
 **Acceptance criteria:**
 
 - the model score and dated engagement features inform outreach priority;
-- deterministic policy chooses the safe channel and cadence: preferred/previously successful channel first, then approved escalation as the cutoff approaches;
+- a separately trained engagement model predicts response probability for allowed channel/time pairs; choose the highest-scoring eligible action, then automatically schedule and execute it through the configured adapter;
+- deterministic constraints enforce consent, preference, quiet hours, contact limits and deadlines; they do not substitute a fixed SMS-first sequence for learned selection;
 - an explicit `need a ride`, `call me`, symptom, or scheduling response overrides model inference immediately;
 - repeated declines, nonresponse, increasing response latency, or recent delivery failures can shorten the next review interval or recommend voice/human follow-up;
 - the system never autonomously sends clinical advice, interprets symptoms, or closes a clinical barrier;
 - in `provider_ready` mode, the backend creates internal planned/replay events but makes no Twilio or ElevenLabs network call;
 - the UI never labels a message `Delivered` or call `Completed` without a verified provider callback or disclosed deterministic replay event;
-- adapter activation later requires server-side credentials, destination allowlists, consent/opt-out enforcement, signed webhook validation, and a dedicated security review;
+- OUTREACH-001 activation requires protected credentials, the verified contact allowlist, consent/opt-out enforcement, actual-time limits, signed callbacks and HIGH-risk dedicated security review before live acceptance;
 - no provider secret or arbitrary destination reaches the browser;
 - ML-001 must supply an accepted artifact before model-informed acceptance; if scoring later fails, deterministic cadence continues with `Score unavailable`.
 
@@ -645,15 +650,16 @@ appointment changed → cutoff and dependent work recomputed/reopened
 
 ### ML-001 — Rich adaptive LightGBM and SHAP
 
-**User outcome:** Staff can see why Camila's encounter was prioritized and why SMS followed by voice/human follow-up is recommended, without presenting the model as clinical risk or autonomous decision-making.
+**User outcome:** Staff can inspect Camila's readiness priority and learned channel/time choice from past activity, then see automatic scheduling/execution with truthful outcome evidence. Models do not make clinical decisions.
 
 **Model definition:**
 
-- one shallow, regularized `lightgbm.LGBMClassifier`;
+- one shallow regularized LightGBM readiness classifier plus one action-conditioned engagement classifier, each trained/calibrated offline with a separate target and held-out gate;
 - target: `unresolved attendance disruption by the intervention cutoff`;
 - output: calibrated probability used for supportive-outreach ordering and cadence;
 - explicit barriers and deterministic deadlines always override the model;
-- channel selection remains a deterministic, auditable policy informed by engagement features and model priority, avoiding an unvalidated autonomous communication agent.
+- engagement output is the predicted probability of a non-opt-out reply within four hours for each candidate channel/time; the backend automatically executes the eligible winner, while deterministic controls enforce consent and action limits;
+- the system uses bounded reviewed nonclinical content, without online exploration, generated clinical dialogue or clinical decision-making.
 
 **Rich longitudinal dataset:**
 
@@ -671,7 +677,7 @@ appointment changed → cutoff and dependent work recomputed/reopened
 - Camila must flow through the normal feature pipeline and must not have a hard-coded score, explanation, or channel choice;
 - the staff UI shows her T−7, T−2, and T−1 trajectory rather than a single unexplained number;
 - `Why flagged?` shows dated top contributors such as unresolved transportation, response delay trend, prior disruption, and time remaining;
-- the outreach recommendation explains why SMS is first and what condition triggers voice or human escalation;
+- the explanation shows the actual learned winning channel/time, alternative scores and dated activity; prior SMS success is an input, not a forced decision. Nonresponse causes rescoring and permitted automatic follow-up;
 - an explicit Camila response immediately supersedes prediction and routes actual stated needs.
 
 **Calibration and explainability:**
@@ -711,18 +717,16 @@ appointment changed → cutoff and dependent work recomputed/reopened
 - a recording preflight that verifies live synchronization or deliberately selects the labeled snapshot fallback before the recorded journey begins;
 - one configured CareLink center, contracted local provider, coordinator, and driver assignment path;
 - an agreed department owner/SLA matrix and finals treatment clock;
-- a reviewed provider-ready SMS/voice script, consent language, and opt-out design;
+- reviewed bounded SMS/voice scripts, consent and opt-out behavior, verified sender/test contact, protected Twilio/ElevenLabs keys, prepared voice audio and HTTPS callbacks;
 - versioned ML dataset generator and model artifact storage strategy.
 
 ### Deferred activation; not a finals blocker
 
-- Twilio account, Messaging Service, number, destination allowlist, and webhook secret;
-- ElevenLabs account, bounded voice agent, linked Twilio number, and webhook secret;
 - approved Uber Health application, credentials, sandbox/production decision, and verified callback configuration;
 - real Google, Microsoft, or Apple OAuth applications;
 - production Epic customer connectivity, customer Non-PRD testing, and an embedded EHR launch.
 
-Acquiring a vendor account does not automatically authorize integration. Each external adapter requires an explicit activation task, updated threat boundary, secrets configuration, contract tests, failure-path verification, and security approval.
+The human separately authorized real test-contact SMS/calls and confirmed accounts purchased; OUTREACH-001 is the activation task with updated threat boundary, configuration, tests and security review. Account purchase alone is not evidence of delivery readiness. Broader communication, real patient use and other vendor activation remain outside this authorization.
 
 ## 9. Verification and Finals Reliability
 
@@ -744,8 +748,8 @@ Recorded journey
  → Apple session opens staff without a visible persona mapping
  → Camila opens as the only complete case with Epic clinical context and source time
  → Camila's T−7/T−2/T−1 adaptive risk trajectory and Why flagged?
- → provider-ready SMS plan and controlled response event
- → voice/human escalation recommendation
+ → learned channel/time selection and automatic real test-phone delivery
+ → nonresponse-driven rescoring and permitted follow-up, then controlled patient response
  → split clinical-contact and transport work
  → staff workspace ownership and SLA
  → configured email session opens transportation
@@ -786,7 +790,7 @@ Recorded journey
 - complete Epic authorization outside the recording and verify the refresh path; if it cannot remain valid for the recording window, reauthorize immediately before recording rather than extending the access-token lifetime or pretending it is persistent;
 - show the protected staff record's truthful `Epic Sandbox` source state and synchronization time; never expose client credentials, tokens, raw authorization errors, or presenter setup controls in the recorded journey;
 - give one concise verbal environment disclosure before the integrated sequence; do not turn it into persistent visual decoration;
-- keep the SMS, voice, and Uber Health interfaces polished and available in navigation while adapter execution remains server-disabled;
+- arm SMS/voice only for the verified live-test contact and window; keep Uber Health execution server-disabled;
 - SMS/voice replay can show disclosed controlled events with replay provenance; Uber Health stays inactive and cannot gain a quote, driver, ETA, or trip confirmation through this replay exception; CareLink assignments come from persisted controlled operator actions;
 - never silently convert a failed or disabled external action into a fake success;
 - keep a deterministic local event replay for each future network step;
@@ -800,7 +804,7 @@ Recorded journey
 | 0:00–0:20 | Click `Detect early`, show the public continuity story replacing the old patient preview, then reveal two pricing plans and `Workspace access` | The public site explains the mechanism without exposing a workspace or patient record |
 | 0:20–0:35 | Select Benson Cancer Center and use Apple to enter the staff workspace | OncoReady is institution-aware and the access experience feels operational |
 | 0:35–1:00 | Open Camila; show the live Epic Sandbox source time, upcoming treatment, and compact clinical context, then reveal the T−2 readiness risk | Epic knows the treatment; OncoReady reveals what could prevent Camila from receiving it |
-| 1:00–1:25 | Show the T−7/T−2/T−1 trajectory, SMS-first logic, and Camila's exact reply about her cancelled ride and feeling unwell | Outreach adapts to engagement, then yields immediately to the patient's stated need |
+| 1:00–1:25 | Show the T−7/T−2/T−1 trajectory, learned channel/time choice and automatic execution, then Camila's exact reply about her cancelled ride and feeling unwell | Outreach adapts to engagement, then yields immediately to the patient's stated need |
 | 1:25–1:45 | Show the untouched clinical text routed to the nurse and the transport barrier routed to navigation | One message becomes two accountable actions without autonomous clinical interpretation |
 | 1:45–2:15 | Use configured email access to enter CareLink; show the center's contracted provider, one failure, backup assignment, and return plan; briefly reveal Uber Health as provider-ready | The platform works with local vendors now and has a clean path to Uber Health later |
 | 2:15–2:30 | Use Microsoft to open Ana's caregiver view | Privacy is visible through a narrow logistics projection |
@@ -822,10 +826,10 @@ Human approval is recorded for:
 7. A live, read-only Epic Sandbox connection for Camila through the Non-PRD SMART on FHIR app, authorized privately before recording, refreshed server-side when supported, and backed by a visibly labeled last-known-good snapshot.
 8. Epic clinical context visible only to authorized nurse/navigator staff, with no chart leakage to Ana, Camila's patient view, or transportation.
 9. Camila as the only fully functional case; other nurse and transportation queue entries remain lightweight frontend context and never imply Epic backing.
-10. SMS and voice as provider-ready interfaces with Twilio and ElevenLabs activation deferred.
+10. Model-selected real SMS/call delivery to a verified test contact through purchased Twilio/ElevenLabs accounts, replacing the earlier activation deferral.
 11. CareLink as the active dispatch path for an infusion center's contracted local providers.
 12. Uber Health as a polished provider-ready alternative that cannot generate unverified provider states.
-13. A rich longitudinal LightGBM dataset and Camila-specific held-out trajectory feeding adaptive, deterministic outreach orchestration.
+13. A rich longitudinal LightGBM dataset and Camila-specific held-out trajectory feeding learned channel/time selection and automatic outreach execution within deterministic constraints.
 14. A prerecorded deterministic journey with one concise verbal disclosure and no repeated `demo` labeling in the interface.
 15. Preservation of the current OncoReady theme, palette, typography, spacing, component styling, iconography, and motion language across all new work, with no broad restyle without human approval.
 16. Permission to use licensed online stock and SVG assets when aesthetically valuable, subject to provenance, licensing, local-hosting, sanitization, accessibility, performance, and truthful-branding requirements.
@@ -847,8 +851,8 @@ The finals build is complete when:
 - Camila's staff record reads the enabled clinical context from Epic Sandbox through the approved read-only adapter and shows truthful live/fallback provenance;
 - Epic authorization is completed privately before recording, tokens remain server-side and refresh safely when supported, and expiry never becomes a fabricated live state;
 - Camila is the only fully functional Epic-backed case, while other nurse and transportation records remain bounded frontend context;
-- Camila's real generated model output and dated explanation drive the outreach recommendation;
-- provider-ready SMS, voice, and Uber Health surfaces are polished without fabricating external execution;
+- accepted readiness and engagement models produce Camila's priority and eligible channel/time selection; backend scheduling automatically executes it through the configured adapter, with dated explanation and truthful outcome provenance;
+- real SMS reception and answered voice playback at the verified test phone are proven through automatic learned dispatch; Uber remains provider-ready and no external success is fabricated;
 - CareLink completes the contracted-provider request, assignment, recovery, return plan, and acknowledgment path;
 - all OncoReady workspace projections, metrics, graph, timeline, and FHIR export evidence derive from the same workflow events while Epic source context retains separate, inspectable provenance;
 - the prerecorded critical path and deterministic reset pass;

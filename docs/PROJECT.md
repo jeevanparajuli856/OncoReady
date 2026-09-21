@@ -147,8 +147,8 @@ One patient message visibly becomes separately owned clinical and transportation
 - Lightweight contextual queue records on nurse and transportation surfaces that never trigger Epic calls or imply full functionality.
 - Durable append-only workflow events, projections, ownership, deadlines, idempotency, and reset/reseed behavior.
 - Treatment Readiness Graph, role-specific workspaces, audit timeline, computed metrics, and source provenance.
-- Adaptive LightGBM readiness-disruption prioritization with calibrated output and SHAP evidence; explicit barriers always override prediction.
-- Provider-ready SMS and voice surfaces without unverified external execution.
+- Two offline-trained LightGBM predictions: readiness-disruption priority and response likelihood for eligible channel/time choices. The backend schedules and automatically executes the winning permitted outreach action through the configured adapter; explicit barriers always override prediction. Calibrated probabilities and explanations retain distinct meanings.
+- Model-selected real SMS and voice delivery to a verified consenting test contact through purchased Twilio/ElevenLabs accounts; bounded activation, signed callbacks and truthful provider outcomes, with disclosed replay fallback.
 - Active CareLink Partner Dispatch for a center's configured local provider, including failure recovery and return planning.
 - Provider-ready Uber Health surface without fabricated quote, assignment, driver, or completion states.
 - A validated OncoReady-generated FHIR R4 evidence bundle that is distinct from Epic source data and writeback.
@@ -159,7 +159,7 @@ One patient message visibly becomes separately owned clinical and transportation
 - Production Epic customer connectivity, an embedded Epic EHR launch, Epic writeback, or production PHI.
 - Any claim of Ochsner use, access, endorsement, configuration, workflow approval, or partnership.
 - Real Google, Microsoft, or Apple OAuth in the controlled finals build.
-- Live Twilio, ElevenLabs, or Uber Health execution until separately activated with credentials, allowlists, callbacks, tests, and security approval.
+- General patient messaging, unverified recipients, production clinical communication, unbounded conversational calls, and Uber Health execution. Only the bounded OUTREACH-001 test-contact activation is authorized.
 - Autonomous symptom triage, diagnosis, prognosis, treatment recommendation, treatment modification, medical clearance, or emergency disposition.
 - A general EHR viewer, general cancer chatbot, statewide resource marketplace, billing system, or broad oncology analytics suite.
 - Multiple complete patient journeys; non-Camila records remain bounded context.
@@ -279,7 +279,7 @@ The target launch includes authentication, authorization, persistent data, OAuth
 | OncoReady FHIR R4 export | Standards-shaped workflow evidence | Generated and pinned-validator checked; not Epic writeback |
 | Railway | Web, API, and PostgreSQL hosting | Approved target |
 | CareLink Partner Dispatch | Contracted local-provider transportation workflow | Active normalized finals path |
-| SMS / voice | Supportive outreach and escalation | Provider-ready; external activation deferred |
+| SMS / voice | Supportive outreach and escalation | Real verified test-contact target through Twilio/ElevenLabs; configuration and live acceptance still required |
 | Uber Health | Optional normalized transportation provider | Provider-ready; no unverified provider events |
 | Google / Microsoft / Apple | Controlled route-entry presentation | Seeded identity broker only; real OAuth deferred |
 | Ochsner | Possible future customer discovery context | No integration, endorsement, access, or approved workflow claim |
@@ -293,8 +293,8 @@ The target launch includes authentication, authorization, persistent data, OAuth
 | 2 | ACCESS-001 | Public experience, pricing, and workspace access | Professional center-scoped access without public patient data | RAIL-001 |
 | 3 | EPIC-001 | Read-only Epic Sandbox clinical context | Camila's authorized staff record shows truthful live/fallback Epic provenance | ACCESS-001 |
 | 4 | FLOW-001 | Durable early warning and owned work | Camila's clinical and transportation barriers become separately owned actions | EPIC-001 |
-| 5 | ML-001 | Longitudinal LightGBM and SHAP | Real calibrated Camila explanation drives supportive outreach priority | FLOW-001; integrates before OUTREACH-001 |
-| 6 | OUTREACH-001 | Adaptive outreach orchestration | Model-informed timing and provider-ready channel surfaces | FLOW-001, ML-001 |
+| 5 | ML-001 | Longitudinal LightGBM and SHAP | Accepted readiness and engagement models drive priority and channel/time choice | FLOW-001; integrates before OUTREACH-001 |
+| 6 | OUTREACH-001 | Adaptive outreach orchestration | Learned channel/time choice and automatic real test-phone delivery | FLOW-001, ML-001 |
 | 7 | RIDE-001 | CareLink contracted-provider dispatch | Outbound/return plan, recovery, and acknowledgment close the transport dependency | FLOW-001 |
 | 8 | EVIDENCE-001 | Metrics and FHIR evidence | Inspectable operational metrics, Epic provenance, and validated export | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
 
@@ -315,9 +315,10 @@ The launch build is complete when:
 - Camila acknowledges the plan and the graph reaches `Continuity plan confirmed`;
 - workflow projections, metrics, graph, timeline, and FHIR export derive from the same OncoReady events while Epic context retains separate provenance;
 - the live critical path and deterministic fallback pass targeted verification;
-- the accepted reproducible ML artifact drives real outreach priority and its prespecified calibration/top-K/subgroup gate passes;
+- accepted readiness and engagement artifacts pass their separate gates, and history-dependent channel/time choices schedule and execute automatically through the controlled adapter with truthful provenance;
 - Railway deployment and pinned FHIR validation pass on the integrated release;
 - required security, frontend design, and final reviews approve the exact verified revision;
+- real SMS reception and an answered bounded voice call at the verified test phone are proven through the model/scheduler/provider path; replay alone is insufficient;
 - the human completes the feature merges.
 
 Success means a viewer can retell the patient, problem, mechanism, clinical-context boundary, accountable recovery, and outcome after one viewing. It does not mean every imaginable production-hardening task has been implemented.
@@ -335,11 +336,13 @@ Success means a viewer can retell the patient, problem, mechanism, clinical-cont
 
 **Confirmed September 21:** the human set September 25, 2026 as the deadline and delegated synthetic scenario planning to the agents. The concrete workflow, transport, outreach and model defaults are in [`LAUNCH_SCENARIO_SETTINGS.md`](./LAUNCH_SCENARIO_SETTINGS.md), with handoff/gates in [`LAUNCH_REVIEW.md`](./LAUNCH_REVIEW.md). Architects freeze applicable settings before implementation/evaluation; routine synthetic choices do not require repeated human approval. These settings do not answer future production-pilot questions Q-001–Q-003.
 
+**Subsequent human direction:** learned channel/time choice and automatic outreach execution are required for the demo. The previous fixed channel policy is superseded. The human selected real delivery to a verified test phone and confirmed both accounts purchased. OUTREACH-001 owns bounded activation; no provider setup or live result is claimed by this planning change. See ML-001, OUTREACH-001 and LAUNCH_SCENARIO_SETTINGS.md for acceptance.
+
 ## 15. Approved Project-Level Decisions
 
 - Use Camila Lopez as the single complete Epic Sandbox story; Ana retains the same permission-limited family-caregiver relationship.
 - Use read-only Epic clinical context only in authorized nurse/navigator staff surfaces.
 - Keep patient, caregiver, and transportation workflows OncoReady-owned; no Epic writeback.
 - Complete Epic authorization privately before recording and use a truthful last-known-good snapshot fallback.
-- Use Railway web/API/PostgreSQL architecture, CareLink as the active transportation path, and provider-ready SMS, voice, and Uber Health boundaries.
+- Use Railway web/API/PostgreSQL architecture, CareLink as the active transportation path, bounded live-test SMS/voice, and provider-ready Uber Health boundaries.
 - Preserve the current UI design, palette, theme, typography, components, motion, and responsive character exactly; future agents may extend functionality but may not redesign the product without explicit human approval.

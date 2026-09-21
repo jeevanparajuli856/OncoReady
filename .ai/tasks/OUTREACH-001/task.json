@@ -232,14 +232,20 @@
     "ML-001"
   ],
   "acceptance_criteria": [
-    "Dated model and engagement features inform outreach priority while deterministic policy chooses the approved channel and cadence.",
+    "The trained engagement model selects channel/time from dated activity within consent, preference, quiet-hour, contact-limit and deadline constraints; readiness priority is a separate model output.",
     "Explicit ride, call, symptom, or scheduling responses supersede prediction immediately and create the appropriate human-owned work without clinical interpretation.",
-    "Declines, nonresponse, increasing latency, and delivery failure can shorten review timing or recommend voice or human follow-up under the approved policy.",
+    "Nonresponse or failure triggers rescoring with updated activity; explicit response or opt-out cancels superseded actions. No eligible action or unavailable model produces visible human follow-up.",
     "The system never sends clinical advice, interprets symptoms, or closes a clinical barrier autonomously.",
     "Provider-ready mode makes no Twilio or ElevenLabs network call and may create only internal planned or clearly disclosed replay events.",
     "The UI never shows Delivered or Completed without a verified provider callback or clearly disclosed controlled replay.",
-    "Future activation boundaries require server-side credentials, destination allowlists, consent and opt-out checks, signed webhook validation, idempotency, and separate approval.",
-    "The accessible composer and timeline cover empty, queued, scheduled, attempted, responded, opted-out, failed, and human-follow-up states without exposing a secret or arbitrary destination."
+    "Bounded live-test activation is authorized in OUTREACH-001 and requires protected credentials, verified contact allowlist, consent/opt-out, signed callbacks, idempotency, rate/budget limits and HIGH-risk dedicated security review before live acceptance.",
+    "The accessible composer and timeline cover empty, queued, scheduled, attempted, responded, opted-out, failed, and human-follow-up states without exposing a secret or arbitrary destination.",
+    "The backend persists and automatically dispatches due model-selected actions through the configured adapter without a second Send/Call click, recording decision, model version, feature cutoff, due time, mode and actual outcome.",
+    "Execution revalidates consent, kill switch, current appointment/response/plan and expiry; restart, duplicate ticks and retries do not produce duplicate logical attempts.",
+    "ML and OUTREACH acceptance prove learned selection plus automatic real SMS and voice delivery to the verified test phone; neither recommendations, hard-coded actions nor replay alone satisfy the requirement.",
+    "Twilio sends a real SMS and places an answered call playing the reviewed ElevenLabs audio; verified provider states and explicit inbound/keypad responses are recorded separately.",
+    "Live dispatch uses real wall-clock windows; reset/reseed or accelerated scenario time cannot resend or clear live dispatch history, opt-out, rolling limits or budget reservations.",
+    "Paid account availability is human-confirmed; sender registration/capability, API access, protected credentials, verified test contact, callbacks and voice asset must pass documented preflight."
   ],
   "created_by": "human"
 }

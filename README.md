@@ -9,7 +9,7 @@ The existing React/Vite product experience is complete enough to serve as the hu
 - a Railway-hosted FastAPI service and PostgreSQL database;
 - read-only Epic Sandbox clinical context for Camila Lopez through SMART on FHIR;
 - durable workflow events, projections, access boundaries, CareLink transportation coordination, metrics, and evidence;
-- a calibrated LightGBM/SHAP readiness-priority path;
+- calibrated readiness and engagement models that choose an allowed outreach channel/time from past activity, with automatic backend scheduling/execution and inspectable explanations;
 - deterministic prerecorded reliability with a clearly labeled Epic snapshot fallback.
 
 OncoReady does not claim Ochsner connectivity, an Epic partnership, production Epic access, Epic writeback, clinical validation, HIPAA compliance, or real patient use.
@@ -46,6 +46,7 @@ The FastAPI/PostgreSQL target is approved but not yet scaffolded; `RAIL-001` own
 - Approved launch plan: [`docs/LAUNCH_ROADMAP.md`](docs/LAUNCH_ROADMAP.md)
 - Dependency-ordered launch sprint and release gates: [`docs/LAUNCH_SPRINT_PLAN.md`](docs/LAUNCH_SPRINT_PLAN.md)
 - Planning audit and coding-agent handoff: [`docs/LAUNCH_REVIEW.md`](docs/LAUNCH_REVIEW.md)
+- Real SMS/call activation and acceptance: [`docs/operations/OUTREACH_TEST_DELIVERY.md`](docs/operations/OUTREACH_TEST_DELIVERY.md)
 - Delegated synthetic scenario and model settings: [`docs/LAUNCH_SCENARIO_SETTINGS.md`](docs/LAUNCH_SCENARIO_SETTINGS.md)
 - Locked visual system: [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md)
 - Deterministic project configuration: [`.ai/project.json`](.ai/project.json)
