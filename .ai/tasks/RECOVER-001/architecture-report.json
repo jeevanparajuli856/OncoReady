@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "task_id": "RECOVER-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Defined a frontend-only restoration for the deployed landing regression: restore the established ContinuityField layout-critical styles removed during the frontend consolidation, preserve the approved Clinical Glass / Continuity Aurora experience and existing Railway topology, and add browser-level geometry checks before redeployment.",
+  "files_changed": [
+    ".ai/tasks/RECOVER-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": false,
+    "infrastructure": false
+  },
+  "decisions": [
+    "Treat the incident as a frontend stylesheet regression, not a failed asset build or a new product-design requirement: the deployed web assets return successfully and ContinuityField renders, while the current stylesheet contains only its hero min-height hook and omits the established component rules for containment, positioning, canvas/fallback sizing, halo, and labels that are present in approved frontend history.",
+    "Restore the established ContinuityField presentation inside the existing React component and CSS boundary. Preserve its current DOM, canvas behavior, accessibility label, capped device-pixel ratio, offscreen/hidden pause, idle settling, static fallback, pointer behavior, and reduced-motion behavior unless a minimal compatibility correction is required.",
+    "Do not redesign the landing page or introduce new visual language. Clinical Glass / Continuity Aurora, the current hero copy and structure, official brand assets, navigation destinations, and workspace-access flow remain authoritative.",
+    "Keep the repair local to frontend presentation and regression coverage. Do not change workflow state, API calls, generated client behavior, HTTP/event contracts, database schema, backend runtime, Railway service topology, or deployment manifests unless a separately diagnosed blocker is raised to the orchestrator.",
+    "Protect the failure mode with browser-rendered assertions at 1920x1080 and 390x844. Verify no document-level horizontal overflow, a bounded non-zero ContinuityField surface, canvas/fallback containment within that surface, positioned labels within the visual bounds, visible hero copy, usable public navigation, and successful entry to the controlled workspace gateway.",
+    "Use the production Vite build for verification and perform a post-deploy browser smoke against the submitted web deployment. Check the exact terminal states of both Railway deployments and the API health response rather than treating a CLI submission or HTTP asset success alone as proof of completion.",
+    "No formal contract or ADR is required because the repair restores an existing local frontend component style boundary and changes no cross-component interface or long-lived architecture decision."
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "description": "Copying an obsolete stylesheet wholesale could overwrite newer LAUNCH-001 shell styling or reintroduce prior performance costs.",
+      "mitigation": "Restore only the ContinuityField-owned layout-critical rules from approved history, reconcile them with the current launch hero selectors, and verify the full public page in a production build."
+    },
+    {
+      "severity": "medium",
+      "description": "A DOM-only or asset-status test can pass while absolute labels and the canvas again escape their intended visual surface.",
+      "mitigation": "Add focused browser geometry and overflow assertions at the required desktop and mobile viewports, while keeping unit tests for canvas fallback and reduced motion."
+    },
+    {
+      "severity": "medium",
+      "description": "A successful Railway deployment submission can still terminate as failed, removed, or superseded, leaving one service unhealthy or the public URL on an older bundle.",
+      "mitigation": "Observe exact deployment identifiers to terminal status, verify API /health, confirm the current web asset/bundle is served, and run the post-deploy browser smoke on the public URL."
+    },
+    {
+      "severity": "low",
+      "description": "Restored desktop positioning could create clipping or horizontal overflow on narrow screens.",
+      "mitigation": "Keep the component bounded by the hero column and explicitly exercise the 390x844 viewport, navigation, headline, visual containment, and document scroll width."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "The current regression is evidenced in frontend/src/index.css: only `.launch-hero__visual .continuity-field` remains. The established `.continuity-field`, halo, fallback/canvas, path, and label selector block exists in approved history (for example commit cab3146) and should be used as the restoration reference without reverting the whole stylesheet.",
+    "Frontend design Phase A is intentionally skipped. This task restores already approved styling and must not become another landing redesign; follow docs/design/DESIGN_SYSTEM.md and current runtime tokens.",
+    "Keep existing ContinuityField behavior and tests intact, then add a focused browser regression that would fail when its positioning/containment styles disappear. Prefer structural geometry and overflow checks over brittle screenshot or exact-pixel snapshots.",
+    "Run the production frontend build plus the targeted independent browser checks. TARGETED depth requires an independent tester after integration.",
+    "Railway deployment and health observation are completion evidence, not an infrastructure implementation impact. Escalate rather than editing railway/api.toml or frontend/railway.toml if a new live diagnostic proves configuration is independently broken.",
+    "No database, backend, contract, ADR, new design gate, or dedicated security reviewer is selected."
+  ],
+  "execution": {
+    "contract_required": false,
+    "test_depth": "TARGETED",
+    "security_risk": "LOW",
+    "security_review_required": false
+  }
+}

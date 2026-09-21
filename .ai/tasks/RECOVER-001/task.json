@@ -1,0 +1,220 @@
+{
+  "schema_version": "1.0",
+  "task_id": "RECOVER-001",
+  "title": "Restore Railway deployment and frontend presentation",
+  "type": "feature",
+  "status": "BUILD_READY",
+  "priority": "high",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/RECOVER-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "database/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": [
+      "railway/api.toml",
+      "frontend/railway.toml"
+    ]
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/RECOVER-001/task.json",
+        "docs/features/RECOVER-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/RECOVER-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/RECOVER-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/RECOVER-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/RECOVER-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "docs/standards/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "database/**",
+        ".ai/tasks/RECOVER-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/RECOVER-001/task.json",
+        ".ai/tasks/RECOVER-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/RECOVER-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        ".ai/tasks/RECOVER-001/task.json",
+        ".ai/tasks/RECOVER-001/architecture-report.json",
+        ".ai/tasks/RECOVER-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/RECOVER-001/frontend-design-report.json",
+        ".ai/tasks/RECOVER-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/RECOVER-001/task.json",
+        ".ai/tasks/RECOVER-001/architecture-report.json",
+        ".ai/tasks/RECOVER-001/database-report.json",
+        ".ai/tasks/RECOVER-001/backend-report.json",
+        ".ai/tasks/RECOVER-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "contracts/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/RECOVER-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/RECOVER-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/RECOVER-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/RECOVER-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/RECOVER-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/RECOVER-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/RECOVER-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/RECOVER-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Desktop landing hero renders the approved ContinuityField as a bounded visual with no horizontal overflow or scattered raw labels.",
+    "Mobile landing page remains readable, navigable, and free of horizontal overflow.",
+    "Public navigation and workspace access continue to work.",
+    "Frontend production build and targeted browser regression tests pass.",
+    "Railway API health and exact submitted API/web deployment statuses are verified.",
+    "The deployed web URL serves the repaired bundle and passes a browser smoke check."
+  ],
+  "created_by": "human"
+}
