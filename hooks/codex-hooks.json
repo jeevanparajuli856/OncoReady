@@ -1,0 +1,18 @@
+{
+  "description": "ECC-H native Codex hooks. Codex exposes SessionStart; the Claude Code profiles are wired separately in hooks/hooks.json.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "id": "ecch:session:start",
+        "description": "Load the project brief, stack, last gate result, checkpoint, and active instincts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node -e \"if(!process.env.PLUGIN_ROOT)throw new Error('Missing Codex PLUGIN_ROOT');process.env.CLAUDE_PLUGIN_ROOT=process.env.PLUGIN_ROOT;require(require('path').join(process.env.PLUGIN_ROOT,'scripts/hooks/session-start.js'))\""
+          }
+        ]
+      }
+    ]
+  }
+}

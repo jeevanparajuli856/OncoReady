@@ -1,0 +1,137 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "description": "ECC-H hook wiring. Every script self-checks the active profile (minimal | standard | strict) from .ecch/config.json or ECCH_HOOK_PROFILE and exits without work when it is not enabled, so one file covers all three profiles.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": ".*",
+        "id": "ecch:session:start",
+        "description": "Load the project brief, stack, last gate result, checkpoint, and active instincts",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/session-start.js\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "id": "ecch:pre:bash-guard",
+        "description": "Block --no-verify, force push, hard reset, git clean -f, rm -rf, and foreground dev servers",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-bash-guard.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "id": "ecch:pre:protect-config",
+        "description": "Block edits that weaken type/lint configs, and block secrets written into tracked files",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/protect-config.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|Bash",
+        "id": "ecch:pre:gateguard",
+        "description": "Strict profile only: fact-forcing gate on high-fan-in files and destructive commands",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/gateguard.js\""
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "id": "pre:observe:continuous-learning",
+        "description": "Capture tool-use observations for continuous learning (ECC observe-runner + continuous-learning-v2)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/observe-runner.js\" pre:observe:continuous-learning"
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "id": "pre:edit-write:suggest-compact",
+        "description": "Standard profile and up: suggest /compact at logical task boundaries (ECC suggest-compact)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/suggest-compact.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "id": "ecch:post:edit-track",
+        "description": "Accumulate the files edited this turn so the Stop gate can batch its checks",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/post-edit-track.js\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": ".*",
+        "id": "ecch:pre-compact",
+        "description": "Standard profile and up: write a handoff note to .ecch/memory before context is compacted",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/pre-compact.js\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": ".*",
+        "id": "ecch:stop:gate",
+        "description": "Format, secret-scan, and typecheck the files edited this turn; block on failure",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/stop-gate.js\""
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "id": "ecch:stop:state",
+        "description": "Standard profile and up: persist turn state and checkpoint when the gate is green",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/stop-state.js\""
+          }
+        ]
+      },
+      {
+        "matcher": ".*",
+        "id": "ecch:stop:learn",
+        "description": "Evaluate the session for extractable patterns (ECC evaluate-session)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/scripts/hooks/evaluate-session.js\""
+          }
+        ]
+      }
+    ]
+  }
+}
