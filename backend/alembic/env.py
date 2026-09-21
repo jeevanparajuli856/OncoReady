@@ -10,6 +10,8 @@ from sqlalchemy import engine_from_config, pool
 from sqlalchemy.engine import Connection, make_url
 from sqlalchemy.exc import ArgumentError
 
+from app.database import normalize_postgresql_url
+
 
 config = context.config
 
@@ -26,10 +28,9 @@ def _database_url() -> str:
     if not url:
         raise RuntimeError("DATABASE_URL is required to run Alembic migrations")
 
-    # Some managed PostgreSQL providers still emit the historical alias, which
-    # modern SQLAlchemy does not recognize as a dialect name.
-    if url.startswith("postgres://"):
-        url = f"postgresql://{url.removeprefix('postgres://')}"
+    # Railway emits a generic PostgreSQL URL. Select the psycopg v3 driver that
+    # is installed in the runtime image before SQLAlchemy creates the engine.
+    url = normalize_postgresql_url(url)
 
     try:
         backend_name = make_url(url).get_backend_name()
