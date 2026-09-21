@@ -29,6 +29,7 @@ The product should feel like one coherent hospital application rather than a col
 - Deploy the complete application in one Railway project containing a frontend service, backend service, and Railway PostgreSQL service.
 - Build production-quality interaction and visual polish across the landing page, access flow, and every role workspace.
 - Preserve the current approved OncoReady UI as the visual baseline. New work must adapt its existing design language rather than introducing a new theme, palette, typography system, or product-wide restyle.
+- Permit the frontend specialist to source licensed online stock photography and SVG illustrations, icons, diagrams, or decorative assets when they materially improve the product aesthetic and remain consistent with that visual baseline.
 - Core state transitions, deadlines, routing, CareLink assignments, metrics, and model outputs must come from working backend logic and persisted events rather than hard-coded screen swaps.
 - SMS and voice must have complete provider-ready product surfaces and backend adapter contracts. Twilio and ElevenLabs credentials and outbound calls are explicitly deferred until access is purchased and approved.
 - Uber Health must have a polished provider-ready surface and normalized adapter boundary. It must not issue rides, quotes, assignments, or provider-branded confirmations until approved credentials and verified callbacks exist.
@@ -56,6 +57,7 @@ The product should feel like one coherent hospital application rather than a col
 - Use Maria's longitudinal pattern as the signature explainable example without hard-coding her model result.
 - Optimize every workspace for a prerecorded product video with live voice-over: fast state changes, readable data storytelling, strong transitions, and a reliable reset path.
 - Keep the current UI design, colors, typography, spacing, component character, and other visual details; extend them consistently across every new surface.
+- Allow appropriate licensed stock and SVG assets from online sources when needed to make the application more polished, memorable, and visually complete.
 
 ## 2. Finals Scenario and Cast
 
@@ -152,6 +154,26 @@ The current integrated OncoReady interface is the human-approved visual baseline
 - treating the public story or access page as permission to redesign the rest of the product.
 
 Before implementation, the frontend specialist records the current visual baseline in the frontend design report: screenshots of key existing surfaces, the active token values, typography, component primitives, responsive behavior, and motion examples. Design approval is based on whether the new work remains recognizably within that baseline.
+
+### Approved image and SVG sourcing
+
+The frontend specialist has explicit permission to research, download, adapt, and use online stock imagery and SVG assets when they strengthen hierarchy, storytelling, atmosphere, or comprehension. This permission covers stock photography, vector illustrations, icon sets, diagrams, textures, backgrounds, and decorative SVG elements.
+
+Asset requirements:
+
+- use only assets whose license permits the intended product, presentation, and repository use;
+- record the source URL, creator or publisher when available, license, required attribution, and retrieval date in a repository asset-source manifest;
+- download and serve an approved local copy when the license permits; do not depend on third-party hotlinks during the application or prerecorded journey;
+- optimize raster images for responsive delivery and avoid shipping unnecessarily large originals;
+- sanitize SVG files before use by removing scripts, event handlers, unsafe embedded content, and unnecessary external references;
+- provide meaningful alternative text for informative imagery and use empty alternative text or `aria-hidden` for purely decorative assets;
+- preserve adequate contrast, text legibility, responsive cropping, reduced-motion behavior, and layout stability;
+- avoid visible real-patient information, credentials, private locations, watermarks, unclear model releases, or imagery that implies a real hospital, customer, vendor, or patient endorsement;
+- use official third-party logos or trademarks only when their use is accurate, permitted, and does not falsely imply an active integration or partnership;
+- adapt asset color treatment, cropping, framing, and surrounding components to the current OncoReady visual system rather than changing the product to match the asset;
+- reject assets with unclear licensing or provenance.
+
+Externally sourced assets remain subject to the exact approved frontend design digest and final visual review. Asset permission does not override the no-rebrand constraint.
 
 ### Landing page
 
@@ -403,8 +425,9 @@ Before production code:
 - email sign-up cannot self-assign staff, transport, or administrator access;
 - sign-out invalidates the session;
 - invalid route, expired session, and insufficient access return to a safe recoverable state;
-- keyboard, focus, mobile, screen-reader, password-manager, and reduced-motion behavior pass targeted checks.
+- keyboard, focus, mobile, screen-reader, password-manager, and reduced-motion behavior pass targeted checks;
 - visual comparison at desktop and mobile confirms that new surfaces read as extensions of the current product, with any intentional token addition listed in the approved frontend design report.
+- every externally sourced image or SVG has recorded provenance and license evidence, is served locally when permitted, is optimized/sanitized as applicable, and has the correct accessible-text treatment.
 
 ### FLOW-001 — Durable early-warning and owned work
 
@@ -686,6 +709,7 @@ Human approval is requested for:
 10. A rich longitudinal LightGBM dataset and Maria-specific held-out trajectory feeding adaptive, deterministic outreach orchestration.
 11. A prerecorded deterministic journey with one concise verbal disclosure and no repeated `demo` labeling in the interface.
 12. Preservation of the current OncoReady theme, palette, typography, spacing, component styling, iconography, and motion language across all new work, with no broad restyle without human approval.
+13. Permission to use licensed online stock and SVG assets when aesthetically valuable, subject to provenance, licensing, local-hosting, sanitization, accessibility, performance, and truthful-branding requirements.
 
 ## 12. Stop Condition
 
@@ -696,6 +720,7 @@ The finals build is complete when:
 - Railway serves the frontend and backend successfully and PostgreSQL persists the workflow;
 - the public site exposes no patient record or readiness graph;
 - the existing OncoReady visual identity remains intact and all new surfaces pass the approved visual-baseline comparison;
+- all external stock and SVG assets pass license/provenance review, security sanitization, accessibility checks, and performance review;
 - the removed preview is replaced by the three-card public Continuity Rescue Story, and its cards never enter a workspace or create a session;
 - `Workspace access` provides the approved center-scoped professional sign-in experience;
 - Google, Microsoft, Apple, and configured email access each open only their approved mapped workspace;
