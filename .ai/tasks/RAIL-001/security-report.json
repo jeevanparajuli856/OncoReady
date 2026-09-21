@@ -2,8 +2,53 @@
   "schema_version": "1.0",
   "task_id": "RAIL-001",
   "reviewer": "codex-security",
-  "reviewed_commit": "",
-  "status": "CHANGES_REQUIRED",
-  "summary": "",
-  "findings": []
+  "reviewed_commit": "15716512464b607ba647c786ceadd440307bb6c4",
+  "status": "APPROVED",
+  "summary": "Focused local/source security review approved the exact verified RAIL-001 implementation commit. Operator mutations require an exact constant-time bearer comparison; reset additionally fails closed unless explicitly enabled and transactionally upserts only the stable seed key; request bodies and correlation IDs are bounded; CORS is an exact credential-free allowlist; SQL is parameterized; public proof data is synthetic and rendered as text; readiness, validation, logs, and client errors do not disclose connection or token values; the browser consumes only VITE_API_ORIGIN; the backend image declares a non-root user; and CI uses an isolated PostgreSQL service with read-only repository permissions. Focused tests passed 34/34, tracked/high-signal secret scans found no credential in the reviewed source (one documentation URL was a false positive), npm audit reported zero vulnerabilities, and the only post-review source delta is commit-bound verification evidence. Approval is limited to the local implementation: Railway deployment, database private-network topology, image runtime behavior, and live post-deploy checks remain unverified and unclaimed.",
+  "findings": [
+    {
+      "severity": "high",
+      "category": "deployment credential exposure",
+      "description": "A generated Railway PostgreSQL credential was exposed in prior orchestration output during an aborted infrastructure setup. The public TCP proxy and temporary SSH key were removed and deployment is deferred, but endpoint removal does not revoke an exposed credential.",
+      "impact": "If the credential remains valid or is reused when database reachability is restored, anyone who obtained it could attempt unauthorized database access.",
+      "remediation": "Before any Railway work resumes, rotate or replace the affected database credential, reconcile API variables to a fresh private-network reference, confirm no public TCP proxy/domain exists, and repeat secret, readiness, migration, and persistence checks without placing credential values in logs, reports, screenshots, or chat.",
+      "blocking": false
+    },
+    {
+      "severity": "low",
+      "category": "operator authentication hardening",
+      "file": "backend/app/config.py",
+      "description": "OPERATOR_TOKEN is required and compared safely, but configuration accepts any non-empty token and the public API has no operator-route throttling.",
+      "impact": "A mistakenly weak deployed token would make proof mutation/reset more susceptible to guessing, while repeated unauthenticated requests could consume API/database capacity.",
+      "remediation": "Generate and rotate a high-entropy operator token for every environment, reject short tokens during configuration, and add edge or application rate limits before exposing the API publicly. Keep generic 401 responses and constant-time comparison.",
+      "blocking": false
+    },
+    {
+      "severity": "low",
+      "category": "container least privilege",
+      "file": "frontend/Dockerfile",
+      "description": "The backend image explicitly selects UID/GID 65532, while the frontend image does not declare an application USER after inheriting the Caddy base image.",
+      "impact": "If the static web server is compromised and the effective runtime user is privileged, the process has more container-level authority than this read-only service needs.",
+      "remediation": "During the deferred container preflight, inspect the built image's effective user and run Caddy as a dedicated non-root UID/GID after confirming the config and dist paths are readable and no privileged port or writable runtime directory is required.",
+      "blocking": false
+    },
+    {
+      "severity": "low",
+      "category": "proxy trust configuration",
+      "file": "frontend/Caddyfile",
+      "description": "The trusted proxy configuration includes 100.0.0.0/8 in addition to private_ranges, which is broader than carrier-grade NAT space and includes publicly routed addresses.",
+      "impact": "The current static frontend does not authorize or rate-limit by client IP, so there is no immediate privilege bypass, but future logging or controls could trust spoofable forwarded-client metadata from an unnecessarily broad source range.",
+      "remediation": "Replace the broad range with the exact Railway ingress/proxy ranges verified at deployment, and do not use forwarded client IP for security decisions until the live proxy chain is validated.",
+      "blocking": false
+    },
+    {
+      "severity": "info",
+      "category": "supply-chain reproducibility",
+      "file": ".github/workflows/ci.yml",
+      "description": "npm audit is clean and npm installs are lockfile-backed, but container base images, GitHub Actions tags, and Python dependency ranges are not pinned to immutable digests or hashes, and CI has no Python vulnerability audit.",
+      "impact": "A future upstream tag/dependency change could alter builds or introduce a vulnerable package without a source change in this repository.",
+      "remediation": "Before release hardening, pin deployment images and CI actions immutably where practical, generate a reviewed Python lock with hashes, and add a non-mutating dependency vulnerability check to CI with a defined exception process.",
+      "blocking": false
+    }
+  ]
 }
