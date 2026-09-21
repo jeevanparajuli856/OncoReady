@@ -30,16 +30,17 @@
       "npm run test:e2e",
       "npx playwright test tests/e2e.spec.ts -g \"mobile workspace dock\"",
       "VITE_API_ORIGIN=https://api.example.com npm run build",
+      "jq -e '.build.watchPatterns == [\"/frontend/**\"]' railway.json",
       "npx --yes ajv-cli@5 validate --spec=draft2020 -s /tmp/railway.schema.json -d railway.json",
       "curl production preview checks for /, /privacy, /terms, and /workspace/deep-link",
       "git diff --check",
       "python3 scripts/agentctl.py scope check RAIL-001 frontend"
     ],
-    "notes": "The production TypeScript/Vite build passed. All 22 Vitest checks passed, including focused proof-client coverage for the exact GET URL, contract-shaped persisted response, disabled loading state, invalid/missing configuration, unavailable state, and retry recovery. All 5 Playwright journeys passed, including the unchanged complete Maria workflow and caregiver boundary; the focused 320px/390px browser audit also verified the foundation retry control remains at least 44x44 and introduces no horizontal overflow. A build with VITE_API_ORIGIN confirmed only the public API origin is embedded. The Railway configuration passed the current official railway.schema.json. Production preview served the SPA shell with HTTP 200 on root, legal routes, and an arbitrary deep link. Docker was unavailable locally, so the Caddy container was not executed; its Dockerfile and SPA fallback follow the current official Railway configuration guidance fetched through Context7."
+    "notes": "The production TypeScript/Vite build passed. All 22 Vitest checks passed, including focused proof-client coverage for the exact GET URL, contract-shaped persisted response, disabled loading state, invalid/missing configuration, unavailable state, and retry recovery. All 5 Playwright journeys passed, including the unchanged complete Maria workflow and caregiver boundary; the focused 320px/390px browser audit also verified the foundation retry control remains at least 44x44 and introduces no horizontal overflow. A build with VITE_API_ORIGIN confirmed only the public API origin is embedded. The Railway configuration passed the current official railway.schema.json, and its repository-root-relative watch pattern is exactly /frontend/**. Production preview served the SPA shell with HTTP 200 on root, legal routes, and an arbitrary deep link. Docker was unavailable locally, so the Caddy container was not executed; its Dockerfile and SPA fallback follow the current official Railway configuration guidance fetched through Context7."
   },
   "blockers": [],
   "notes_for_next_agent": [
-    "Railway must set the web service source root to /frontend. The root-local watch pattern then scopes rebuilds to frontend/**, while backend changes remain outside this service root.",
+    "Railway must set the web service source root to /frontend. Railway watchPatterns remain repository-root-relative even with that source root, so frontend/railway.json explicitly uses /frontend/** to prevent backend-only changes from rebuilding the web service.",
     "Set only VITE_API_ORIGIN in the web build. The proof read deliberately sends no credentials and the bundle contains no operator token, database URL, or mutation path.",
     "The footer displays the synthetic proof value and seed version returned by GET /api/v1/foundation/proof so a server-side update is visible on refresh; missing configuration, non-2xx, network errors, and invalid response shapes remain explicitly unavailable and never masquerade as connected.",
     "The local workflow reducer and localStorage behavior were not changed. An unavailable foundation leaves that existing workflow usable and does not imply authentication or server ownership.",
