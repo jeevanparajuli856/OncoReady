@@ -45,6 +45,8 @@ The FastAPI/PostgreSQL target is approved but not yet scaffolded; `RAIL-001` own
 - Architecture, trust boundaries, and integration shape: [`docs/architecture/SYSTEM.md`](docs/architecture/SYSTEM.md)
 - Approved launch plan: [`docs/LAUNCH_ROADMAP.md`](docs/LAUNCH_ROADMAP.md)
 - Dependency-ordered launch sprint and release gates: [`docs/LAUNCH_SPRINT_PLAN.md`](docs/LAUNCH_SPRINT_PLAN.md)
+- Planning audit and coding-agent handoff: [`docs/LAUNCH_REVIEW.md`](docs/LAUNCH_REVIEW.md)
+- Delegated synthetic scenario and model settings: [`docs/LAUNCH_SCENARIO_SETTINGS.md`](docs/LAUNCH_SCENARIO_SETTINGS.md)
 - Locked visual system: [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md)
 - Deterministic project configuration: [`.ai/project.json`](.ai/project.json)
 - Long-lived decisions: [`docs/adr/`](docs/adr/)

@@ -1,8 +1,10 @@
 # OncoReady Launch Sprint Plan
 
-**Status:** Execution-ready backlog draft
+**Status:** Reviewed planning backlog — ready for task planning, not implementation
 
 **Prepared:** September 21, 2026
+
+**Review and next-agent handoff:** [`LAUNCH_REVIEW.md`](./LAUNCH_REVIEW.md) records reconciled discrepancies, remaining decisions, and the first task to plan.
 
 **Authority:** [`LAUNCH_ROADMAP.md`](./LAUNCH_ROADMAP.md), [`PROJECT.md`](./PROJECT.md), [`SYSTEM.md`](./architecture/SYSTEM.md), [`DESIGN_SYSTEM.md`](./design/DESIGN_SYSTEM.md), and the task files under `.ai/tasks/`
 
@@ -16,7 +18,7 @@ This is a launch sprint, not a general platform build. Work that does not improv
 
 | Area | Current evidence | Planning consequence |
 |---|---|---|
-| Frontend | React/Vite production build passes; 19 smoke/component tests and 5 Playwright tests pass | Preserve this as the visual and functional baseline; migrate behavior behind APIs without restyling |
+| Frontend | Rechecked September 21: React/Vite production build, 19 smoke/component tests, and 5 Playwright tests pass | Preserve this as the visual and functional baseline; migrate behavior behind APIs without restyling |
 | Product journey | Completed Maria frontend journey exists in local client state | Reuse interaction patterns, but replace the final Camila path with server-owned state rather than scripted screen swaps |
 | Backend | `backend/` contains instructions and a placeholder README only | `RAIL-001` must establish the real FastAPI application before later slices |
 | Database | Railway PostgreSQL is approved; no migrations exist yet | Alembic base and migration verification are launch-critical |
@@ -27,10 +29,10 @@ This is a launch sprint, not a general platform build. Work that does not improv
 
 ## 3. Delivery assumptions and feasibility
 
-- The working launch target is the September 25, 2026 final identified in the project research inputs. If the actual target differs, preserve the sequence and expand the timeboxes rather than changing dependencies.
+- The human confirmed September 25, 2026 as the delivery deadline and retained the full scope. [LAUNCH_SCENARIO_SETTINGS.md](./LAUNCH_SCENARIO_SETTINGS.md) contains the delegated synthetic defaults and dated execution targets; aim to freeze the candidate September 24 at 18:00 center time.
 - The complete roadmap is high risk in a four-day window from the current backend-empty state. It is viable only with immediate Railway and Epic access, parallel specialist work inside each task, no scope growth, rapid human decisions, and continuous integration against the Camila critical path.
 - A task advances only through the repository lifecycle: `PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE`.
-- Planning for a downstream task may begin when its upstream contract is stable. Production implementation must not silently assume an unapproved upstream interface.
+- Planning for a downstream task may begin when its upstream contract is stable. Production implementation must not silently assume an unapproved upstream interface. The orchestrator checks dependencies explicitly: the current control-plane validator checks schema and reports, but does not enforce dependency completion.
 - Parallel work is safe across owned paths within a task. Cross-task work that touches the same backend, frontend, contract, or migration surface must wait for the upstream merge or use an explicitly frozen interface to avoid divergent event models.
 - Estimates use relative size because team capacity and external-provider response time are unknown. `M` is a focused vertical slice, `L` spans several components, and `XL` contains a high-risk integration or model gate.
 
@@ -47,14 +49,14 @@ This is a launch sprint, not a general platform build. Work that does not improv
 ## 5. Dependency and integration spine
 
 ```text
-PLAN-002 approved planning baseline
+PLAN-002 documented planning milestone (not a tracked implementation task)
   └── RAIL-001 platform + contract foundation
        └── ACCESS-001 sessions + protected routes
             └── EPIC-001 clinical-context boundary
                  └── FLOW-001 durable event/workflow spine
-                      ├── OUTREACH-001 adaptive channel orchestration
                       ├── RIDE-001 CareLink recovery path
                       └── ML-001 model pipeline after feature/event contract freeze
+                           └── OUTREACH-001 model-informed channel orchestration
 
 EPIC-001 + FLOW-001 + OUTREACH-001 + RIDE-001
   └── EVIDENCE-001 metrics + FHIR + system proof
@@ -63,6 +65,8 @@ ML-001 + EVIDENCE-001 + all integrated slices
   └── launch verification, security evidence, final review, Railway preflight,
       deterministic reset, recovery rehearsal, and recorded backup run
 ```
+
+`OUTREACH-001` depends on both `FLOW-001` and `ML-001`: planning and isolated provider-ready work can overlap after contract freeze, but its model-informed acceptance and integration require the accepted model. Do not mark the model-dependent criteria complete with a fixture score.
 
 `EVIDENCE-001` also depends directly on `EPIC-001`, `OUTREACH-001`, and `RIDE-001`. `ML-001` may prepare its generator after the `FLOW-001` feature schema is frozen, but its runtime integration waits for the stable workflow contract.
 
@@ -74,18 +78,18 @@ ML-001 + EVIDENCE-001 + all integrated slices
 | Sprint 1 — Platform | Establish one deployable stateful stack | `RAIL-001` | Web/API/Postgres healthy on Railway; migrations and persistence verified; reset/reseed deterministic |
 | Sprint 2 — Trusted entry and clinical truth | Protect every workspace and show truthful Camila context | `ACCESS-001`, then `EPIC-001` | Role/center sessions enforce destinations; staff-only live/fallback Epic projection passes targeted and security checks |
 | Sprint 3 — Durable rescue spine | Replace client-scripted behavior with owned, deadline-aware workflow state | `FLOW-001` | Exact reply produces two valid threads; all role projections, graph, and timeline remain consistent and idempotent |
-| Sprint 4 — Recovery and intelligence | Complete adaptive engagement and transportation recovery | `OUTREACH-001` and `RIDE-001` after the event contract freezes; `ML-001` after feature-schema freeze | Provider-ready modes make no external calls; CareLink recovery closes only after acknowledgment; model artifact passes its gate |
+| Sprint 4 — Recovery and intelligence | Complete adaptive engagement and transportation recovery | `RIDE-001` and `ML-001` after event/feature-schema freeze; `OUTREACH-001` integrates after `ML-001` | Provider-ready modes make no external calls; CareLink recovery closes only after acknowledgment; model artifact passes its gate |
 | Sprint 5 — Evidence and launch | Prove the system and harden the presentation path | `EVIDENCE-001` plus integrated release gate | Metrics derive from events; validator passes; full path, failure paths, preflight, security, review, and recording rehearsal pass |
 
 ### Compressed finals overlay
 
-If September 25 is the fixed delivery date, run the sprint map as dependency waves rather than ceremonial multi-week sprints:
+September 25 is confirmed. Run the sprint map as dependency waves; the dated targets in LAUNCH_SCENARIO_SETTINGS.md supersede the earlier relative Day 0–launch-day estimates:
 
 1. Day 0: finish Sprint 0 and start `RAIL-001` immediately.
 2. Day 1: close `RAIL-001`; execute `ACCESS-001`; begin `EPIC-001` planning and private prerequisites.
 3. Day 2: close `EPIC-001`; execute `FLOW-001`; freeze the event and ML feature contracts.
-4. Day 3: run `OUTREACH-001`, `RIDE-001`, and isolated `ML-001` work in parallel where their frozen boundaries prevent conflicts; integrate in that order.
-5. Launch day: close `EVIDENCE-001`; allow no new feature work after the release candidate; run preflight, the primary journey, the CareLink recovery path, and the backup recording.
+4. Day 3: run `RIDE-001` and `ML-001` in isolated owned paths after contract freeze; prepare `OUTREACH-001` against that contract, then integrate its model-informed behavior after `ML-001`. This is the highest schedule-risk wave; carry unfinished work forward rather than claiming acceptance early.
+5. Target EVIDENCE-001 completion and candidate freeze on September 24; reserve launch day for preflight, the primary journey, CareLink recovery, and the backup recording. If features miss the freeze, report the missed gate and remaining work instead of claiming release readiness.
 
 This overlay is a risk-controlled target, not a claim that the work fits normal human capacity. Any missed exit gate stops downstream integration; it does not justify fake provider states, skipped authorization, unlabeled fallback data, or bypassed review.
 
@@ -108,11 +112,12 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 
 - `RAIL-01` Approve the initial OpenAPI boundary for liveness, readiness, version/build information, and the minimum persisted proof endpoint.
 - `RAIL-02` Scaffold FastAPI with typed settings, structured redacted logs, correlation IDs, explicit CORS origins, request limits, and Railway `PORT` binding.
-- `RAIL-03` Add SQLAlchemy/Alembic foundation and the minimum migration history needed for later event, session, integration, audit, and model metadata tables without prematurely implementing their domain behavior.
-- `RAIL-04` Implement `/health` and `/ready`; readiness checks PostgreSQL and the required migration revision and later accommodates required model artifacts.
-- `RAIL-05` Add deterministic seed/reset infrastructure that separates workflow reset from preserved Epic authorization and last-known-good snapshot state.
+- `RAIL-03` Add SQLAlchemy/Alembic foundation and only the minimum persisted proof schema. Session, integration, event, audit, and model tables belong to the later slices that introduce them.
+- `RAIL-04` Implement `/health` and `/ready`; readiness checks PostgreSQL and the required migration revision. Later model availability is a separate capability/preflight check so missing scoring cannot disable deterministic workflows.
+- `RAIL-05` Add deterministic foundation proof seed/reset with private operator access and preservation of unrelated state. EPIC/FLOW later supply and verify the full Camila reset and preserved authorization/snapshot records.
 - `RAIL-06` Configure one Railway project with `web`, `api`, and private PostgreSQL services, explicit roots/watch paths, public domains, server-only variables, and post-deploy checks.
 - `RAIL-07` Verify persistence across API restart, SPA refresh routing, failed-migration readiness, missing-variable logs, private database networking, and deployment `SUCCESS`.
+- `RAIL-08` Register the actual backend test and PostgreSQL migration/integration commands as required checks in `.ai/project.json` before integration verification. Document their isolated test database setup; later tasks extend these checks with their own implemented harnesses.
 
 ### ACCESS-001 — Public experience, pricing, and workspace access
 
@@ -188,15 +193,15 @@ This overlay is a risk-controlled target, not a claim that the work fits normal 
 
 ## 9. Human and external launch gates
 
-These decisions or credentials are required before the named task can reach `BUILD_READY` or complete integration. They must not be invented by an implementation agent.
+These gates apply to the named task, not to the entire backlog before `RAIL-001` planning. Policy, interfaces, and acceptance thresholds must be resolved before affected implementation or evaluation; live access/deployment evidence is required before the corresponding integration acceptance. Do not invent approvals. The human delegated synthetic scenario planning to the agents. Use LAUNCH_SCENARIO_SETTINGS.md, then freeze applicable values in task requirements/contracts; do not request routine configuration approval again. These settings are not clinical policy. Selecting the FHIR validator and documenting its version is an architecture responsibility, not a request for the human to choose a library.
 
 | Gate | Needed by | Owner/action | Safe fallback |
 |---|---|---|---|
 | Railway account/tool access, project, public domains, and variable management | `RAIL-001` | Human grants approved workspace/CLI access; orchestrator checks for existing services before creating any | Local web/API/Postgres verifies code, but launch cannot be called deployed |
 | Exact Epic Non-PRD client configuration, HTTPS redirect URI, enabled scopes, private presenter authorization | `EPIC-001` | Human supplies access through secure environment configuration and completes Epic login privately | Versioned Camila snapshot may preserve the recording only after one authorized successful inventory; it is visibly labeled fallback |
-| Department owner/SLA matrix, treatment clock, business-day calendar, transport cutoff | `FLOW-001` | Authorized oncology workflow owner confirms | Task remains in planning; code must not invent clinical-operational policy |
-| Outreach scripts, consent/opt-out language, language variants | `OUTREACH-001` | Product/clinical stakeholder reviews controlled content | Generic provider-ready UI can be built, but no script is represented as approved |
-| CareLink center, contracted provider, service area, coordinator/driver fixtures, funding/eligibility rules | `RIDE-001` | Transportation workflow owner confirms synthetic configuration | Keep blocker open and show no-option/escalation state |
+| Department owner/SLA matrix, treatment clock, business-day calendar, transport cutoff | `FLOW-001` | Architect freezes delegated synthetic settings and closure boundaries | Unresolved scope/clinical decisions stay open; synthetic SLAs are never claimed as hospital policy |
+| Outreach scripts, consent/opt-out language, language variants | `OUTREACH-001` | Task review checks delegated nonclinical copy and consent behavior | No clinical advice, clinical-approval claim, or live vendor execution |
+| CareLink center, contracted provider, service area, coordinator/driver fixtures, funding/eligibility rules | `RIDE-001` | Architect freezes the delegated fictional provider and eligibility configuration | Keep blocker open and show no-option/escalation state |
 | Navigator capacity `K`, calibration/top-K gate, minimum subgroup count, unacceptable-harm rule | `ML-001` | Product/model owner records prespecified values before final test evaluation | Model remains `Score unavailable`; deterministic cadence continues |
 | Pinned FHIR validator/version and approved evidence visibility | `EVIDENCE-001` | Architecture/security select and record before contract freeze | UI cannot show `Validated` |
 
@@ -225,11 +230,11 @@ Twilio, ElevenLabs, Uber Health, real Google/Microsoft/Apple OAuth, production E
 3. Run reset/reseed while preserving valid Epic authorization and the last-known-good snapshot.
 4. Run private Epic preflight: refresh or reauthorize, inventory Camila, atomically publish the snapshot, and select truthful `Live` or accepted `Snapshot fallback` state.
 5. Confirm model artifact/version, provider modes (`CareLink=active`; SMS/voice/Uber=`provider_ready`), deterministic replay, and CareLink fixture state.
-6. Execute the exact public → access → staff → split work → transport → caregiver → patient acknowledgment → confirmed graph/evidence journey.
+6. Execute public → access → staff → split work → transport → caregiver → patient acknowledgment → confirmed graph. Use sign-out/access between personas, then return through Apple staff access for Epic provenance and FHIR evidence. Patient or caregiver sessions never inherit staff-only evidence access.
 7. Execute one failure rehearsal: CareLink provider failure followed by backup recovery. Confirm clinical text never enters caregiver or transport surfaces.
 8. Run current repository verification and required exact-revision security/final reviews.
 9. Record a backup run, then rehearse the primary narration to approximately 2:40 so the evidence close remains inside three minutes.
-10. Human approves and merges each feature; only then close the task with `task advance <TASK-ID> --merged`.
+10. Record final launch evidence against the frozen integrated revision. Feature review, human merge, and `task advance <TASK-ID> --merged` closure happen as dependencies finish, before downstream integration; do not postpone all feature merges to launch day. Any later code change requires fresh affected verification and reviews.
 
 ## 12. Definition of done
 

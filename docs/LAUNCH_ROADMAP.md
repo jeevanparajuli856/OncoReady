@@ -10,6 +10,8 @@
 
 **Implementation state:** Human approved. `PLAN-002` reconciled the authoritative product, architecture, deterministic configuration, operations, long-lived decisions, and visual-lock instructions. This roadmap remains the approved planning record; the concern-specific source-of-truth files govern implementation. Production code still requires the applicable feature task to reach `BUILD_READY`.
 
+**Confirmed delivery direction:** September 25, 2026; full scope retained. The human delegated synthetic planning to the agents. [`LAUNCH_SCENARIO_SETTINGS.md`](./LAUNCH_SCENARIO_SETTINGS.md) supplies concrete defaults for task-specific freezing, without claiming clinical policy or external activation.
+
 ## 1. Mission
 
 Build the strongest product in the Nexus DevDay final: a polished, technically credible treatment-continuity platform that detects when an oncology patient is becoming less likely to arrive ready for infusion, selects the appropriate outreach path, coordinates accountable recovery work, and proves that the continuity plan closed.
@@ -51,7 +53,7 @@ The product should feel like one coherent hospital application rather than a col
 - Remove the public Treatment Readiness Workspace and Treatment Readiness Graph completely; both belong inside an authenticated workspace.
 - Replace the removed patient preview with an interactive, record-free `Continuity Rescue Story` that explains the product through public storytelling rather than exposing any workspace.
 - Provide exactly two pricing plans:
-  - `Pilot` with a public monthly price.
+  - `Pilot` at `$18,000/year`, with `$1,500/month billed annually` as supporting copy.
   - `Network` with `Talk to us` instead of a public price.
 - Make workspace access look like a professional institutional sign-in page, with a hospital/center selector at the top, SSO-style options, email/password sign-in, forgotten-password access, and email sign-up.
 - Do not show presenter shortcuts or visible labels such as `Google → patient`, `Microsoft → caregiver`, or similar role mappings.
@@ -125,7 +127,8 @@ Public landing page
   → Microsoft opens Ana's caregiver workspace, which shows logistics but no symptom text or nurse discussion
   → Google opens Camila's patient workspace, where she acknowledges the recovered plan
   → Treatment Readiness Graph changes from Treatment at risk to Continuity plan confirmed
-  → Timeline, metrics, Epic provenance, and FHIR evidence resolve inside the workspace
+  → Sign out and return through Apple staff access
+  → Timeline, metrics, Epic provenance, and FHIR evidence resolve inside the authorized staff workspace
 ```
 
 ### Winning narrative
@@ -160,7 +163,7 @@ The current integrated OncoReady interface is the human-approved visual baseline
 **Allowed adaptation:**
 
 - reuse existing tokens, primitives, and components for the new public story, pricing cards, access flow, and workspaces;
-- add a missing semantic token or component variant only when the current system cannot express a required state;
+- compose a feature-specific variant from existing tokens when needed; any new global semantic token or established component-style change still requires explicit human approval for that exact change;
 - make localized responsive or accessibility corrections when needed for keyboard access, readable contrast, text reflow, touch targets, or reduced motion;
 - refine spacing or hierarchy within a new component while keeping it visibly part of the current product.
 
@@ -339,7 +342,7 @@ Browser
 - Use Alembic migrations stored under the backend source tree and run them deliberately during release.
 - Keep the T−7/T−2/T−1 scheduler inside the API service for the final; do not add Redis, Kafka, a queue, or another worker service unless measured behavior requires it.
 - Store provider configuration and activation state server-side. The frontend receives normalized capabilities, never credentials.
-- Expose `/health` for process health and `/ready` for database and required-artifact readiness.
+- Expose `/health` for process health and `/ready` for database/migration readiness. Report model availability separately so deterministic workflows continue; an accepted artifact remains required at release preflight.
 - Bind the API to Railway's supplied `PORT` and use the Railway private database URL.
 - Restrict CORS to the deployed web origin and local development origins explicitly configured for development.
 
@@ -371,17 +374,17 @@ Browser
 
 | Order | Task ID | Vertical slice | User-visible proof | Depends on |
 |---:|---|---|---|---|
-| 0 | PLAN-002 | Reconcile product and architecture source of truth | Approved execution plan | Human approval of this roadmap |
+| — | PLAN-002 (planning milestone) | Reconcile product and architecture source of truth | Approved execution plan | Human approval of this roadmap; documented milestone, no task lifecycle record |
 | 1 | RAIL-001 | Railway web, API, and PostgreSQL foundation | One URL serving a healthy end-to-end stack | PLAN-002 |
 | 2 | ACCESS-001 | Public page, two-tier pricing, and workspace access | Polished center-scoped sign-in without public patient data | RAIL-001 |
 | 3 | EPIC-001 | Read-only Epic Sandbox clinical context | Camila's live Epic record appears in the authorized staff workspace with truthful fallback provenance | ACCESS-001 |
 | 4 | FLOW-001 | Durable early-warning and department ownership | Camila's barriers become separately owned work | EPIC-001 |
-| 5 | OUTREACH-001 | Adaptive SMS/voice orchestration and provider-ready surfaces | Model-informed channel timing without vendor dependency | FLOW-001 |
-| 6 | RIDE-001 | CareLink contracted-provider dispatch and Uber-ready surface | Real local-vendor assignment, recovery, and acknowledgment | FLOW-001 |
-| 7 | EVIDENCE-001 | Computed metrics and validated FHIR artifact | Inspectable operational and interoperability evidence | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
-| 8 | ML-001 | Rich longitudinal LightGBM pipeline and Camila explanation | Real calibrated score, SHAP evidence, and adaptive outreach input | Stable workflow/event contracts |
+| 5 | ML-001 | Rich longitudinal LightGBM pipeline and Camila explanation | Real calibrated score, SHAP evidence, and adaptive outreach input | FLOW-001; integrates before OUTREACH-001 |
+| 6 | OUTREACH-001 | Adaptive SMS/voice orchestration and provider-ready surfaces | Model-informed channel timing without vendor dependency | FLOW-001, ML-001 |
+| 7 | RIDE-001 | CareLink contracted-provider dispatch and Uber-ready surface | Real local-vendor assignment, recovery, and acknowledgment | FLOW-001 |
+| 8 | EVIDENCE-001 | Computed metrics and validated FHIR artifact | Inspectable operational and interoperability evidence | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
 
-Although ML-001 is implemented after the workflow contracts stabilize, the data contract and Camila acceptance scenario are defined during FLOW-001 so ML is central to the product rather than attached as a decorative final screen. Epic data provides clinical context; it must not be repurposed as unapproved model training data or silently blended into synthetic outcomes.
+The table is a portfolio, not a strictly sequential execution list: after FLOW-001, ML-001 and RIDE-001 can proceed independently; OUTREACH-001 integrates after ML-001. Although ML-001 is implemented after the workflow contracts stabilize, the data contract and Camila acceptance scenario are defined during FLOW-001 so ML is central to the product rather than attached as a decorative final screen. Epic data provides clinical context; it must not be repurposed as unapproved model training data or silently blended into synthetic outcomes.
 
 ### Architecture and delivery controls
 
@@ -404,7 +407,7 @@ Before production code:
 
 - update `docs/PROJECT.md` with the Railway delivery model, two-tier pricing, professional access journey, Camila narrative, read-only Epic Sandbox boundary, provider-ready vendor boundary, CareLink network model, and adaptive ML story;
 - update `docs/architecture/SYSTEM.md` with the Railway web/API/PostgreSQL topology, session boundary, Epic SMART authorization and snapshot boundary, event state, and adapters;
-- update `.ai/project.json` to enable backend and database and add frontend, backend, schema, and integration verification commands;
+- update `.ai/project.json` to enable backend and database and retain runnable frontend/schema checks; `RAIL-001` must register actual required backend and migration/integration checks once the harness exists, and later tasks extend them before integration verification;
 - add one ADR for Railway topology and one ADR for provider-ready versus active adapter semantics if the architect judges both decisions long-lived;
 - create individual feature/task artifacts for `RAIL-001`, `ACCESS-001`, `EPIC-001`, `FLOW-001`, `OUTREACH-001`, `RIDE-001`, `EVIDENCE-001`, and `ML-001`;
 - do not reopen or rewrite completed `CORE-001`, `LAND-001`, or `UI-001` task history.
@@ -423,7 +426,7 @@ Before production code:
 - environment variables and secrets remain server-side;
 - frontend and backend watch paths prevent unrelated rebuilds;
 - each submitted deployment is tracked to `SUCCESS` before being called deployed;
-- reset/reseed restores the same Camila workflow scenario without deleting the current valid Epic authorization or last-known-good snapshot;
+- RAIL reset/reseed restores the foundation proof seed without deleting unrelated state; EPIC-001 and FLOW-001 later prove reset of the full Camila scenario while preserving valid authorization and the last-known-good snapshot;
 - a failed migration or missing required variable prevents readiness and leaves actionable logs.
 
 ### ACCESS-001 — Public experience, pricing, and access
@@ -513,7 +516,7 @@ Every family uses only its enabled `.Read` and `.Search` R4 interactions. The im
 - an expired access token is refreshed server-side when permitted; otherwise the adapter changes state and requests presenter reauthorization without looping or exposing details to ordinary users;
 - a live-call failure displays the last successful snapshot only with the `Snapshot fallback` label and original synchronization time;
 - snapshot fallback is restricted to Camila and cannot be silently generalized to other patients;
-- Ana, patient, and transportation API responses exclude Epic-only clinical fields, including when searched, exported, logged, or rendered for accessibility;
+- Ana, patient, and transportation API responses exclude Epic-only clinical fields, including when searched, exported, logged, or rendered for accessibility; approved staff accessibility and explicitly authorized staff evidence exports retain required context while normal logs stay redacted;
 - all Epic endpoints are read-only and no OncoReady action attempts a FHIR create, update, patch, or delete;
 - tests cover state/nonce mismatch, invalid issuer, token expiry/refresh, redaction, unauthorized role, partial FHIR responses, atomic snapshot replacement, live-to-fallback transition, and proof that non-Camila fixtures trigger no Epic request;
 - a dedicated security review approves the exact verified revision before the task advances.
@@ -580,7 +583,8 @@ appointment changed → cutoff and dependent work recomputed/reopened
 - in `provider_ready` mode, the backend creates internal planned/replay events but makes no Twilio or ElevenLabs network call;
 - the UI never labels a message `Delivered` or call `Completed` without a verified provider callback or disclosed deterministic replay event;
 - adapter activation later requires server-side credentials, destination allowlists, consent/opt-out enforcement, signed webhook validation, and a dedicated security review;
-- no provider secret or arbitrary destination reaches the browser.
+- no provider secret or arbitrary destination reaches the browser;
+- ML-001 must supply an accepted artifact before model-informed acceptance; if scoring later fails, deterministic cadence continues with `Score unavailable`.
 
 ### RIDE-001 — CareLink and contracted local providers
 
@@ -604,14 +608,14 @@ appointment changed → cutoff and dependent work recomputed/reopened
 **Acceptance criteria:**
 
 - deterministic checks cover notice cutoff, funding/eligibility path, operating window, arrival window, outbound and return plan, mobility/escort need, service area, and provider availability;
-- only authorized staff or transportation sessions can initiate or mutate a request;
+- only authorized staff or transportation sessions can initiate dispatch or mutate provider assignments; patient sessions can acknowledge the current plan through a separate allowlisted command;
 - request creation uses an idempotency key and server-side adapter;
 - requested, offered, accepted, driver assigned, patient notified, patient acknowledged, arriving, completed, cancelled, declined, provider unavailable, return pending, and backup required remain distinct events;
 - a cancelled or failed trip reopens the blocker and permits controlled retry or navigator escalation;
-- no available option leaves the treatment event at risk;
-- patient acknowledgment remains required for closure;
+- when no transportation option is available, the treatment event remains at risk;
+- the patient-owned acknowledgment command confirms the current plan without granting dispatch privileges; a changed/failed plan invalidates the earlier acknowledgment;
 - the product never autonomously cancels or reschedules treatment;
-- provider branding and provider-specific statuses appear only when backed by a verified response from that provider;
+- external provider-specific success states require a verified response; controlled CareLink operator actions are persisted with actor provenance and do not imply real-world driver movement or an external vendor callback;
 - CareLink works for a center's own contracted vendor rather than requiring that vendor to be an OncoReady-owned fleet.
 
 ### EVIDENCE-001 — Operational metrics and FHIR R4
@@ -629,7 +633,7 @@ appointment changed → cutoff and dependent work recomputed/reopened
 
 **Acceptance criteria:**
 
-- a metric changes only when its underlying event changes;
+- a metric changes only when its underlying event or approved formula version changes; plan confirmation is not proof of attendance and final disposition stays `unknown` until an authorized outcome event;
 - provider-ready replay metrics are distinguishable from verified external-provider events in audit and technical evidence;
 - an Epic source-evidence view shows the active mode, last successful synchronization time, mapped resource types/counts, and non-secret source references for Camila;
 - the source-evidence view distinguishes live Epic resources, the last-known-good Epic snapshot, and OncoReady-owned events without merging their provenance;
@@ -749,7 +753,8 @@ Recorded journey
  → Uber Health visible but not used for an unverified ride
  → Microsoft session opens Ana's data-minimized caregiver workspace
  → Google session opens Camila's patient workspace and records acknowledgment
- → resolved graph, metrics, Epic provenance, and validated OncoReady FHIR evidence
+ → resolved patient graph
+ → sign out and return through Apple staff access for metrics, Epic provenance, and validated OncoReady FHIR evidence
 ```
 
 ### Required failure tests
@@ -782,7 +787,7 @@ Recorded journey
 - show the protected staff record's truthful `Epic Sandbox` source state and synchronization time; never expose client credentials, tokens, raw authorization errors, or presenter setup controls in the recorded journey;
 - give one concise verbal environment disclosure before the integrated sequence; do not turn it into persistent visual decoration;
 - keep the SMS, voice, and Uber Health interfaces polished and available in navigation while adapter execution remains server-disabled;
-- show ordinary provider statuses such as `Delivered`, `Call completed`, `Quote received`, or `Driver assigned` only when backed by verified callbacks or explicitly disclosed replay data;
+- SMS/voice replay can show disclosed controlled events with replay provenance; Uber Health stays inactive and cannot gain a quote, driver, ETA, or trip confirmation through this replay exception; CareLink assignments come from persisted controlled operator actions;
 - never silently convert a failed or disabled external action into a fake success;
 - keep a deterministic local event replay for each future network step;
 - keep a recorded backup run for the presentation;
@@ -800,9 +805,9 @@ Recorded journey
 | 1:45–2:15 | Use configured email access to enter CareLink; show the center's contracted provider, one failure, backup assignment, and return plan; briefly reveal Uber Health as provider-ready | The platform works with local vendors now and has a clean path to Uber Health later |
 | 2:15–2:30 | Use Microsoft to open Ana's caregiver view | Privacy is visible through a narrow logistics projection |
 | 2:30–2:50 | Use Google to open Camila's patient workspace; Camila acknowledges and the graph changes from `Treatment at risk` to `Continuity plan confirmed` | Each access method reaches its intended workspace and OncoReady proves closure |
-| 2:50–3:00 | Open Epic provenance plus validated OncoReady FHIR evidence and finish on `Continuity plan confirmed` | The clinical connection is real, the operational loop is inspectable, and no writeback is fabricated |
+| 2:50–3:00 | Return through Apple staff access, open Epic provenance plus validated OncoReady FHIR evidence, and finish on `Continuity plan confirmed` | The clinical connection is real, the operational loop is inspectable, and no writeback is fabricated |
 
-Rehearse the primary sequence to approximately 2:40 so transitions or narration do not remove the closing evidence.
+Use sign-out/access between personas; never bypass role authorization for the recording. Rehearse the full sequence, including the final return to staff, to approximately 2:40 so transitions or narration do not remove the closing evidence.
 
 ## 11. Approved Decisions
 

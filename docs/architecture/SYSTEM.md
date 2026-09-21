@@ -156,6 +156,8 @@ WorkflowEvent[]
   └── AuditTimelineProjection
 ```
 
+The deterministic scenario clock and OncoReady treatment date remain distinct from actual Epic source dates and retrieval timestamps. An inventory-verified link may associate an Epic appointment; no generated future date may be attributed to Epic.
+
 Epic resources are not OncoReady workflow events. A normalized snapshot can inform the staff view and identify the treatment context, but OncoReady owns outreach, barrier, ownership, transportation, permission, acknowledgment, and closure events.
 
 ## Workflow State
@@ -171,7 +173,7 @@ appointment_changed → cutoff and dependent work recomputed or reopened
 provider_failed → backup_required → reassigned or escalated
 ```
 
-Clinical and transportation work have different owners, deadlines, projections, and closure rules. Invalid or out-of-order transitions are rejected. Duplicate commands/events are idempotent. A provider request, acceptance, assignment, patient notification, patient acknowledgment, arrival, completion, cancellation, decline, and backup requirement remain distinct events.
+Clinical and transportation work have different owners, deadlines, projections, and closure rules. `Continuity plan confirmed` requires the approved human-owned clinical disposition, a complete current transportation plan, and patient acknowledgment; it does not prove medical clearance or attendance. Patient acknowledgment is a distinct authorized command and does not grant dispatch permissions. Invalid or out-of-order transitions are rejected. Duplicate commands/events are idempotent. A provider request, acceptance, assignment, patient notification, patient acknowledgment, arrival, completion, cancellation, decline, and backup requirement remain distinct events.
 
 ## Primary Data Flow
 
@@ -276,7 +278,7 @@ recorded path
 
 Reliability controls:
 
-- health distinguishes process liveness from database/artifact readiness;
+- health distinguishes process liveness from database/migration readiness; model status is a separate degraded capability so `Score unavailable` does not take deterministic workflow offline, while release preflight still requires the accepted model artifact;
 - deterministic scenario clock and reset/reseed;
 - snapshot fallback with explicit timestamp and source state;
 - valid transition guards and disabled states;

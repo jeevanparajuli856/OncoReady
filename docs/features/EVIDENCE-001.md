@@ -46,6 +46,12 @@ HIGH with dedicated review. Material concerns are export authorization, over-dis
 - `EPIC-001`, `FLOW-001`, `OUTREACH-001`, and `RIDE-001` integrated event/source contracts.
 - Pinned FHIR validator/version and approved evidence visibility before `BUILD_READY`.
 
+## Evidence access and disposition
+
+Epic source details and clinical FHIR evidence belong to authorized center-scoped staff. The recording returns through staff access after patient acknowledgment; do not expand patient/caregiver permissions to shorten that sequence. The evidence contract must define any separately allowlisted nonclinical projections.
+
+`Continuity plan confirmed` is a planning outcome. Keep treatment attendance/disposition `unknown` until an actual authorized outcome event records it; ride assignment, acknowledgment, or a resolved graph cannot imply treatment was kept.
+
 ## Acceptance criteria
 
 1. A metric changes only when its underlying persisted event or approved formula version changes.

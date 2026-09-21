@@ -288,15 +288,17 @@ The target launch includes authentication, authorization, persistent data, OAuth
 
 | Order | Task ID | Vertical slice | User-visible outcome | Depends on |
 |---:|---|---|---|---|
-| 0 | PLAN-002 | Source-of-truth reconciliation | Approved product, architecture, configuration, and visual lock | Approved roadmap |
+| — | PLAN-002 (planning milestone) | Source-of-truth reconciliation | Approved product, architecture, configuration, and visual lock | Approved roadmap; documented milestone, no task lifecycle record |
 | 1 | RAIL-001 | Railway web/API/PostgreSQL foundation | One healthy deployed stack with durable state | PLAN-002 |
 | 2 | ACCESS-001 | Public experience, pricing, and workspace access | Professional center-scoped access without public patient data | RAIL-001 |
 | 3 | EPIC-001 | Read-only Epic Sandbox clinical context | Camila's authorized staff record shows truthful live/fallback Epic provenance | ACCESS-001 |
 | 4 | FLOW-001 | Durable early warning and owned work | Camila's clinical and transportation barriers become separately owned actions | EPIC-001 |
-| 5 | OUTREACH-001 | Adaptive outreach orchestration | Model-informed timing and provider-ready channel surfaces | FLOW-001 |
-| 6 | RIDE-001 | CareLink contracted-provider dispatch | Outbound/return plan, recovery, and acknowledgment close the transport dependency | FLOW-001 |
-| 7 | EVIDENCE-001 | Metrics and FHIR evidence | Inspectable operational metrics, Epic provenance, and validated export | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
-| 8 | ML-001 | Longitudinal LightGBM and SHAP | Real calibrated Camila explanation drives supportive outreach priority | Stable workflow/event contracts |
+| 5 | ML-001 | Longitudinal LightGBM and SHAP | Real calibrated Camila explanation drives supportive outreach priority | FLOW-001; integrates before OUTREACH-001 |
+| 6 | OUTREACH-001 | Adaptive outreach orchestration | Model-informed timing and provider-ready channel surfaces | FLOW-001, ML-001 |
+| 7 | RIDE-001 | CareLink contracted-provider dispatch | Outbound/return plan, recovery, and acknowledgment close the transport dependency | FLOW-001 |
+| 8 | EVIDENCE-001 | Metrics and FHIR evidence | Inspectable operational metrics, Epic provenance, and validated export | EPIC-001, FLOW-001, OUTREACH-001, RIDE-001 |
+
+`PLAN-002` is the documented planning milestone, not a tracked task or a claim of completed feature review/merge. `RAIL-001` is the first tracked launch task. After `FLOW-001`, `ML-001` and `RIDE-001` can proceed independently; `OUTREACH-001` integrates after `ML-001`.
 
 Each task follows the repository lifecycle. Frontend tasks must obey the human-approved visual lock; Epic and access tasks require formal contracts, targeted testing, and security review at the risk level selected by architecture.
 
@@ -313,7 +315,9 @@ The launch build is complete when:
 - Camila acknowledges the plan and the graph reaches `Continuity plan confirmed`;
 - workflow projections, metrics, graph, timeline, and FHIR export derive from the same OncoReady events while Epic context retains separate provenance;
 - the live critical path and deterministic fallback pass targeted verification;
-- required security and frontend design reviews approve the exact verified revision;
+- the accepted reproducible ML artifact drives real outreach priority and its prespecified calibration/top-K/subgroup gate passes;
+- Railway deployment and pinned FHIR validation pass on the integrated release;
+- required security, frontend design, and final reviews approve the exact verified revision;
 - the human completes the feature merges.
 
 Success means a viewer can retell the patient, problem, mechanism, clinical-context boundary, accountable recovery, and outcome after one viewing. It does not mean every imaginable production-hardening task has been implemented.
@@ -328,6 +332,8 @@ Success means a viewer can retell the patient, problem, mechanism, clinical-cont
 | Q-001 | Open question | Which production Epic launch point and user context would a future customer choose? | Decide with that customer's operational and IT stakeholders |
 | Q-002 | Open question | Which treatment cohort, owners, SLAs, and clinical response boundaries would support a real pilot? | Validate with an authorized oncology workflow owner |
 | Q-003 | Open question | Which staff surface would OncoReady replace or augment? | Validate before production workflow design |
+
+**Confirmed September 21:** the human set September 25, 2026 as the deadline and delegated synthetic scenario planning to the agents. The concrete workflow, transport, outreach and model defaults are in [`LAUNCH_SCENARIO_SETTINGS.md`](./LAUNCH_SCENARIO_SETTINGS.md), with handoff/gates in [`LAUNCH_REVIEW.md`](./LAUNCH_REVIEW.md). Architects freeze applicable settings before implementation/evaluation; routine synthetic choices do not require repeated human approval. These settings do not answer future production-pilot questions Q-001–Q-003.
 
 ## 15. Approved Project-Level Decisions
 

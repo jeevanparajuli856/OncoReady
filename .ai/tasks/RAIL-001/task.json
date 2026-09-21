@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/RAIL-001/frontend-design-review.json"
+        ".ai/tasks/RAIL-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/RAIL-001/task.json"
+        ".ai/tasks/RAIL-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/RAIL-001/test-report.json"
+        ".ai/tasks/RAIL-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/RAIL-001/**"
+        ".ai/tasks/RAIL-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -214,18 +227,18 @@
     "single_writer": "orchestrator",
     "worker_agents_must_use_reports": true
   },
-  "dependencies": [
-    "PLAN-002"
-  ],
+  "dependencies": [],
   "acceptance_criteria": [
     "Railway contains exactly one intended web service, one API service, and one PostgreSQL service for the finals environment, with database traffic on private networking.",
     "The web service serves SPA routes on refresh and uses an environment-defined API origin without exposing server secrets.",
     "The API reports process liveness separately from readiness, and readiness fails when PostgreSQL or the required Alembic revision is unavailable.",
     "A backend write persists through API restart and remains visible after browser refresh.",
-    "Reset/reseed restores the controlled workflow seed while preserving valid Epic authorization and last-known-good snapshot records by default.",
+    "Reset/reseed restores the deterministic foundation proof seed without deleting unrelated state; later EPIC/FLOW acceptance proves actual Camila workflow and integration-state preservation.",
     "Missing required variables or a failed migration prevents readiness and produces actionable redacted logs.",
     "Frontend and backend watch paths avoid rebuilding the unrelated service.",
-    "A deployment is reported live only after Railway status is SUCCESS and the web, API, database, migration, CORS, and persistence checks pass."
+    "A deployment is reported live only after Railway status is SUCCESS and the web, API, database, migration, CORS, and persistence checks pass.",
+    "Actual required backend and PostgreSQL migration/integration checks are registered in .ai/project.json and pass against the documented isolated test database; frontend-only checks cannot close the task.",
+    "Persisted proof and reset mutations are restricted to private operator/test access until ACCESS-001 implements workspace sessions."
   ],
   "created_by": "human"
 }

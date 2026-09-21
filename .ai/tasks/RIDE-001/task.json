@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/RIDE-001/frontend-design-review.json"
+        ".ai/tasks/RIDE-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/RIDE-001/task.json"
+        ".ai/tasks/RIDE-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/RIDE-001/test-report.json"
+        ".ai/tasks/RIDE-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/RIDE-001/**"
+        ".ai/tasks/RIDE-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -219,10 +232,10 @@
   ],
   "acceptance_criteria": [
     "Deterministic checks cover cutoff, funding and eligibility, operating and arrival windows, outbound and return plans, mobility or escort needs, service area, and provider availability.",
-    "Only authorized staff or transportation sessions can initiate or mutate a request, and request creation is idempotent through the server-side adapter.",
+    "Only authorized staff or transportation sessions dispatch or mutate provider assignments; the patient may acknowledge the current plan through an allowlisted patient-owned command, and caregivers remain read-only. Request creation is idempotent through the server adapter.",
     "Requested, offered, accepted, driver assigned, patient notified, patient acknowledged, arriving, completed, cancelled, declined, provider unavailable, return pending, and backup required remain distinct events.",
     "Cancellation or failure reopens the blocker and permits controlled retry, backup, or escalation without losing the original audit history.",
-    "No available option leaves treatment at risk, and patient acknowledgment is required before transportation work closes.",
+    "When no transportation option is available, treatment remains at risk. The current complete plan requires patient acknowledgment before closure; a changed or failed plan invalidates the earlier acknowledgment.",
     "The product never autonomously cancels or reschedules treatment and supports a center's contracted provider rather than requiring an OncoReady-owned fleet.",
     "Uber Health remains provider-ready and cannot claim a quote, request, driver, ETA, or completion without approved credentials and verified callbacks.",
     "Caregiver and transportation visual, accessibility, search, export, API, and log projections exclude clinical concern text and Epic-only fields."

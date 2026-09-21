@@ -56,6 +56,6 @@ HIGH with dedicated review. Material concerns are OAuth callback attacks, creden
 5. A successful refresh atomically replaces the prior snapshot; a partial or failed refresh does not combine new and old fields under a `Live` label.
 6. Live failure serves the prior complete snapshot only as `Snapshot fallback — synchronized <time>`; no snapshot produces `Unavailable`.
 7. Loading, empty, partial-source, unauthorized, expired-session, rate/error, fallback, and unavailable states are complete and accessible.
-8. Patient, caregiver, transportation, public, search, export, log, and accessible-text projections contain no Epic-only clinical fields.
+8. Public, patient, caregiver, and transportation responses, search, exports, logs, and accessible text contain no Epic-only clinical fields. Authorized staff UI/accessibility and explicitly authorized staff evidence exports may contain approved fields; normal logs remain redacted.
 9. Only Camila is Epic-backed; non-Camila fixtures never initiate an Epic call and cannot open as complete cases.
 10. No route or adapter performs FHIR create, update, patch, or delete, and the UI makes no Ochsner, Epic endorsement, production access, or writeback claim.

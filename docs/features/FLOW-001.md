@@ -45,7 +45,13 @@ STANDARD with dedicated review. Material concerns are authorization of mutations
 ## Dependencies
 
 - `EPIC-001` clinical-context/provenance boundary and `ACCESS-001` authorized sessions.
-- Human-confirmed owner/SLA matrix, finals treatment clock, business-day calendar, and transportation cutoff before `BUILD_READY`.
+- Agent-planned synthetic owner/SLA matrix, clock, calendar and cutoff in [LAUNCH_SCENARIO_SETTINGS.md](../LAUNCH_SCENARIO_SETTINGS.md), frozen by the architect before `BUILD_READY` under the human's delegated planning authority. These are not clinical policy.
+
+## Final state and time boundary
+
+Freeze explicit confirmation rules before BUILD_READY: required human-owned clinical disposition/acknowledgment, a complete current transport plan, and patient acknowledgment must all be satisfied. A transport success alone cannot close pending clinical work; `Continuity plan confirmed` is not medical clearance or proof of attendance.
+
+The deterministic scenario clock and OncoReady treatment appointment are distinct from Epic retrieval timestamps and any actual Sandbox appointment date. Preserve Epic source dates unchanged. Inventory establishes whether an Epic appointment can be linked; never relabel a generated future treatment date as Epic-sourced. Missing optional Epic resources are recorded as absent; failed required reads cannot become a partial live snapshot.
 
 ## Acceptance criteria
 

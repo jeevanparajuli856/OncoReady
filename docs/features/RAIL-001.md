@@ -2,7 +2,7 @@
 
 ## User-visible outcome
 
-The public application and authenticated workspace shell run against a real API and persistent database from one manageable Railway project.
+The existing frontend shell connects to a real API and persistent database from one manageable Railway project; workspace authentication follows in ACCESS-001.
 
 ## Product/demo impact
 
@@ -46,6 +46,14 @@ STANDARD with dedicated review. Material concerns are server-only secrets, datab
 - `PLAN-002` source-of-truth reconciliation and human-approved roadmap.
 - Approved Railway account/tool access is required for deployed acceptance; local verification is not a substitute.
 
+## Planning and verification handoff
+
+`PLAN-002` is an approved documented planning milestone, not a tracked task. `RAIL-001` has no tracked task dependency; reconcile and commit the planning baseline before preparing its feature branch.
+
+During planning, select the actual API test and PostgreSQL migration/integration harness. Before integration verification, the orchestrator must register those runnable commands as required checks in `.ai/project.json` and document isolated test database setup. Later slices extend the checks for their implemented boundaries; do not insert nonexistent placeholder commands now. Database workers own `backend/alembic/**`; backend workers own the application and dependency configuration.
+
+The persisted proof and reset are private operator/test operations until `ACCESS-001` adds normal workspace sessions; no unauthenticated public mutation endpoint is permitted. RAIL reset proves deterministic foundation seed behavior and preserves unrelated data; FLOW/EPIC acceptance later proves the actual Camila workflow/integration records. The local-state frontend remains the recorded baseline until those slices replace it, and RAIL must not describe it as authenticated.
+
 ## Acceptance criteria
 
 1. Railway contains exactly one intended `web`, one `api`, and one PostgreSQL service for the finals environment, with database traffic restricted to private networking.
@@ -53,6 +61,7 @@ STANDARD with dedicated review. Material concerns are server-only secrets, datab
 3. `/health` reports process liveness; `/ready` passes only when PostgreSQL and the required Alembic revision are available.
 4. A backend write survives API restart and remains visible after browser refresh.
 5. Frontend and backend watch paths avoid rebuilding the unrelated service.
-6. Reset/reseed restores the same controlled workflow seed while preserving valid Epic authorization and last-known-good snapshot records by default.
+6. Reset/reseed restores the same foundation proof seed without deleting unrelated state; EPIC-001 and FLOW-001 later verify preservation of actual authorization/snapshot records and the complete Camila scenario.
 7. Missing required variables or a failed/missing migration prevents readiness and produces actionable redacted logs.
 8. A submitted Railway deployment is reported live only after platform status is `SUCCESS` and web/API/database post-deploy checks pass.
+9. Required backend and PostgreSQL migration/integration checks are registered in `.ai/project.json`, runnable against the documented test environment, and pass; frontend-only verification cannot close this task.

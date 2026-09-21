@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/FLOW-001/frontend-design-review.json"
+        ".ai/tasks/FLOW-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/FLOW-001/task.json"
+        ".ai/tasks/FLOW-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/FLOW-001/test-report.json"
+        ".ai/tasks/FLOW-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/FLOW-001/**"
+        ".ai/tasks/FLOW-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -227,7 +240,8 @@
     "Patient, caregiver, staff, transportation, graph, timeline, and preliminary metrics derive consistently from the same committed events.",
     "Stale scheduler, source, or projection state remains visible and never appears as reassurance.",
     "Reset/reseed restores the exact finals workflow state without deleting valid Epic authorization or the last-known-good Camila snapshot.",
-    "The API-backed critical journey preserves the locked visual, accessibility, responsive, and reduced-motion behavior."
+    "The API-backed critical journey preserves the locked visual, accessibility, responsive, and reduced-motion behavior.",
+    "Confirmation requires the approved human-owned clinical disposition, current complete transport plan, and patient acknowledgment; source Epic dates are unchanged and distinguishable from the OncoReady scenario clock."
   ],
   "created_by": "human"
 }

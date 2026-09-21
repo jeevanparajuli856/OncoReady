@@ -43,7 +43,8 @@ STANDARD with dedicated review. Material concerns are consequential outbound act
 ## Dependencies
 
 - `FLOW-001` stable events, projections, explicit-barrier routing, and feature snapshot.
-- Stakeholder-reviewed outreach scripts, consent/opt-out content, and supported-language behavior before activation-ready acceptance.
+- `ML-001` accepted artifact and inference contract before model-informed integration/acceptance. Planning and isolated adapter work may overlap against a frozen contract; fixture scores cannot satisfy acceptance. If inference later fails, deterministic cadence continues with `Score unavailable`.
+- Task-reviewed nonclinical scripts, consent/opt-out and language behavior from [LAUNCH_SCENARIO_SETTINGS.md](../LAUNCH_SCENARIO_SETTINGS.md), under delegated synthetic planning. Actual clinical approval and external activation remain separate.
 
 ## Acceptance criteria
 

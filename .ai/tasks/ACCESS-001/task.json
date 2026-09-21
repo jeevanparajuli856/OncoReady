@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/ACCESS-001/frontend-design-review.json"
+        ".ai/tasks/ACCESS-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/ACCESS-001/task.json"
+        ".ai/tasks/ACCESS-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/ACCESS-001/test-report.json"
+        ".ai/tasks/ACCESS-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/ACCESS-001/**"
+        ".ai/tasks/ACCESS-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -220,13 +233,14 @@
   "acceptance_criteria": [
     "Workspace access replaces Explore workspace everywhere and every public CTA reaches /access.",
     "The public DOM, metadata, accessibility tree, search text, and network activity expose no patient record, readiness graph, Camila content, protected endpoint, or session creation.",
-    "The three public story cards update a record-free inline panel accessibly, and exactly two pricing cards show Pilot at $18,000/year and Network at Talk to us.",
+    "The three public story cards update a record-free inline panel accessibly. One central pricing configuration supplies exactly two cards: Pilot at $18,000/year plus $1,500/month billed annually, and Network at Talk to us without a numeric price; usage charges are separate and there is no self-serve checkout.",
     "The center selector precedes all access methods and no provider button or helper text reveals its configured persona mapping.",
     "Server configuration maps each controlled access method to one allowed workspace without trusting browser-provided role or destination data.",
     "Refresh preserves the authorized destination, direct access to another workspace is denied safely, sign-out invalidates the session, and sign-up cannot self-assign privileged roles.",
     "Authentication, session, CSRF, throttling, credential, center isolation, API authorization, and audit controls pass dedicated security review.",
     "Keyboard, focus, mobile, screen-reader, password-manager, reduced-motion, and desktop/mobile visual-lock checks pass with no unapproved design drift.",
-    "Every externally sourced image or SVG has license/provenance evidence, safe local/optimized handling, and correct accessible treatment."
+    "Every externally sourced image or SVG has license/provenance evidence, safe local/optimized handling, and correct accessible treatment.",
+    "Account recovery and pending sign-up have an implemented controlled path; no unimplemented reset-email success, dead legal/support link, or self-granted privileged access is allowed."
   ],
   "created_by": "human"
 }

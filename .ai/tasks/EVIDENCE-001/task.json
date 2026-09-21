@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/EVIDENCE-001/frontend-design-review.json"
+        ".ai/tasks/EVIDENCE-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/EVIDENCE-001/task.json"
+        ".ai/tasks/EVIDENCE-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/EVIDENCE-001/test-report.json"
+        ".ai/tasks/EVIDENCE-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/EVIDENCE-001/**"
+        ".ai/tasks/EVIDENCE-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -229,7 +242,8 @@
     "A current pinned-validator pass is required before the UI shows Validated; failure, timeout, stale report, or artifact mismatch suppresses the label.",
     "Authorized users can inspect mapping and validation evidence without receiving secrets or fields outside their projection.",
     "The UI states validation applies only to the OncoReady-generated artifact and makes no writeback, production access, customer approval, clinical validation, or compliance claim.",
-    "The final graph, timeline, workspaces, metrics, and FHIR evidence reconcile to the same event revision while Epic context retains separate provenance."
+    "The final graph, timeline, workspaces, metrics, and FHIR evidence reconcile to the same event revision while Epic context retains separate provenance.",
+    "Epic/clinical evidence requires a staff session; plan confirmation never implies treatment attendance, which remains unknown until an authorized outcome event."
   ],
   "created_by": "human"
 }

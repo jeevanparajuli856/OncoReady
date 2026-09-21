@@ -27,7 +27,12 @@
     "frontend": [
       "frontend/**"
     ],
-    "other": []
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
   },
   "permissions": {
     "orchestrator": {
@@ -37,7 +42,11 @@
         "docs/architecture/**",
         "docs/adr/**",
         "contracts/**",
-        ".ai/tasks/EPIC-001/frontend-design-review.json"
+        ".ai/tasks/EPIC-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
       ],
       "read_only_paths": [
         "backend/**",
@@ -104,7 +113,8 @@
       ],
       "forbidden_paths": [
         "frontend/**",
-        ".ai/tasks/EPIC-001/task.json"
+        ".ai/tasks/EPIC-001/task.json",
+        "backend/alembic/**"
       ]
     },
     "frontend": {
@@ -140,20 +150,23 @@
     "tester": {
       "allowed_write_paths": [
         "tests/**",
-        ".ai/tasks/EPIC-001/test-report.json"
+        ".ai/tasks/EPIC-001/test-report.json",
+        "frontend/tests/**"
       ],
       "read_only_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
         "docs/**",
-        ".ai/tasks/EPIC-001/**"
+        ".ai/tasks/EPIC-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
       ],
       "forbidden_paths": [
         "backend/**",
-        "frontend/**",
         "database/**",
         "supabase/**",
         "contracts/**",
@@ -224,7 +237,7 @@
     "Camila's staff record shows only facts returned by enabled R4 Read/Search APIs or the versioned last-known-good snapshot, with per-item provenance.",
     "A successful refresh publishes a complete snapshot atomically; partial or failed refreshes never combine old and new fields under a Live label.",
     "Live failure serves the prior complete snapshot only as Snapshot fallback with its original synchronization time; no snapshot produces Unavailable.",
-    "Patient, caregiver, transportation, public, search, export, log, and accessible-text projections exclude Epic-only clinical fields.",
+    "Public, patient, caregiver, and transportation responses, search, exports, logs, and accessible text exclude Epic-only clinical fields. Approved staff UI/accessibility and authorized staff evidence exports retain required context; normal logs remain redacted.",
     "Only Camila is Epic-backed, non-Camila fixtures trigger no Epic request, and all Epic operations remain read-only.",
     "The UI provides accessible loading, empty, partial-source, unauthorized, expiry, rate/error, fallback, and unavailable states without unsupported partnership, production, or writeback claims."
   ],

@@ -48,12 +48,18 @@ HIGH with dedicated review. Material concerns are authentication, session fixati
 - `RAIL-001` deployed API, database, migration, and configuration foundation.
 - The existing visual baseline and human-approved design lock.
 
+## Access recovery contract decision
+
+Before BUILD_READY, specify a working controlled account-recovery path and ownership of pending sign-up requests. External identity and email-delivery services are not approved by this slice. A private operator-assisted reset or persisted access request may satisfy the controlled build if clearly described and tested; the UI must not claim a reset email was sent without an implemented delivery path. Privacy, terms, and support links must resolve to truthful content or an implemented contact path, not placeholders.
+
+The selected web/API domains and session-cookie/CSRF configuration must be tested together in the deployed browser. Do not assume localhost success proves the production-origin session flow.
+
 ## Acceptance criteria
 
 1. `Workspace access` replaces `Explore workspace` everywhere and every public CTA reaches `/access`.
 2. Public HTML, metadata, accessibility tree, searchable text, and network activity contain no Treatment Readiness Workspace, patient graph, Camila record, session creation, or protected workspace data.
 3. `Detect early`, `Coordinate recovery`, and `Confirm continuity` update one record-free inline story panel with valid `aria-expanded` and controlled-panel relationships.
-4. Exactly two responsive pricing cards show Pilot at `$18,000/year` and Network at `Talk to us`.
+4. Exactly two responsive pricing cards use one central configuration: Pilot at `$18,000/year` with `$1,500/month billed annually`, five staff seats and one site; Network at `Talk to us` with no numeric price. Usage charges are separate and there is no self-serve checkout.
 5. The center selector appears above all sign-in methods; Google, Microsoft, Apple, email/password, forgot-password, and sign-up have complete interaction states without displaying persona mappings.
 6. Server configuration maps Google to patient, Microsoft to caregiver, Apple to staff, and the configured email account to transportation without accepting a browser-provided role or destination.
 7. A successful session opens only its authorized workspace; refresh preserves it; direct access to another workspace returns a recoverable forbidden state.
