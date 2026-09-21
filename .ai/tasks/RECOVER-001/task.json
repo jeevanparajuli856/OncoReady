@@ -3,7 +3,7 @@
   "task_id": "RECOVER-001",
   "title": "Restore Railway deployment and frontend presentation",
   "type": "feature",
-  "status": "INTEGRATION",
+  "status": "REVIEW",
   "priority": "high",
   "owners": {
     "orchestrator": "codex",
