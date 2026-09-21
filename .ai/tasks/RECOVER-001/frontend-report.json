@@ -2,17 +2,29 @@
   "schema_version": "1.0",
   "task_id": "RECOVER-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "Restored the established ContinuityField containment and presentation rules removed during stylesheet consolidation, and added a browser regression covering bounded desktop/mobile geometry, overflow, public navigation, and workspace entry.",
+  "files_changed": [
+    "frontend/src/index.css",
+    "frontend/tests/e2e.spec.ts",
+    ".ai/tasks/RECOVER-001/frontend-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "cd frontend && npm run test:smoke",
+      "cd frontend && npm run build",
+      "cd frontend && npm run test:e2e -- --grep \"continuity field stays bounded\"",
+      "cd frontend && npm run test:e2e",
+      "python3 scripts/agentctl.py scope check RECOVER-001 frontend"
+    ],
+    "notes": "Vitest passed 9 tests in 4 files; the Vite production build completed; the focused browser regression passed at 1920x1080 and 390x844; the full Playwright suite passed 8 tests; frontend scope check passed for all 3 changed files. Browser-rendered desktop and full mobile screenshots were visually inspected: the canvas, fallback, halo, and four labels remain inside a bounded hero surface with no horizontal overflow, and the established public presentation is restored."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The repair intentionally restores only the historical ContinuityField-owned containment, canvas/fallback, halo, path, and label rules from approved commit cab3146, with current literal design-system colors because the consolidated stylesheet no longer defines the historical custom properties.",
+    "No backend behavior, contract, architecture, runtime canvas behavior, copy, routes, or deployment manifests changed.",
+    "The geometry regression explicitly caps the field below 700px, which fails the deployed recursive canvas-resize symptom (~31,102px desktop/~21,330px mobile), and verifies absolute containment for both render surfaces and every label."
+  ]
 }

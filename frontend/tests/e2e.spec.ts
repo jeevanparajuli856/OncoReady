@@ -130,6 +130,112 @@ test.describe('OncoReady LAUNCH-001 frontend', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(320);
   });
 
+  test('continuity field stays bounded and public entry works at desktop and mobile sizes', async ({ page }) => {
+    const viewports = [
+      { name: 'desktop', width: 1920, height: 1080 },
+      { name: 'mobile', width: 390, height: 844 },
+    ] as const;
+
+    for (const viewport of viewports) {
+      await test.step(viewport.name, async () => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+
+        await expect(page.getByRole('heading', { name: 'Tomorrow’s treatment deserves a closed plan.' })).toBeVisible();
+        const field = page.locator('.continuity-field');
+        await expect(field).toBeVisible();
+
+        const geometry = await field.evaluate((element) => {
+          const bounds = element.getBoundingClientRect();
+          const childGeometry = (selector: string) => {
+            const child = element.querySelector<HTMLElement>(selector);
+            if (!child) return null;
+            const childBounds = child.getBoundingClientRect();
+            return {
+              left: childBounds.left,
+              right: childBounds.right,
+              top: childBounds.top,
+              bottom: childBounds.bottom,
+              position: getComputedStyle(child).position,
+            };
+          };
+
+          return {
+            bounds: {
+              left: bounds.left,
+              right: bounds.right,
+              top: bounds.top,
+              bottom: bounds.bottom,
+              width: bounds.width,
+              height: bounds.height,
+            },
+            position: getComputedStyle(element).position,
+            overflow: getComputedStyle(element).overflow,
+            canvas: childGeometry('.continuity-field__canvas'),
+            fallback: childGeometry('.continuity-field__fallback'),
+            labels: Array.from(element.querySelectorAll<HTMLElement>('.continuity-field__label')).map((label) => {
+              const labelBounds = label.getBoundingClientRect();
+              return {
+                left: labelBounds.left,
+                right: labelBounds.right,
+                top: labelBounds.top,
+                bottom: labelBounds.bottom,
+                position: getComputedStyle(label).position,
+              };
+            }),
+          };
+        });
+
+        expect(geometry.position).toBe('relative');
+        expect(geometry.overflow).toBe('hidden');
+        expect(geometry.bounds.width).toBeGreaterThan(300);
+        expect(geometry.bounds.height).toBeGreaterThanOrEqual(440);
+        expect(geometry.bounds.height).toBeLessThanOrEqual(700);
+        expect(geometry.bounds.left).toBeGreaterThanOrEqual(0);
+        expect(geometry.bounds.right).toBeLessThanOrEqual(viewport.width);
+
+        for (const surface of [geometry.canvas, geometry.fallback]) {
+          expect(surface).not.toBeNull();
+          expect(surface?.position).toBe('absolute');
+          expect(surface?.left).toBeGreaterThanOrEqual(geometry.bounds.left - 1);
+          expect(surface?.right).toBeLessThanOrEqual(geometry.bounds.right + 1);
+          expect(surface?.top).toBeGreaterThanOrEqual(geometry.bounds.top - 1);
+          expect(surface?.bottom).toBeLessThanOrEqual(geometry.bounds.bottom + 1);
+        }
+
+        expect(geometry.labels).toHaveLength(4);
+        for (const label of geometry.labels) {
+          expect(label.position).toBe('absolute');
+          expect(label.left).toBeGreaterThanOrEqual(geometry.bounds.left);
+          expect(label.right).toBeLessThanOrEqual(geometry.bounds.right);
+          expect(label.top).toBeGreaterThanOrEqual(geometry.bounds.top);
+          expect(label.bottom).toBeLessThanOrEqual(geometry.bounds.bottom);
+        }
+
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
+
+        const navigation = viewport.name === 'desktop'
+          ? page.getByRole('navigation', { name: 'Public navigation' })
+          : page.getByRole('navigation', { name: 'Mobile public navigation' });
+        if (viewport.name === 'mobile') {
+          await page.getByRole('button', { name: 'Toggle navigation' }).click();
+        }
+        await expect(navigation.getByRole('link', { name: 'How it works' })).toBeVisible();
+        await expect(navigation.getByRole('link', { name: 'Pricing' })).toBeVisible();
+        await navigation.getByRole('link', { name: 'How it works' }).click();
+        await expect(page).toHaveURL(/#how-it-works$/);
+        await expect(page.locator('#how-it-works')).toBeInViewport();
+
+        if (viewport.name === 'mobile') {
+          await page.getByRole('button', { name: 'Toggle navigation' }).click();
+        }
+        await navigation.getByRole('button', { name: 'Workspace access' }).click();
+        await expect(page).toHaveURL(/\/access$/);
+        await expect(page.getByRole('heading', { name: 'Choose a role-based workspace.' })).toBeVisible();
+      });
+    }
+  });
+
   test('staff communication view holds live actions until durable evidence exists', async ({ page }) => {
     await mockProjectionApi(page);
     await page.goto('/access');

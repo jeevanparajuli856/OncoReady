@@ -51,6 +51,106 @@
 .launch-trust svg { width: 1rem; height: 1rem; color: #4f46e5; }
 .launch-hero__visual { min-width: 0; }
 .launch-hero__visual .continuity-field { min-height: clamp(28rem, 55vw, 37rem); }
+
+/* Keep the animated canvas and its annotations inside the hero visual. */
+.continuity-field {
+  position: relative;
+  min-height: clamp(30rem, 57vw, 39rem);
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  border-radius: clamp(1.5rem, 3vw, 2.25rem);
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.93), rgba(246, 247, 255, 0.78)),
+    radial-gradient(circle at 20% 18%, rgba(242, 107, 99, 0.16), transparent 45%);
+  box-shadow: 0 30px 70px -44px rgba(79, 70, 229, 0.55), inset 0 1px 0 white;
+  isolation: isolate;
+  touch-action: pan-y;
+}
+
+.continuity-field__halo {
+  position: absolute;
+  inset: 4% 2%;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(119, 104, 232, 0.17), transparent 40%),
+    radial-gradient(circle at 50% 74%, rgba(242, 107, 99, 0.1), transparent 50%);
+  filter: blur(18px);
+}
+
+.continuity-field__fallback,
+.continuity-field__canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.continuity-field__fallback {
+  z-index: 1;
+  padding: 3.5rem 2.5rem;
+  transition: opacity 220ms ease;
+}
+
+.continuity-field__fallback path {
+  fill: none;
+  stroke: #4f46e5;
+  stroke-width: 18;
+  stroke-linecap: round;
+}
+
+.continuity-field__canvas {
+  z-index: 2;
+  pointer-events: none;
+}
+
+.continuity-field__label {
+  position: absolute;
+  z-index: 4;
+  padding: 0.48rem 0.65rem;
+  border: 1px solid rgba(226, 232, 240, 0.9);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #475569;
+  font-size: clamp(0.58rem, 1.1vw, 0.7rem);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  box-shadow: 0 12px 24px -20px rgba(15, 23, 42, 0.6);
+  pointer-events: none;
+}
+
+.continuity-field__label--signal {
+  top: 9%;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.continuity-field__label--signal span {
+  display: inline-block;
+  width: 0.42rem;
+  height: 0.42rem;
+  margin-right: 0.35rem;
+  border-radius: 50%;
+  background: #f26b63;
+}
+
+.continuity-field__label--clinical {
+  top: 47%;
+  left: 4%;
+}
+
+.continuity-field__label--navigation {
+  top: 47%;
+  right: 4%;
+}
+
+.continuity-field__label--confirmed {
+  bottom: 5%;
+  left: 50%;
+  color: #047857;
+  transform: translateX(-50%);
+}
+
 .launch-visual-caption { position: relative; z-index: 3; width: fit-content; margin: -4.6rem auto 1rem; padding: .7rem .85rem; display: flex; align-items: center; gap: .5rem; border: 1px solid #e2e8f0; border-radius: 999px; background: rgba(255,255,255,.95); color: #475569; font-size: .68rem; font-weight: 750; text-transform: uppercase; }
 .launch-visual-caption svg { width: .8rem; height: .8rem; color: #4f46e5; }
 .launch-section { padding-block: clamp(5rem, 9vw, 8rem); scroll-margin-top: 5rem; }
