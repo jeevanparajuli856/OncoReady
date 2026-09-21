@@ -20,6 +20,28 @@ def test_health_is_database_independent(client, fake_readiness) -> None:
     assert fake_readiness.calls == 0
 
 
+def test_health_stays_alive_while_missing_configuration_blocks_readiness() -> None:
+    settings = Settings(
+        _env_file=None,
+        database_url=None,
+        operator_token=None,
+        cors_origins=["http://localhost:5173"],
+    )
+
+    with TestClient(create_app(settings), raise_server_exceptions=False) as client:
+        health = client.get("/health")
+        readiness = client.get("/ready")
+
+    assert health.status_code == 200
+    assert health.json() == {"status": "alive"}
+    assert readiness.status_code == 503
+    assert readiness.json() == {
+        "status": "unavailable",
+        "database": "unavailable",
+        "migration": "unavailable",
+    }
+
+
 def test_version_exposes_only_build_evidence(client) -> None:
     response = client.get("/version")
 

@@ -17,7 +17,7 @@ logger = logging.getLogger("oncoready.readiness")
 
 def code_heads() -> list[str]:
     backend_dir = Path(__file__).resolve().parents[1]
-    config = Config(str(backend_dir / "alembic.ini"))
+    config = Config(str(backend_dir / "alembic" / "alembic.ini"))
     config.set_main_option("script_location", str(backend_dir / "alembic"))
     return list(ScriptDirectory.from_config(config).get_heads())
 
@@ -106,4 +106,3 @@ def get_readiness_service(request: Request) -> ReadinessService:
         database=request.app.state.database,
         settings=request.app.state.settings,
     )
-

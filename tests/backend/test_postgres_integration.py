@@ -29,12 +29,12 @@ def test_database_url() -> str:
 @pytest.fixture(scope="module", autouse=True)
 def migrated_database(test_database_url: str):
     backend_dir = Path(__file__).resolve().parents[2] / "backend"
-    config = Config(str(backend_dir / "alembic.ini"))
+    config = Config(str(backend_dir / "alembic" / "alembic.ini"))
     config.set_main_option("script_location", str(backend_dir / "alembic"))
-    config.set_main_option("sqlalchemy.url", test_database_url.replace("%", "%%"))
-    command.upgrade(config, "head")
-
     engine = create_engine(test_database_url)
+    with engine.begin() as connection:
+        config.attributes["connection"] = connection
+        command.upgrade(config, "head")
     with engine.begin() as connection:
         connection.execute(
             text("DELETE FROM foundation_proofs WHERE key IN (:seed, :unrelated)"),

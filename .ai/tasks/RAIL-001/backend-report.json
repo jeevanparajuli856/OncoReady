@@ -2,17 +2,50 @@
   "schema_version": "1.0",
   "task_id": "RAIL-001",
   "agent": "codex-backend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Implemented the contracted FastAPI/PostgreSQL foundation with redacted structured logging, correlation and request bounds, exact CORS, migration-gated readiness, operator-only proof mutation/reset, and fail-closed PostgreSQL tests.",
+  "files_changed": [
+    "backend/Dockerfile",
+    "backend/README.md",
+    "backend/pyproject.toml",
+    "backend/app/__init__.py",
+    "backend/app/config.py",
+    "backend/app/constants.py",
+    "backend/app/database.py",
+    "backend/app/logging.py",
+    "backend/app/main.py",
+    "backend/app/middleware.py",
+    "backend/app/models.py",
+    "backend/app/repositories.py",
+    "backend/app/schemas.py",
+    "backend/app/security.py",
+    "backend/app/services.py",
+    "backend/app/testing.py",
+    "backend/app/web.py",
+    "tests/backend/conftest.py",
+    "tests/backend/test_api.py",
+    "tests/backend/test_config_and_logging.py",
+    "tests/backend/test_postgres_integration.py",
+    "tests/backend/test_readiness.py",
+    "tests/backend/test_test_database_guard.py"
+  ],
   "contracts_used": [
     "contracts/openapi.yaml"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend --cov=app --cov-report=term-missing -q",
+      "TEST_DATABASE_URL=postgresql+psycopg://localhost/oncoready_rail_001_test backend/.venv/bin/pytest -c backend/pyproject.toml -m integration tests/backend -q",
+      "backend/.venv/bin/python -m compileall -q backend/app",
+      "runtime OpenAPI operation/path assertion against the six approved contract operations"
+    ],
+    "notes": "Fast suite: 36 passed with 88% branch-aware application coverage. PostgreSQL 17 integration: 3 passed, proving Alembic-head readiness, write/restart/read persistence, reset idempotency, and unrelated-row preservation. Guard unit tests reject absent, shared, non-PostgreSQL, and non-test database URLs before migration or cleanup. FastAPI TestClient was used as a context manager so lifespan ran."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Register the fast and PostgreSQL integration commands as required .ai/project.json checks before integrated verification; backend workers are not permitted to edit that file.",
+    "Run the required dedicated security review on the exact verified integrated commit, focusing on operator-token handling, reset scope, logs, CORS, and Railway variable/database exposure.",
+    "Railway service provisioning and deployed acceptance remain orchestrator/infrastructure work; this report proves the local API and disposable PostgreSQL boundary only."
+  ]
 }
