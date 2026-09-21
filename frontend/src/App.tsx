@@ -30,6 +30,7 @@ import { WorkspaceDock } from './components/WorkspaceDock';
 import { Network } from 'lucide-react';
 import { Perspective } from './types';
 import { LegalPage } from './components/LegalPage';
+import { FoundationStatus } from './components/FoundationStatus';
 
 export const App: React.FC = () => {
   const legalPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') : '';
@@ -314,7 +315,8 @@ export const App: React.FC = () => {
             >
               {reducedMotion ? 'Motion off' : 'Reduce motion'}
             </button>
-            <div className="flex items-center gap-3 text-[11px]">
+            <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-[11px]">
+              <FoundationStatus />
               <a href="/privacy" className="hover:text-accent hover:underline">Privacy Policy</a>
               <a href="/terms" className="hover:text-accent hover:underline">Terms of Service</a>
               <span>FHIR R4 mapping</span>

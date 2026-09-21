@@ -102,6 +102,15 @@ test.describe('OncoReady UI-001 product experience', () => {
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       await motionControl.focus();
 
+      const foundationStatus = page.locator('.foundation-status');
+      const foundationRefresh = foundationStatus.locator('.foundation-status__refresh');
+      await expect(foundationStatus).toBeVisible();
+      await expect(foundationStatus).toHaveAttribute('data-state', /persisted|unavailable/);
+      const foundationTarget = await foundationRefresh.boundingBox();
+      expect(foundationTarget).not.toBeNull();
+      expect(foundationTarget!.width).toBeGreaterThanOrEqual(44);
+      expect(foundationTarget!.height).toBeGreaterThanOrEqual(44);
+
       const controlBounds = await motionControl.boundingBox();
       const dockBounds = await dock.boundingBox();
       expect(controlBounds).not.toBeNull();
