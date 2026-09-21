@@ -29,8 +29,14 @@ import { Logo } from './components/Logo';
 import { WorkspaceDock } from './components/WorkspaceDock';
 import { Network } from 'lucide-react';
 import { Perspective } from './types';
+import { LegalPage } from './components/LegalPage';
 
 export const App: React.FC = () => {
+  const legalPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') : '';
+  if (legalPath === '/terms' || legalPath === '/privacy') {
+    return <LegalPage document={legalPath.slice(1) as 'terms' | 'privacy'} />;
+  }
+
   const [state, dispatch] = useReducer(workflowReducer, null, loadSavedWorkflowState);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
@@ -309,7 +315,8 @@ export const App: React.FC = () => {
               {reducedMotion ? 'Motion off' : 'Reduce motion'}
             </button>
             <div className="flex items-center gap-3 text-[11px]">
-              <span>Privacy controls</span>
+              <a href="/privacy" className="hover:text-accent hover:underline">Privacy Policy</a>
+              <a href="/terms" className="hover:text-accent hover:underline">Terms of Service</a>
               <span>FHIR R4 mapping</span>
             </div>
           </div>

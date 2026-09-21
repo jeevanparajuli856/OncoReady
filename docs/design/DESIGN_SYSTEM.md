@@ -4,7 +4,18 @@ Persistent human-readable frontend design source of truth.
 
 ## Status
 
-`ESTABLISHED` — Clinical Glass system for an all-ages, business-centric product.
+`ESTABLISHED · HUMAN-APPROVED · VISUALLY LOCKED` — Clinical Glass system for an all-ages, business-centric product.
+
+### Visual lock
+
+This document and the current runtime UI define the approved OncoReady appearance. Future product work must preserve, not reinterpret, the system.
+
+- The palette and token values, typography, spacing rhythm, geometry, border/shadow language, iconography, logo usage, component character, theme behavior, motion language, layout character, and responsive behavior are locked.
+- New functionality must reuse the existing tokens and components or compose new feature-specific components entirely from the same primitives.
+- A frontend design phase may determine placement and interaction for new content within this system. It may not introduce a rebrand, alternate theme, new global visual trend, or restyle of existing surfaces.
+- No global token or established component-style change is allowed without explicit human approval for the exact proposed change.
+- Accessibility fixes must use the smallest visual delta that satisfies the requirement. Materially visible changes require human approval.
+- Every frontend task captures matching before/after screenshots for the affected viewports. Frontend review rejects unapproved visual drift.
 
 ---
 
@@ -12,7 +23,7 @@ Persistent human-readable frontend design source of truth.
 
 OncoReady uses **Clinical Glass**: a calm SaaS surface with translucent cards, soft elevation, and restrained motion. The product must feel trustworthy to patients, families, clinicians, and hospital buyers. Public surfaces extend this system with **Continuity Aurora**, a lighter editorial layer built from atmospheric indigo, mint, coral, and lavender light.
 
-- **Landing / buyer surfaces**: Editorial two-column hero, interactive continuity field, role workspaces, a four-part SaaS business model, and an illustrative readiness record. External references may inform mood and polish, but the structure and story remain specific to OncoReady.
+- **Landing / buyer surfaces**: Preserve the editorial two-column hero and interactive continuity field styling. `ACCESS-001` replaces historical public role/record previews with the record-free Continuity Rescue Story and exactly two pricing cards. Those approved content changes do not permit visual restyling; patient records and workspaces belong behind access.
 - **Patient / caregiver**: Same glass cards and clear one-action hierarchy. Warm enough to use, never childish.
 - **Staff workspace**: Same tokens, denser rails, less decoration so triage stays fast.
 
@@ -96,7 +107,7 @@ Never rely on color alone. Pair status with icon + label.
 ### Viewport arrival family
 
 - Use one shared `IntersectionObserver` progressive-enhancement primitive. Content is visible by default, reveals once, unregisters after completion, and becomes final immediately if focus reaches it.
-- The landing role cards use three related variants: patient **guided lift** (`-18px x / 22px y`, 540ms), staff **center resolve** (`28px y / 0.975 scale`, 620ms), and caregiver **supported arrival** (`18px x / 22px y`, 560ms), staggered by 80ms with `cubic-bezier(0.22, 1, 0.36, 1)`.
+- Historical baseline: the landing role cards use three related variants (retain their motion language when composing the approved record-free replacement; do not retain public workspace entry behavior): patient **guided lift** (`-18px x / 22px y`, 540ms), staff **center resolve** (`28px y / 0.975 scale`, 620ms), and caregiver **supported arrival** (`18px x / 22px y`, 560ms), staggered by 80ms with `cubic-bezier(0.22, 1, 0.36, 1)`.
 - Workflow and SaaS-model cards may use smaller 12–14px grouped rises. Do not apply entrances to every section or any operational workspace card.
 - Animate only opacity and transform. Use no raw scroll handler, reveal animation-frame loop, pinned scrolling, parallax, or layout-changing property.
 - Effective reduced motion is the union of the live operating-system preference and the product motion-off control. It renders all reveal content immediately and also disables smooth scrolling, pulses/dashes, confetti, modal movement, dock transforms, and decorative hover movement.

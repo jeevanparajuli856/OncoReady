@@ -13,11 +13,11 @@ The frontend is a primary product surface, not a final decorative layer. For new
 
 ## Frontend design authority
 
-The Codex frontend specialist is the frontend visual and interaction design authority inside product, architecture, contract, security, accessibility, performance, brand, and human-defined constraints.
+The Codex frontend specialist is the frontend visual and interaction implementation authority inside product, architecture, contract, security, accessibility, performance, brand, and human-defined constraints. For OncoReady, the existing human-approved visual system is one of those binding constraints.
 
 The Codex orchestrator and architecture specialist may specify required behavior and constraints but should not prescribe aesthetic choices unless they are already authoritative.
 
-The frontend specialist owns the coherent choice and implementation of:
+Within the locked OncoReady system, the frontend specialist owns the coherent implementation of:
 - color usage and tokens
 - typography/font treatment
 - spacing, sizing, radius, borders, shadows, hierarchy
@@ -28,11 +28,14 @@ The frontend specialist owns the coherent choice and implementation of:
 
 ## Design-system continuity
 
-- Prefer the established design system over per-feature invention.
+- Treat the established OncoReady design system and current runtime UI as mandatory, not advisory.
 - `docs/design/DESIGN_SYSTEM.md` documents the human-readable system when one is established.
 - Runtime tokens/components are the implementation source of truth.
-- Extend the design system only when the task justifies it; document the extension in the design report.
-- Do not redesign unrelated product surfaces as part of a narrow feature.
+- Reuse existing tokens, primitives, component styling, density, layout character, motion, and responsive behavior for every new surface.
+- Do not change global palette/token values, typography, spacing scale, radii, borders, shadows, icons, logo treatment, navigation, theme behavior, or existing page styling without explicit human approval for that exact change.
+- `frontend_design_required=true` means design the feature within the locked system; it does not grant permission to select a new aesthetic direction.
+- Do not redesign unrelated product surfaces as part of any feature.
+- Record baseline and result screenshots at matching viewports. Unapproved visual drift fails frontend review.
 
 ## States and interaction quality
 

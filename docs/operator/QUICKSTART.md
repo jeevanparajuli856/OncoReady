@@ -19,7 +19,7 @@ Continue automatically unless a material decision genuinely requires me.
 
 ```text
 Approve <TASK-ID> as the first implementation slice.
-Proceed using AGENTS.md and the task-orchestration skill.
+Proceed using AGENTS.md, the task spec, and scripts/agentctl.py. Start with architecture and contracts while the task is PLANNING; do not treat a proposed backlog item as build-ready.
 Keep the slice end-to-end and use only the contract/test/security depth architecture actually requires.
 Continue automatically until human action is genuinely required.
 ```
@@ -34,7 +34,7 @@ Architecture chooses whether contracts, independent testing, and dedicated secur
 
 ## Codex frontend work — design-required task
 
-When `frontend_design_required=true`, Codex starts the frontend specialist in the prepared frontend worktree. The specialist follows `AGENTS.md`, `frontend/AGENTS.md`, and the frontend-development skill, then completes the design-only report before production implementation.
+When `frontend_design_required=true`, Codex starts the frontend specialist in the prepared frontend worktree. The specialist follows `AGENTS.md`, `frontend/AGENTS.md`, the locked `docs/design/DESIGN_SYSTEM.md`, and applicable installed frontend skills, then completes the design-only report before production implementation. For OncoReady, this phase designs the feature inside the approved visual system; it does not authorize a rebrand or restyle.
 
 The Codex orchestrator reviews that report for compatibility, binds approval to its exact digest, and returns the approved handoff to the same frontend worktree. The frontend specialist then uses:
 
@@ -45,7 +45,7 @@ python scripts/agentctl.py frontend design-gate <TASK-ID>
 
 ## Codex frontend work — established design
 
-When `frontend_design_required=false`, Codex starts the frontend specialist to implement with the established design system and complete all relevant interaction states. No design-only handoff is required.
+When `frontend_design_required=false`, Codex starts the frontend specialist to implement with the established locked design system and complete all relevant interaction states. No design-only handoff is required, and no global visual change is permitted.
 
 When the frontend specialist finishes or stops, the Codex orchestrator reads `frontend-report.json`, integrates the worker branch when complete, and continues orchestration.
 

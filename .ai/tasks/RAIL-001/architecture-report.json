@@ -1,0 +1,76 @@
+{
+  "schema_version": "1.0",
+  "task_id": "RAIL-001",
+  "agent": "codex-architect",
+  "status": "COMPLETE",
+  "summary": "Defined the minimum Railway foundation: one FastAPI service, one private PostgreSQL database with a single proof table, existing-theme frontend API wiring, migration-gated readiness, deterministic targeted reset, and executable test/security controls.",
+  "files_changed": [
+    "docs/features/RAIL-001.md",
+    ".ai/tasks/RAIL-001/architecture-report.json"
+  ],
+  "impacts": {
+    "database": true,
+    "backend": true,
+    "frontend": true,
+    "frontend_design_required": false,
+    "infrastructure": true
+  },
+  "decisions": [
+    "Keep the accepted topology to exactly one Railway web service, one FastAPI API service, and one private Railway PostgreSQL service; add no worker, queue, cache, container-orchestration layer, or domain subsystem in this slice.",
+    "Make contracts/openapi.yaml authoritative for GET /health, GET /ready, GET /version, GET /api/v1/foundation/proof, PUT /api/v1/foundation/proof, and POST /api/v1/operator/reset; later tasks extend this boundary rather than rename it independently.",
+    "Separate liveness from readiness: health checks process service only, while readiness returns 200 only when required configuration is valid, PostgreSQL responds within a bounded timeout, and the database Alembic revision exactly matches the single code head; otherwise it returns a redacted 503.",
+    "Create only foundation_proofs in the first Alembic migration: a stable unique proof key, bounded value, seed version, and timezone-aware timestamps. Do not pre-create access, Epic, workflow, audit, outbox, provider, metrics, or model tables.",
+    "Apply Alembic deliberately as a Railway pre-deploy/release command and never mutate schema during API startup; a submitted deploy becomes live only after Railway SUCCESS and post-deploy web, API, database, revision, CORS, SPA-refresh, and persistence checks pass.",
+    "Use a deterministic foundation seed with one stable key. Reset is an allowlisted transactional upsert of that key only, is idempotent, preserves unrelated rows and all future tables, and never truncates, drops, or recreates a schema.",
+    "Keep foundation proof reads synthetic and non-sensitive. Require a server-held bearer operator token plus an explicit reset-enabled setting for proof mutation and reset; never place operator credentials, DATABASE_URL, or other secrets in the browser bundle.",
+    "Configure typed settings, structured redacted JSON logs, generated or validated correlation IDs, bounded request bodies, exact CORS origins, Railway PORT binding, and generic client errors; do not log request bodies, authorization values, connection strings, or secret setting values.",
+    "Use frontend VITE_API_ORIGIN only as a public API origin and wire the persisted proof into an existing status/integration surface with its current tokens and primitives. No global token, component-style, navigation, layout, workflow, or responsive-behavior change is allowed, so a new design phase is unnecessary but matching screenshot review remains required.",
+    "Use pytest plus FastAPI TestClient as a context manager for lifespan-aware API tests. PostgreSQL-marked integration tests run against a dedicated disposable TEST_DATABASE_URL, reject absent/non-test/shared targets, apply Alembic head, and use real PostgreSQL rather than SQLite.",
+    "Before integration verification, register the implemented fast backend/API test command and PostgreSQL migration/integration test command as required .ai/project.json checks. Required unavailable or skipped database checks fail, and TARGETED depth adds an independent tester for deployment-critical failure paths."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "An exposed or overly broad reset path could mutate persistent launch data or become a future destructive boundary.",
+      "mitigation": "Require an operator bearer token and reset-enabled setting, target only the stable foundation seed key in one transaction, preserve unrelated rows, forbid truncate/drop operations, and cover repeat reset plus unrelated-row preservation independently."
+    },
+    {
+      "severity": "high",
+      "description": "A migration mismatch or accidental SQLite substitution could make local checks pass while Railway PostgreSQL is not deployable.",
+      "mitigation": "Gate readiness on database connectivity plus exact Alembic head, run migration/reset/persistence checks against a validated disposable PostgreSQL URL, and fail when the required PostgreSQL suite is absent or skipped."
+    },
+    {
+      "severity": "medium",
+      "description": "CORS, build-time environment values, logs, or health responses could expose secrets or accept an unintended browser origin.",
+      "mitigation": "Use an exact origin allowlist with no credentialed wildcard, keep only the public API origin in Vite, redact structured logs, expose generic readiness details, and review Railway variables and built assets."
+    },
+    {
+      "severity": "medium",
+      "description": "Railway may report a successful build while SPA refresh routing, private database networking, migrations, or persisted state are broken.",
+      "mitigation": "Treat platform SUCCESS as necessary but insufficient and require post-deploy SPA deep-link, health/readiness, CORS, migration, write/restart/read, and database exposure checks before reporting live."
+    },
+    {
+      "severity": "medium",
+      "description": "Connecting the existing frontend could create visual drift or imply that the local workflow is already authenticated or server-owned.",
+      "mitigation": "Limit frontend work to the contracted foundation status/proof using existing components, preserve the local workflow until later slices, avoid authentication claims, and compare matching pre/post screenshots."
+    }
+  ],
+  "blockers": [],
+  "notes_for_next_agent": [
+    "The orchestrator must list contracts/openapi.yaml in task.json and validate the six approved paths before advancing to BUILD_READY; architecture agents must not edit task.json or the contract.",
+    "Database owns backend/alembic/** and the single foundation_proofs migration. Backend may consume that schema but must not edit migration files.",
+    "Backend should keep transport thin and separate settings, logging/correlation middleware, database session/repository, readiness checks, seed/reset service, and route schemas without introducing a framework-heavy domain layer.",
+    "The operator mutation/reset contract is a temporary pre-ACCESS control plane, not normal workspace authentication. ACCESS-001 owns user sessions and protected product routes.",
+    "The frontend must not persist the proof in local storage as a fallback or treat a failed API request as connected. Existing client-side workflow behavior stays unchanged and must not be described as authenticated/server-owned in RAIL-001.",
+    "The implementation must document a disposable local PostgreSQL setup and TEST_DATABASE_URL guard. The test harness must refuse DATABASE_URL equality and non-test database names before cleanup or migration operations.",
+    "Independent TARGETED testing should cover liveness without a database, readiness failure for unavailable/behind/ahead/missing Alembic state, seed/reset idempotency and preservation, write-restart-read persistence, CORS allow/deny behavior, request bounds, redaction, SPA refresh, and required-variable failure.",
+    "A dedicated security reviewer is required on the exact verified commit, focused on secret/build leakage, operator-token enforcement, reset scope, request/log disclosure, CORS, database public exposure, and Railway variable/service configuration.",
+    "Railway account access and actual service/domain provisioning are deployment acceptance prerequisites, not a planning blocker. If access is unavailable, local verification may proceed but the task cannot claim deployed acceptance."
+  ],
+  "execution": {
+    "contract_required": true,
+    "test_depth": "TARGETED",
+    "security_risk": "STANDARD",
+    "security_review_required": true
+  }
+}

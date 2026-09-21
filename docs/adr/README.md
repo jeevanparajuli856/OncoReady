@@ -5,3 +5,9 @@ Create an ADR for decisions that materially affect architecture, security, data,
 Naming:
 
 `ADR-0001-short-title.md`
+
+## Accepted decisions
+
+- [`ADR-0001-railway-launch-topology.md`](./ADR-0001-railway-launch-topology.md)
+- [`ADR-0002-integration-modes-and-epic-boundary.md`](./ADR-0002-integration-modes-and-epic-boundary.md)
+- [`ADR-0003-human-approved-visual-lock.md`](./ADR-0003-human-approved-visual-lock.md)

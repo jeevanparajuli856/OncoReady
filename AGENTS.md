@@ -35,6 +35,7 @@ Use the authoritative artifact for the question being answered:
 - deterministic project configuration → `.ai/project.json`
 - feature requirements and acceptance criteria → `docs/features/<TASK-ID>.md` and `.ai/tasks/<TASK-ID>/task.json`
 - architecture/trust boundaries → approved ADRs, then `docs/architecture/SYSTEM.md`, then `architecture-report.json`
+- human-approved visual identity and locked design constraints → `docs/design/DESIGN_SYSTEM.md`, current runtime tokens/components, and `docs/adr/ADR-0003-human-approved-visual-lock.md`
 - component interfaces when a contract is required → `contracts/`
 - task state, ownership, write permissions → `.ai/tasks/<TASK-ID>/task.json`
 - implementation behavior → code, when it does not conflict with approved upstream artifacts
@@ -78,6 +79,17 @@ The frontend specialist owns:
 The orchestrator and architecture specialist define functional requirements, interfaces, trust boundaries, accessibility/performance constraints, and required capabilities. They must not prescribe aesthetics unless an explicit human/brand/approved design-system requirement already makes that choice authoritative.
 
 For `frontend_design_required=true`, the Codex frontend specialist performs design Phase A before production frontend coding; the Codex orchestrator performs compatibility-only review; approval is bound to the exact design report through `reviewed_design_sha256`; the frontend specialist then implements the approved design. The orchestrator must not restyle the approved frontend as a second design pass.
+
+### Human-approved visual lock
+
+The current OncoReady interface and `docs/design/DESIGN_SYSTEM.md` are human-approved and visually locked. This human constraint overrides general frontend design authority.
+
+- Preserve the existing design, theme behavior, palette and token values, typography families and scale, spacing rhythm, radii, borders, shadows, icon language, logo treatment, navigation character, layout character, component styling, motion language, and responsive behavior.
+- New Epic, staff, patient, caregiver, transportation, access, pricing, and evidence surfaces must compose the existing runtime tokens and component primitives. They may add content and states, but must look like native extensions of the current product.
+- `frontend_design_required=true` authorizes a compatibility/extension plan, not a rebrand, restyle, alternate visual direction, or token redesign.
+- No agent may change a global visual token, replace an established component style, restyle an existing page, or introduce a new product-wide visual pattern without explicit human approval for that exact change.
+- Accessibility fixes remain required. Implement them with the smallest visual delta; if a fix would materially alter the approved appearance, obtain human approval before implementation.
+- Frontend design review must compare the result with the pre-change baseline and reject unapproved visual drift even when functionality passes.
 
 ## 5. Public control plane
 

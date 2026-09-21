@@ -1,0 +1,244 @@
+{
+  "schema_version": "1.0",
+  "task_id": "RAIL-001",
+  "title": "Railway web API and PostgreSQL foundation",
+  "type": "infra",
+  "status": "PLANNING",
+  "priority": "critical",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/RAIL-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "backend/alembic/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": [
+      ".ai/project.json",
+      "README.md",
+      "docs/operations/**",
+      "docs/operator/**"
+    ]
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/RAIL-001/task.json",
+        "docs/features/RAIL-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/RAIL-001/frontend-design-review.json",
+        ".ai/project.json",
+        "README.md",
+        "docs/operations/**",
+        "docs/operator/**"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/RAIL-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/RAIL-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/RAIL-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "backend/alembic/**",
+        ".ai/tasks/RAIL-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/RAIL-001/task.json",
+        ".ai/tasks/RAIL-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/RAIL-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/RAIL-001/task.json",
+        ".ai/tasks/RAIL-001/architecture-report.json",
+        ".ai/tasks/RAIL-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/RAIL-001/task.json",
+        "backend/alembic/**"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/RAIL-001/frontend-design-report.json",
+        ".ai/tasks/RAIL-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/RAIL-001/task.json",
+        ".ai/tasks/RAIL-001/architecture-report.json",
+        ".ai/tasks/RAIL-001/database-report.json",
+        ".ai/tasks/RAIL-001/backend-report.json",
+        ".ai/tasks/RAIL-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/RAIL-001/test-report.json",
+        "frontend/tests/**"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/RAIL-001/**",
+        "frontend/src/**",
+        "frontend/public/**",
+        "frontend/package.json",
+        "frontend/playwright.config.ts"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/RAIL-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/RAIL-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/RAIL-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/RAIL-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/RAIL-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/RAIL-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [],
+  "acceptance_criteria": [
+    "Railway contains exactly one intended web service, one API service, and one PostgreSQL service for the finals environment, with database traffic on private networking.",
+    "The web service serves SPA routes on refresh and uses an environment-defined API origin without exposing server secrets.",
+    "The API reports process liveness separately from readiness, and readiness fails when PostgreSQL or the required Alembic revision is unavailable.",
+    "A backend write persists through API restart and remains visible after browser refresh.",
+    "Reset/reseed restores the deterministic foundation proof seed without deleting unrelated state; later EPIC/FLOW acceptance proves actual Camila workflow and integration-state preservation.",
+    "Missing required variables or a failed migration prevents readiness and produces actionable redacted logs.",
+    "Frontend and backend watch paths avoid rebuilding the unrelated service.",
+    "A deployment is reported live only after Railway status is SUCCESS and the web, API, database, migration, CORS, and persistence checks pass.",
+    "Actual required backend and PostgreSQL migration/integration checks are registered in .ai/project.json and pass against the documented isolated test database; frontend-only checks cannot close the task.",
+    "Persisted proof and reset mutations are restricted to private operator/test access until ACCESS-001 implements workspace sessions."
+  ],
+  "created_by": "human"
+}

@@ -1,126 +1,72 @@
-# jee-agentic-dev — Rapid Product Baseline
+# OncoReady
 
-Reusable agentic development baseline for shipping polished, technically credible, end-to-end products quickly.
+OncoReady is a treatment-readiness and continuity platform for oncology patients and care teams. It connects clinical context with the practical and communication barriers that can interrupt an upcoming treatment, assigns each barrier to an accountable owner, and makes closure visible.
 
-- Codex orchestrates product slices and owns architecture, database, backend, frontend, integration, verification, and final review through scoped specialist roles.
-- The Codex frontend specialist owns visual/interaction design and frontend implementation.
-- Contracts, independent testing, and dedicated security review are conditional rather than mandatory phases.
-- Baseline safety, scope isolation, Git evidence, and design-authority gates remain deterministic.
-- The framework prefers a small number of vertical user-visible slices over enterprise-style subsystem decomposition.
+## Current Direction
 
-## Core model
+The existing React/Vite product experience is complete enough to serve as the human-approved visual baseline. The approved launch plan adds:
 
-```text
-Raw idea
-  ↓
-Focused product inception
-  ↓
-Hero journey + product impression strategy + minimum credible architecture
-  ↓
-Vertical product slice
-  ↓
-PLANNING → BUILD_READY
-        ├─ contract only if needed
-        ├─ test depth chosen
-        └─ security risk/review chosen
-  ↓
-Codex DB/backend/frontend specialists only when impacted
-  ↓
-Conditional frontend design pass → compatibility gate → frontend implementation
-  ↓
-Integration
-  ├─ independent tester only for TARGETED/FULL
-  ├─ commit-bound verification always
-  └─ security specialist only when required
-  ↓
-Final product/engineering review
-  ↓
-Human merge → DONE
-```
+- a Railway-hosted FastAPI service and PostgreSQL database;
+- read-only Epic Sandbox clinical context for Camila Lopez through SMART on FHIR;
+- durable workflow events, projections, access boundaries, CareLink transportation coordination, metrics, and evidence;
+- calibrated readiness and engagement models that choose an allowed outreach channel/time from past activity, with automatic backend scheduling/execution and inspectable explanations;
+- deterministic prerecorded reliability with a clearly labeled Epic snapshot fallback.
 
-## Product philosophy
+OncoReady does not claim Ochsner connectivity, an Epic partnership, production Epic access, Epic writeback, clinical validation, HIPAA compliance, or real patient use.
 
-Optimize for:
-1. strong idea and user value
-2. exceptional frontend/product experience
-3. real end-to-end behavior
-4. reliable primary demonstration journey
-5. visible technical credibility
-6. rapid iteration
-7. risk-appropriate hardening
+## Visual System Is Locked
 
-Do not add databases, caches, queues, microservices, Kubernetes, IaC, auth, or other complexity unless they support real product behavior or a deliberate technical objective.
+The current UI and [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md) are human-approved. Future work must preserve the existing theme, palette, typography, spacing, component styling, icons, logo treatment, navigation, layout character, motion, and responsive behavior. New features extend the existing system; they do not redesign it.
 
-The internal rapid-delivery workflow must not cheapen the user-facing product identity. Present products according to the problem they solve and capabilities they genuinely implement; do not make false production claims.
+See [`ADR-0003`](docs/adr/ADR-0003-human-approved-visual-lock.md) and the frontend instructions before changing any product surface.
 
-## First-time setup
+## Run the Existing Frontend
 
 ```bash
-python -m pip install -r requirements-agent.txt
-python scripts/agentctl.py bootstrap
+cd frontend
+npm ci
+npm run dev
 ```
 
-For a new product, give Codex the idea and tell it to use the project-inception skill. Do not create implementation tasks until `.ai/project.json` is `INCEPTION_READY`.
-
-## Main commands
+Useful checks:
 
 ```bash
-python scripts/agentctl.py project validate
-python scripts/agentctl.py task create CORE-001 "Primary user journey"
-python scripts/agentctl.py git prepare CORE-001
-python scripts/agentctl.py task advance CORE-001
-python scripts/agentctl.py worktree create CORE-001 backend
-python scripts/agentctl.py worktree create CORE-001 frontend
-python scripts/agentctl.py worktree sync CORE-001 frontend
-python scripts/agentctl.py frontend design-digest CORE-001 --ref agent/CORE-001-frontend
-python scripts/agentctl.py frontend design-gate CORE-001
-python scripts/agentctl.py scope check CORE-001 backend
-python scripts/agentctl.py verify CORE-001
+cd frontend
+npm run build
+npm run test:smoke
+npm run test:e2e
 ```
 
-Normal lifecycle progress uses `task advance`; `task status --force` is recovery only.
+The FastAPI/PostgreSQL target is approved but not yet scaffolded; `RAIL-001` owns that implementation. Do not invent backend endpoints before its contract is approved.
 
-## Lifecycle
+## Sources of Truth
 
-```text
-PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE
+- Product purpose, users, scope, and delivery order: [`docs/PROJECT.md`](docs/PROJECT.md)
+- Architecture, trust boundaries, and integration shape: [`docs/architecture/SYSTEM.md`](docs/architecture/SYSTEM.md)
+- Approved launch plan: [`docs/LAUNCH_ROADMAP.md`](docs/LAUNCH_ROADMAP.md)
+- Dependency-ordered launch sprint and release gates: [`docs/LAUNCH_SPRINT_PLAN.md`](docs/LAUNCH_SPRINT_PLAN.md)
+- Planning audit and coding-agent handoff: [`docs/LAUNCH_REVIEW.md`](docs/LAUNCH_REVIEW.md)
+- Real SMS/call activation and acceptance: [`docs/operations/OUTREACH_TEST_DELIVERY.md`](docs/operations/OUTREACH_TEST_DELIVERY.md)
+- Delegated synthetic scenario and model settings: [`docs/LAUNCH_SCENARIO_SETTINGS.md`](docs/LAUNCH_SCENARIO_SETTINGS.md)
+- Locked visual system: [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md)
+- Deterministic project configuration: [`.ai/project.json`](.ai/project.json)
+- Long-lived decisions: [`docs/adr/`](docs/adr/)
+- Agent workflow and ownership: [`AGENTS.md`](AGENTS.md)
+
+## Safety Boundaries
+
+- Use only synthetic/controlled data and Epic-provided Sandbox test data.
+- Never commit client secrets, tokens, credentials, private keys, production `.env` files, or real patient data.
+- Keep Epic access read-only and staff-only for the approved Camila journey.
+- Preserve patient text verbatim for human clinical review; no model controls clinical urgency or treatment decisions.
+- Keep caregiver and transportation projections data-minimized.
+
+## Agent Control Plane
+
+```bash
+python3 -m pip install -r requirements-agent.txt
+python3 scripts/agentctl.py bootstrap
+python3 scripts/agentctl.py project validate
 ```
 
-Architecture chooses:
-- `contract_required`: true/false
-- `test_depth`: NONE / SMOKE / TARGETED / FULL
-- `security_risk`: LOW / STANDARD / HIGH
-- `security_review_required`: true/false
-
-This preserves rigor where it matters without making every slice pay the full process cost.
-
-## Important directories
-
-```text
-AGENTS.md                 universal mission/invariants
-frontend/AGENTS.md        Codex frontend authority and workflow
-.agents/skills/           reusable workflows
-.codex/agents/            Codex specialist definitions
-.ai/project.json          operational product configuration
-.ai/tasks/                task state and durable evidence
-contracts/                authoritative interfaces when required
-docs/                     product/architecture/standards/ADRs
-scripts/                  deterministic control plane
-supabase/migrations/      DB migrations when Supabase is selected
-tests/agentic/            framework regression tests
-```
-
-## Supabase
-
-If selected:
-1. use a DEV/TEST Supabase project for agent work
-2. configure the DEV project ref in `.codex/config.toml`
-3. authenticate with `codex mcp login supabase`
-4. use Git-tracked timestamped migrations for schema history
-5. use MCP mainly for scoped inspection/verification/advisors/types
-6. use synthetic/de-identified development data
-7. deploy reviewed migrations to production only through a deliberate human/CI path after merge
-
-Normal agent MCP access must not target production.
-commiting last one
-committing the last one x4
+Feature work follows `PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE`. Production deployment and real external-provider activation remain deliberate human-approved operations.
