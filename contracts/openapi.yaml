@@ -1,13 +1,345 @@
 openapi: 3.1.0
 
 info:
-  title: Project API
+  title: OncoReady API
   version: 0.1.0
+  description: >-
+    Initial Railway foundation contract. Protected workspace, Epic, workflow,
+    transportation, outreach, and evidence APIs are introduced by later slices.
 
 servers:
   - url: http://localhost:8000
+    description: Local development
 
-paths: {}
+tags:
+  - name: Platform
+    description: Process and deployment health evidence.
+  - name: Foundation
+    description: Synthetic persistence proof for the Railway foundation.
+  - name: Operator
+    description: Private pre-access control plane operations.
+
+paths:
+  /health:
+    get:
+      operationId: getHealth
+      summary: Report process liveness
+      description: Does not query PostgreSQL or check migration state.
+      tags: [Platform]
+      responses:
+        "200":
+          description: The API process is alive.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthResponse"
+
+  /ready:
+    get:
+      operationId: getReadiness
+      summary: Report database and migration readiness
+      description: >-
+        Returns ready only when required configuration is valid, PostgreSQL is
+        reachable, and the applied Alembic revision exactly matches code head.
+      tags: [Platform]
+      responses:
+        "200":
+          description: All required dependencies are ready.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+        "503":
+          description: A required dependency is unavailable or incompatible.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ReadinessResponse"
+
+  /version:
+    get:
+      operationId: getVersion
+      summary: Report non-secret build evidence
+      tags: [Platform]
+      responses:
+        "200":
+          description: Current application and build identifiers.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/VersionResponse"
+
+  /api/v1/foundation/proof:
+    get:
+      operationId: getFoundationProof
+      summary: Read the persisted synthetic foundation proof
+      tags: [Foundation]
+      responses:
+        "200":
+          description: The current proof value.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoundationProof"
+        "404":
+          $ref: "#/components/responses/NotFound"
+    put:
+      operationId: putFoundationProof
+      summary: Update the persisted synthetic foundation proof
+      description: Private operator/test operation until ACCESS-001 adds sessions.
+      tags: [Foundation]
+      security:
+        - operatorBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FoundationProofUpdate"
+      responses:
+        "200":
+          description: The updated proof value.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoundationProof"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "413":
+          $ref: "#/components/responses/RequestTooLarge"
+        "422":
+          $ref: "#/components/responses/ValidationError"
+
+  /api/v1/operator/reset:
+    post:
+      operationId: resetFoundationSeed
+      summary: Restore the deterministic foundation proof seed
+      description: >-
+        Private operator/test operation. It upserts only the stable foundation
+        seed key and never truncates, drops, or deletes unrelated data.
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      responses:
+        "200":
+          description: The deterministic seed is restored.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/FoundationResetResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Operator reset is disabled in this environment.
+          headers:
+            X-Correlation-ID:
+              $ref: "#/components/headers/CorrelationId"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
 
 components:
-  schemas: {}
+  securitySchemes:
+    operatorBearer:
+      type: http
+      scheme: bearer
+      bearerFormat: opaque
+      description: Server-held private operator token; never shipped in the web bundle.
+
+  headers:
+    CorrelationId:
+      description: Validated client correlation ID or a server-generated UUID.
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 128
+
+  responses:
+    NotFound:
+      description: The requested resource does not exist.
+      headers:
+        X-Correlation-ID:
+          $ref: "#/components/headers/CorrelationId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    Unauthorized:
+      description: A valid operator bearer token is required.
+      headers:
+        X-Correlation-ID:
+          $ref: "#/components/headers/CorrelationId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    RequestTooLarge:
+      description: The request body exceeds the configured limit.
+      headers:
+        X-Correlation-ID:
+          $ref: "#/components/headers/CorrelationId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ErrorResponse"
+    ValidationError:
+      description: The request payload failed boundary validation.
+      headers:
+        X-Correlation-ID:
+          $ref: "#/components/headers/CorrelationId"
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ValidationErrorResponse"
+
+  schemas:
+    HealthResponse:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          const: alive
+
+    ReadinessResponse:
+      type: object
+      additionalProperties: false
+      required: [status, database, migration]
+      properties:
+        status:
+          type: string
+          enum: [ready, unavailable]
+        database:
+          type: string
+          enum: [ready, unavailable]
+        migration:
+          type: string
+          enum: [current, unavailable, mismatch]
+
+    VersionResponse:
+      type: object
+      additionalProperties: false
+      required: [application, version, build]
+      properties:
+        application:
+          type: string
+          const: oncoready-api
+        version:
+          type: string
+          minLength: 1
+          maxLength: 64
+        build:
+          type: string
+          minLength: 1
+          maxLength: 128
+
+    FoundationProof:
+      type: object
+      additionalProperties: false
+      required: [key, value, seedVersion, createdAt, updatedAt]
+      properties:
+        key:
+          type: string
+          const: railway-foundation
+        value:
+          type: string
+          minLength: 1
+          maxLength: 256
+        seedVersion:
+          type: integer
+          minimum: 1
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+
+    FoundationProofUpdate:
+      type: object
+      additionalProperties: false
+      required: [value]
+      properties:
+        value:
+          type: string
+          minLength: 1
+          maxLength: 256
+
+    FoundationResetResponse:
+      type: object
+      additionalProperties: false
+      required: [status, proof]
+      properties:
+        status:
+          type: string
+          const: reset
+        proof:
+          $ref: "#/components/schemas/FoundationProof"
+
+    ErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          minLength: 1
+          maxLength: 64
+        message:
+          type: string
+          minLength: 1
+          maxLength: 256
+
+    ValidationErrorItem:
+      type: object
+      additionalProperties: false
+      required: [location, message, type]
+      properties:
+        location:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - type: integer
+        message:
+          type: string
+        type:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      additionalProperties: false
+      required: [code, message, errors]
+      properties:
+        code:
+          type: string
+          const: validation_error
+        message:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/ValidationErrorItem"

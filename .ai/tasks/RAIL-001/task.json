@@ -3,7 +3,7 @@
   "task_id": "RAIL-001",
   "title": "Railway web API and PostgreSQL foundation",
   "type": "infra",
-  "status": "PLANNING",
+  "status": "BUILD_READY",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
@@ -16,7 +16,9 @@
     "review": "codex"
   },
   "spec": "docs/features/RAIL-001.md",
-  "contracts": [],
+  "contracts": [
+    "contracts/openapi.yaml"
+  ],
   "scope": {
     "database": [
       "backend/alembic/**"
