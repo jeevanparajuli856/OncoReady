@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "task_id": "OUTREACH-001",
+  "agent": "codex-frontend",
+  "status": "PARTIAL",
+  "summary": "",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
+  "design_system_action": "NONE",
+  "visual_direction": {
+    "layout": "",
+    "color": "",
+    "typography": "",
+    "spacing_and_shape": "",
+    "component_presentation": ""
+  },
+  "motion": {
+    "strategy": "",
+    "transitions": "",
+    "microinteractions": "",
+    "reduced_motion": ""
+  },
+  "responsive": {
+    "strategy": "",
+    "notes": ""
+  },
+  "application_states": [],
+  "accessibility": [],
+  "assets_or_dependencies": [],
+  "design_system_changes": [],
+  "blockers": [],
+  "notes_for_codex": []
+}

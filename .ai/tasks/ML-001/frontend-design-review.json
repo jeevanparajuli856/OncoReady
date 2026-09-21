@@ -1,0 +1,20 @@
+{
+  "schema_version": "1.0",
+  "task_id": "ML-001",
+  "agent": "codex-orchestrator",
+  "status": "PENDING",
+  "summary": "",
+  "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
+  "reviewed_design_sha256": "",
+  "checks": {
+    "requirements": "PENDING",
+    "architecture_and_contracts": "PENDING",
+    "security_and_authorization": "PENDING",
+    "accessibility": "PENDING",
+    "performance": "PENDING",
+    "scope": "PENDING",
+    "human_brand_design_system_constraints": "PENDING"
+  },
+  "required_changes": [],
+  "notes_for_frontend": []
+}

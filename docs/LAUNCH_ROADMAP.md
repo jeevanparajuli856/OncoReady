@@ -6,6 +6,8 @@
 
 **Primary inputs:** confirmed product direction from September 21, 2026 plus the reconciled [`PROJECT.md`](./PROJECT.md) and [`SYSTEM.md`](./architecture/SYSTEM.md)
 
+**Execution plan:** [`LAUNCH_SPRINT_PLAN.md`](./LAUNCH_SPRINT_PLAN.md) decomposes this roadmap into dependency waves, task workspaces, external gates, verification evidence, and the launch-day runbook.
+
 **Implementation state:** Human approved. `PLAN-002` reconciled the authoritative product, architecture, deterministic configuration, operations, long-lived decisions, and visual-lock instructions. This roadmap remains the approved planning record; the concern-specific source-of-truth files govern implementation. Production code still requires the applicable feature task to reach `BUILD_READY`.
 
 ## 1. Mission

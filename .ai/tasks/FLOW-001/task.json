@@ -1,0 +1,233 @@
+{
+  "schema_version": "1.0",
+  "task_id": "FLOW-001",
+  "title": "Durable early-warning and owned work",
+  "type": "feature",
+  "status": "PROPOSED",
+  "priority": "critical",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/FLOW-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "backend/alembic/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/FLOW-001/task.json",
+        "docs/features/FLOW-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/FLOW-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/FLOW-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/FLOW-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/FLOW-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "backend/alembic/**",
+        ".ai/tasks/FLOW-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/FLOW-001/task.json",
+        ".ai/tasks/FLOW-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/FLOW-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/FLOW-001/task.json",
+        ".ai/tasks/FLOW-001/architecture-report.json",
+        ".ai/tasks/FLOW-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/FLOW-001/frontend-design-report.json",
+        ".ai/tasks/FLOW-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/FLOW-001/task.json",
+        ".ai/tasks/FLOW-001/architecture-report.json",
+        ".ai/tasks/FLOW-001/database-report.json",
+        ".ai/tasks/FLOW-001/backend-report.json",
+        ".ai/tasks/FLOW-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/FLOW-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/FLOW-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/FLOW-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/FLOW-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/FLOW-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/FLOW-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/FLOW-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/FLOW-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [
+    "EPIC-001"
+  ],
+  "acceptance_criteria": [
+    "Every readiness signal records what was known, when it was known, its source, and the scenario or model version that used it.",
+    "Transportation cutoff uses the approved business-day calendar and recomputes when the appointment changes.",
+    "Explicit symptom or transportation text bypasses model priority and routes immediately without clinical interpretation.",
+    "Camila's exact immutable reply creates separate clinical-contact and transportation work with different owners, deadlines, projections, acknowledgments, and closure rules.",
+    "Invalid or out-of-order commands are rejected without partial mutation, and duplicate commands or events are idempotent.",
+    "SLA miss escalates, appointment change reopens affected work, and caregiver permission revocation removes future caregiver access without rewriting history.",
+    "Patient, caregiver, staff, transportation, graph, timeline, and preliminary metrics derive consistently from the same committed events.",
+    "Stale scheduler, source, or projection state remains visible and never appears as reassurance.",
+    "Reset/reseed restores the exact finals workflow state without deleting valid Epic authorization or the last-known-good Camila snapshot.",
+    "The API-backed critical journey preserves the locked visual, accessibility, responsive, and reduced-motion behavior."
+  ],
+  "created_by": "human"
+}

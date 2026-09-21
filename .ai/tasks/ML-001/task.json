@@ -1,0 +1,233 @@
+{
+  "schema_version": "1.0",
+  "task_id": "ML-001",
+  "title": "Longitudinal LightGBM and SHAP prioritization",
+  "type": "feature",
+  "status": "PROPOSED",
+  "priority": "critical",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/ML-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "backend/alembic/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/ML-001/task.json",
+        "docs/features/ML-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/ML-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/ML-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/ML-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/ML-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/ML-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "backend/alembic/**",
+        ".ai/tasks/ML-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/ML-001/task.json",
+        ".ai/tasks/ML-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/ML-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/ML-001/task.json",
+        ".ai/tasks/ML-001/architecture-report.json",
+        ".ai/tasks/ML-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/ML-001/frontend-design-report.json",
+        ".ai/tasks/ML-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/ML-001/task.json",
+        ".ai/tasks/ML-001/architecture-report.json",
+        ".ai/tasks/ML-001/database-report.json",
+        ".ai/tasks/ML-001/backend-report.json",
+        ".ai/tasks/ML-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/ML-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/ML-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/ML-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/ML-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/ML-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/ML-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/ML-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/ML-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [
+    "FLOW-001"
+  ],
+  "acceptance_criteria": [
+    "The reproducible generator creates at least 75,000 encounters across at least 8,000 fictional patients, 12 fictional centers, and 18 months with all approved factors, missingness, site effects, and drift.",
+    "Patient-separated chronological train, calibration, and test partitions keep the final test set untouched until model and calibrator freeze.",
+    "Leakage tests reject post-cutoff outcomes, final cancellation reasons, future notes, and actions after the scoring timestamp.",
+    "LightGBM fits only on training data and sigmoid calibration fits only on the distinct calibration partition unless prespecified evidence supports isotonic without overfit.",
+    "The artifact gate reports calibration, Brier score, PR-AUC, workload at K, required baselines, subgroup counts and performance, and reproducible seeds.",
+    "Failure of a prespecified calibration, top-K, or subgroup-harm gate rejects the artifact.",
+    "The versioned artifact set contains the model, calibrator, schema, generator version and seed, training time, thresholds, evaluation manifest, and a synthetic-data limitations card.",
+    "Camila's held-out T-7, T-2, and T-1 path runs through the normal pipeline and is proven not to contain a hard-coded score, explanation, or channel choice.",
+    "The staff UI separates calibrated probability from dated SHAP-margin associations and labels them as associations rather than causes.",
+    "Explicit patient response supersedes prediction, and missing, stale, malformed, or incompatible artifacts show Score unavailable while deterministic cadence continues."
+  ],
+  "created_by": "human"
+}

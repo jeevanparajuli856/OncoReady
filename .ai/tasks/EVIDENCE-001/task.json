@@ -1,0 +1,235 @@
+{
+  "schema_version": "1.0",
+  "task_id": "EVIDENCE-001",
+  "title": "Operational metrics and validated FHIR evidence",
+  "type": "feature",
+  "status": "PROPOSED",
+  "priority": "high",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/EVIDENCE-001.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "backend/alembic/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/EVIDENCE-001/task.json",
+        "docs/features/EVIDENCE-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/EVIDENCE-001/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/EVIDENCE-001/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/EVIDENCE-001.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/EVIDENCE-001/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "backend/alembic/**",
+        ".ai/tasks/EVIDENCE-001/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/EVIDENCE-001/task.json",
+        ".ai/tasks/EVIDENCE-001/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/EVIDENCE-001/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/EVIDENCE-001/task.json",
+        ".ai/tasks/EVIDENCE-001/architecture-report.json",
+        ".ai/tasks/EVIDENCE-001/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/EVIDENCE-001/frontend-design-report.json",
+        ".ai/tasks/EVIDENCE-001/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/EVIDENCE-001/task.json",
+        ".ai/tasks/EVIDENCE-001/architecture-report.json",
+        ".ai/tasks/EVIDENCE-001/database-report.json",
+        ".ai/tasks/EVIDENCE-001/backend-report.json",
+        ".ai/tasks/EVIDENCE-001/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/EVIDENCE-001/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/EVIDENCE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/EVIDENCE-001/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/EVIDENCE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/EVIDENCE-001/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/EVIDENCE-001/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/EVIDENCE-001/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/EVIDENCE-001/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [
+    "EPIC-001",
+    "FLOW-001",
+    "OUTREACH-001",
+    "RIDE-001"
+  ],
+  "acceptance_criteria": [
+    "Every metric changes only when its underlying persisted event or approved formula version changes.",
+    "Lead time, ownership and action and closure durations, unresolved blockers, outreach, CareLink recovery, acknowledgment, and final disposition derive from the shared event spine.",
+    "Controlled replay and verified provider events remain distinguishable in audit and technical evidence.",
+    "Epic source evidence clearly separates live resources, snapshot fallback, and OncoReady-owned events while showing only non-secret provenance.",
+    "The generated FHIR R4 Bundle maps the approved resources and Provenance only where actual data supports them.",
+    "A current pinned-validator pass is required before the UI shows Validated; failure, timeout, stale report, or artifact mismatch suppresses the label.",
+    "Authorized users can inspect mapping and validation evidence without receiving secrets or fields outside their projection.",
+    "The UI states validation applies only to the OncoReady-generated artifact and makes no writeback, production access, customer approval, clinical validation, or compliance claim.",
+    "The final graph, timeline, workspaces, metrics, and FHIR evidence reconcile to the same event revision while Epic context retains separate provenance."
+  ],
+  "created_by": "human"
+}
