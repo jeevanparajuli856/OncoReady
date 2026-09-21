@@ -18,5 +18,8 @@ WORKDIR /app
 COPY Caddyfile ./
 RUN caddy fmt Caddyfile --overwrite
 COPY --from=build /app/dist ./dist
+RUN chown -R 65532:65532 /app /config /data
+
+USER 65532:65532
 
 CMD ["caddy", "run", "--config", "Caddyfile", "--adapter", "caddyfile"]
