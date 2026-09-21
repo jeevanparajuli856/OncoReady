@@ -29,6 +29,36 @@ This slice proves the product is no longer a frontend-only state machine. It sup
 - Adds the web-to-API environment boundary and Railway service configuration.
 - Keeps the launch topology to one web service, one API service, and one database.
 
+## Selected foundation design
+
+### API and frontend boundary
+
+- The initial contract contains `GET /health`, `GET /ready`, `GET /version`, `GET /api/v1/foundation/proof`, `PUT /api/v1/foundation/proof`, and `POST /api/v1/operator/reset`.
+- `/health` proves only that the API process can serve requests. `/ready` returns success only when required configuration is valid, PostgreSQL responds within the bounded check, and the database's Alembic revision exactly matches the single code head; dependency failure returns `503` without secrets or connection details.
+- `/version` exposes only non-secret release/build evidence. The foundation proof read exposes one synthetic, non-patient record so the current frontend can demonstrate server-backed persistence.
+- Proof writes and reset are operator/test operations protected by a server-held bearer token and an explicit reset-enabled setting. The browser bundle must never contain that token, database credentials, or another server secret.
+- The frontend reads `VITE_API_ORIGIN` as a public build-time origin, uses the contracted read endpoint, and presents loading, connected, and unavailable states by composing the existing runtime components and tokens. This is a compatibility-only functional extension: no global token, established component, navigation, layout, or workflow-state restyling is authorized.
+
+### Persistence, migration, and reset
+
+- The first migration creates only a bounded `foundation_proofs` table with a stable unique proof key, bounded proof value, seed version, and timezone-aware created/updated timestamps. Authentication, Epic, workflow, audit, outbox, model, and provider tables remain owned by later tasks.
+- Alembic is the only schema-change path. Deployments run `alembic upgrade head` as a deliberate pre-deploy/release step; the API does not mutate schema at process startup.
+- The deterministic seed owns one stable foundation key. Reset/reseed transactionally upserts that key to its canonical value and reports what it changed; it does not truncate a table, recreate a schema, delete unknown rows, or touch future task tables.
+- A reset integration test inserts an unrelated proof row, changes the seeded row, runs reset twice, and proves the canonical row is identical while the unrelated row remains unchanged.
+
+### Runtime and deployment controls
+
+- The API uses typed settings, structured JSON logs, generated/validated correlation IDs, bounded request bodies, explicit CORS origins, redaction, and Railway's provided `PORT`. Missing required setting names may be logged, but their values may not be logged.
+- CORS is an exact allowlist for the deployed web origin and documented local origins; wildcard origins are forbidden. Browser credentials remain disabled until `ACCESS-001` defines the session contract.
+- Railway service roots are `frontend` for `web` and `backend` for `api`; each service watches only its own root. PostgreSQL has no public domain and is supplied to the API through Railway private networking.
+- The web build uses the public API origin and a static SPA server that falls back to `index.html` for application routes. The API start command binds `0.0.0.0:$PORT`. A deployment is accepted only after Railway reports `SUCCESS` and post-deploy web, API, readiness, CORS, migration, and persistence checks pass.
+
+### Selected test harness
+
+- Backend tests use `pytest` with FastAPI `TestClient` used as a context manager so application lifespan runs. Pure validation tests may replace dependencies; persistence, readiness, reset, and migration tests must use PostgreSQL rather than SQLite or an in-memory substitute.
+- PostgreSQL integration tests use a dedicated disposable database supplied through `TEST_DATABASE_URL`. The harness must fail closed when the variable is absent, equals `DATABASE_URL`, or does not identify an explicitly test-only database; it applies `alembic upgrade head` before testing and may clean up only that validated test target.
+- Implementation-owned checks are split into a fast backend/API suite and a PostgreSQL-marked integration/migration suite. Before integration verification, the orchestrator registers their actual runnable commands in `.ai/project.json`; required unavailable or skipped PostgreSQL checks fail.
+
 ## Contract impact
 
 Required. Define the initial OpenAPI paths for `/health`, `/ready`, build/version evidence, and a minimal persisted proof/reset boundary. Later tasks extend rather than silently replace it.
