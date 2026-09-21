@@ -2,28 +2,48 @@
   "schema_version": "1.0",
   "task_id": "RAIL-001",
   "agent": "codex-database",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Added a reversible Alembic/PostgreSQL foundation with one bounded foundation_proofs table, no seed DML, and credential-safe DATABASE_URL validation.",
+  "files_changed": [
+    "backend/alembic/alembic.ini",
+    "backend/alembic/env.py",
+    "backend/alembic/script.py.mako",
+    "backend/alembic/versions/__init__.py",
+    "backend/alembic/versions/20260921_0001_create_foundation_proofs.py",
+    ".ai/tasks/RAIL-001/database-report.json"
+  ],
   "contracts_used": [
     "contracts/openapi.yaml"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "PYTHONPYCACHEPREFIX=<temp>/pycache python3 -m compileall -q backend/alembic",
+      "DATABASE_URL=postgresql+psycopg2://... alembic -c backend/alembic/alembic.ini upgrade head; alembic current; alembic downgrade base; alembic upgrade head; alembic heads (disposable local PostgreSQL 17)",
+      "PostgreSQL information_schema and pg_constraint inspection for public tables, column types/defaults/nullability, primary key, and check constraints",
+      "DATABASE_URL=postgres://... alembic -c backend/alembic/alembic.ini upgrade head --sql plus static seed-DML scan",
+      "DATABASE_URL=sqlite:///... alembic -c backend/alembic/alembic.ini upgrade head --sql (expected credential-safe rejection)"
+    ],
+    "notes": "Upgrade/downgrade/re-upgrade passed on a disposable PostgreSQL 17 database. The only public tables after upgrade were Alembic's own version table and foundation_proofs; downgrade removed foundation_proofs. Introspection confirmed VARCHAR(64) primary-key key, VARCHAR(256) nonempty value, seed_version >= 1, and timezone-aware created_at/updated_at CURRENT_TIMESTAMP defaults."
   },
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Backend reset/seed logic must remain application-owned DML and target only the stable foundation key; this schema migration intentionally contains no seed row.",
+    "No RLS was added because RAIL-001 uses private operator-token enforcement in the backend and Railway PostgreSQL rather than Supabase; later access-domain tasks own authorization schema/policy decisions."
+  ],
   "database_changes": {
-    "provider": "",
-    "environment": "development",
+    "provider": "PostgreSQL 17 via Alembic",
+    "environment": "local disposable development database",
     "mcp_used": false,
-    "migration_files": [],
-    "applied_migrations": [],
+    "migration_files": [
+      "backend/alembic/versions/20260921_0001_create_foundation_proofs.py"
+    ],
+    "applied_migrations": [
+      "20260921_0001"
+    ],
     "rls_reviewed": false,
-    "indexes_reviewed": false,
+    "indexes_reviewed": true,
     "advisors_checked": false,
-    "live_verification": "NOT_RUN"
+    "live_verification": "PASSED"
   }
 }
