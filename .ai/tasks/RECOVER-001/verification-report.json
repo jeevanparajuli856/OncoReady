@@ -1,8 +1,142 @@
 {
   "schema_version": "1.0",
   "task_id": "RECOVER-001",
-  "commit": "",
-  "status": "FAILED",
-  "generated_at": "",
-  "checks": []
+  "commit": "9e377d07142af2fa6b9f87248fe56a612818d243",
+  "status": "PASSED",
+  "generated_at": "2026-09-21T00:20:06.193574+00:00",
+  "checks": [
+    {
+      "name": "project-schema",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "task-schema-and-reports",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+        "scripts/validate-task.py",
+        "RECOVER-001"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "agentic-framework-tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Library/Frameworks/Python.framework/Versions/3.13/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/agentic"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "governed API and event contracts",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "scripts/validate-contracts.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "server database FHIR and ML runtime tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:server"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "offline ML artifact reproducibility",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/ml"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "generated frontend API client is current",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "api:check"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend build",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend critical-path smoke",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend full journey browser tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "tracked-secret-file-baseline",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "git",
+        "ls-files"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "callback authorization and external-action controls",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:security"
+      ],
+      "notes": ""
+    }
+  ]
 }
