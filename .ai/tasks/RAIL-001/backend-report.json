@@ -22,10 +22,12 @@
     "backend/app/services.py",
     "backend/app/testing.py",
     "backend/app/web.py",
+    "backend/railway.json",
     "tests/backend/conftest.py",
     "tests/backend/test_api.py",
     "tests/backend/test_config_and_logging.py",
     "tests/backend/test_postgres_integration.py",
+    "tests/backend/test_railway_config.py",
     "tests/backend/test_readiness.py",
     "tests/backend/test_test_database_guard.py"
   ],
@@ -38,14 +40,16 @@
       "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend --cov=app --cov-report=term-missing -q",
       "TEST_DATABASE_URL=postgresql+psycopg://localhost/oncoready_rail_001_test backend/.venv/bin/pytest -c backend/pyproject.toml -m integration tests/backend -q",
       "backend/.venv/bin/python -m compileall -q backend/app",
-      "runtime OpenAPI operation/path assertion against the six approved contract operations"
+      "runtime OpenAPI operation/path assertion against the six approved contract operations",
+      "jsonschema validation of backend/railway.json against https://railway.com/railway.schema.json"
     ],
-    "notes": "Fast suite: 36 passed with 88% branch-aware application coverage. PostgreSQL 17 integration: 3 passed, proving Alembic-head readiness, write/restart/read persistence, reset idempotency, and unrelated-row preservation. Guard unit tests reject absent, shared, non-PostgreSQL, and non-test database URLs before migration or cleanup. FastAPI TestClient was used as a context manager so lifespan ran."
+    "notes": "Fast suite: 37 passed (application coverage was 88% before the configuration-only follow-up). PostgreSQL 17 integration: 3 passed, proving Alembic-head readiness, write/restart/read persistence, reset idempotency, and unrelated-row preservation. The live Railway JSON schema accepted the Dockerfile builder, repository-root-relative /backend/** watch pattern, deliberate Alembic pre-deploy command, /ready health check with 30-second timeout, and ON_FAILURE restart capped at three retries. Guard unit tests reject absent, shared, non-PostgreSQL, and non-test database URLs before migration or cleanup. FastAPI TestClient was used as a context manager so lifespan ran."
   },
   "blockers": [],
   "notes_for_next_agent": [
     "Register the fast and PostgreSQL integration commands as required .ai/project.json checks before integrated verification; backend workers are not permitted to edit that file.",
     "Run the required dedicated security review on the exact verified integrated commit, focusing on operator-token handling, reset scope, logs, CORS, and Railway variable/database exposure.",
-    "Railway service provisioning and deployed acceptance remain orchestrator/infrastructure work; this report proves the local API and disposable PostgreSQL boundary only."
+    "Railway service provisioning and deployed acceptance remain orchestrator/infrastructure work; this report proves the local API and disposable PostgreSQL boundary only.",
+    "Railway documents railway.json as legacy with a 2026-12-01 cutoff. This requested bounded config is valid now, but migrate it to Railway IaC before that cutoff; preserve the pre-deploy migration command during migration."
   ]
 }
