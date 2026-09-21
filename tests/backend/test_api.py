@@ -42,6 +42,29 @@ def test_health_stays_alive_while_missing_configuration_blocks_readiness() -> No
     }
 
 
+def test_health_stays_alive_when_configured_database_is_unreachable() -> None:
+    settings = Settings(
+        _env_file=None,
+        database_url="postgresql+psycopg://localhost:1/oncoready_test",
+        operator_token="operator-test-token-with-enough-entropy",
+        cors_origins=["http://localhost:5173"],
+        database_check_timeout_seconds=1,
+    )
+
+    with TestClient(create_app(settings), raise_server_exceptions=False) as client:
+        health = client.get("/health")
+        readiness = client.get("/ready")
+
+    assert health.status_code == 200
+    assert health.json() == {"status": "alive"}
+    assert readiness.status_code == 503
+    assert readiness.json() == {
+        "status": "unavailable",
+        "database": "unavailable",
+        "migration": "unavailable",
+    }
+
+
 def test_version_exposes_only_build_evidence(client) -> None:
     response = client.get("/version")
 

@@ -76,6 +76,14 @@ test.describe('OncoReady UI-001 product experience', () => {
     expect(pageErrors).toEqual([]);
   });
 
+  test('production preview serves the SPA shell on a direct deep-link refresh', async ({ page }) => {
+    const response = await page.goto('/workspace/deep-link');
+
+    expect(response?.status()).toBe(200);
+    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+    await expect(page.locator('.foundation-status')).toHaveAttribute('data-state', /persisted|unavailable/);
+  });
+
   test('mobile workspace dock keeps 44px targets without horizontal overflow', async ({ page }) => {
     for (const viewport of [
       { width: 320, height: 568 },

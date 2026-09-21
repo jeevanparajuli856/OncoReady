@@ -90,6 +90,39 @@ def test_readiness_checks_postgresql_and_exact_alembic_head(integration_settings
     }
 
 
+def test_readiness_rejects_a_real_postgresql_revision_mismatch(
+    integration_settings,
+    test_database_url,
+) -> None:
+    engine = create_engine(test_database_url)
+    with engine.begin() as connection:
+        expected_revision = connection.execute(
+            text("SELECT version_num FROM alembic_version")
+        ).scalar_one()
+        connection.execute(
+            text("UPDATE alembic_version SET version_num = :revision"),
+            {"revision": "20991231_future"},
+        )
+
+    try:
+        with TestClient(create_app(integration_settings)) as client:
+            response = client.get("/ready")
+
+        assert response.status_code == 503
+        assert response.json() == {
+            "status": "unavailable",
+            "database": "ready",
+            "migration": "mismatch",
+        }
+    finally:
+        with engine.begin() as connection:
+            connection.execute(
+                text("UPDATE alembic_version SET version_num = :revision"),
+                {"revision": expected_revision},
+            )
+        engine.dispose()
+
+
 def test_reset_is_idempotent_and_preserves_unrelated_rows(
     integration_settings,
     test_database_url,

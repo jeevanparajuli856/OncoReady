@@ -2,17 +2,42 @@
   "schema_version": "1.0",
   "task_id": "RAIL-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Independent local TARGETED testing passes the integrated RAIL-001 foundation: process health remains independent of an unreachable database, readiness covers unavailable/current/real PostgreSQL mismatch states, protected mutation/reset and request/log/CORS boundaries pass, PostgreSQL reset and restart persistence pass, frontend proof states and direct SPA deep links pass, isolated watch paths are correct, and the primary journey remains green.",
+  "files_changed": [
+    "tests/backend/test_api.py",
+    "tests/backend/test_postgres_integration.py",
+    "frontend/tests/e2e.spec.ts",
+    ".ai/tasks/RAIL-001/test-report.json"
+  ],
   "contracts_used": [
     "contracts/openapi.yaml"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend --cov=app --cov-report=term-missing -q",
+      "TEST_DATABASE_URL='postgresql+psycopg://localhost/oncoready_rail_001_test' backend/.venv/bin/pytest -c backend/pyproject.toml -m integration tests/backend -q",
+      "cd frontend && npm run build && npm run test:smoke -- --run",
+      "cd frontend && npm run test:e2e",
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend/test_api.py -q",
+      "TEST_DATABASE_URL='postgresql+psycopg://localhost/oncoready_rail_001_test' backend/.venv/bin/pytest -c backend/pyproject.toml -m integration tests/backend/test_postgres_integration.py -q",
+      "npm run test:e2e (cwd repository root; expected script invocation rerun from frontend after this invocation failed with ENOENT because the repository root has no package.json)",
+      "python3 scripts/validate-project.py && python3 scripts/validate-contracts.py",
+      "jq -e '.build.watchPatterns == [\"/backend/**\"] and .deploy.preDeployCommand == \"alembic -c alembic/alembic.ini upgrade head\" and .deploy.healthcheckPath == \"/ready\"' backend/railway.json",
+      "jq -e '.build.watchPatterns == [\"/frontend/**\"] and .deploy.healthcheckPath == \"/health\"' frontend/railway.json",
+      "DATABASE_URL='postgresql+psycopg://localhost/oncoready_rail_001_test' backend/.venv/bin/alembic -c backend/alembic/alembic.ini current",
+      "cd frontend && VITE_API_ORIGIN='https://api.example.test' npm run build && rg -l 'https://api\\.example\\.test' dist && if rg -n 'OPERATOR_TOKEN|DATABASE_URL|integration-operator-token|operator-test-token' dist; then exit 1; fi",
+      "docker info --format '{{.ServerVersion}}' (unavailable locally: docker command absent, exit 127)",
+      "git diff --check",
+      "python3 scripts/agentctl.py scope check RAIL-001 tester"
+    ],
+    "notes": "Final post-change results: backend fast suite 38 passed and 4 integration tests were intentionally deselected by the marker split; application coverage was 89%. PostgreSQL suite 4 passed and 38 fast tests were intentionally deselected; Alembic current returned 20260921_0001 (head) after the mismatch test restored the real test database revision. Frontend production build passed; Vitest passed 22/22 across 5 files; Playwright passed 6/6 in Chromium, including the newly automated direct /workspace/deep-link refresh and the complete Maria primary journey. Contract/project validation and both exact Railway watch-pattern assertions passed. A VITE_API_ORIGIN build embedded only the expected public API origin and the focused bundle scan found no operator token, database URL, or test-token literals. Existing tests also passed for exact bearer enforcement, reset enablement, bounded bodies, validation, generic client errors, structured redaction, exact CORS allow/deny behavior, deterministic reset with unrelated-row preservation, write-restart-read persistence, frontend loading/persisted/unavailable/retry states, and mobile accessibility. No test was flaky and no executed test was skipped. Two expected deprecation warnings were emitted by FastAPI/Starlette TestClient dependencies in each backend run; Playwright emitted the existing NO_COLOR/FORCE_COLOR warning. One npm invocation from the repository root failed with ENOENT and was immediately corrected by running the same script from frontend, where all 6 tests passed. Docker/Caddy container execution was unavailable because Docker is not installed; SPA routing was instead exercised through the required production Vite preview browser suite. Actual Railway service topology, private networking, deployment SUCCESS, restart, and post-deploy HTTP checks were not run because cloud deployment was explicitly deferred and no cloud access was attempted. The requested .agents/skills/testing/SKILL.md was absent from the repository and configured skill roots, so testing followed AGENTS.md and docs/standards/TESTING.md directly."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The independent local TARGETED gate is complete on the current integrated branch; run commit-bound repository verification after this test commit.",
+    "Railway-only acceptance remains deliberately unclaimed: verify exactly one web/API/PostgreSQL service, private database networking, deployment SUCCESS, Caddy container deep-link behavior, live CORS, and write-restart-browser-refresh persistence when deployment is authorized.",
+    "The local PostgreSQL test database was left at Alembic head 20260921_0001 after the real mismatch exercise; integration cleanup preserved only out-of-scope rows and removed its own seed/unrelated fixtures."
+  ]
 }
