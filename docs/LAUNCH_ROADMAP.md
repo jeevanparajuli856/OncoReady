@@ -28,6 +28,7 @@ The product should feel like one coherent hospital application rather than a col
 
 - Deploy the complete application in one Railway project containing a frontend service, backend service, and Railway PostgreSQL service.
 - Build production-quality interaction and visual polish across the landing page, access flow, and every role workspace.
+- Preserve the current approved OncoReady UI as the visual baseline. New work must adapt its existing design language rather than introducing a new theme, palette, typography system, or product-wide restyle.
 - Core state transitions, deadlines, routing, CareLink assignments, metrics, and model outputs must come from working backend logic and persisted events rather than hard-coded screen swaps.
 - SMS and voice must have complete provider-ready product surfaces and backend adapter contracts. Twilio and ElevenLabs credentials and outbound calls are explicitly deferred until access is purchased and approved.
 - Uber Health must have a polished provider-ready surface and normalized adapter boundary. It must not issue rides, quotes, assignments, or provider-branded confirmations until approved credentials and verified callbacks exist.
@@ -54,6 +55,7 @@ The product should feel like one coherent hospital application rather than a col
 - Make the ML capability central to the story: it must learn from longitudinal readiness and engagement patterns, identify increasing attendance disruption risk, and drive the timing and channel of supportive outreach.
 - Use Maria's longitudinal pattern as the signature explainable example without hard-coding her model result.
 - Optimize every workspace for a prerecorded product video with live voice-over: fast state changes, readable data storytelling, strong transitions, and a reliable reset path.
+- Keep the current UI design, colors, typography, spacing, component character, and other visual details; extend them consistently across every new surface.
 
 ## 2. Finals Scenario and Cast
 
@@ -120,6 +122,37 @@ Every implemented feature must reinforce early detection, adaptive engagement, a
 
 ## 4. Public Experience Plan
 
+### Visual continuity constraint
+
+The current integrated OncoReady interface is the human-approved visual baseline. `frontend_design_required=true` still requires the frontend specialist to perform design Phase A, but that phase adapts and extends the approved system; it does not authorize a rebrand or independent aesthetic direction.
+
+**Preserve:**
+
+- the existing light/dark theme behavior, brand colors, semantic colors, and contrast relationships;
+- the current typography families, type scale, weights, line heights, and hierarchy;
+- the established spacing rhythm, content density, grid behavior, and responsive breakpoints;
+- component shapes, border treatment, corner radii, shadows, surface elevation, and icon style;
+- navigation structure, button character, form treatment, status language, data-visualization tone, animation character, easing, and reduced-motion behavior;
+- approved logo, wordmark, and brand assets.
+
+**Allowed adaptation:**
+
+- reuse existing tokens, primitives, and components for the new public story, pricing cards, access flow, and workspaces;
+- add a missing semantic token or component variant only when the current system cannot express a required state;
+- make localized responsive or accessibility corrections when needed for keyboard access, readable contrast, text reflow, touch targets, or reduced motion;
+- refine spacing or hierarchy within a new component while keeping it visibly part of the current product.
+
+**Not allowed without new human approval:**
+
+- replacing the primary or secondary palette;
+- changing the typography family or global scale;
+- introducing a new global visual trend, such as unrelated glassmorphism, neon styling, heavy gradients, or a different illustration language;
+- changing global radii, shadows, border language, icon family, navigation character, or motion system;
+- restyling existing approved pages merely to make them match a new component;
+- treating the public story or access page as permission to redesign the rest of the product.
+
+Before implementation, the frontend specialist records the current visual baseline in the frontend design report: screenshots of key existing surfaces, the active token values, typography, component primitives, responsive behavior, and motion examples. Design approval is based on whether the new work remains recognizably within that baseline.
+
 ### Landing page
 
 Remove the entire public section that renders Maria's Treatment Readiness Workspace, Treatment Readiness Graph, regimen, facility, avatar, case row, and patient/staff entry buttons. Do not blur, rename, or visually hide it; the record must be absent from the public DOM, accessibility tree, metadata, and searchable text.
@@ -134,6 +167,7 @@ Replace that space with a signature interactive section titled `How continuity g
 
 Creative direction and interaction requirements:
 
+- express the complete section with the current OncoReady palette, typography, surfaces, radii, borders, shadows, icons, and motion language;
 - use abstract signals, route lines, owner initials/icons, time windows, and state transitions rather than a patient card, avatar, regimen, facility, case row, or readiness graph;
 - give each card a distinct microinteraction: signal pulse for detection, coordinated lane motion for recovery, and a closing confirmation ring for continuity;
 - keep the visuals scenario-neutral and avoid invented outcome statistics, customer counts, or hospital claims;
@@ -350,6 +384,10 @@ Before production code:
 **Acceptance criteria:**
 
 - `Explore workspace` is replaced by `Workspace access` everywhere;
+- the frontend design report inventories the current UI baseline before proposing the new public story or access components;
+- new public, access, pricing, and workspace surfaces reuse the existing theme tokens, typography, spacing system, radii, borders, shadows, icon treatment, and motion language;
+- no global palette, typography, theme, component-shape, navigation, or motion-system change is introduced without separate human approval;
+- existing approved pages remain visually unchanged except for the explicitly requested content and navigation updates or documented accessibility corrections;
 - the public Treatment Readiness Workspace, Graph, and all Maria-specific content are removed from the DOM, accessibility tree, metadata, and searchable text;
 - `How continuity gets protected` replaces the removed patient preview with the three public cards `Detect early`, `Coordinate recovery`, and `Confirm continuity`;
 - activating each story card reveals its matching record-free public explanation and updates `aria-expanded` and the controlled panel relationship;
@@ -366,6 +404,7 @@ Before production code:
 - sign-out invalidates the session;
 - invalid route, expired session, and insufficient access return to a safe recoverable state;
 - keyboard, focus, mobile, screen-reader, password-manager, and reduced-motion behavior pass targeted checks.
+- visual comparison at desktop and mobile confirms that new surfaces read as extensions of the current product, with any intentional token addition listed in the approved frontend design report.
 
 ### FLOW-001 — Durable early-warning and owned work
 
@@ -646,6 +685,7 @@ Human approval is requested for:
 9. Uber Health as a polished provider-ready alternative that cannot generate unverified provider states.
 10. A rich longitudinal LightGBM dataset and Maria-specific held-out trajectory feeding adaptive, deterministic outreach orchestration.
 11. A prerecorded deterministic journey with one concise verbal disclosure and no repeated `demo` labeling in the interface.
+12. Preservation of the current OncoReady theme, palette, typography, spacing, component styling, iconography, and motion language across all new work, with no broad restyle without human approval.
 
 ## 12. Stop Condition
 
@@ -655,6 +695,7 @@ The finals build is complete when:
 
 - Railway serves the frontend and backend successfully and PostgreSQL persists the workflow;
 - the public site exposes no patient record or readiness graph;
+- the existing OncoReady visual identity remains intact and all new surfaces pass the approved visual-baseline comparison;
 - the removed preview is replaced by the three-card public Continuity Rescue Story, and its cards never enter a workspace or create a session;
 - `Workspace access` provides the approved center-scoped professional sign-in experience;
 - Google, Microsoft, Apple, and configured email access each open only their approved mapped workspace;
