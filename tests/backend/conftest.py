@@ -75,7 +75,7 @@ def settings() -> Settings:
         operator_token="operator-test-token-with-enough-entropy",
         cors_origins=["https://web.example.test", "http://localhost:5173"],
         reset_enabled=True,
-        max_request_body_bytes=128,
+        max_request_body_bytes=1_024,
         application_version="0.1.0-test",
         build_id="test-build",
     )
@@ -102,4 +102,3 @@ def client(
     app.dependency_overrides[get_readiness_service] = lambda: fake_readiness
     with TestClient(app, raise_server_exceptions=False) as test_client:
         yield test_client
-

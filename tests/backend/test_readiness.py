@@ -7,6 +7,7 @@ class FakeDatabase:
     def __init__(self, revisions=None, failure: Exception | None = None) -> None:
         self.revisions = revisions or ["202609210001"]
         self.failure = failure
+        self.configuration_error = None
 
     def applied_revisions(self):
         if self.failure:
@@ -78,4 +79,3 @@ def test_readiness_passes_only_for_one_matching_revision(settings) -> None:
         "database": "ready",
         "migration": "current",
     }
-

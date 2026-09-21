@@ -155,7 +155,7 @@ def test_proof_write_rejects_unknown_or_empty_fields(client) -> None:
 def test_request_body_limit_returns_contract_error(client) -> None:
     response = client.put(
         "/api/v1/foundation/proof",
-        content=b'{"value":"' + (b"x" * 256) + b'"}',
+        content=b'{"value":"' + (b"x" * 1_100) + b'"}',
         headers={
             "Authorization": "Bearer operator-test-token-with-enough-entropy",
             "Content-Type": "application/json",
@@ -215,4 +215,3 @@ def test_internal_errors_are_generic_and_do_not_leak_details(client, fake_reposi
     }
     assert "password" not in response.text
     assert "operator-test" not in response.text
-
