@@ -2,24 +2,96 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "agent": "codex-architect",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Defined EPIC-001 as a one-time, private, read-only FHIR R4 capture into a reviewed versioned JSON package that the existing staff frontend validates and maps locally. The Camila scenario binds to the captured Sandbox patient through an explicit alias/provenance record, while Epic facts, synthetic workflow facts, and connection state remain separate; playback requires no live Epic dependency and permits no writeback.",
+  "files_changed": [
+    ".ai/tasks/EPIC-001/architecture-report.json"
+  ],
   "impacts": {
-    "database": null,
-    "backend": null,
-    "frontend": null,
-    "frontend_design_required": null,
-    "infrastructure": null
+    "database": false,
+    "backend": true,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
   },
-  "decisions": [],
-  "risks": [],
+  "decisions": [
+    "Use a small operator-only capture utility in the existing Python backend/tooling boundary, not a runtime Epic service. It obtains authorized Epic Non-PRD/Sandbox access from private environment configuration or an already authorized local session, never from browser state or command-line secrets; authorization remains a private pre-recording operation and no token-refresh platform is added.",
+    "Restrict the external action space to FHIR R4 read/search requests over HTTPS. The utility may issue GET only for one explicitly selected Sandbox Patient and the minimum supported resource families needed by the staff story: Patient plus available Appointment, MedicationRequest, and laboratory Observation records. Unsupported or absent families stay absent. POST, PUT, PATCH, DELETE, transaction/batch write, subscription, writeback, broad patient export, and production endpoints are forbidden.",
+    "Bound every search by the selected patient reference, an allowlisted resource type and documented query parameters; follow only same-origin FHIR pagination links, enforce a small configured page/resource ceiling, and fail closed on a cross-origin next link, unexpected resource type, malformed Bundle, or patient-reference mismatch. Capture evidence records each request's method and redacted path, never authorization headers or tokens.",
+    "Stage the authorized response outside browser-served and committed paths first. The staged package contains the untouched selected FHIR resource JSON, a generated manifest, and SHA-256 checksums. Before promotion, a human/operator review confirms the Sandbox environment, selected test identity, minimum-resource scope, distribution permission, absence of credentials/tokens/unexpected records, and exact fields intended for staff display.",
+    "Promote only the reviewed minimum package as a versioned immutable frontend asset. The manifest schema is version 1 and carries captureId, mode=captured_epic_sandbox, FHIR version, source environment, capturedAt in UTC, selected Patient resourceType/id, scenario binding, resource file entries with resourceType/id/path/SHA-256, and review status. Reload/reset/checkpoint actions never rewrite capturedAt, resource dates, IDs, checksums, source mode, or the package.",
+    "Create and register one formal JSON Schema contract for the capture manifest/package because the backend-owned capture utility and frontend-owned loader are independently implemented sides of a stable file boundary. The intended artifact is contracts/schemas/epic-capture-manifest.v1.schema.json; the orchestrator must add it to task.json before BUILD_READY. Raw resource payloads remain FHIR R4 JSON and are not redefined as an OncoReady HTTP API.",
+    "Keep normalization inside a typed frontend Epic adapter rather than merging captured values into the mutable WorkflowState fixture. The adapter validates the manifest and allowlisted resource shapes, verifies the resource references expected by the manifest, and maps only present source paths into a read-only EpicClinicalContext. Display values retain per-field provenance containing resourceType, resourceId, source path and original effective/start/authored timestamp where applicable.",
+    "Use a deliberately narrow mapping: Patient supplies available source identity/demographics; Appointment supplies only present status, service/description, start/end and location references; MedicationRequest supplies only present medication text/coding, status, intent, authored date and dosage text; laboratory Observation supplies only present code/display, value/quantity, unit, reference range, interpretation and effective/issued date. Do not infer diagnosis, regimen, stage, cycle, provider, appointment, dosage, normality, vitals, or dates from missing or unrelated fields.",
+    "Bind camila-demo-v2 to the selected Epic Patient through manifest scenarioBinding rather than rewriting the Patient resource. If the source identity is not Camila Lopez, ordinary scenario surfaces may continue to use the presentation alias, but the staff source drawer must show that Camila is the scenario alias and preserve the original Sandbox identity and Patient/{id}; source dates and source facts remain unchanged.",
+    "Separate three domains in the UI and data model: captured Epic clinical facts, synthetic OncoReady scenario/workflow facts, and actual provider evidence. The September 25 OncoReady appointment, diagnosis/regimen/labs/vitals already present in the scenario are not Epic facts unless the capture independently contains matching fields; otherwise they remain clearly scenario-labeled and cannot appear in the Epic-sourced section or source drawer as retrieved data.",
+    "Make the Epic connection visible in the existing staff case and Integrations surfaces without claiming a live production link. The selected path shows an explicit state such as 'Epic Sandbox • read-only captured data' with original capture time, opens a keyboard-operable source drawer, and explains the path Epic Sandbox → reviewed FHIR R4 JSON → OncoReady staff context. Replace the current Epic 'Not connected' treatment only after the actual capture and mapping are verified; never label local playback as live sync or a hospital/customer connection.",
+    "Keep Epic-derived clinical context staff-only. Patient, caregiver, transportation, public, and historical dispatch projections receive no Epic payload, source identity, medication, lab, or clinical provenance. Because reviewed static assets are publicly retrievable when bundled, UI filtering is presentation behavior rather than authorization; only Sandbox test data explicitly approved for distribution may enter the frontend bundle. If publication is not permitted, use a restricted recording environment or an authorized protected server boundary and return the task to planning.",
+    "Treat the reviewed local capture as the only playback source. A valid package renders offline with its original capturedAt. Missing files, invalid JSON/schema, checksum/reference mismatch detected by build/evidence validation, or unsupported content produces a truthful 'Epic capture unavailable' staff state and retains the synthetic workflow separately; no fallback fixture may be labeled Epic, connected, synchronized, or current.",
+    "Add no database table, migration, runtime Epic endpoint, queue, cache, deployment service, or infrastructure. The existing FastAPI deployment is not on the playback data path. Any future runtime SMART launch, continuous sync, production EHR connectivity, protected clinical API, or Epic write operation requires new architecture, authorization, contract, and security review.",
+    "Extend the visible staff experience inside the human-approved design system. Reuse current cards, chips, drawers/dialog behavior, typography, tokens, responsive layout, focus treatment and reduced-motion rules; design Phase A is a compatibility/extension plan for source, loading, unavailable, empty and success states, not a redesign or new page family.",
+    "No new ADR is required. This slice applies ADR-0002's truthful provenance/read-only/no-writeback boundary as narrowed by ADR-0004's saved-capture, offline-playback decision; it does not establish a new long-lived integration mode."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "An authorized capture could accidentally publish an access token, request header, unexpected record, restricted Sandbox content, or more clinical data than the story needs.",
+      "mitigation": "Stage privately, allowlist methods/resources/patient references, redact request evidence, scan for secret patterns, require explicit content/distribution review, and promote only the reviewed minimum package before the dedicated security review."
+    },
+    {
+      "severity": "high",
+      "description": "The existing staff state contains detailed synthetic diagnosis, regimen, medication, lab and vital values that could be presented as Epic-derived when the real capture does not contain them.",
+      "mitigation": "Keep EpicClinicalContext separate from WorkflowState, map only enumerated present FHIR paths with per-field provenance, label scenario facts separately, and compare every Epic-labeled UI value with the reviewed resource JSON."
+    },
+    {
+      "severity": "medium",
+      "description": "Using the Camila story name for a different Sandbox Patient can rewrite or obscure the real source identity and undermine the credibility the integration is meant to demonstrate.",
+      "mitigation": "Record the scenario alias binding in the manifest, preserve the original Patient resource untouched, and show both alias status and original source reference/identity in the staff source drawer and evidence."
+    },
+    {
+      "severity": "medium",
+      "description": "Static captured data can be mislabeled as live, freshly synchronized, production-connected, or evidence of an Epic/customer partnership.",
+      "mitigation": "Use the immutable capturedAt and captured_epic_sandbox mode everywhere, expose the read-only capture path, prohibit refresh-time timestamp changes, and reserve 'live' for an actual current successful request outside this release scope."
+    },
+    {
+      "severity": "medium",
+      "description": "FHIR search pagination or a permissive query could collect unrelated resources or follow an untrusted link.",
+      "mitigation": "Require explicit patient-scoped templates, resource and page ceilings, same-origin next links, allowlisted resource types, patient-reference validation, and fail-closed handling for unexpected Bundles or links."
+    },
+    {
+      "severity": "medium",
+      "description": "Malformed, missing, stale-browser-cached, or partially updated asset files can create a mixed snapshot or silently fall back to fabricated values during the recorded path.",
+      "mitigation": "Version assets under one captureId, validate manifest/resource references and checksums before build/release, load atomically by manifest, show a single unavailable state on any invalid required artifact, and never substitute an Epic-labeled fixture."
+    },
+    {
+      "severity": "medium",
+      "description": "Epic clinical context could leak into patient, caregiver, transportation, or public views through reuse of the shared scenario store.",
+      "mitigation": "Keep capture data outside mutable shared workflow state, pass it only to staff components, assert absence from non-staff/public projections and bundles rendered there, and make the publication boundary explicit in security review."
+    },
+    {
+      "severity": "low",
+      "description": "New source/connectivity UI can drift from the locked interface or become unusable on keyboard, mobile, or reduced-motion settings.",
+      "mitigation": "Require the digest-bound compatibility design gate, reuse current primitives, provide textual states in addition to color, preserve focus return for the drawer, and compare affected desktop/mobile screenshots with the baseline."
+    }
+  ],
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Before BUILD_READY, the orchestrator must create/register the versioned capture-manifest JSON Schema contract and add its path to task.json. Keep it a file contract; do not add a runtime Epic API contract.",
+    "Authorized Epic Sandbox access remains an implementation prerequisite. Do not ask for or commit secrets. If access is unavailable, frontend mapping may use an unmistakably synthetic development fixture, but EPIC-001 acceptance remains open and no UI may claim Epic is connected.",
+    "Use sequential handoffs on feature/two-day-demo. The backend owner should implement and test only the private GET-only capture utility and private staging output; the orchestrator executes/reviews the authorized capture; the frontend owner promotes only the approved package and implements the loader/mapper/staff UI. Do not let a backend role write directly into frontend paths during scope checking.",
+    "Likely backend work is a narrowly scoped operator command plus mocked tests for the method/resource/query allowlist, patient scoping, pagination ceiling, same-origin next links, redaction, malformed Bundles and deterministic manifest/checksum generation. No deployed route, migration, or database repository is needed.",
+    "Likely frontend work is a versioned Epic capture asset directory, typed validation/adapter code, staff-case source status/drawer, the existing Integrations page, and focused tests. Do not store the Epic package inside localStorage or merge it into checkpoint/reset state.",
+    "The staff source drawer should expose source environment, FHIR R4, read-only capture mode, original capturedAt, resource type/ID inventory, source identity versus Camila alias, and field-level provenance for visible values. It should not expose tokens, authorization details, raw headers, or claims of production connectivity.",
+    "Keep missing data honest: omit unavailable medication/appointment/lab rows or show 'Not present in this captured record.' Do not backfill them from the current scenario object inside an Epic-labeled section. Scenario-derived values may remain in separate clearly labeled workflow areas where the product story requires them.",
+    "TARGETED independent testing should cover: actual capture/manifest inspection; request method and scope; manifest/schema/checksum validation; exact JSON-to-UI mapping; alias/source identity preservation; unchanged source dates; missing optional resource families; offline reload with stable capturedAt; malformed/missing package unavailable state; no Epic writeback; and absence of Epic clinical/source fields from public, patient, caregiver and transportation views.",
+    "Dedicated security review is required on the integrated, verified revision because this task crosses an authorized external API and decides what captured test clinical data becomes publicly bundleable. Review token/secret exclusion, data minimization, patient scoping, request allowlist, same-origin pagination, content/distribution approval, logging, and non-staff exposure.",
+    "Frontend design Phase A and the digest-bound compatibility gate are required before production frontend edits. Preserve the existing visual lock while adding explicit loading, valid capture, empty optional section, unavailable capture and source-drawer states.",
+    "If implementation needs runtime SMART authorization, live refresh, a protected clinical endpoint, restricted source records, broader resource inventory, or any Epic write operation, stop and return EPIC-001 to planning; the current contract, risk analysis and offline playback architecture no longer suffice."
+  ],
   "execution": {
-    "contract_required": null,
-    "test_depth": null,
-    "security_risk": null,
-    "security_review_required": null
+    "contract_required": true,
+    "test_depth": "TARGETED",
+    "security_risk": "STANDARD",
+    "security_review_required": true
   }
 }

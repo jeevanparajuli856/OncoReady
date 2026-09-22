@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oncoready.me/contracts/epic-capture-manifest.v1.schema.json",
+  "title": "OncoReady Epic Sandbox Capture Manifest v1",
+  "description": "Immutable provenance and integrity contract for a reviewed, read-only Epic FHIR R4 Sandbox capture used by the staff presentation.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "captureId",
+    "mode",
+    "fhirVersion",
+    "source",
+    "capturedAt",
+    "patient",
+    "scenarioBinding",
+    "requests",
+    "resources",
+    "review"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "captureId": {
+      "type": "string",
+      "pattern": "^epic-sandbox-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{8}$"
+    },
+    "mode": {
+      "const": "captured_epic_sandbox"
+    },
+    "fhirVersion": {
+      "const": "4.0.1"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["label", "environment", "fhirBaseUrl"],
+      "properties": {
+        "label": {
+          "const": "Epic FHIR Sandbox"
+        },
+        "environment": {
+          "const": "Non-Production Sandbox"
+        },
+        "fhirBaseUrl": {
+          "const": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"
+        }
+      }
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["resourceType", "id"],
+      "properties": {
+        "resourceType": {
+          "const": "Patient"
+        },
+        "id": {
+          "$ref": "#/$defs/fhirId"
+        }
+      }
+    },
+    "scenarioBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["scenarioId", "presentationAlias", "sourceIdentity", "identityMatch"],
+      "properties": {
+        "scenarioId": {
+          "const": "camila-demo-v2"
+        },
+        "presentationAlias": {
+          "const": "Camila Lopez"
+        },
+        "sourceIdentity": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "identityMatch": {
+          "type": "boolean"
+        }
+      }
+    },
+    "requests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["method", "resourceType", "redactedPath"],
+        "properties": {
+          "method": {
+            "const": "GET"
+          },
+          "resourceType": {
+            "$ref": "#/$defs/allowedResourceType"
+          },
+          "redactedPath": {
+            "type": "string",
+            "pattern": "^/(Patient|Appointment|MedicationRequest|Observation)(/|\\?)",
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "contains": {
+        "type": "object",
+        "required": ["resourceType"],
+        "properties": {
+          "resourceType": {
+            "const": "Patient"
+          }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["resourceType", "id", "path", "sha256"],
+        "properties": {
+          "resourceType": {
+            "$ref": "#/$defs/allowedResourceType"
+          },
+          "id": {
+            "$ref": "#/$defs/fhirId"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^resources/(patient|appointment|medication-request|observation)-[A-Za-z0-9.-]+\\.json$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reviewedAt", "reviewedBy", "distribution"],
+      "properties": {
+        "status": {
+          "const": "approved_for_frontend"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "distribution": {
+          "const": "reviewed_epic_sandbox_test_data"
+        }
+      }
+    }
+  },
+  "$defs": {
+    "fhirId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.-]{1,64}$"
+    },
+    "allowedResourceType": {
+      "type": "string",
+      "enum": ["Patient", "Appointment", "MedicationRequest", "Observation"]
+    }
+  }
+}

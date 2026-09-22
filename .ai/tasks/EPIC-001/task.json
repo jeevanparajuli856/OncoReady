@@ -3,7 +3,7 @@
   "task_id": "EPIC-001",
   "title": "Captured Epic Sandbox JSON in the staff UI",
   "type": "feature",
-  "status": "PLANNING",
+  "status": "BUILD_READY",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
@@ -16,7 +16,9 @@
     "review": "codex"
   },
   "spec": "docs/features/EPIC-001.md",
-  "contracts": [],
+  "contracts": [
+    "contracts/schemas/epic-capture-manifest.v1.schema.json"
+  ],
   "scope": {
     "database": [
       "backend/alembic/**"
