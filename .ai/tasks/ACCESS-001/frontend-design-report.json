@@ -2,31 +2,66 @@
   "schema_version": "1.0",
   "task_id": "ACCESS-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "NONE",
+  "status": "DESIGN_READY",
+  "summary": "Reuse the locked Clinical Glass and Continuity Aurora system for one truthful prepared-workspace gateway, a record-free public Continuity Rescue Story, and exactly two pricing plans while preserving scenario state across persona switches and restoring the documented start on reset.",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md, ADR-0003, and runtime UI at c099646b7a451ff4e9336f1671e8450c78729c3b",
+  "design_system_action": "REUSE",
   "visual_direction": {
-    "layout": "",
-    "color": "",
-    "typography": "",
-    "spacing_and_shape": "",
-    "component_presentation": ""
+    "layout": "Preserve the public header, hero, proof strip, section order, FAQ, closing CTA, footer, and established workspace layouts. Replace the current direct-entry role cards and state-derived live-record preview with a record-free Continuity Rescue Story in the same three-card grid: Surface the signal, Give the work an owner, Confirm the current plan. Cards are static articles, not workspace links. Replace the four operating-model cards in #pricing-section with exactly two equal cards. Every public entry point opens one shared gateway; the dialog lists Staff first as the recorded start, then Patient, Caregiver, and Transportation. Transportation opens the existing staff logistics context, not a new page family.",
+    "color": "No token changes. Reuse landing canvas, ink, indigo actions, mint support/resolution, amber risk, cool borders, soft shadows, and landing-only coral/lavender atmosphere. Story cards retain existing indigo/coral/mint treatments without making decorative color a clinical signal. Pilot may use the current featured indigo treatment; Network uses the same white/glass card family.",
+    "typography": "Keep Outfit display, Poppins/Plus Jakarta Sans body, current scale, and sentence-case hierarchy. Public copy never interpolates WorkflowState or names a patient, MRN, diagnosis, treatment, source, appointment, or readiness state. Pricing copy is exact: Pilot; $18,000/year; $1,500/month billed annually; 5 staff seats; 1 site. Network shows Talk to us and no numeric price. Avoid sign-in, access-granted, checkout, email-sent, provider-connected, or purchase-success language.",
+    "spacing_and_shape": "Reuse the 4/8px rhythm, 24–32px public radii, 16–24px dialog/product radii, one-pixel borders, and existing shadows. Keep 44px public, dialog, and mobile targets. Story cards retain current proportions and media dimensions. Pricing cards align plan, primary value, supporting line, inclusions, and footer; Talk to us occupies Network's value slot. The dialog is centered above 640px and width-safe with one bounded scrolling body below it.",
+    "component_presentation": "Reuse Header, landing buttons/cards, ScrollReveal, modal shell, useDialogFocus, WorkspaceDock, chips, icon wells, and workspace chrome. Remove the public TreatmentReadinessGraph, avatar, identity, appointment line, case row, and direct Patient/Staff buttons; replace them with generic stage copy only. Pilot has one Open prepared workspace button that opens the shared gateway. Network has no checkout; Talk to us is the nonnumeric value and its contact control is disabled with visible explanation that contact setup is outside this prepared experience. The gateway title is Prepared workspaces; supporting copy says these are local views and do not sign in or grant provider access. Four native-button choices show role, scope, icon, and arrow: Staff/Recorded start, Patient, Caregiver/Transportation details only, Transportation/Staff logistics context. Selection routes immediately without fake authentication or success UI. In-workspace switching stays direct and preserves state; returning to Staff preserves its active route; reset closes transient UI and restores the documented start."
   },
   "motion": {
-    "strategy": "",
-    "transitions": "",
-    "microinteractions": "",
-    "reduced_motion": ""
+    "strategy": "Preserve the current one-time ScrollReveal family. The three static story stages retain the existing patient guided lift, staff center resolve, and caregiver supported arrival variants. The two pricing cards may reuse the small SaaS-card rise. The gateway keeps the existing short dialog entrance; route selection has no authentication animation.",
+    "transitions": "Keep existing 140–240ms hover/press/focus feedback and 540/620/560ms story arrivals with the approved easing. Static story articles do not lift or imply clickability. Gateway choices may use the current 1–2px lift and arrow nudge; disabled Network contact has no pressed motion. Animate only opacity and transform for entrances.",
+    "microinteractions": "All public workspace controls open the same dialog, focus moves inside, Escape/close dismisses it, and focus returns to the exact trigger. Native gateway buttons support Enter/Space. Pilot opens the gateway; Network's disabled contact explanation is visible without hover. Persona switching changes presentation only; reset is deterministic and claims no server action.",
+    "reduced_motion": "The union of prefers-reduced-motion and product motion-off renders story/pricing content immediately, changes smooth scrolling to auto, and removes modal, dock, and decorative hover transforms. Dialog focus, routing, switching, and reset stay identical."
   },
   "responsive": {
-    "strategy": "",
-    "notes": ""
+    "strategy": "Mobile-first from 320px. Story, pricing, and gateway choices stack in one column through 767px; at 768px pricing and gateway may use two columns; at 1024px retain the three-column story, equal two-card pricing row, centered dialog, and current workspace layouts. No component creates page-level horizontal overflow.",
+    "notes": "Verify 320x568, 390x844, 768x1024, and 1440x900. At 390x844 the dialog header and Staff choice are visible, remaining choices scroll inside the dialog, close stays reachable, and the mobile dock cannot cover focus. Public dock persona items open the gateway instead of bypassing it. At 1440x900 pricing aligns and the dialog fits without page scroll."
   },
-  "application_states": [],
-  "accessibility": [],
-  "assets_or_dependencies": [],
+  "application_states": [
+    "Public default and no-observer/canvas fallback remain complete, visible, and record-free.",
+    "Gateway closed/open/dismissed with focus entry, containment, Escape/close, and trigger restoration.",
+    "Gateway Staff recorded start plus Patient, Caregiver, and Transportation local destinations; no authentication or authorization success.",
+    "Pilot enabled gateway action with exact terms; Network Talk to us with no number and an explained disabled contact action; no checkout.",
+    "Persona switching and Staff return preserve scenario progress and staff route; reset restores initial scenario, route, filters, and transient UI.",
+    "Malformed or wrong-version persistence falls back to the initial fixture without projecting record data publicly.",
+    "Reduced-motion mode keeps identical content, focus, navigation, switching, and reset behavior.",
+    "Off-path sign-up, recovery, provider, save, email, checkout, and contact actions are hidden or honestly disabled/read-only without success feedback."
+  ],
+  "accessibility": [
+    "Use articles for static story stages and native buttons for gateway choices and enabled actions.",
+    "Retain the 2px focus-visible outline, logical Staff-first tab order, and 44px public/dialog/mobile targets.",
+    "Dialog has title and description, initial focus, focus containment, Escape/close, and exact trigger restoration through useDialogFocus.",
+    "Network's native disabled control has visible aria-describedby explanation; nothing depends on hover alone.",
+    "Pricing relationships are explicit in text; Network exposes no visually hidden numeric amount.",
+    "Selected, disabled, and status states use text plus icon/shape/border, never color or motion alone.",
+    "Both reduced-motion sources render final content immediately and preserve semantics.",
+    "Public DOM and accessible names exclude controlled identity, MRN, diagnosis, treatment, source content, and scenario state; prepared selection never grants provider authority.",
+    "Caregiver remains transportation-only after entry."
+  ],
+  "assets_or_dependencies": [
+    "Reuse official logo assets unchanged and current story images only as dimensioned, lazy, empty-alt decoration.",
+    "Reuse React, TypeScript, existing CSS/Tailwind tokens, Lucide/Tabler, ScrollReveal, useDialogFocus, WorkspaceDock, reducer, persistence, and current workspace components.",
+    "Add no runtime, animation, auth, pricing, checkout, contact, backend, contract, or infrastructure dependency."
+  ],
   "design_system_changes": [],
   "blockers": [],
-  "notes_for_codex": []
+  "notes_for_codex": [
+    "Screenshot target A: / at 1440x900, scrollY 0, before/after at baseline c099646b7a451ff4e9336f1671e8450c78729c3b; compare header, hero, logo, Continuity Field, tokens, type, spacing, radii, and shadows for drift.",
+    "Screenshot target B: / at 1440x900 with #workspaces 88px below viewport top; before shows current role/live proof, after shows the three record-free story stages with no identity, treatment, graph, case row, or persona link.",
+    "Screenshot target C: / at 1440x900 with #pricing-section 88px below viewport top; after shows exactly Pilot and Network, exact Pilot terms, no Network number, one gateway action, and one explained disabled contact action.",
+    "Screenshot target D: / at 390x844, capture scrollY 0, #workspaces, and #pricing-section as matched frames; verify wrapping, 44px targets, dock clearance, and no horizontal overflow/direct bypass.",
+    "Screenshot target E: / at 1440x900 after hero gateway trigger, plus a second frame with keyboard focus on Staff; show centered Prepared workspaces dialog, Staff first, all four choices, generic scope copy, and no record data.",
+    "Screenshot target F: / at 390x844 with prefers-reduced-motion: reduce after header gateway trigger; show final-position dialog, close, Staff first, reachable choices, and locked background.",
+    "Screenshot target G: 1440x900 immediately after gateway Staff selection and after Patient→Caregiver→Transportation→Staff switching; confirm established workspace styling, no dead end, and preserved scenario/route.",
+    "Centralize one typed destination list and gateway handler. Header, hero, story/Pilot/closing CTAs, mobile menu, and public dock must not retain independent persona routing.",
+    "Keep exactly two local typed pricing definitions; tests reject a third card, assert exact Pilot terms, and assert no currency/numeric Network price.",
+    "Phase B checks: public→gateway→Staff path, all public triggers, public DOM exclusion, four destinations, switching/Staff return, reset, honest off-path controls, keyboard focus, target viewports, reduced motion, smoke tests, and production build.",
+    "Ready for exact-digest compatibility review. Do not edit production code until the committed report is approved and the frontend design gate passes; any report change needs fresh review."
+  ]
 }
