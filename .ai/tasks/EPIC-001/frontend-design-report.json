@@ -2,31 +2,64 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "NONE",
+  "status": "DESIGN_READY",
+  "summary": "Extend the locked staff case with one Epic tab, between Labs and Graph, that renders the reviewed Camila Epic Sandbox capture locally while keeping captured facts and provenance visibly separate from OncoReady's generated scenario and workflow. Keep Integrations as a secondary technical view; never imply live synchronization, production connectivity, writeback, partnership, or a hospital installation.",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md, ADR-0003, current Clinical Glass runtime components, and StaffCaseWorkspace at pre-handoff baseline 5aaef0a",
+  "design_system_action": "REUSE",
   "visual_direction": {
-    "layout": "",
-    "color": "",
-    "typography": "",
-    "spacing_and_shape": "",
-    "component_presentation": ""
+    "layout": "Preserve the StaffCaseWorkspace page, patient summary, width, and page order. Keep one compact horizontal tab rail ordered Actions, Regimen, Labs, Epic, Graph; no route or page is added. The Epic panel starts with a source-boundary card carrying the official Epic mark, exact heading `Epic Sandbox · Read-only captured data`, a static captured/read-only symbol, immutable capture time, and `View source details`. Below, reuse cards and metric tiles for Patient demographics, Available medications, Laboratory results, and Epic appointment records. Existing Actions, Regimen, and Labs retain generated content with a compact `OncoReady scenario` or `OncoReady workflow` label. A right-edge viewport-bounded drawer shows source metadata, alias/source identity, GET-only request evidence, resource counts, IDs, checksums, and field provenance. Integrations shows the same capture secondarily as Epic Sandbox → reviewed FHIR R4 JSON → OncoReady staff context.",
+    "color": "Change no tokens. Reuse white/cream glass, ink, indigo structure/focus, muted secondary text, mint only for reviewed/read-only status, and amber for unavailable or missing-source states. Preserve the official Epic SVG #df004c unchanged and localize it to Epic source boundaries; never recolor it or combine it with OncoReady branding. Pair the static Lucide sync/read-only icon with `Captured once · no live sync`; color and icon alone never convey source or state.",
+    "typography": "Keep Outfit, Poppins/Plus Jakarta Sans, and JetBrains Mono roles and the current scale. Primary copy is exactly `Epic Sandbox · Read-only captured data`. Show `Captured Sep 22, 2026, 2:01 AM CT` in the panel and the exact UTC value `2026-09-22T07:01:25Z` in details. Missing fields and families say exactly `Not present in captured record`; invalid packages say `Epic capture unavailable`. Use `Captured from Epic Sandbox`, `Reviewed FHIR R4 JSON`, `Offline playback`, and `No live sync`, never Connected, Live, Synced now, Production, Partner, or Last updated.",
+    "spacing_and_shape": "Reuse the 4/8px rhythm, operational 16px radii, one-pixel borders, compact shadow, p-5/p-6 padding, metric tiles, chips, filter pills, and existing targets. The source header wraps to one column on mobile. Demographics move from one to up to four compact tiles; medication, lab, and appointment cards stack. The drawer is full height at the right edge, width min(32rem, 100vw), with one scrolling body. Long IDs/checksums wrap or locally scroll without page-level overflow.",
+    "component_presentation": "Give the existing pill rail accessible tab behavior with no visible restyle. The source card shows the official Epic logo plus a static RefreshCw/CloudDownload-style icon and Lock/Read-only text. Map only reviewed source fields: name, birth date, administrative sex, active status and preferred language; medication display/status/intent/authored date/instruction; lab name/value/unit/reference/interpretation/effective or issued date; appointment status/service/start/end/location. Do not show Patient address/telecom in the primary panel. Do not infer lab normality or cross-fill from WorkflowState. A present resource with a missing value, including Genotype, shows the explicit missing state while retaining present date/interpretation. The drawer uses the existing dialog treatment, closes by button/Escape/backdrop, traps focus, restores the opener, and excludes raw headers, tokens, contact details, and OAuth controls. Integrations reuses the same capture metadata and says `No live sync or writeback`; unrelated integration styling stays unchanged."
   },
   "motion": {
-    "strategy": "",
-    "transitions": "",
-    "microinteractions": "",
-    "reduced_motion": ""
+    "strategy": "Use restrained motion only for spatial continuity. Tab content replaces in place; the source drawer may use the existing short backdrop fade and right-edge translation. Captured facts, counts, timestamps, and the sync symbol never animate or pulse. Add no polling, decorative refresh loop, toast sequence, or motion family.",
+    "transitions": "Reuse current 140–240ms hover, focus, and modal timing. Loading disables Retry immediately; success replaces the unavailable card without layout jump and announces once. Drawer focus returns after its exit, or immediately under reduced motion.",
+    "microinteractions": "Native tabs activate with click/Enter/Space and ArrowLeft/ArrowRight/Home/End roving focus. `View source details` exposes dialog state, moves focus inside, and restores the exact opener. Native details/summary groups reveal Patient, Appointment, MedicationRequest, and Observation IDs. Retry is the only recovery action. No UI action changes capturedAt, resource dates, IDs, checksums, or WorkflowState.",
+    "reduced_motion": "The union of prefers-reduced-motion and product motion-off renders the drawer/backdrop and tab content immediately, removes hover lift and loading pulse, and preserves focus containment/return, Escape/backdrop close, tabs, Retry, provenance, and timestamps."
   },
   "responsive": {
-    "strategy": "",
-    "notes": ""
+    "strategy": "Preserve the existing page shell from 320px. The five-tab rail remains one labeled horizontal scroll region on narrow screens and compact inline rail on desktop. Source identity/actions stack below 640px; fact grids move from one to two columns at existing breakpoints. The drawer is full-width on narrow phones and right-aligned at up to 32rem above 640px with safe-area padding. Integrations stacks its path on mobile and reads left-to-right at desktop.",
+    "notes": "Verify 320x568, 390x844, 768x1024, and 1440x900. The logo keeps its ratio, exact heading wraps, selected Epic tab stays reachable, no FHIR ID escapes the drawer, close remains visible, and the dock does not cover the final row. Compare Actions/Regimen/Labs/Graph before/after to reject token, width, typography, and spacing drift outside compact source labels."
   },
-  "application_states": [],
-  "accessibility": [],
-  "assets_or_dependencies": [],
+  "application_states": [
+    "Loading: `Loading captured Epic Sandbox data…` in role=status with stable placeholders; source details disabled with a visible reason.",
+    "Valid capture: exact source label/logo, immutable capture time, reviewed offline state, source-only demographics/medication/labs/appointments, and enabled drawer; reload never changes capturedAt.",
+    "Missing optional family or field: keep the labeled section/row and render `Not present in captured record`; never substitute WorkflowState or inferred content.",
+    "Malformed manifest, missing file, unsupported mode/schema, bad reference, or checksum failure: show `Epic capture unavailable` and explain that OncoReady workflow remains available; render no Epic facts, counts, connection state, or fallback fixture.",
+    "Retry loading/failure/success: one disabled loading action, role=alert failure, and deterministic recovery to the same immutable capture.",
+    "Drawer closed/open/group expanded/dismissed by close, Escape, or backdrop with focus contained and restored.",
+    "Offline playback renders identically and says `Captured once · no live sync`; no background Epic request or freshness claim.",
+    "Scenario separation: generated appointment/regimen/labs/work remains in existing explicitly labeled sections; Epic appointments never replace the OncoReady September 25 appointment.",
+    "Non-staff views remain unchanged and contain no Epic facts, identity, resource IDs, or capture metadata.",
+    "Reduced motion preserves all states, semantics, focus behavior, and provenance with movement removed."
+  ],
+  "accessibility": [
+    "Use native button tabs in one tablist with tab/tabpanel relationships, aria-selected/aria-controls, roving tabIndex, ArrowLeft/ArrowRight/Home/End, and existing visible focus.",
+    "Use semantic sections/headings, dl/dt/dd for demographics/provenance, meaningful lists for resources, and time/dateTime with explicit CT/UTC meaning.",
+    "Official Epic logo uses alt=Epic where meaningful; repeated marks and adjacent-text Lucide icons are decorative. The static sync icon never supplies the accessible name alone.",
+    "Drawer uses aria-modal, labelled title/description, useDialogFocus containment, initial focus, Escape/backdrop/visible-close dismissal, background non-interaction, and exact opener restoration.",
+    "Full IDs/checksums remain selectable, labelled, wrapped, and keyboard-reachable through native details/summary controls.",
+    "Use one polite loading/success live region and role=alert failure; do not announce the full record on tab activation.",
+    "Disabled controls have visible aria-describedby reasons; missing/unavailable states use icon, heading, and text rather than color or opacity alone.",
+    "At 200% zoom and 320px, labels, instructions, dates, and IDs wrap or locally scroll without clipping or page overflow.",
+    "Only staff and staff Integrations render capture content; caregiver/transport accessibility trees remain logistics-only, and UI filtering is not described as security."
+  ],
+  "assets_or_dependencies": [
+    "After the gate, promote only `/tmp/oncoready-epic-reviewed-camila`: capture ID epic-sandbox-20260922T070125Z-0dac7d6b, capturedAt 2026-09-22T07:01:25Z, approved_for_frontend, source identity Camila Maria Lopez, identityMatch true, and inventory Patient 1 / Appointment 13 / MedicationRequest 1 / Observation 5.",
+    "After the gate, promote exact `/tmp/epic-logo.svg` with viewBox 0 40 160 80, #df004c fill, and SHA-256 d13f0cbac8390b6b27f2432f03bc242c05470d6cbf3f59ad77b3b958564155fb; do not redraw, recolor, or modify it.",
+    "Reuse React 18, strict TypeScript, Vite assets, current tokens/components/Lucide/useDialogFocus. Add a typed loader/adapter outside WorkflowState plus build/test-time manifest, reference, and checksum validation.",
+    "Add no runtime package, state store, date library, endpoint, live SMART/OAuth client, database, polling, service worker, or infrastructure dependency."
+  ],
   "design_system_changes": [],
   "blockers": [],
-  "notes_for_codex": []
+  "notes_for_codex": [
+    "Screenshot desktop/mobile success, source drawer, loading, missing field/family, unavailable/retry, Integrations, reduced motion, and unchanged pre-existing tabs against baseline 5aaef0a.",
+    "Implementation must keep the capture outside WorkflowState/localStorage/reset/checkpoints and map only the architecture allowlist. Never infer diagnosis, regimen, provider, normality, vitals, dosage, or dates.",
+    "Targeted tests compare UI values/dates to raw resources; cover offline stable capturedAt, missing/malformed/reference/checksum failure, drawer IDs/focus, tab keyboard use, scenario separation, Integrations consistency, and absence from patient/caregiver/transport/public views.",
+    "The reviewed Sandbox bundle is a publication decision, not an authorization boundary. UI copy must not claim staff filtering protects static assets.",
+    "The requested `.agents/skills/frontend-development/SKILL.md` is absent. Phase A used frontend/AGENTS.md, available frontend-patterns/frontend-a11y skills, and the authoritative design system; this is not an implementation blocker.",
+    "Ready for exact-digest compatibility review. Do not promote assets or edit production code/tests until this report is committed, approved, and the EPIC-001 frontend design gate passes; report edits require a new digest."
+  ]
 }
