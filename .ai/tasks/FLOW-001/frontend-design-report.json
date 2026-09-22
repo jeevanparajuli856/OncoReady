@@ -2,31 +2,76 @@
   "schema_version": "1.0",
   "task_id": "FLOW-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "NONE",
+  "status": "DESIGN_READY",
+  "summary": "Extend the locked Clinical Glass workflow surfaces with one coherent Camila scenario: exact reply-to-split-work progression, compact task accountability metadata, separate nurse acknowledgment and human disposition, plan-version acknowledgment and invalidation, private checkpoints/reset, and matching graph/timeline states derived from the existing shared store.",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md, ADR-0003, ACCESS-001 approved design/runtime, and current UI at 46105d3e024feabdd5196eb6fdc662e4aa895277",
+  "design_system_action": "REUSE",
   "visual_direction": {
-    "layout": "",
-    "color": "",
-    "typography": "",
-    "spacing_and_shape": "",
-    "component_presentation": ""
+    "layout": "Preserve every current page family and workspace shell. Extend the existing Staff case workspace as the primary FLOW surface: the prepared reply appears once in its current context, followed by distinct clinical-contact and transportation-recovery cards. Each selected task keeps its existing card hierarchy and gains a compact four-field accountability row for Owner, Next action, Due, and Waiting on. The clinical card uses two sequential in-card action regions: Accept ownership, then Record contact & disposition; acknowledgment never visually closes the blocker. PatientResolutionView keeps its existing plan-review layout and adds Current plan vN beside the logistics summary plus an acknowledgment state tied to that version. Checkpoint and Reset controls stay private in existing staff/admin presentation chrome as a compact labeled control group, never on public, patient, or caregiver pages. TreatmentReadinessGraph retains its three-column desktop and stacked mobile structure; AuditTimeline retains its current filtered list. No dashboard, route, or page family is added.",
+    "color": "Make no token changes. Use existing amber plus warning icon/text for open, waiting, failed, invalidated, or blocking states; indigo for selected/in-progress/ownership accepted; mint plus check icon/text only for completed human disposition, complete current logistics plan, current-version patient acknowledgment, and final continuity confirmation; muted/slate for not-yet-available states. Acknowledged clinical work remains indigo/amber rather than mint. Plan invalidation uses the existing amber treatment, not a new destructive palette. Graph edges and nodes follow the same semantic mapping and always include visible text labels.",
+    "typography": "Keep current Outfit/Poppins/Plus Jakarta Sans/JetBrains Mono roles and scales. Task metadata uses existing compact label/value typography; due times use the scenario formatter and explicitly say Scenario target so they cannot read as clinical policy or live SLA. Preserve the exact reply: “My ride was cancelled—and I’m not feeling well today.” Human action copy is neutral: Ownership accepted; Contact recorded; Human disposition recorded; Follow-up still blocking; No blocking follow-up recorded. Never use advice generated, medically cleared, safe for treatment, attendance confirmed, or automated clinical assessment. Plan labels use Current plan vN and Acknowledged plan vN; obsolete acknowledgment reads Acknowledgment expired after plan change.",
+    "spacing_and_shape": "Reuse existing staff card padding, 10–16px operational radii, one-pixel line borders, compact shadows, 4/8px rhythm, chips, metric tiles, and 44px mobile/patient controls. The accountability row is a two-by-two compact grid below task identity on medium widths and one column on narrow screens; it must not widen the case workspace. Clinical action regions share the existing divider and button geometry. Plan-version and waiting labels use existing chips, not new badge shapes. Checkpoint controls wrap within the current toolbar and never obscure case actions. Graph nodes retain current dimensions and timeline rows retain their established density.",
+    "component_presentation": "Reuse StaffCaseWorkspace task cards, PatientResolutionView plan panels, CaregiverView projection, TreatmentReadinessGraph nodes, AuditTimeline rows, status chips, buttons, dialogs, and header/reset affordance. Render task metadata from shared typed state, never component-local copy. Clinical card sequence: open task shows Sarah Jenkins, RN; next action Contact Camila and record a human disposition; due Sep 24, 10:42 AM CT; waiting Patient contact. Accept ownership changes only ownership state and enables the existing disposition form. The disposition form labels contact outcome, neutral disposition text, and whether follow-up remains blocking; pending submit disables both actions and preserves entered text, failure shows an inline alert with Retry, success changes the card to Human disposition recorded and updates graph/timeline. Transportation card shows Marcus Vance, MSW; next action Recover outbound and return plan with backup; due Sep 24, 11:12 AM CT; waiting Current transport plan, then reflects failure/reopen or complete-plan state without implementing RIDE-001 dispatch replay. Patient acknowledgment is disabled until human disposition is nonblocking and the current outbound/return/contact/backup plan is complete. Confirming shows inline pending text; success records Acknowledged plan vN. Any material ride failure/change increments vN, replaces success with an amber expired notice, reopens transport, and disables confirmation until the new plan is complete. Checkpoint selection uses a labeled select/menu plus Load checkpoint; loading disables checkpoint/reset controls, invalid checkpoint shows inline failure without changing the current scene, success announces the loaded checkpoint. Reset uses the existing confirmation treatment and states that only the synthetic scenario resets. Graph node labels distinguish Ownership accepted, Contact/disposition required, Transport plan incomplete/failed/complete, Patient acknowledgment pending/expired/current, and Continuity plan confirmed. Timeline rows use stable IDs, fixed scenario time with CT, actor, action, and state diff; empty filters show an existing-style quiet empty state. Prepared history is labeled Prepared scenario history and opening it is read-only; processing the final reply once shows Already opened as split work on repeat rather than duplicating tasks."
   },
   "motion": {
-    "strategy": "",
-    "transitions": "",
-    "microinteractions": "",
-    "reduced_motion": ""
+    "strategy": "Use the existing restrained workspace motion only for comprehension. Task creation may use the current short fade/rise once; graph nodes and edges transition between labeled states in place; timeline adds one row without reanimating prior rows. Plan invalidation and checkpoint/reset replace content in place without celebratory motion. No scroll choreography or new animation family is introduced.",
+    "transitions": "Keep existing 140–240ms control/status transitions and current graph dash/pulse behavior only while motion is allowed. Ownership acknowledgment updates the clinical card in place; disposition success, transport failure/recovery, plan-version invalidation, and final confirmation update the corresponding task, graph node, status chip, and timeline row together. Loading disables the initiating control immediately so double clicks cannot show duplicate progress.",
+    "microinteractions": "Buttons retain existing hover/press/focus behavior. Submitting the exact reply focuses the newly created split-work heading; successful ownership/disposition/plan acknowledgment exposes a polite status message and leaves focus on the result heading or initiating control. Failed action/checkpoint states use an inline role=alert and Retry. Loading labels describe the actual action: Accepting ownership…, Recording disposition…, Loading checkpoint…, Resetting scenario…, Confirming plan…. Duplicate/replayed commands show the stable existing result, not a second toast/event. Selecting a graph node continues to reveal its detail using native keyboard-operable controls.",
+    "reduced_motion": "Effective reduced motion remains the union of prefers-reduced-motion and product motion-off. Under either source, task/timeline additions and graph changes render immediately at final position; graph dash/pulse, smooth scroll, card lift, and confirmation celebration stop. Text labels, icons, focus movement, polite/alert announcements, command results, plan invalidation, checkpoints, reset, and closure rules remain identical."
   },
   "responsive": {
-    "strategy": "",
-    "notes": ""
+    "strategy": "Preserve current responsive shells from 320px. Task accountability fields and action regions stack in one column at 320–639px, become a two-column metadata grid where space allows, and retain the compact staff layout at desktop. Graph nodes stay in dependency order Clinical → Treatment event → Transport → Patient acknowledgment on narrow screens, with textual connectors/status summaries replacing reliance on desktop SVG geometry. Timeline filters use the existing labeled horizontal rail without page overflow. Checkpoint controls wrap inside staff chrome; dialogs remain viewport-bounded.",
+    "notes": "Verify 320x568, 390x844, 768x1024, and 1440x900. No action, metadata field, status label, or focus ring may clip. Mobile dock and sticky staff chrome must not cover the final task action or timeline filter. Long exact reply, neutral disposition, waiting reason, and scenario timestamps wrap without truncating essential meaning. Caregiver remains logistics-only at every width."
   },
-  "application_states": [],
-  "accessibility": [],
-  "assets_or_dependencies": [],
+  "application_states": [
+    "Risk checkpoint: exact prepared reply is available once; split work has not yet been created and graph reads Treatment at risk.",
+    "Split work: one clinical-contact task and one transportation-recovery task show stable ID, owner, next action, scenario due time, and waiting reason; timeline contains one source event and deterministic split events.",
+    "Clinical open → ownership loading/failure/accepted → disposition form loading/failure → nonblocking completed or follow-up still blocking; acknowledgment alone never resolves the node.",
+    "Transport open/incomplete → current plan complete → primary failed or material plan changed → blocker reopened → recovered complete plan; detailed dispatch replay remains RIDE-001 scope.",
+    "Patient plan unavailable/disabled → current plan vN reviewable → confirming → acknowledged vN → expired after plan becomes vN+1 → current-version acknowledgment restored.",
+    "Continuity states: Treatment at risk, work in progress, waiting for human clinical disposition, waiting for complete transport plan, waiting for current-plan acknowledgment, and Continuity plan confirmed; every open blocker prevents confirmation.",
+    "Checkpoint default/loading/failure/success for start, context/insights, split work, failed ride, recovered plan, and final confirmation; loading reconstructs commands and does not show an independently edited snapshot.",
+    "Reset confirmation/loading/failure/success restores the canonical start and closes transient dialogs/forms while external evidence/live-attempt storage remains untouched.",
+    "Prepared history loading/empty/read-only/reopened; only its final reply can open split work, and Already opened as split work prevents duplicate effective transitions.",
+    "Timeline all/role filter/empty filter and graph node selected states remain consistent with task counts, plan version, and current closure selector.",
+    "Persistence invalid/stale/impossible state falls back to canonical start with a quiet recovered-state notice; no contradictory confirmed state is rendered.",
+    "Reduced-motion mode presents every state and transition with identical text, focus, and control availability."
+  ],
+  "accessibility": [
+    "Use native buttons, select/option or established menu semantics, labeled form controls, and fieldset/legend for the disposition blocking choice; associate errors/help through aria-describedby and aria-invalid.",
+    "Maintain heading order, the global 2px focus-visible outline, logical action order, and 44px mobile/patient targets. Do not move focus merely because a derived graph/timeline projection rerenders.",
+    "Announce loading/success with one polite aria-live region and failures with role=alert; stable duplicate no-ops must not announce a second completion.",
+    "Disabled acknowledgment and disposition actions expose a nearby visible reason, such as Record human contact first or Complete the current transport plan first; disabled meaning cannot rely on opacity.",
+    "Graph nodes are native buttons with accessible names containing node, owner, and current text status; selected state uses aria-pressed or aria-expanded consistently. On mobile, DOM order follows dependency order and SVG connectors are decorative.",
+    "Timeline filters expose pressed/selected state and event counts. Each row includes actor, fixed scenario time with CT, action, and state change in readable text; prepared versus actual/source time meaning is explicit.",
+    "Every open, waiting, failed, invalidated, completed, and confirmed state combines icon, label, and border/shape with color. Amber/mint and graph animation are never sole carriers.",
+    "Exact patient reply remains verbatim only in permitted staff/patient context. Transportation and caregiver DOM/accessibility trees exclude the clinical clause and nurse disposition text.",
+    "Reduced-motion settings remove graph pulse/dash, card/timeline entrances, smooth scroll, and celebration while preserving final states and announcements.",
+    "Checkpoint/reset confirmation explains synthetic-scenario scope and never implies Epic capture, provider evidence, consent, attempt limits, live activation, or attendance was reset or confirmed."
+  ],
+  "assets_or_dependencies": [
+    "Reuse current React/TypeScript reducer, ACCESS versioned persistence boundary, icons, task cards, graph, timeline, modal/form primitives, and locked CSS tokens.",
+    "Use one typed camila-demo-v2 fixture, discriminated task/command states, stable source/command/event IDs, planVersion acknowledgment, derived selectors, and deterministic checkpoint command lists.",
+    "Add no image, font, animation, state-management, date, backend, contract, provider, database, or infrastructure dependency."
+  ],
   "design_system_changes": [],
   "blockers": [],
-  "notes_for_codex": []
+  "notes_for_codex": [
+    "Screenshot matrix uses baseline 46105d3e024feabdd5196eb6fdc662e4aa895277 and current result with identical theme/motion settings. A: Staff case at 1440x900, split-work checkpoint, top of clinical/transport cards; show exact reply, both owners, next actions, due targets, and waiting labels.",
+    "B: Staff clinical card at 1440x900 in three matched states: open, Ownership accepted with disposition form, and Human disposition recorded/nonblocking; verify acknowledgment and disposition remain visually and semantically distinct.",
+    "C: Staff transport/task plus graph at 1440x900 in two matched states: current plan complete/acknowledged v1 and plan failed or materially changed to v2; show reopened amber blocker and expired acknowledgment without token drift.",
+    "D: PatientResolutionView at 390x844 in three matched states: disabled with visible prerequisite, Current plan vN ready to acknowledge, and Acknowledged plan vN success; include the vN+1 expired notice frame.",
+    "E: TreatmentReadinessGraph at 1440x900 in before/after/open-blocker frames: Treatment at risk with both nodes open; clinical/transport complete but patient acknowledgment pending; Continuity plan confirmed; each node label and edge state must be readable without color.",
+    "F: Graph at 390x844 with prefers-reduced-motion: reduce in at-risk and confirmed states; verify dependency reading order, no pulse/dash, no horizontal overflow, and identical labels.",
+    "G: AuditTimeline at 1440x900 after split work and final confirmation; capture All and Nurse-filter states showing stable IDs, CT scenario timestamps, actor/action/state diff, and prepared-history labeling.",
+    "H: Private checkpoint/reset controls at 1440x900 and 390x844; capture default, Loading checkpoint…, inline invalid-checkpoint failure, and canonical-start success. External evidence/live-attempt controls must be absent from reset claims.",
+    "I: Staff action failure at 390x844 for disposition or checkpoint loading; capture preserved input, inline alert, Retry, keyboard focus, and enabled recovery path.",
+    "J: Cross-persona consistency at 1440x900 after recovered-plan checkpoint: Staff, Patient, Caregiver, Transportation, then Staff return; verify permitted projections share plan version/status while caregiver/transport exclude clinical text and staff route persists.",
+    "Implementation must derive tasks, counts, graph, timeline, patient acknowledgment availability, and closure from shared selectors. Components must not assign PLAN_CONFIRMED or copy task metadata locally.",
+    "Keep ACKNOWLEDGE_CLINICAL_TASK and RECORD_CLINICAL_DISPOSITION as separate typed commands. Use discriminated states so loading/error/success and task-type details cannot form impossible combinations.",
+    "Checkpoint/reset operates only on the FLOW synthetic scenario key/slice. Tests must preserve a separate Epic timestamp/provider/live-attempt sentinel byte-for-byte and must make no network or provider call.",
+    "RIDE-001 owns detailed provider assignment, failure/recovery controls, historical dispatch replay, and caregiver-seen behavior. FLOW defines only the current plan completeness/version contract and its projections.",
+    "Phase B targeted checks: exact reply split once, acknowledgment versus disposition, three closure blockers, plan-version invalidation, idempotent duplicates, checkpoint reconstruction, scenario-only reset, cross-persona projection/privacy, graph/timeline agreement, loading/failure/disabled/success, screenshot matrix, build, and existing smoke tests.",
+    "Ready for digest-bound compatibility review. Do not edit production code until the report is committed, approved, and the FLOW-001 frontend design gate passes; any report change requires fresh review."
+  ]
 }
