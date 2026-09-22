@@ -22,7 +22,10 @@ TOKEN_ENVIRONMENT_VARIABLE = "EPIC_SANDBOX_ACCESS_TOKEN"
 SEARCH_RESOURCE_TYPES = frozenset(
     {"Appointment", "MedicationRequest", "Observation"}
 )
-FHIR_ID_PATTERN = re.compile(r"^[A-Za-z0-9.-]{1,64}$")
+# Epic Sandbox emits some opaque ids that are 66 characters long even though
+# the nominal FHIR R4 id limit is 64. Keep the character allowlist and a tight
+# upper bound while accepting the source system's observed representation.
+FHIR_ID_PATTERN = re.compile(r"^[A-Za-z0-9.-]{1,128}$")
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 SEARCH_PAGE_SIZE = 50
 

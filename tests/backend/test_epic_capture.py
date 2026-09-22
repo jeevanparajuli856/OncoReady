@@ -282,6 +282,34 @@ def test_capture_writes_untouched_resources_and_a_contract_valid_manifest(
         assert item["sha256"] == hashlib.sha256(raw_bytes).hexdigest()
 
 
+def test_capture_accepts_epic_sandbox_resource_ids_longer_than_fhir_nominal_limit(
+    tmp_path: Path,
+) -> None:
+    """Epic Sandbox currently emits 66-character opaque Observation ids."""
+    sandbox_observation = copy.deepcopy(LAB_OBSERVATION)
+    sandbox_observation["id"] = (
+        "eyPMWgv2u2RUfsV4p1lLKuUtqyPs2-QNi2zKvbTsFYtRByc6B.cSi1iVU5V2HOpX23"
+    )
+    transport = SequencedTransport(
+        PATIENT,
+        search_bundle("Observation", sandbox_observation),
+    )
+
+    capture(tmp_path, transport, resource_types=("Observation",))
+
+    manifest = manifest_at(tmp_path)
+    schema_path = (
+        Path(__file__).resolve().parents[2]
+        / "contracts/schemas/epic-capture-manifest.v1.schema.json"
+    )
+    schema = json.loads(schema_path.read_text())
+    Draft202012Validator(schema, format_checker=FormatChecker()).validate(manifest)
+    assert any(
+        resource["id"] == sandbox_observation["id"]
+        for resource in manifest["resources"]
+    )
+
+
 def test_capture_output_is_deterministic_when_bundle_entry_order_changes(
     tmp_path: Path,
 ) -> None:

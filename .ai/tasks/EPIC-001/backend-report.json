@@ -21,7 +21,7 @@
       "backend/.venv/bin/python -m compileall -q backend/app backend/scripts tests/backend/test_epic_capture.py",
       "backend/.venv/bin/python backend/scripts/capture_epic_sandbox.py --help"
     ],
-    "notes": "Focused capture suite: 27 passed with injected transports only and no live network or credential use. Backend fast regression: 68 passed, 4 integration tests deselected. Coverage run: 68 passed, 4 deselected, 85% total application coverage. Compileall and CLI help checks passed. The existing two TestClient dependency deprecation warnings remain unrelated."
+    "notes": "Focused capture suite: 28 passed, including a regression for the 66-character opaque resource ids observed in the real Epic Sandbox response. Backend fast regression: 69 passed, 4 integration tests deselected. The earlier coverage run passed at 85% total application coverage. Compileall and CLI help checks passed. The existing two TestClient dependency deprecation warnings remain unrelated."
   },
   "blockers": [],
   "notes_for_next_agent": [

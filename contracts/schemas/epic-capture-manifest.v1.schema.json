@@ -172,7 +172,7 @@
   "$defs": {
     "fhirId": {
       "type": "string",
-      "pattern": "^[A-Za-z0-9.-]{1,64}$"
+      "pattern": "^[A-Za-z0-9.-]{1,128}$"
     },
     "allowedResourceType": {
       "type": "string",
