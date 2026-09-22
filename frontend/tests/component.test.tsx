@@ -47,10 +47,10 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/SaaS business model/i)).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Pilot' })).toBeDefined();
-    expect(screen.getByText('$18,000/year')).toBeDefined();
-    expect(screen.getByText('$1,500/month billed annually')).toBeDefined();
+    expect(screen.getByText('$1,500/month')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Network' })).toBeDefined();
-    expect(screen.getByText('Talk to us')).toBeDefined();
+    expect((screen.getByRole('button', { name: 'Buy now' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('link', { name: 'Contact us' }) as HTMLAnchorElement).href).toBe('mailto:support@oncoready.me');
 
     const landingCopy = document.body.textContent?.toLowerCase() || '';
     ['demo', 'prototype', 'preview', 'portfolio', 'training environment'].forEach((term) => {
@@ -66,7 +66,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(document.querySelector('.motion-reduce')).not.toBeNull();
     expect(screen.getByRole('button', { name: /Motion off/i })).toBeDefined();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
-    expect(screen.getAllByRole('button', { name: /Explore the workspace/i }).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /Access workspace/i }).length).toBeGreaterThan(0);
     expect(document.querySelectorAll('[data-reveal-state="pending"]')).toHaveLength(0);
   });
 
@@ -74,7 +74,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     render(<App />);
 
     // 1. Open Auth Modal from Landing CTA
-    const exploreWorkspaceBtn = screen.getAllByText(/Explore Workspace/i)[0];
+    const exploreWorkspaceBtn = screen.getAllByText(/Access workspace/i)[0];
     fireEvent.click(exploreWorkspaceBtn);
 
     expect(screen.getByText(/Prepared workspaces/i)).toBeDefined();
@@ -113,20 +113,19 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     const openCaseBtn = screen.getByRole('button', { name: /Open Case Workspace/i });
     fireEvent.click(openCaseBtn);
 
-    expect(screen.getByText(/Task 1: Clinical Symptom Review/i)).toBeDefined();
-    expect(screen.getByText(/Task 2: Transportation Navigation/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Clinical contact/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Transportation recovery/i })).toBeDefined();
 
     // 7. Staff Action 1: Nurse Acknowledges Clinical Task
-    const ackClinicalBtn = screen.getByRole('button', { name: /Acknowledge Review & Record Disposition/i });
+    const ackClinicalBtn = screen.getByRole('button', { name: /Accept ownership/i });
     fireEvent.click(ackClinicalBtn);
-
-    expect(screen.getByText(/Clinical Review & Disposition Recorded/i)).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /Record human disposition/i }));
+    expect(screen.getByText(/Human disposition recorded/i)).toBeDefined();
 
     // 8. Staff Action 2: Navigator Confirms Transportation Dispatch
-    const confirmTransportBtn = screen.getByRole('button', { name: /Confirm & Dispatch Med-Van/i });
+    const confirmTransportBtn = screen.getByRole('button', { name: /Complete current transport plan/i });
     fireEvent.click(confirmTransportBtn);
-
-    expect(screen.getByText(/Transportation Coordination Confirmed/i)).toBeDefined();
+    expect(screen.getByText(/Current plan complete/i)).toBeDefined();
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
     const switcherBtn = screen.getByText(/Sarah Jenkins, RN/i);
@@ -136,7 +135,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(caregiverOption);
 
     expect(screen.getByText(/Caregiver Portal • Ana Hernandez/i)).toBeDefined();
-    expect(screen.getByText(/Ride Confirmed/i)).toBeDefined();
+    expect(screen.getByText(/Current plan v1/i)).toBeDefined();
     expect(screen.getByText(/CareLink Vehicle #402/i)).toBeDefined();
     expect(screen.getByText(/Patient Privacy Boundary Enforced/i)).toBeDefined();
 
@@ -160,14 +159,14 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Review Updated Treatment Plan/i)).toBeDefined();
 
     // Check agreement
-    const agreeCheckbox = screen.getByRole('checkbox', { name: /I acknowledge the 7:45 AM Med-Van/i });
+    const agreeCheckbox = screen.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i });
     fireEvent.click(agreeCheckbox);
 
     const finalizeBtn = screen.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i });
     fireEvent.click(finalizeBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Everything is Set for Tomorrow Morning!/i)).toBeDefined();
+      expect(screen.getByText(/Continuity Plan Confirmed/i)).toBeDefined();
     });
 
     // 11. Reset Journey

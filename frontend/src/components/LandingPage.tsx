@@ -95,27 +95,29 @@ const pricingPlans = [
   {
     label: 'For one oncology program',
     title: 'Pilot',
-    price: '$18,000/year',
-    billing: '$1,500/month billed annually',
+    price: '$1,500/month',
+    billing: 'Program subscription',
     copy: 'A focused readiness program for one care team and one site.',
     features: ['5 staff seats', '1 site', 'Prepared workspace access'],
     tone: 'indigo',
     featured: true,
     Icon: Building2,
-    action: 'Open prepared workspace',
-    enabled: true,
+    action: 'Buy now',
+    enabled: false,
+    href: null,
   },
   {
     label: 'For multi-site programs',
     title: 'Network',
-    price: 'Talk to us',
-    billing: 'Configured around your operating model',
+    price: null,
+    billing: null,
     copy: 'A tailored readiness program for larger care networks.',
     features: ['Multiple sites', 'Expanded staff access', 'Implementation planning'],
     tone: 'lavender',
     Icon: Network,
-    action: 'Contact setup unavailable',
+    action: 'Contact us',
     enabled: false,
+    href: 'mailto:support@oncoready.me',
   },
 ];
 
@@ -166,7 +168,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
             <div className="landing-actions">
               <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--primary">
-                Explore the workspace
+                Access workspace
                 <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </button>
               <button
@@ -344,26 +346,27 @@ export const LandingPage: React.FC<LandingPageProps> = ({
                     <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
                   </div>
                   <h3>{plan.title}</h3>
-                  <p className="landing-plan-price">{plan.price}</p>
-                  <p>{plan.billing}</p>
+                  {plan.price && <p className="landing-plan-price">{plan.price}</p>}
+                  {plan.billing && <p>{plan.billing}</p>}
                   <p>{plan.copy}</p>
                   <ul>
                     {plan.features.map((feature) => (
                       <li key={feature}><Check className="h-4 w-4" aria-hidden="true" />{feature}</li>
                     ))}
                   </ul>
-                  {plan.enabled ? (
+                  {plan.href ? (
+                    <a href={plan.href} className="landing-button landing-button--secondary">
+                      {plan.action}
+                    </a>
+                  ) : plan.enabled ? (
                     <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--primary">
                       {plan.action}
                       <ArrowRight className="h-4 w-4" aria-hidden="true" />
                     </button>
                   ) : (
-                    <>
-                      <button type="button" disabled aria-describedby="network-contact-note" className="landing-button landing-button--secondary">
-                        {plan.action}
-                      </button>
-                      <p id="network-contact-note" className="landing-plan-note">Contact setup is outside this prepared experience.</p>
-                    </>
+                    <button type="button" disabled className="landing-button landing-button--primary" title="Purchasing is not enabled yet">
+                      {plan.action}
+                    </button>
                   )}
                 </article>
               </ScrollReveal>
@@ -412,15 +415,21 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
       <section className="landing-shell landing-closing-cta" aria-labelledby="closing-cta-title">
         <div className="landing-closing-cta__glow" aria-hidden="true" />
-        <div>
+        <figure className="landing-closing-cta__visual">
+          <img
+            src="/oncology-consultation.jpg"
+            alt="Clinician and patient speaking during a care planning consultation"
+            loading="lazy"
+          />
+          <figcaption>
+            Care planning image • National Cancer Institute / Unsplash
+          </figcaption>
+        </figure>
+        <div className="landing-closing-cta__copy">
           <p className="landing-section-label">Keep tomorrow on the calendar</p>
-          <h2 id="closing-cta-title">See one concern become a confirmed plan.</h2>
-          <p>Explore the connected workspaces and follow one readiness journey from early signal to visible closure.</p>
+          <h2 id="closing-cta-title">One concern. One owner. One confirmed continuity plan.</h2>
+          <p>Follow the prepared journey from an early signal to visible, role-specific closure inside the workspace.</p>
         </div>
-        <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--light">
-          Explore the workspace
-          <ArrowRight className="h-4 w-4" aria-hidden="true" />
-        </button>
       </section>
     </div>
   );

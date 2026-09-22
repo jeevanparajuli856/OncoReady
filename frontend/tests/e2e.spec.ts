@@ -161,14 +161,13 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     const plans = page.getByTestId('pricing-plans');
     await expect(plans.getByRole('article')).toHaveCount(2);
-    await expect(plans.getByText('$18,000/year')).toBeVisible();
-    await expect(plans.getByText('$1,500/month billed annually')).toBeVisible();
+    await expect(plans.getByText('$1,500/month')).toBeVisible();
     await expect(plans.getByText('5 staff seats')).toBeVisible();
     await expect(plans.getByText('1 site')).toBeVisible();
-    await expect(plans.getByText('Talk to us')).toBeVisible();
-    await expect(plans.getByRole('button', { name: 'Contact setup unavailable' })).toBeDisabled();
+    await expect(plans.getByRole('button', { name: 'Buy now' })).toBeDisabled();
+    await expect(plans.getByRole('link', { name: 'Contact us' })).toHaveAttribute('href', 'mailto:support@oncoready.me');
 
-    const heroEntry = page.getByRole('button', { name: /Explore the workspace/i }).first();
+    const heroEntry = page.getByRole('button', { name: /Access workspace/i }).first();
     await heroEntry.click();
     const dialog = page.getByRole('dialog', { name: 'Prepared workspaces' });
     await expect(dialog).toBeVisible();
@@ -184,7 +183,8 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('navigation', { name: 'Workspace dock' }).getByRole('button', { name: 'Patient' }).click();
     await expect(dialog).toBeVisible();
     await dialog.getByTestId('auth-transport-card').click();
-    await expect(page.getByText(/Task 2: Transportation Navigation/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Readiness graph/i })).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
@@ -192,7 +192,7 @@ test.describe('OncoReady UI-001 product experience', () => {
   });
 
   test('workspace routes and the complete Camila journey remain connected', async ({ page }) => {
-    await page.getByRole('button', { name: /Explore the workspace/i }).first().click();
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByTestId('auth-patient-card').click();
 
@@ -218,13 +218,14 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
-    await expect(page.getByText(/Task 1: Clinical Symptom Review/i)).toBeVisible();
-    await page.getByRole('button', { name: /Acknowledge Review & Record Disposition/i }).click();
-    await page.getByRole('button', { name: /Confirm & Dispatch Med-Van/i }).click();
+    await expect(page.getByRole('heading', { name: /Clinical contact/i })).toBeVisible();
+    await page.getByRole('button', { name: /Accept ownership/i }).click();
+    await page.getByRole('button', { name: /Record human disposition/i }).click();
+    await page.getByRole('button', { name: /Complete current transport plan/i }).click();
 
     await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
     await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
-    await expect(page.getByText(/Ride Confirmed/i)).toBeVisible();
+    await expect(page.getByText(/Current plan v1/i)).toBeVisible();
     const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
     expect(caregiverCopy).not.toContain('fever 100.4');
     expect(caregiverCopy).not.toContain('tingling in fingers');
@@ -232,9 +233,9 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: /Ana Hernandez/i }).click();
     await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
     await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
-    await page.getByRole('checkbox', { name: /I acknowledge the 7:45 AM Med-Van/i }).check();
+    await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i }).check();
     await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
-    await expect(page.getByText(/Everything is Set for Tomorrow Morning/i)).toBeVisible();
+    await expect(page.getByText(/Continuity Plan Confirmed/i)).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();

@@ -117,12 +117,8 @@ export const Header: React.FC<HeaderProps> = ({
           </nav>
 
           <div className="landing-header__actions">
-            <button type="button" onClick={onOpenAuthModal} className="landing-header__login hidden sm:inline-flex">
-              Workspace access
-            </button>
             <button type="button" onClick={onOpenAuthModal} className="landing-header__cta">
-              <span className="sm:hidden">Explore</span>
-              <span className="hidden sm:inline">Explore workspace</span>
+              Access workspace
             </button>
             <button
               type="button"
