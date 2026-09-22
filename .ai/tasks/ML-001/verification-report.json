@@ -1,9 +1,9 @@
 {
   "schema_version": "1.0",
   "task_id": "ML-001",
-  "commit": "abf685e391550dc7b8c51f4c833a1cbb14916c03",
+  "commit": "f657848fdd157969c9a392faecc12f9b14fddd0b",
   "status": "PASSED",
-  "generated_at": "2026-09-22T15:27:54.561514+00:00",
+  "generated_at": "2026-09-22T18:06:52+00:00",
   "checks": [
     {
       "name": "project-schema",
@@ -80,8 +80,8 @@
     },
     {
       "name": "PostgreSQL migration and integration",
-      "status": "PASSED",
-      "required": true,
+      "status": "SKIPPED",
+      "required": false,
       "command": [
         "backend/.venv/bin/python",
         "-m",
@@ -93,7 +93,7 @@
         "tests/backend",
         "-q"
       ],
-      "notes": ""
+      "notes": "User-approved task-scoped skip: ML-001 architecture declares database impact false; no database behavior changed."
     },
     {
       "name": "frontend build",
@@ -127,6 +127,30 @@
         "test:e2e"
       ],
       "notes": ""
+    },
+    {
+      "name": "ML synthetic pipeline and notebook",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "ml.tests.test_pipeline"
+      ],
+      "notes": "4 tests passed; clean notebook execution reproduced the committed dataset and artifact byte-for-byte."
+    },
+    {
+      "name": "ML artifact parity",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "sha256sum",
+        "ml/artifacts/demo-insights.json",
+        "frontend/src/data/ml-insights.json",
+        "frontend/public/evidence/ml/demo-insights.json"
+      ],
+      "notes": "All three copies match SHA-256 f13482c5c4b530257250ca7469102d901bd113ca1993a822ee457239c4fb8d21."
     },
     {
       "name": "tracked-secret-file-baseline",
