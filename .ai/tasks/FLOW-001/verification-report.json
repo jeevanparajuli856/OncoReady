@@ -1,8 +1,142 @@
 {
   "schema_version": "1.0",
   "task_id": "FLOW-001",
-  "commit": "",
-  "status": "FAILED",
-  "generated_at": "",
-  "checks": []
+  "commit": "1a8e3f5bdc239e83b1d129379c58693ccd5e8f32",
+  "status": "PASSED",
+  "generated_at": "2026-09-22T06:35:35.856707+00:00",
+  "checks": [
+    {
+      "name": "project-schema",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python3",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "task-schema-and-reports",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python3",
+        "scripts/validate-task.py",
+        "FLOW-001"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "agentic-framework-tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/agentic"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "project manifest",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "OpenAPI contract",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "scripts/validate-contracts.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "backend fast tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "-c",
+        "backend/pyproject.toml",
+        "-m",
+        "not integration",
+        "tests/backend",
+        "--cov=app",
+        "--cov-report=term-missing",
+        "-q"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "PostgreSQL migration and integration",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "-m",
+        "pytest",
+        "-c",
+        "backend/pyproject.toml",
+        "-m",
+        "integration",
+        "tests/backend",
+        "-q"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend build",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend critical-path smoke",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend end-to-end",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "tracked-secret-file-baseline",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "git",
+        "ls-files"
+      ],
+      "notes": ""
+    }
+  ]
 }
