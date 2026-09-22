@@ -32,33 +32,28 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect((plans.getByRole('link', { name: 'Contact us' }) as HTMLAnchorElement).href).toBe('mailto:support@oncoready.me');
   });
 
-  it('routes every prepared destination through one truthful gateway', () => {
+  const signIn = (email: string) => {
+    fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+    fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
+  };
+
+  it('routes prepared accounts through login to their correct workspaces', () => {
     render(<App />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    const dialog = screen.getByRole('dialog', { name: 'Prepared workspaces' });
-    expect(within(dialog).getByText(/does not sign you in or grant provider access/i)).toBeDefined();
-    expect(within(dialog).getAllByRole('button')).toHaveLength(5);
-    expect(screen.getByTestId('auth-care-team-card')).toBeDefined();
-    expect(screen.getByTestId('auth-care-navigator-card')).toBeDefined();
-    expect(screen.getByTestId('auth-patient-card')).toBeDefined();
-    expect(screen.getByTestId('auth-caregiver-card')).toBeDefined();
-    fireEvent.click(screen.getByTestId('auth-care-navigator-card'));
-    expect(screen.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeDefined();
-    expect(screen.getByRole('tab', { name: /Graph/i })).toBeDefined();
+    signIn('abcn@oncoready.me');
+    expect(screen.getByText(/Care Navigator Workspace/i)).toBeDefined();
 
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
-    fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    fireEvent.click(screen.getByTestId('auth-care-team-card'));
-    expect(screen.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeDefined();
-    expect(screen.getByRole('tab', { name: /Graph/i })).toBeDefined();
+    signIn('abct@oncoready.me');
+    expect(screen.getByRole('heading', { name: /Transportation operations are coming next/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {
     render(<App />);
 
-    fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    fireEvent.click(screen.getByTestId('auth-patient-card'));
+    signIn('abcp@oncoready.me');
     fireEvent.click(screen.getByRole('button', { name: /Start Readiness Check/i }));
     fireEvent.click(screen.getByRole('button', { name: /Submit Readiness Report/i }));
     fireEvent.click(screen.getByRole('button', { name: /View Care Team Workbench/i }));
@@ -75,7 +70,7 @@ describe('ACCESS-001 prepared workspace entry', () => {
       currentPerspective: 'SIGN_IN',
       patient: { name: 'Maria Hernandez', mrn: 'OCH-882914' },
     }));
-    localStorage.setItem('oncoready_workflow_state_v3', JSON.stringify({
+    localStorage.setItem('oncoready_workflow_state_v4', JSON.stringify({
       ...INITIAL_STATE,
       currentPerspective: 'PATIENT',
       appointment: {
@@ -91,19 +86,18 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect(document.body.textContent).not.toContain('OCH-882914');
 
     fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    expect(screen.getByRole('dialog', { name: 'Prepared workspaces' })).toBeDefined();
-    expect(screen.getByTestId('auth-patient-card').textContent).toContain('Camila Lopez');
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeDefined();
   });
 
-  it('normalizes the retired sign-in perspective to the record-free landing', () => {
-    localStorage.setItem('oncoready_workflow_state_v3', JSON.stringify({
+  it('preserves the sign-in perspective as the login route', () => {
+    localStorage.setItem('oncoready_workflow_state_v4', JSON.stringify({
       ...INITIAL_STATE,
       currentPerspective: 'SIGN_IN',
     }));
 
     render(<App />);
 
-    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeDefined();
     expect(document.body.textContent).not.toContain('Camila Lopez');
   });
 });

@@ -37,7 +37,10 @@ const getAvailableContext = (): EpicClinicalContext => {
 
 const openPreparedWorkspace = (testId: string) => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId(testId));
+  const credentials = testId.includes('patient') ? ['abcp@oncoready.me', '1234'] : testId.includes('caregiver') ? ['abcc@oncoready.me', '1234'] : ['abcs@oncoready.me', '1234'];
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: credentials[0] } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: credentials[1] } });
+  fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 };
 
 describe('EPIC-001 independent acceptance evidence', () => {

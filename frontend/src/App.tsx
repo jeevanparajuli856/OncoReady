@@ -7,8 +7,8 @@ import {
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { StaffAppShell } from './components/StaffAppShell';
-import { AuthModal } from './components/AuthModal';
 import { PortalAuthScreen } from './components/PortalAuthScreen';
+import { TransportationWorkspace } from './components/TransportationWorkspace';
 import { PatientTreatmentHome } from './components/PatientTreatmentHome';
 import { ReadinessCheckModal } from './components/ReadinessCheckModal';
 import { StaffExceptionQueue } from './components/StaffExceptionQueue';
@@ -24,8 +24,7 @@ import {
   StaffResources,
 } from './components/staff/StaffPages';
 import { Logo } from './components/Logo';
-import { WorkspaceDock } from './components/WorkspaceDock';
-import { Perspective, PreparedWorkspace } from './types';
+import { Perspective } from './types';
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 
@@ -36,8 +35,10 @@ export const App: React.FC = () => {
   }
 
   const [state, dispatch] = useReducer(workflowReducer, null, loadSavedWorkflowState);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState<boolean>(false);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
+  const [isEpicLoginOpen, setIsEpicLoginOpen] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.location.pathname === '/epic/login',
+  );
   const [isPatientResolutionOpen, setIsPatientResolutionOpen] = useState<boolean>(false);
   const [patientSearch, setPatientSearch] = useState('');
   const [patientStatus, setPatientStatus] = useState('ALL');
@@ -49,6 +50,14 @@ export const App: React.FC = () => {
     window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
   const reducedMotion = userReducedMotion || systemReducedMotion;
+  const isStandaloneEpicLogin = state.currentPerspective === 'SIGN_IN' && isEpicLoginOpen;
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (window.location.pathname === '/login' || window.location.pathname === '/epic/login') {
+      if (state.currentPerspective !== 'SIGN_IN') dispatch({ type: 'SET_PERSPECTIVE', payload: 'SIGN_IN' });
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return undefined;
@@ -68,23 +77,39 @@ export const App: React.FC = () => {
 
   const handleSetPerspective = (p: Perspective) => {
     const normalizedPerspective = p === 'STAFF' || p === 'SYSTEM' ? 'CARE_TEAM' : p;
+    if (normalizedPerspective === 'SIGN_IN') {
+      window.history.pushState({}, '', '/login');
+      setIsEpicLoginOpen(false);
+    } else if (normalizedPerspective === 'LANDING') {
+      window.history.pushState({}, '', '/');
+      setIsEpicLoginOpen(false);
+    }
     dispatch({ type: 'SET_PERSPECTIVE', payload: normalizedPerspective });
   };
 
-  const handleSelectPreparedWorkspace = (workspace: PreparedWorkspace) => {
-    if (workspace === 'CARE_NAVIGATOR') {
-      dispatch({ type: 'SET_PERSPECTIVE', payload: 'CARE_NAVIGATOR' });
-      dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
-      return;
+  const handleEpicModeChange = (open: boolean) => {
+    setIsEpicLoginOpen(open);
+    if (open) {
+      window.history.pushState({}, '', '/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready');
+    } else {
+      window.history.pushState({}, '', '/login');
     }
+  };
 
-    if (workspace === 'CARE_TEAM') {
-      dispatch({ type: 'SET_PERSPECTIVE', payload: 'CARE_TEAM' });
+  const handleLogin = (perspective: Perspective) => {
+    const routeByPerspective: Partial<Record<Perspective, string>> = {
+      PATIENT: '/patient',
+      CAREGIVER: '/caregiver',
+      CARE_TEAM: '/care-team',
+      CARE_NAVIGATOR: '/care-navigator',
+      TRANSPORTATION: '/transportation',
+    };
+    window.history.replaceState({}, '', routeByPerspective[perspective] ?? '/');
+    setIsEpicLoginOpen(false);
+    dispatch({ type: 'SET_PERSPECTIVE', payload: perspective });
+    if (perspective === 'CARE_NAVIGATOR' || perspective === 'CARE_TEAM') {
       dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
-      return;
     }
-
-    dispatch({ type: 'SET_PERSPECTIVE', payload: workspace });
   };
 
   const handleReset = () => {
@@ -94,7 +119,6 @@ export const App: React.FC = () => {
     setPatientSearch('');
     setPatientStatus('ALL');
     
-    setIsAuthModalOpen(false);
   };
 
   const handleReadinessSubmit = (data: { transportNotes: string; clinicalConcernText: string }) => {
@@ -140,7 +164,7 @@ export const App: React.FC = () => {
     <div className={`oncoready-app min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
       
       {/* Universal Clinical & Commercial Header */}
-      <Header
+      {!isStandaloneEpicLogin && <Header
         currentPerspective={state.currentPerspective}
         onSetPerspective={handleSetPerspective}
         overallReadiness={state.overallReadiness}
@@ -148,8 +172,8 @@ export const App: React.FC = () => {
         reducedMotion={reducedMotion}
         onToggleReducedMotion={() => setUserReducedMotion(!userReducedMotion)}
         state={state}
-        onOpenAuthModal={() => setIsAuthModalOpen(true)}
-      />
+        onOpenAuthModal={() => handleSetPerspective('SIGN_IN')}
+      />}
 
       {/* Main Workspace Canvas */}
       <main className={`flex-1 w-full mx-auto min-h-0 ${
@@ -157,6 +181,8 @@ export const App: React.FC = () => {
           ? 'max-w-none px-0 py-0'
           : state.currentPerspective === 'CARE_NAVIGATOR' || state.currentPerspective === 'CARE_TEAM'
           ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-0'
+          : isStandaloneEpicLogin
+          ? 'max-w-none px-0 py-0'
           : 'max-w-none px-3 sm:px-6 lg:px-10 py-3 sm:py-4 pb-28 md:pb-6'
       }`}>
         
@@ -164,16 +190,16 @@ export const App: React.FC = () => {
         {state.currentPerspective === 'LANDING' && (
           <LandingPage
             reducedMotion={reducedMotion}
-            onOpenAuthModal={() => setIsAuthModalOpen(true)}
+            onOpenAuthModal={() => handleSetPerspective('SIGN_IN')}
           />
         )}
 
         {/* Perspective: SIGN_IN (Gateway Role Selector) */}
         {state.currentPerspective === 'SIGN_IN' && (
           <PortalAuthScreen
-            state={state}
-            onSelectPerspective={handleSetPerspective}
-            onReset={handleReset}
+            onLogin={handleLogin}
+            onBack={() => handleSetPerspective('LANDING')}
+            onEpicModeChange={handleEpicModeChange}
           />
         )}
 
@@ -274,9 +300,11 @@ export const App: React.FC = () => {
           />
         )}
 
+        {state.currentPerspective === 'TRANSPORTATION' && <TransportationWorkspace />}
+
       </main>
 
-      <footer className="app-footer py-6 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
+      {!isStandaloneEpicLogin && <footer className="app-footer py-6 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
           <div className="w-full max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <button
               onClick={() => handleSetPerspective('LANDING')}
@@ -299,15 +327,7 @@ export const App: React.FC = () => {
               <span>FHIR R4 mapping</span>
             </div>
           </div>
-        </footer>
-
-      {/* Auth / Workspace Selector Modal */}
-      <AuthModal
-        isOpen={isAuthModalOpen}
-        onClose={() => setIsAuthModalOpen(false)}
-        state={state}
-        onSelectWorkspace={handleSelectPreparedWorkspace}
-      />
+        </footer>}
 
       {/* Readiness Check Guided Modal */}
       <ReadinessCheckModal
@@ -317,13 +337,6 @@ export const App: React.FC = () => {
         defaultAddress={state.patient.address}
       />
 
-      {!isAuthModalOpen && !isReadinessModalOpen && (
-        <WorkspaceDock
-          currentPerspective={state.currentPerspective}
-          onSelectPerspective={handleSetPerspective}
-          onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        />
-      )}
     </div>
   );
 };

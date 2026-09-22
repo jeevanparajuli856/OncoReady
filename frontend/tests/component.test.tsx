@@ -73,15 +73,16 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
   it('executes full interactive golden path from landing page to auth modal, dual triage, caregiver privacy, and plan confirmation', async () => {
     render(<App />);
 
-    // 1. Open Auth Modal from Landing CTA
+    // 1. Open the login page from the landing CTA
     const exploreWorkspaceBtn = screen.getAllByText(/Access workspace/i)[0];
     fireEvent.click(exploreWorkspaceBtn);
 
-    expect(screen.getByText(/Prepared workspaces/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Sign in' })).toBeDefined();
 
-    // 2. Select Patient Portal from Auth Modal
-    const patientCard = screen.getByTestId('auth-patient-card');
-    fireEvent.click(patientCard);
+    // 2. Sign in as the patient
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcp@oncoready.me' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+    fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 
     expect(screen.getByText(/Complete Your Pre-Infusion Readiness Check/i)).toBeDefined();
 

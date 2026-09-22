@@ -45,16 +45,26 @@ If authoritative artifacts conflict, stop the affected work and let the orchestr
 
 ### Workspace and role contract
 
-The prepared workspace gateway has exactly two internal care-workspace roles:
+The prepared workspace gateway has two internal care-workspace roles plus one reserved transportation workspace:
 
 - **Care Navigator Workspace — Marcus Vance, MSW**: CareLink, patient coordination, transportation, barriers, appointments, follow-ups, and only the shared patient/readiness data needed for coordination.
 - **Care Team (Readiness Team) Workspace — Nurses/Readiness Staff**: clinical and treatment readiness, labs, vitals, nursing/readiness tasks, clinical blockers, and escalations.
+- **Transportation (CareLink) Workspace**: reserved for transportation managers and vendor partners; intentionally empty until the future transportation sprint. Do not add dispatch actions yet.
 
-Do not recreate a combined `Staff` workspace or a separate `Readiness Graph & Audit Log` workspace. The readiness graph and audit timeline are embedded in each role's case workspace and must be permission-scoped to the role. Care Navigator views must not expose clinical verbatim concern text, nurse notes, or clinical-only actions. Care Team views must not expose CareLink dispatch controls or navigator-only operational routes.
+Do not recreate a combined `Staff` workspace or a separate `Readiness Graph & Audit Log` workspace. The readiness graph and audit timeline are embedded in the Care Navigator and Care Team case workspaces and must be permission-scoped to the role. Care Navigator views must not expose clinical verbatim concern text, nurse notes, or clinical-only actions. Care Team views must not expose CareLink dispatch controls or navigator-only operational routes. Transportation is separate and currently has no operational actions.
 
 Reuse the shared staff shell, case workspace, graph, audit, queue, and state machinery with role capabilities rather than duplicating components. Role boundaries must be enforced in routing/state mutation guards as well as in rendered navigation; hiding a button alone is not authorization.
 
 This repository currently uses local prepared personas, so these guards protect the local scenario state but do not provide production identity authentication or backend authorization. Do not claim that they do, and do not invent a server auth contract without an approved task/architecture change.
+
+### Authentication and route contract
+
+- Landing-page workspace access must enter the standard login screen at `/login` before any workspace opens.
+- The profile dropdown is the only workspace switcher after login. Do not restore workspace links to the top navbar or a floating workspace dock.
+- The standard login supports Patient, Caregiver, Care Team, Care Navigator, and Transportation prepared accounts. Keep the demo account values in test fixtures rather than copying credentials into product copy or documentation.
+- `Sign in with Epic` is a simulated provider handoff available only to Care Team, Care Navigator, and Transportation. Clicking it shows a visible redirect transition, then opens the standalone Epic-style page at `/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready`.
+- A successful Epic login shows a secure redirect/loading state before routing to the selected workspace. Unknown Epic credentials must show the exact invalid-credential error already defined by the UI.
+- The Epic page must render without the OncoReady header/footer, use the local Epic logo and forest artwork, and must not display internal callback URLs or simulated-auth explanatory copy inside the provider-style surface.
 
 ## 4. Agent ownership
 

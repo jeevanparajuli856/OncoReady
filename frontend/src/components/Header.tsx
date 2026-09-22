@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import {
   RotateCcw,
   ChevronDown,
-  LogOut,
   CheckCircle2,
   AlertTriangle,
   Clock,
@@ -53,6 +52,8 @@ export const Header: React.FC<HeaderProps> = ({
         return { name: 'Sarah Jenkins, RN', role: 'Oncology Triage Team', avatar: '', roleType: 'NURSE' as const };
       case 'CAREGIVER':
         return { name: state.caregiver.name, role: 'Caregiver Proxy', avatar: state.caregiver.avatarUrl, roleType: 'CAREGIVER' as const };
+      case 'TRANSPORTATION':
+        return { name: 'CareLink Transportation', role: 'Manager & vendor workspace', avatar: '', roleType: 'NAVIGATOR' as const };
       default:
         return null;
     }
@@ -160,27 +161,9 @@ export const Header: React.FC<HeaderProps> = ({
           <Logo size={30} compact />
         </button>
 
-        <nav className="hidden md:flex items-center gap-1 text-sm font-heading font-medium">
-          {([
-            ['CARE_NAVIGATOR', 'Care Navigator'],
-            ['CARE_TEAM', 'Care Team'],
-            ['CAREGIVER', 'Caregiver'],
-          ] as const).map(([id, label]) => (
-            <button
-              key={id}
-              onClick={() => onSetPerspective(id)}
-              className={`px-2 sm:px-3 py-1.5 rounded-lg whitespace-nowrap transition ${
-                currentPerspective === id ? 'bg-accent text-white' : 'hover:bg-white/80'
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </nav>
-
-        <div className="hidden lg:flex items-center gap-2">
+        {currentPerspective !== 'SIGN_IN' && <div className="hidden lg:flex items-center gap-2">
           {getStatusPill()}
-        </div>
+        </div>}
 
         <div className="flex items-center gap-2 shrink-0">
           <button onClick={onReset} title="Reset Workspace" className="p-2 rounded-xl border border-line bg-white/70 hover:bg-white">
@@ -205,7 +188,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-line shadow-glass-lg py-2 z-50 animate-fade-in" onMouseLeave={() => setIsDropdownOpen(false)}>
                   <div className="px-3.5 py-2 border-b border-line">
                     <div className="text-[11px] font-heading font-semibold uppercase tracking-wider text-muted-fg">
-                      SWITCH CLINICAL WORKSPACE
+                      SWITCH WORKSPACE
                     </div>
                   </div>
                   <div className="py-1">
@@ -237,15 +220,18 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="text-[10px] text-muted-fg font-normal">Transit Status Only</div>
                       </div>
                     </button>
+                    <button onClick={() => { onSetPerspective('TRANSPORTATION'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-sun/10 ${currentPerspective === 'TRANSPORTATION' ? 'bg-sun/15 font-semibold' : ''}`}>
+                      <Avatar alt="CareLink Transportation" size="xs" roleType="NAVIGATOR" />
+                      <div>
+                        <div>Transportation (CareLink)</div>
+                        <div className="text-[10px] text-muted-fg font-normal">Manager & vendor workspace</div>
+                      </div>
+                    </button>
                   </div>
                   <div className="pt-1 mt-1 border-t border-line">
                     <button onClick={() => { onSetPerspective('LANDING'); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-accent hover:bg-accent/8">
                       <Home className="w-3.5 h-3.5" />
                       <span>Return to Product Website</span>
-                    </button>
-                    <button onClick={() => { onOpenAuthModal(); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-pop hover:bg-pop/8">
-                      <LogOut className="w-3.5 h-3.5" />
-                      <span>Open Prepared Workspace Gateway</span>
                     </button>
                   </div>
                 </div>

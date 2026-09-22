@@ -8,7 +8,9 @@ const CAPTURE_ID = 'epic-sandbox-20260922T070125Z-0dac7d6b';
 
 const openStaffCase = () => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId('auth-care-team-card'));
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcs@oncoready.me' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+  fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 };
 
 describe('EPIC-001 reviewed Epic Sandbox capture', () => {
@@ -120,7 +122,9 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     expect(document.body.textContent).not.toContain('Camila Maria Lopez');
 
     fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    fireEvent.click(screen.getByTestId('auth-patient-card'));
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcp@oncoready.me' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+    fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 
     expect(document.body.textContent).not.toContain(PATIENT_RESOURCE_ID);
     expect(document.body.textContent).not.toContain(CAPTURE_ID);

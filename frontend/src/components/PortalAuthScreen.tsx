@@ -1,214 +1,144 @@
-import React from 'react';
-import {
-  ShieldCheck,
-  Activity,
-  ArrowRight,
-  Clock,
-  Route,
-  Stethoscope,
-  Sparkles,
-  Calendar,
-  Building2,
-} from 'lucide-react';
-import { WorkflowState, Perspective } from '../types';
+import React, { FormEvent, useState } from 'react';
+import { ArrowLeft, ArrowRight, LockKeyhole, Mail } from 'lucide-react';
+import { Perspective } from '../types';
 
 interface PortalAuthScreenProps {
-  state: WorkflowState;
-  onSelectPerspective: (p: Perspective) => void;
-  onReset: () => void;
+  onLogin: (perspective: Perspective) => void;
+  onBack: () => void;
+  onEpicModeChange: (open: boolean) => void;
 }
 
-export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
-  state,
-  onSelectPerspective,
-  onReset,
-}) => {
-  const pendingBlockers = state.tasks.filter((t) => t.status !== 'RESOLVED').length;
+type LoginMode = 'password' | 'epic';
 
-  const cards: Array<{
-    key: Perspective;
-    testId?: string;
-    eyebrow: string;
-    title: string;
-    subtitle: string;
-    body: string;
-    foot: string;
-    cta: string;
-    status: React.ReactNode;
-    media: React.ReactNode;
-  }> = [
-    {
-      key: 'PATIENT',
-      eyebrow: 'Patient Portal',
-      title: state.patient.name,
-      subtitle: `MRN: ${state.patient.mrn} • Age ${state.patient.age}`,
-      body: 'Complete the 2-minute pre-infusion barrier screening, report symptoms to Nurse Sarah, and review your confirmed transit & lab schedule.',
-      foot: 'Patient Treatment Readiness',
-      cta: 'Enter Patient View',
-      status: (
-        <span className={`chip ${
-          state.overallReadiness === 'PLAN_CONFIRMED' ? 'chip-mint' : state.readinessCheckCompleted ? 'chip-sun' : 'chip-accent'
-        }`}>
-          <Clock className="w-3 h-3" strokeWidth={2.5} />
-          {state.overallReadiness === 'PLAN_CONFIRMED'
-            ? 'Plan Confirmed'
-            : state.readinessCheckCompleted
-            ? 'Triage Active'
-            : 'Screening Pending'}
-        </span>
-      ),
-      media: (
-        <img
-          src={state.patient.avatarUrl}
-          alt={state.patient.name}
-          className="w-14 h-14 rounded-xl object-cover border-2 border-ink"
-        />
-      ),
-    },
-    {
-      key: 'CARE_NAVIGATOR',
-      eyebrow: 'Care Navigator Workspace',
-      title: 'Marcus Vance, MSW',
-      subtitle: 'CareLink • Patient Coordination',
-      body: 'Coordinate rides, barriers, appointments, follow-ups, and the shared readiness plan without opening clinical actions.',
-      foot: 'CareLink Coordination Workspace',
-      cta: 'Open Care Navigator',
-      status: (
-        <span className="chip chip-mint">
-          <Route className="w-3 h-3" strokeWidth={2.5} />
-          {pendingBlockers > 0 ? `${pendingBlockers} Coordination Items` : 'Queue Cleared'}
-        </span>
-      ),
-      media: (
-        <div className="flex -space-x-2">
-          <div className="w-12 h-12 rounded-xl bg-accent border-2 border-ink" />
-          <div className="w-12 h-12 rounded-xl bg-mint border-2 border-ink" />
+const TEST_ACCOUNTS: Array<{ email: string; password: string; perspective: Perspective; label: string }> = [
+  { email: 'abcp@oncoready.me', password: '1234', perspective: 'PATIENT', label: 'Patient' },
+  { email: 'abcc@oncoready.me', password: '1234', perspective: 'CAREGIVER', label: 'Caregiver' },
+  { email: 'abcs@oncoready.me', password: '1234', perspective: 'CARE_TEAM', label: 'Care Team (Readiness Team)' },
+  { email: 'abcn@oncoready.me', password: '1234', perspective: 'CARE_NAVIGATOR', label: 'Care Navigator' },
+  { email: 'abct@oncoready.me', password: '1234', perspective: 'TRANSPORTATION', label: 'Transportation' },
+];
+
+export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onBack, onEpicModeChange }) => {
+  const [mode, setMode] = useState<LoginMode>('password');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [error, setError] = useState('');
+  const [epicEmail, setEpicEmail] = useState('');
+  const [epicPassword, setEpicPassword] = useState('');
+  const [epicError, setEpicError] = useState('');
+  const [redirecting, setRedirecting] = useState(false);
+  const [redirectingToEpic, setRedirectingToEpic] = useState(false);
+
+  const handlePasswordLogin = (event: FormEvent) => {
+    event.preventDefault();
+    const account = TEST_ACCOUNTS.find((candidate) => candidate.email === email.trim().toLowerCase() && candidate.password === password);
+    if (!account) {
+      setError('Invalid email or password. Use one of the prepared demo accounts.');
+      return;
+    }
+    setError('');
+    onLogin(account.perspective);
+  };
+
+  const handleEpicLogin = (event: FormEvent) => {
+    event.preventDefault();
+    const account = TEST_ACCOUNTS.find((candidate) => candidate.email === epicEmail.trim().toLowerCase() && candidate.password === epicPassword && ['CARE_TEAM', 'CARE_NAVIGATOR', 'TRANSPORTATION'].includes(candidate.perspective));
+    if (!account) {
+      setEpicError('You entered an invalid user ID, password, or other type of authentication credential. Contact your administrator.');
+      return;
+    }
+    setEpicError('');
+    setRedirecting(true);
+    window.setTimeout(() => onLogin(account.perspective), 1200);
+  };
+
+  if (mode === 'epic') {
+    return (
+      <div className="epic-login-page min-h-screen flex items-center justify-center p-4 sm:p-8">
+        <div className="epic-login-card w-full max-w-[31rem]">
+          <div className="epic-login-brand">
+            <img src="/epic-logo.svg" alt="Epic" />
+            <span>HYPERSPACE<sup>®</sup></span>
+            <small>August 2026</small>
+          </div>
+          <div className="epic-login-form">
+            <form onSubmit={handleEpicLogin} className="space-y-3">
+              <label className="sr-only" htmlFor="epic-user-id">User ID</label>
+              <div className="epic-input-wrap">
+                <input id="epic-user-id" value={epicEmail} onChange={(event) => setEpicEmail(event.target.value)} className="epic-input" placeholder="User ID" autoComplete="username" />
+                <LockKeyhole className="epic-input-icon" aria-hidden="true" />
+              </div>
+              <label className="sr-only" htmlFor="epic-password">Password</label>
+              <input id="epic-password" type="password" value={epicPassword} onChange={(event) => setEpicPassword(event.target.value)} className="epic-input" placeholder="Password" autoComplete="current-password" />
+              <button type="submit" className="epic-login-submit" disabled={redirecting}>{redirecting ? 'Redirecting...' : 'Log In'}</button>
+            </form>
+            {epicError && <p role="alert" className="epic-login-error">{epicError}</p>}
+            {redirecting && <div className="epic-redirect-state" role="status"><span className="epic-redirect-spinner" />Redirecting securely...</div>}
+          </div>
         </div>
-      ),
-    },
-    {
-      key: 'CARE_TEAM',
-      eyebrow: 'Care Team (Readiness Team)',
-      title: 'Nurses & Readiness Staff',
-      subtitle: 'Clinical treatment readiness',
-      body: 'Review labs, vitals, readiness tasks, clinical blockers, escalations, and human nursing actions.',
-      foot: 'Clinical Readiness Workspace',
-      cta: 'Open Care Team',
-      status: (
-        <span className="chip">
-          <Stethoscope className="w-3 h-3" strokeWidth={2.5} />
-          {pendingBlockers > 0 ? `${pendingBlockers} Blockers Active` : 'Queue Cleared'}
-        </span>
-      ),
-      media: (
-        <div className="flex -space-x-2">
-          <div className="w-12 h-12 rounded-xl bg-accent border-2 border-ink" />
-          <div className="w-12 h-12 rounded-xl bg-sun border-2 border-ink" />
+        <p className="epic-legal">
+          © 1979-2026 Epic Systems Corporation. All rights reserved.<br />
+          Protected by U.S. patents. For details visit www.epic.com/patents<br />
+          Additional copyrights apply. CPT®, copyright AMA. SNOMED CT®<br />
+          copyright IHTSDO. More
+        </p>
+      </div>
+    );
+  }
+
+  if (redirectingToEpic) {
+    return (
+      <div className="login-redirect-page min-h-[calc(100vh-4.25rem)] flex items-center justify-center px-4">
+        <div className="login-redirect-card card-sticker text-center">
+          <img src="/epic-logo.svg" alt="Epic" className="login-redirect-logo" />
+          <span className="login-redirect-spinner" aria-hidden="true" />
+          <h1>Redirecting to Epic</h1>
+          <p>Opening the secure Epic sign-in page...</p>
         </div>
-      ),
-    },
-    {
-      key: 'CAREGIVER',
-      eyebrow: 'Authorized Caregiver',
-      title: state.caregiver.name,
-      subtitle: state.caregiver.relationship,
-      body: "Caregiver view with strict data-minimization: Ana can track vehicle arrival and appointment times, while Camila's clinical concern text is completely excluded.",
-      foot: 'Family & Transit Logistics',
-      cta: 'Enter Caregiver View',
-      status: (
-        <span className="chip chip-mint">
-          <ShieldCheck className="w-3 h-3" strokeWidth={2.5} />
-          Privacy Guard Active
-        </span>
-      ),
-      media: (
-        <img
-          src={state.caregiver.avatarUrl}
-          alt={state.caregiver.name}
-          className="w-14 h-14 rounded-xl object-cover border-2 border-ink"
-        />
-      ),
-    },
-  ];
+      </div>
+    );
+  }
 
   return (
-    <div className="page-shell min-h-[80vh] flex flex-col justify-between py-4 sm:py-8 space-y-8">
-      <div className="text-center space-y-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/70 border border-white/80 text-xs font-heading font-semibold shadow-glass">
-          <Building2 className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
-          Benson Cancer Center • Clinical Continuity System
-        </div>
-        <h1 className="font-display text-3xl sm:text-4xl font-extrabold tracking-tight">
-          OncoReady Gateway
-        </h1>
-        <p className="text-sm sm:text-base text-muted-fg leading-relaxed max-w-2xl mx-auto">
-          Select a workspace to coordinate pre-infusion barriers, owned clinical review, navigation tasks, and patient plan confirmation.
-        </p>
-        <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-3 rounded-xl bg-white/70 border border-white/80 text-xs font-heading font-semibold">
-          <span className="inline-flex items-center gap-1.5">
-            <Activity className="w-4 h-4 text-accent" strokeWidth={2.5} />
-            Target Patient: Camila Lopez (54F)
-          </span>
-          <span className="hidden sm:inline text-muted-fg">•</span>
-          <span className="inline-flex items-center gap-1.5">
-            <Calendar className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
-            mFOLFOX6 Cycle 4 • Sep 25, 10:00 AM CT
-          </span>
-          <span className="hidden sm:inline text-muted-fg">•</span>
-          <span className="inline-flex items-center gap-1.5 font-mono uppercase">
-            <span className={`w-2 h-2 rounded-full ${
-              state.overallReadiness === 'PLAN_CONFIRMED'
-                ? 'bg-mint'
-                : state.overallReadiness === 'AT_RISK'
-                ? 'bg-sun'
-                : 'bg-accent'
-            }`} />
-            {state.overallReadiness.replace('_', ' ')}
-          </span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {cards.map((card) => (
+    <div className="login-page min-h-[calc(100vh-4.25rem)] flex items-center justify-center px-4 py-10 sm:px-8">
+      <div className="login-layout w-full max-w-5xl">
+        <section className="login-intro">
+          <div className="landing-eyebrow"><span className="landing-eyebrow__dot" />OncoReady access</div>
+          <h1 className="font-display text-4xl sm:text-6xl font-extrabold leading-[0.96]">Keep tomorrow<br /><span className="text-accent">on the calendar.</span></h1>
+          <p className="text-muted-fg text-base leading-relaxed max-w-md mt-5">Sign in to the workspace that owns the next step in treatment readiness.</p>
+        </section>
+        <section className="login-card card-sticker p-6 sm:p-8" aria-labelledby="login-title">
+          <button type="button" className="login-back-link" onClick={onBack}><ArrowLeft className="w-4 h-4" />Back to website</button>
+          <div className="flex items-center gap-3 mt-6 mb-6">
+            <span className="login-icon"><Mail className="w-5 h-5" /></span>
+            <div><h2 id="login-title" className="font-display text-2xl font-extrabold">Sign in</h2></div>
+          </div>
+          <form onSubmit={handlePasswordLogin} className="space-y-4">
+            <div><label htmlFor="login-email" className="label-caps">Email</label><input id="login-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} className="input-pop mt-1 w-full" placeholder="you@oncoready.me" autoComplete="email" /></div>
+            <div><label htmlFor="login-password" className="label-caps">Password</label><input id="login-password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} className="input-pop mt-1 w-full" placeholder="••••" autoComplete="current-password" /></div>
+            {error && <p role="alert" className="text-sm text-red-600 leading-relaxed">{error}</p>}
+            <button type="submit" className="btn-candy w-full">Sign in <ArrowRight className="w-4 h-4" /></button>
+          </form>
+          <div className="login-divider"><span>or</span></div>
           <button
             type="button"
-            key={card.key}
-            onClick={() => onSelectPerspective(card.key)}
-            className="card-sticker p-5 sm:p-6 flex flex-col justify-between gap-5 cursor-pointer text-left hover:-translate-y-0.5 hover:shadow-glass-hover transition-all duration-200"
+            onClick={() => {
+              setError('');
+              setRedirectingToEpic(true);
+              window.setTimeout(() => {
+                setMode('epic');
+                setRedirectingToEpic(false);
+                onEpicModeChange(true);
+              }, 650);
+            }}
+            className="epic-entry-button"
+            disabled={redirectingToEpic}
           >
-            <div className="space-y-4">
-              <div className="flex flex-col gap-3 min-w-0">
-                <div className="flex items-center gap-3 min-w-0">
-                  {card.media}
-                  <div className="min-w-0">
-                    <span className="chip chip-accent">{card.eyebrow}</span>
-                    <h2 className="font-heading font-extrabold text-lg mt-1.5 break-words">{card.title}</h2>
-                    <p className="text-xs text-muted-fg break-words">{card.subtitle}</p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap">{card.status}</div>
-              </div>
-              <p className="text-sm text-muted-fg leading-relaxed">{card.body}</p>
-            </div>
-            <div className="pt-4 border-t-2 border-ink/10 flex items-center justify-between gap-3">
-              <span className="text-xs text-muted-fg">{card.foot}</span>
-              <span className="inline-flex items-center gap-1 text-sm font-heading font-bold text-accent">
-                {card.cta}
-                <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
-              </span>
-            </div>
+            <img src="/epic-logo.svg" alt="" />
+            {redirectingToEpic ? 'Redirecting to Epic...' : 'Sign in with Epic'}
           </button>
-        ))}
-      </div>
-
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2 text-xs text-muted-fg">
-        <div className="flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-accent" strokeWidth={2.5} />
-          Benson Cancer Center • Role-based product workspace
-        </div>
-        <button onClick={onReset} className="btn-ghost btn-compact">
-          Reset Application to Initial State
-        </button>
+          <p className="text-[11px] text-muted-fg mt-4 text-center">Epic sign in is available for Care Team, Care Navigator, and Transportation.</p>
+        </section>
       </div>
     </div>
   );

@@ -429,7 +429,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'LANDING') return state;
       return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
     case 'SET_PERSPECTIVE':
-      return { ...state, currentPerspective: action.payload === 'SIGN_IN' ? 'LANDING' : normalizePerspective(action.payload) };
+      return { ...state, currentPerspective: normalizePerspective(action.payload) };
     case 'SET_STAFF_ROUTE':
       if (!canOpenRoute(state.currentPerspective, action.payload)) return state;
       return { ...state, staffRoute: action.payload };
@@ -478,7 +478,7 @@ export function loadSavedWorkflowState(): WorkflowState {
       if (!raw) return INITIAL_STATE;
       const parsed: unknown = JSON.parse(raw);
       if (isSavedWorkflowState(parsed)) {
-        const currentPerspective = parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : normalizePerspective(parsed.currentPerspective);
+        const currentPerspective = normalizePerspective(parsed.currentPerspective);
         return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective };
       }
     }
@@ -513,7 +513,7 @@ const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
   if (!isRecord(value) || value.version !== 5 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
-  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
+  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','TRANSPORTATION','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
   if (typeof value.readinessCheckCompleted !== 'boolean' || typeof value.patientAcknowledged !== 'boolean' || (value.patientAcknowledgedPlanVersion !== null && typeof value.patientAcknowledgedPlanVersion !== 'number')) return false;
   if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission)) return false;
   if (!Array.isArray(value.labs) || !value.labs.every(isLab) || !Array.isArray(value.vitals) || !value.vitals.every(isVital) || !Array.isArray(value.contextualCases) || !value.contextualCases.every(isContextualCase)) return false;
