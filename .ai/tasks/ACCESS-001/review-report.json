@@ -2,17 +2,8 @@
   "schema_version": "1.0",
   "task_id": "ACCESS-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "8716e5b68adec5363d465890c37e467feaaadac8",
-  "status": "CHANGES_REQUIRED",
-  "summary": "The persistence revision rejects the pre-ACCESS version-3 key, advances the current contract to version 4, and normalizes a structurally accepted retired SIGN_IN perspective to the record-free landing. The fresh-state journey, exact two-plan pricing, one truthful gateway, scenario switching/reset, locked visual treatment, accessibility evidence, and verification remain valid. Release readiness is still blocked because the same-version validator checks only sentinel identity fields and top-level array presence, so a structurally incomplete version-4 snapshot with those sentinels can still preserve PATIENT or STAFF and bypass the gateway, then render incomplete record data or fail on unchecked nested fields.",
-  "findings": [
-    {
-      "severity": "medium",
-      "category": "demo-critical persistence",
-      "file": "frontend/src/state/workflowState.ts",
-      "description": "The legacy Maria snapshot and retired SIGN_IN case are now handled, but `isSavedWorkflowState` does not validate the full state shape it promises. A version-4 object with valid enums/booleans, the expected patient/caregiver/appointment IDs and names, and empty top-level arrays passes even if required nested fields such as `appointment.drugs`, `appointment.premeds`, patient details, task members, or audit members are absent or malformed. If that object retains `currentPerspective: PATIENT` or `STAFF`, `loadSavedWorkflowState` returns it directly instead of the record-free landing; the patient view then reaches unchecked operations such as `appointment.drugs.map`. The added malformed-state test uses the wrong patient identity, so it proves the sentinel rejection path rather than structural validation of a same-version Camila snapshot. This leaves the prior malformed-state blocker partially unresolved and can bypass the gateway or break the demo path.",
-      "recommendation": "Validate every persisted field required by the rendered workflow, preferably with a schema/parser that rejects malformed nested patient, caregiver, appointment, task, audit, lab, and vital objects before returning them. Add a regression using the correct version-4 Camila sentinel values and valid top-level enums/arrays while omitting or corrupting a required nested field; assert reload falls back to the record-free landing and the gateway remains the only entry path.",
-      "blocking": true
-    }
-  ]
+  "reviewed_commit": "8b1d41a43bb75692e56c65f5979818823abc7f6c",
+  "status": "APPROVED",
+  "summary": "The exact current revision satisfies ACCESS-001 with no blocking findings. Public surfaces remain record-free and route every workspace access control through one truthful local gateway; the approved Pilot and Network terms remain exactly two coherent plans; persona switching preserves the shared scenario and reset restores the public start; off-path controls remain honest; and the matched desktop/mobile, keyboard-focus, and reduced-motion evidence preserves the locked visual system. The prior persistence blocker is resolved: the version-4 loader validates the complete rendered workflow shape, rejects legacy version-3 and correct-identity malformed version-4 snapshots to the record-free initial state without a render crash, and normalizes a valid retired SIGN_IN perspective to LANDING. The focused five-test ACCESS suite and production build pass independently, and repository verification PASSED at source/test commit 98f36b25aa05e117f092a76afff0f20877f22c69; the only later commit refreshes that verification report, so the evidence is current for this reviewed revision.",
+  "findings": []
 }
