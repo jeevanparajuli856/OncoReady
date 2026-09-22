@@ -44,7 +44,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Treatment readiness before the chair/i)).toBeDefined();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
     expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByRole('button', { name: /Access workspace/i }).length).toBeGreaterThan(0);
     expect(screen.getByText(/SaaS business model/i)).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Pilot' })).toBeDefined();
     expect(screen.getByText('$1,500/month')).toBeDefined();
@@ -128,7 +128,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Current plan complete/i)).toBeDefined();
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
-    const switcherBtn = screen.getByText(/Sarah Jenkins, RN/i);
+    const switcherBtn = screen.getByRole('button', { name: /Sarah Jenkins, RN/i });
     fireEvent.click(switcherBtn);
 
     const caregiverOption = screen.getByText(/Caregiver Portal \(Ana Hernandez\)/i);
@@ -166,7 +166,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(finalizeBtn);
 
     await waitFor(() => {
-      expect(screen.getByText(/Continuity Plan Confirmed/i)).toBeDefined();
+      expect(screen.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeDefined();
     });
 
     // 11. Reset Journey

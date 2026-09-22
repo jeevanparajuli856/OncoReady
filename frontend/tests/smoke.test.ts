@@ -101,8 +101,12 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     // Step 2: Nurse acknowledges clinical task
     state = workflowReducer(state, {
       type: 'ACKNOWLEDGE_CLINICAL_TASK',
+    });
+    state = workflowReducer(state, {
+      type: 'RECORD_CLINICAL_DISPOSITION',
       payload: {
-        nurseNotes: 'Advised oral hydration, pre-med labs at 8:00 AM',
+        disposition: 'Human contact completed; no blocking follow-up recorded.',
+        followUpBlocking: false,
       },
     });
     const clnTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
@@ -131,7 +135,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
 
     // Verify causal audit events are recorded
     expect(state.auditEvents.length).toBeGreaterThanOrEqual(6);
-    const hasClosureEvent = state.auditEvents.some((e) => e.action.includes('Treatment Plan Acknowledged'));
+    const hasClosureEvent = state.auditEvents.some((e) => e.action === 'Current transport plan v1 acknowledged');
     expect(hasClosureEvent).toBe(true);
 
     // Step 5: Reset restores initial state
