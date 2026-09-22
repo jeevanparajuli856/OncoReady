@@ -2,31 +2,62 @@
   "schema_version": "1.0",
   "task_id": "ML-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "existing_design_system": "docs/design/DESIGN_SYSTEM.md",
-  "design_system_action": "NONE",
+  "status": "DESIGN_READY",
+  "summary": "Add one native Insights tab to the existing staff case workspace. It renders the validated saved synthetic-model artifact as a three-checkpoint trajectory, checkpoint-specific Why flagged? disclosures, concise evidence/metrics/limitations links, and an isolated two-state transportation sensitivity comparison without changing workflow state or implying clinical risk, causation, calibrated probability, or runtime inference.",
+  "existing_design_system": "docs/design/DESIGN_SYSTEM.md, ADR-0003, current Clinical Glass runtime and StaffCaseWorkspace at pre-handoff commit 434e6aae6a52af2090923989b0ba921efa1d91e3; baseline captures frontend/artifacts/ML-001/baseline-434e6aa/desktop-staff-case.png and mobile-staff-case.png",
+  "design_system_action": "REUSE",
   "visual_direction": {
-    "layout": "",
-    "color": "",
-    "typography": "",
-    "spacing_and_shape": "",
-    "component_presentation": ""
+    "layout": "Preserve the StaffCaseWorkspace shell, Camila summary, page width, private checkpoint control, and existing tabs. Insert Insights between Epic and Graph in the same Case information tablist. The panel uses the existing vertical card rhythm: (1) source/meaning header with visible `Synthetic-data model output` chip, model version and generated evidence identity; (2) a semantic three-item T-7/T-2/T-1 trajectory built from metric tiles, with each saved score and an inline Why flagged? disclosure; (3) a compact evidence row for held-out metrics and links; (4) an isolated Transportation what-if card with exactly Actual comparison row and Transportation available. No route, dashboard, modal, or new page family is introduced.",
+    "color": "Change no token or theme value. Reuse cream/white cards, ink text, indigo for the selected tab/checkpoint and structure, muted fills for evidence, amber only for honest unavailable/caution treatment, and mint only as an existing positive directional accent. Every score, factor direction, selection, delta, and unavailable state also has text and/or icon; the surface never treats a lower synthetic score as clinical clearance.",
+    "typography": "Keep current Outfit/Poppins/Plus Jakarta Sans/JetBrains Mono roles and scales. Scores use the existing compact display-number treatment with explicit `model score` wording, not percent, risk, likelihood, probability, urgency, eligibility, or recommendation. Current artifact values render as T-7 13.8, T-2 20.5, T-1 26.4; evidence reads held-out model accuracy 64.2%, majority baseline 60.3%, 400 held-out synthetic patients / 1,200 rows. Factors use readable labels and values such as Transportation available: Yes and Hours to treatment: 23. The supportive action is labeled `Workflow suggestion · not model-derived`.",
+    "spacing_and_shape": "Reuse p-5/p-6 cards, metric-tile surfaces, filter pills, chips, icon bubbles, 10–16px operational radii, one-pixel line borders, compact shadows, and the existing 4/8px rhythm. The checkpoint list is three equal columns on wide screens and one column on narrow screens; a subtle structural line may connect desktop items but is decorative. Evidence links wrap as existing ghost/compact buttons. No new global class or token is planned; feature-only composition may use current utilities.",
+    "component_presentation": "The Insights tab uses the current roving-tab implementation and a Lucide chart/spark icon. The header states that outputs were saved by the offline synthetic model and do not control clinical or workflow decisions. Each checkpoint card is a native selectable button or button-headed tile with checkpoint, score and explicit saved-output label; Why flagged? is a native button with aria-expanded/aria-controls that reveals up to three exported factors, readable feature values, direction labels (`associated with higher/lower model output`), and the separately attributed workflow suggestion. Missing factors show `No exported factors are available for this checkpoint` without inventing replacements. Evidence links open the bundled notebook, synthetic dataset, result JSON/data dictionary and limitations in a new tab with an explicit accessible new-tab label. The what-if uses two existing filter pills or a two-option radio group: Actual comparison (transport unavailable, 45.2) and Transportation available (26.4), plus the saved -18.8 difference labeled `model sensitivity only`. The card states only transportation availability changed and all other exported inputs stayed fixed. Entering Insights starts on the actual baseline; switching tabs or resetting/exiting the comparison discards only local selected checkpoint/disclosure/what-if state and never dispatches a workflow command."
   },
   "motion": {
-    "strategy": "",
-    "transitions": "",
-    "microinteractions": "",
-    "reduced_motion": ""
+    "strategy": "Use no chart animation or new motion family. Tab content and saved values replace in place; optional checkpoint selection uses only the existing short control/status transition. No pulse, auto-play, count-up, line drawing, or score animation is allowed.",
+    "transitions": "Reuse current 140–240ms hover/focus/active transitions. Why flagged? expands in place without moving focus; what-if selection swaps the saved row and text together without scroll or layout-dependent animation.",
+    "microinteractions": "Tabs retain click, Enter/Space and ArrowLeft/ArrowRight/Home/End behavior. Checkpoint/what-if buttons retain existing hover, pressed and 2px focus-visible treatment. Selection changes may announce `T-1 saved model output 26.4 selected` or `Transportation available comparison selected` through one polite live region; disclosures do not steal focus.",
+    "reduced_motion": "Effective reduced motion remains the union of prefers-reduced-motion and the product motion-off control. Under either source, tab, disclosure, checkpoint and comparison changes render immediately; semantics, focus, labels, values, links and local-state reset remain identical."
   },
   "responsive": {
-    "strategy": "",
-    "notes": ""
+    "strategy": "Preserve the existing page shell from 320px. The six-tab rail remains the current compact inline rail where it fits and a labeled horizontal scroll region on narrow screens. Checkpoints stack T-7 → T-2 → T-1 in chronological DOM order below 768px; evidence metrics and comparison states stack one per row, while desktop uses compact two/three-column grids. No page-level horizontal overflow or nested vertical scroll is added.",
+    "notes": "Verify 320x568, 390x844, 768x1024 and 1440x900. Scores, factor names/values, model label, limitations, comparison explanation, focus rings and external-link labels must wrap without clipping. The staff sidebar/dock may not cover the last evidence link or comparison disclaimer. Match the captured desktop/mobile baselines for shell, patient card, tab treatment, typography, tokens and spacing."
   },
-  "application_states": [],
-  "accessibility": [],
-  "assets_or_dependencies": [],
+  "application_states": [
+    "Valid saved artifact: visible synthetic-data/model label, model version, three checkpoint scores, factors, workflow suggestion attribution, metrics, limitations and working evidence links.",
+    "Checkpoint default/selected and Why flagged? collapsed/expanded for T-7, T-2 and T-1; each disclosure reads only that checkpoint's exported factors and values.",
+    "Missing-factor checkpoint: retain the score and show `No exported factors are available for this checkpoint`; no inferred factor or learned recommendation appears.",
+    "What-if default Actual comparison → Transportation available selected → Reset comparison; show 45.2, 26.4 and saved -18.8 only when the validated paired rows/model version/invariant are present.",
+    "Missing comparison output: disable both-state comparison, show `Transportation comparison unavailable in the saved model output`, keep checkpoint insights/evidence available, and expose no arbitrary input.",
+    "Missing, malformed, unsupported, incomplete, non-finite or integrity-mismatched artifact: render an amber-icon `Insights unavailable` card explaining that the staff workflow remains available; render no fabricated scores/factors/metrics and do not block Actions, Epic, Graph, tasks or checkpoints.",
+    "Static bundled loading is normally synchronous; if the component chunk is lazy-loaded, use a stable `Loading saved insights…` role=status card, with no spinner required and no network/inference claim.",
+    "Evidence-link missing/failure: keep the validated values visible, disable only the affected link with a visible reason, and never describe an unopened artifact as verified.",
+    "Reduced-motion mode preserves all readable states and interaction results with movement removed."
+  ],
+  "accessibility": [
+    "Extend the existing native tablist/tabpanel contract and roving focus to Insights; ArrowLeft/ArrowRight/Home/End include the new tab, with visible focus and no automatic activation merely from focus movement.",
+    "Represent trajectory as an ordered list with explicit checkpoint headings and model-score text. Any connecting line is aria-hidden; the trajectory remains complete without color, geometry or motion.",
+    "Why flagged? uses native buttons with aria-expanded and aria-controls. Revealed factors are a semantic list; factor labels and formatted values are text, and direction says higher/lower association rather than relying on arrows or color.",
+    "Use a fieldset/legend or aria-pressed button group for the two-state comparison. Both options include their full accessible label, score and selected state; disabled comparison has an associated visible explanation via aria-describedby.",
+    "Use one polite aria-live region for deliberate selection/reset feedback and role=alert only for artifact failure. Do not announce the full panel on every tab or disclosure change.",
+    "Evidence uses real anchors, meaningful link names and visible new-tab indication; keyboard focus is never moved on inline expansion, selection or failure, and returns naturally through the tab order.",
+    "Synthetic/limitations language is visible, not tooltip-only. Color is never the sole carrier; headings follow the existing h1 Camila → h2 panel/card → h3 checkpoint order.",
+    "At 200% zoom and 320px, the tab rail is keyboard-scrollable, all controls remain reachable, long model/evidence text wraps, and no content is hidden behind staff navigation."
+  ],
+  "assets_or_dependencies": [
+    "Planned files after gate: frontend/src/data/ml-insights.json as the exact content-bound copy; frontend/src/data/mlInsights.ts for unknown-input validation and display formatting; frontend/src/components/ReadinessInsights.tsx; the smallest tab integration in frontend/src/components/StaffCaseWorkspace.tsx; focused smoke tests; frontend/public/evidence/ml/** for working notebook/dataset/results/data-dictionary links; .ai/tasks/ML-001/frontend-report.json.",
+    "Reuse React 18, strict TypeScript, existing StaffCaseWorkspace tab primitives, cards, chips, filter pills, buttons, Lucide icons, Tailwind utilities and reduced-motion classes. Add no runtime package, chart library, state store, API endpoint, database, worker, model runtime, arbitrary-input form or hosted inference dependency.",
+    "The canonical source remains ml/artifacts/demo-insights.json. The frontend copy must be byte/content/hash checked against it; the UI never hand-edits scores, factors, metrics, limitations or comparison values."
+  ],
   "design_system_changes": [],
   "blockers": [],
-  "notes_for_codex": []
+  "notes_for_codex": [
+    "Compatibility review must bind this report to its exact design commit before implementation and run `python scripts/agentctl.py frontend design-gate ML-001`.",
+    "No-drift constraints: do not change global CSS/tokens, fonts, app shell, sidebar/dock/header/footer, existing tab/button/card/chip styles, existing Actions/Regimen/Labs/Epic/Graph content, private checkpoint placement, theme behavior or other personas. Implementation adds only the Insights tab/panel and feature-scoped composition.",
+    "Matched review captures: desktop 1440x900 and mobile 390x844 against baseline-434e6aa; valid T-7/T-2/T-1 disclosures; what-if baseline/available/reset; malformed artifact; missing factors/comparison; keyboard focus; reduced motion; unchanged existing tabs.",
+    "Smoke evidence must prove source/copy integrity, all saved value parity, evidence links, unavailable fallbacks, tab/disclosure/comparison keyboard use, and that entering/toggling/exiting/resetting Insights leaves WorkflowState, plan version, tasks, graph, timeline, outreach and acknowledgments byte-for-byte unchanged.",
+    "The supportive action remains a workflow rule and explicit patient concern remains human-owned regardless of score or insight availability. Never call factor contributions SHAP, causal explanations, clinical recommendations or learned channel selection.",
+    "The requested `.agents/skills/frontend-development/SKILL.md` is absent. Phase A used frontend/AGENTS.md, the available frontend-patterns/frontend-a11y skills, task evidence and the locked design system; this is not an implementation blocker.",
+    "Ready for exact-digest compatibility review. Do not edit production frontend code or tests until this design report is committed, approved and the ML-001 frontend design gate passes; report changes require fresh review."
+  ]
 }
