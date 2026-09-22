@@ -3,7 +3,7 @@
   "task_id": "EPIC-001",
   "title": "Captured Epic Sandbox JSON in the staff UI",
   "type": "feature",
-  "status": "BUILD_READY",
+  "status": "IMPLEMENTATION",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
