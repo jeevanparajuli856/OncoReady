@@ -2,19 +2,23 @@
   "schema_version": "1.0",
   "task_id": "RIDE-001",
   "agent": "codex-orchestrator",
-  "status": "PENDING",
-  "summary": "",
+  "status": "APPROVED",
+  "summary": "Approved as a compatibility-only extension of the locked OncoReady interface: the existing CareLink recovery remains the sole synthetic playable dispatch path, while a read-only provider area may label Uber Health as an integration-ready preview that is explicitly not connected and cannot affect workflow state.",
   "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
-  "reviewed_design_sha256": "",
+  "reviewed_design_sha256": "72547d3b421124a983b01e23c86aab17ffe42c45f6032f3e3fef2e7237af5b5c",
   "checks": {
-    "requirements": "PENDING",
-    "architecture_and_contracts": "PENDING",
-    "security_and_authorization": "PENDING",
-    "accessibility": "PENDING",
-    "performance": "PENDING",
-    "scope": "PENDING",
-    "human_brand_design_system_constraints": "PENDING"
+    "requirements": "PASS",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "PASS",
+    "performance": "PASS",
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_frontend": []
+  "notes_for_frontend": [
+    "Implement the exact revised design report at digest 72547d3b421124a983b01e23c86aab17ffe42c45f6032f3e3fef2e7237af5b5c and preserve all global tokens, component styles, shell behavior and role boundaries.",
+    "Keep CareLink as the synthetic current/replay scenario. Render Uber Health only in the read-only provider area with the full label Integration-ready preview - not connected; do not add an Uber SDK, API call, credential, booking control, success state or reducer field.",
+    "Use text and existing icon/chip primitives rather than an unverified third-party logo asset; verify the provider labels remain truthful and accessible in rendered output."
+  ]
 }
