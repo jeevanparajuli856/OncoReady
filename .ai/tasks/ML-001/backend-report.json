@@ -2,17 +2,19 @@
   "schema_version": "1.0",
   "task_id": "ML-001",
   "agent": "codex-backend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
-  ],
+  "status": "COMPLETE",
+  "summary": "Implemented and executed the deterministic stdlib-only synthetic readiness pipeline, notebook runner, retained-output notebook, data dictionary, generated CSV/JSON artifacts, and clean-run documentation.",
+  "files_changed": ["ml/train.py", "ml/__init__.py", "ml/run_notebook.py", "ml/notebooks/readiness-demo.ipynb", "ml/README.md", "ml/data/DATA_DICTIONARY.md", "ml/data/synthetic-readiness.csv", "ml/artifacts/demo-insights.json"],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "python -m unittest ml.tests.test_pipeline",
+      "python -m py_compile ml/train.py ml/run_notebook.py",
+      "python scripts/agentctl.py scope check ML-001 backend --base bd58a2bbaef738ac367e1896fd776ab1806fb684"
+    ],
+    "notes": "Full ML test module passed (4 tests); py_compile passed; scope check passed. Canonical outputs are root/data/synthetic-readiness.csv and root/artifacts/demo-insights.json. Held-out model accuracy 0.641667 beats majority baseline 0.603333 using a fixed pre-declared 0.4 descriptive threshold; no test tuning or minimum performance claim."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": ["Artifacts are synthetic only; scores are not clinical, causal, or calibrated claims."]
 }
