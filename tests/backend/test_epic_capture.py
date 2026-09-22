@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import hashlib
 import importlib
+import importlib.util
 import json
 import re
 from datetime import UTC, datetime
@@ -113,6 +114,18 @@ def production_module():
     """Import inside tests so collection succeeds while the new module is RED."""
 
     return importlib.import_module("app.epic_capture")
+
+
+def cli_module():
+    script_path = (
+        Path(__file__).resolve().parents[2]
+        / "backend/scripts/capture_epic_sandbox.py"
+    )
+    spec = importlib.util.spec_from_file_location("epic_capture_cli", script_path)
+    assert spec is not None and spec.loader is not None
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
 
 
 def approved_review(module):
@@ -359,6 +372,54 @@ def test_missing_token_or_review_fails_before_any_request_or_output(
         )
     assert missing_review_transport.calls == []
     assert_no_package_was_written(tmp_path / "missing-review")
+
+
+def test_operator_cli_takes_token_only_from_environment_and_requires_review_fields(
+    tmp_path: Path,
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    module = cli_module()
+    output_directory = tmp_path / "private-stage"
+    transport = SequencedTransport(PATIENT)
+    arguments = [
+        "--patient-id",
+        PATIENT_ID,
+        "--output-dir",
+        str(output_directory),
+        "--resource-types",
+        "--review-status",
+        "approved_for_frontend",
+        "--reviewed-at",
+        "2026-09-22T15:10:00Z",
+        "--reviewed-by",
+        "OncoReady test operator",
+        "--distribution",
+        "reviewed_epic_sandbox_test_data",
+    ]
+
+    exit_code = module.main(
+        arguments,
+        environ={"EPIC_SANDBOX_ACCESS_TOKEN": ACCESS_TOKEN},
+        transport=transport,
+        captured_at=CAPTURED_AT,
+    )
+
+    assert exit_code == 0
+    assert manifest_at(output_directory)["review"]["reviewedBy"] == (
+        "OncoReady test operator"
+    )
+    assert ACCESS_TOKEN not in capsys.readouterr().out
+
+    forbidden_exit = module.main(
+        [*arguments, "--access-token", ACCESS_TOKEN],
+        environ={},
+        transport=SequencedTransport(PATIENT),
+        captured_at=CAPTURED_AT,
+    )
+    output = capsys.readouterr()
+    assert forbidden_exit != 0
+    assert ACCESS_TOKEN not in output.out
+    assert ACCESS_TOKEN not in output.err
 
 
 def test_request_evidence_redacts_patient_and_pagination_selectors(

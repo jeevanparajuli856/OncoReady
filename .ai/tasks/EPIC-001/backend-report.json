@@ -2,17 +2,32 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "agent": "codex-backend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Implemented the private one-time Epic Sandbox capture boundary: exact-host HTTPS GET-only Patient reads and patient-scoped Appointment, MedicationRequest, and laboratory Observation searches; fail-closed pagination/resource validation; deterministic raw FHIR JSON, checksums, and contract-valid manifest output; and an operator CLI that accepts tokens only from the environment and stages outside the repository with explicit review metadata.",
+  "files_changed": [
+    "backend/app/epic_capture.py",
+    "backend/scripts/capture_epic_sandbox.py",
+    "tests/backend/test_epic_capture.py"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/schemas/epic-capture-manifest.v1.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "backend/.venv/bin/pytest -c backend/pyproject.toml tests/backend/test_epic_capture.py",
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend",
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' --cov=app --cov-report=term-missing tests/backend",
+      "backend/.venv/bin/python -m compileall -q backend/app backend/scripts tests/backend/test_epic_capture.py",
+      "backend/.venv/bin/python backend/scripts/capture_epic_sandbox.py --help"
+    ],
+    "notes": "Focused capture suite: 27 passed with injected transports only and no live network or credential use. Backend fast regression: 68 passed, 4 integration tests deselected. Coverage run: 68 passed, 4 deselected, 85% total application coverage. Compileall and CLI help checks passed. The existing two TestClient dependency deprecation warnings remain unrelated."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The orchestrator must run the operator CLI with authorized Epic Sandbox access, a selected Sandbox Patient id, explicit review attestations, and a private staging path outside the repository. No live Epic request or actual capture was performed during implementation/testing.",
+    "Review the staged raw FHIR resources for minimum necessary content, distribution permission, unexpected records, and secret absence before the frontend owner promotes any package. Backend completion does not by itself satisfy the actual-capture acceptance criterion or justify a connected claim.",
+    "The capture stores all present fields of the selected allowlisted resources unchanged. It does not fetch arbitrary patients, diagnoses, encounters, documents, or other chart families, and it never writes to Epic.",
+    "Run the required dedicated security review on the exact integrated revision, focusing on environment-token handling, redirect refusal, exact Sandbox host/path enforcement, patient scoping, request redaction, private staging permissions, and promotion review evidence."
+  ]
 }
