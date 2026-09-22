@@ -2,24 +2,78 @@
   "schema_version": "1.0",
   "task_id": "ACCESS-001",
   "agent": "codex-architect",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Defined ACCESS-001 as a frontend-only entry and navigation slice that keeps the public story record-free, funnels access through one prepared-workspace gateway, preserves the shared synthetic scenario across persona changes, and retains exactly two approved pricing plans without adding authentication, backend APIs, or infrastructure.",
+  "files_changed": [
+    ".ai/tasks/ACCESS-001/architecture-report.json"
+  ],
   "impacts": {
-    "database": null,
-    "backend": null,
-    "frontend": null,
-    "frontend_design_required": null,
-    "infrastructure": null
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
   },
-  "decisions": [],
-  "risks": [],
+  "decisions": [
+    "Implement ACCESS-001 entirely in the existing React and TypeScript frontend. Reuse the current perspective, staff-route, reducer, and versioned local-persistence machinery; add no database, API, authentication service, deployment component, or new dependency.",
+    "Make the landing and other public product routes record-free. Remove state-derived patient identity, MRN, treatment, clinical-source content, graph state, case rows, and direct patient/staff/caregiver workspace links from public rendering; compose the approved Continuity Rescue Story from generic product behavior inside the locked visual system.",
+    "Use one prepared-workspace gateway as the only public-to-workspace transition. All public header, hero, pricing, closing, mobile, and dock access points must open or navigate to that gateway rather than bypassing it or maintaining divergent persona lists.",
+    "Represent each gateway choice as a local navigation destination, not a credential or permission. The recorded staff choice must reach the prepared staff start without a dead end; patient and caregiver choices open their existing local views, and transportation enters the existing case/staff transportation context without creating a new page family or invoking a provider.",
+    "Keep the current scenario object as the single source of truth while switching prepared personas. Navigation changes presentation state only; returning to staff must preserve the active scenario and intended staff route, while reset restores the documented initial scenario and clears transient gateway, modal, search, and presentation state.",
+    "Expose the current controlled cast, led by Camila Lopez with Ana Hernandez, Sarah Jenkins, Marcus Vance, and CareLink Dispatch, as synthetic prepared workspace context. Keep any actual Epic identity and source provenance separate for EPIC-001; ACCESS-001 must not attribute invented clinical source facts to Epic.",
+    "Render exactly two pricing plans in the existing public section: Pilot at $18,000 per year with $1,500 per month billed annually, five staff seats, and one site; Network with 'Talk to us' and no numeric price. Add no checkout, billing state, lead-capture backend, or false contact/purchase success.",
+    "Hide off-path sign-up, recovery, social-provider, and consequential controls, or present them as clearly disabled/read-only with a useful explanation. Do not display success for authentication, email, save, purchase, delivery, or provider activity that did not occur.",
+    "Preserve the human-approved Clinical Glass and Continuity Aurora system, current global tokens, components, logo, navigation character, motion language, and responsive behavior. Design work is a compatibility and content-composition pass with matching before/after screenshots, keyboard focus, 44px public targets, and equivalent reduced-motion states.",
+    "Keep the task contract-free because the access destinations and scenario persistence are internal typed frontend structures implemented sequentially in one application. OUTREACH-001 remains the owner of any protected live-action API boundary; if ACCESS introduces a real session or server boundary, return to planning and revise contract and security controls before implementation.",
+    "No new ADR is required because the slice applies ADR-0003's visual lock and ADR-0004's prepared-persona, frontend-led demonstration decisions without changing a long-lived system boundary."
+  ],
+  "risks": [
+    {
+      "severity": "medium",
+      "description": "The current landing renders patient-specific workspace, graph, and case content and offers direct role transitions, which can expose controlled record details on a public product surface.",
+      "mitigation": "Remove state-backed patient/case projections and direct persona buttons from public rendering, route every public access point through the single gateway, and add a public-page smoke assertion that controlled patient identity, MRN, diagnosis, treatment, and source content are absent."
+    },
+    {
+      "severity": "medium",
+      "description": "Prepared persona selection could be mistaken for authentication or could appear to grant privileged provider or live-delivery authority.",
+      "mitigation": "Use truthful prepared-workspace language, keep selection as local navigation only, omit credential/provider success language, and ensure no local persona state can reveal secrets or call the protected OUTREACH boundary."
+    },
+    {
+      "severity": "medium",
+      "description": "Multiple existing selectors, headers, and mobile navigation paths can drift or bypass the intended entry path, causing dead ends or inconsistent personas during recording.",
+      "mitigation": "Centralize gateway destination definitions and public entry handling, make the staff recording route acceptance-critical, and exercise desktop and mobile transitions plus return navigation in one browser journey."
+    },
+    {
+      "severity": "medium",
+      "description": "Persisted browser state can retain an older persona/schema or lose the active scenario when switching views, undermining reset and rehearsal repeatability.",
+      "mitigation": "Version and validate persisted scenario data, migrate only when explicit and safe, fall back to the authoritative initial fixture, keep navigation separate from domain transitions, and verify persona switching, refresh behavior, and deterministic reset."
+    },
+    {
+      "severity": "medium",
+      "description": "Replacing public record previews, composing a rescue story, and adding pricing cards could cause unapproved visual or motion drift in the locked interface.",
+      "mitigation": "Complete the digest-bound frontend compatibility plan, reuse established landing primitives and reveal family, preserve global tokens, capture matched screenshots, and verify keyboard, responsive, focus, and reduced-motion behavior."
+    },
+    {
+      "severity": "low",
+      "description": "Pricing copy or calls to action could become internally inconsistent or imply checkout, billing, contact submission, or a priced Network tier.",
+      "mitigation": "Source both cards from one local typed definition, assert the exact approved Pilot and Network terms, render no third plan or Network amount, and avoid any simulated transaction or contact-success state."
+    }
+  ],
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Complete frontend design Phase A and the digest-bound compatibility gate before production frontend edits; the visible public-story, pricing, and gateway composition makes frontend_design_required true even though the global visual system is locked.",
+    "Likely implementation areas are App, LandingPage, Header, AuthModal and/or PortalAuthScreen, WorkspaceDock, local types/state, and focused frontend tests. Consolidate behavior instead of preserving two independently maintained gateway lists.",
+    "The public boundary applies to rendered public product pages, including mobile dock and direct buttons. Public copy may describe generic clinical workflow, but it must not render the controlled patient's identity, record, MRN, clinical-source payload, or current scenario state.",
+    "The selected recording path is public Workspace access to the prepared staff start. Preserve direct, keyboard-operable switching among the prepared patient, caregiver, staff, and transportation contexts and a reliable return to staff without resetting scenario progress.",
+    "ACCESS owns navigation into the existing transportation context only. RIDE-001 owns dispatch replay, assignment/failure/recovery, logistics-plan transitions, caregiver-seen state, and patient acknowledgment; do not pre-implement those actions here.",
+    "FLOW-001 owns expanded shared-scenario transitions and checkpoints. ACCESS should reuse the existing state store and leave a clean local route model for FLOW rather than creating a competing store.",
+    "SMOKE depth is implementation-owned. Protect the recorded click path, public record exclusion, exact two-card pricing, persona-switch persistence, deterministic reset, honest off-path states, production build, keyboard focus, selected desktop/mobile layouts, and reduced motion; no independent tester or security reviewer is selected.",
+    "If implementation requires real sessions, protected data, a backend endpoint, or any live external action, stop and return ACCESS-001 to architecture because the current LOW-risk, contract-free, frontend-only decision would no longer apply."
+  ],
   "execution": {
-    "contract_required": null,
-    "test_depth": null,
-    "security_risk": null,
-    "security_review_required": null
+    "contract_required": false,
+    "test_depth": "SMOKE",
+    "security_risk": "LOW",
+    "security_review_required": false
   }
 }
