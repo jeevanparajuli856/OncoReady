@@ -9,13 +9,16 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { AuditEvent, ActorRole } from '../types';
+import { PREPARED_OUTREACH_THREADS } from '../data/preparedOutreach';
 
 interface AuditTimelineProps {
   events: AuditEvent[];
+  showFinalReply?: boolean;
 }
 
-export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events }) => {
+export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events, showFinalReply = false }) => {
   const [selectedRole, setSelectedRole] = useState<string>('ALL');
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
 
   const filteredEvents = selectedRole === 'ALL'
     ? events
@@ -74,7 +77,10 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events }) => {
       </div>
 
       <div className="relative pl-6 space-y-4 before:absolute before:left-3.5 before:top-3 before:bottom-3 before:w-0.5 before:bg-ink/20">
-        {filteredEvents.map((evt) => (
+        {filteredEvents.map((evt) => {
+          const thread = PREPARED_OUTREACH_THREADS.find((item) => (item.eventIds as readonly string[]).includes(evt.id));
+          const expanded = Boolean(thread && selectedEventId === evt.id);
+          return (
           <div key={evt.id} className="relative flex items-start gap-4 animate-fade-in">
             <div className="absolute -left-6 bg-cream p-0.5 rounded-full z-10">
               {getActorBadge(evt.actorRole)}
@@ -91,6 +97,27 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events }) => {
                 </div>
               </div>
               <p className="text-sm text-muted-fg leading-relaxed">{evt.description}</p>
+              {thread && <>
+                <button
+                  type="button"
+                  className="mt-1 rounded-lg text-sm font-semibold text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                  aria-expanded={expanded}
+                  aria-controls={`prepared-thread-${evt.id}`}
+                  onClick={() => setSelectedEventId(expanded ? null : evt.id)}
+                >{expanded ? 'Close prepared message thread' : 'Open prepared message thread'}</button>
+                {expanded && <div id={`prepared-thread-${evt.id}`} className="mt-3 rounded-xl border border-line bg-white p-4 text-sm space-y-3">
+                  <p className="label-caps text-muted-fg">Prepared scenario history · no provider request</p>
+                  <dl className="space-y-2">
+                    <div><dt className="font-semibold">Scheduled</dt><dd>{thread.scheduledAt}</dd></div>
+                    <div><dt className="font-semibold">Sent · {thread.sentAt}</dt><dd>“{thread.message}”</dd></div>
+                    {(thread.id === 'check-in-1' || showFinalReply) && <>
+                      <div><dt className="font-semibold">Reply · {thread.replyAt}</dt><dd>“{thread.reply}”</dd></div>
+                      <div><dt className="font-semibold">Follow-up · {thread.followUpAt}</dt><dd>{thread.followUp}</dd></div>
+                    </>}
+                  </dl>
+                  {thread.id === 'check-in-2' && !showFinalReply && <p className="text-muted-fg">The later reply and follow-up appear after the prepared reply is submitted.</p>}
+                </div>}
+              </>}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-ink/10 text-xs">
                 <div>
                   Actor: <span className="font-heading font-bold">{evt.actor}</span>
@@ -105,7 +132,7 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events }) => {
               </div>
             </div>
           </div>
-        ))}
+        )})}
       </div>
     </div>
   );

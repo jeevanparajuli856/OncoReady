@@ -10,6 +10,7 @@ requires-python = ">=3.12,<3.14"
 dependencies = [
   "alembic>=1.16,<2",
   "fastapi>=0.116,<1",
+  "httpx>=0.28,<1",
   "psycopg[binary]>=3.2,<4",
   "pydantic-settings>=2.10,<3",
   "sqlalchemy>=2.0.41,<3",
@@ -40,4 +41,3 @@ source = ["app"]
 [tool.coverage.report]
 fail_under = 80
 show_missing = true
-

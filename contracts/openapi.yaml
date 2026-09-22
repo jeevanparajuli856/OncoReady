@@ -4,8 +4,9 @@ info:
   title: OncoReady API
   version: 0.1.0
   description: >-
-    Initial Railway foundation contract. Protected workspace, Epic, workflow,
-    transportation, outreach, and evidence APIs are introduced by later slices.
+    Railway foundation and private one-shot outreach contract. Protected
+    workspace, runtime Epic, broad workflow, transportation, and evidence APIs
+    are introduced by later slices.
 
 servers:
   - url: http://localhost:8000
@@ -160,6 +161,90 @@ paths:
               schema:
                 $ref: "#/components/schemas/ErrorResponse"
 
+  /api/v1/operator/outreach/status:
+    get:
+      operationId: getOutreachStatus
+      summary: Read sanitized provider-polled one-shot delivery status
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      responses:
+        "200":
+          description: Current arm and separate SMS/call states.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /api/v1/operator/outreach/arm:
+    post:
+      operationId: armOutreachOnce
+      summary: Open the single finite live delivery window
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      responses:
+        "200":
+          description: Armed once.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: The one-time arm has already been used.
+        "503":
+          description: Consent, credentials, persistence, or kill switch is unavailable.
+
+  /api/v1/operator/outreach/sms:
+    post:
+      operationId: sendOutreachSmsOnce
+      summary: Reserve and submit the fixed SMS to the configured recipient
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      responses:
+        "200":
+          description: The one-shot attempt state, which may be unknown or failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: The arm is absent or expired.
+        "409":
+          description: An SMS attempt was already reserved.
+        "503":
+          description: Live outreach is unavailable.
+
+  /api/v1/operator/outreach/call:
+    post:
+      operationId: placeOutreachCallOnce
+      summary: Reserve and initiate the short ElevenLabs agent call via Twilio
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      responses:
+        "200":
+          description: The one-shot attempt state, which may be unknown or failed.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: The arm is absent or expired.
+        "409":
+          description: A call attempt was already reserved.
+        "503":
+          description: Live outreach is unavailable.
+
 components:
   securitySchemes:
     operatorBearer:
@@ -215,6 +300,29 @@ components:
             $ref: "#/components/schemas/ValidationErrorResponse"
 
   schemas:
+    OutreachStatus:
+      type: object
+      additionalProperties: false
+      required: [available, armed, expires_at, sms, call, call_completed]
+      properties:
+        available:
+          type: boolean
+        armed:
+          type: boolean
+        expires_at:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
+        sms:
+          type: string
+          enum: [not_started, initiating, submitted, queued, sending, sent, delivered, undelivered, failed, unknown]
+        call:
+          type: string
+          enum: [not_started, initiating, initiated, queued, ringing, in_progress, completed, busy, failed, no_answer, canceled, unknown]
+        call_completed:
+          type: boolean
+
     HealthResponse:
       type: object
       additionalProperties: false

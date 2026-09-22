@@ -6,6 +6,8 @@ import {
   CaregiverProjection,
   RideAssignment,
 } from '../types';
+import { PREPARED_OUTREACH_EVENTS, PREPARED_REPLY } from '../data/preparedOutreach';
+export { PREPARED_REPLY } from '../data/preparedOutreach';
 
 const STORAGE_KEY = 'oncoready_workflow_state_v4';
 const avatarData = (initials: string, color: string) =>
@@ -223,32 +225,7 @@ export const INITIAL_STATE: WorkflowState = {
 
   tasks: [],
 
-  auditEvents: [
-    {
-      id: 'EVT-HISTORY-SCHEDULED-01',
-      timestamp: 'Sep 23, 2026 • 10:05 AM CT',
-      actor: 'Prepared outreach history',
-      actorRole: 'SYSTEM',
-      action: 'Automatic check-in scheduled',
-      description: 'Prepared SMS due Sep 23 at 10:06 AM CT. This is scenario history, not provider delivery evidence.',
-    },
-    {
-      id: 'EVT-HISTORY-SMS-01', timestamp: 'Sep 23, 2026 • 10:06 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Prepared SMS sent',
-      description: '“Is your transportation plan ready for your upcoming appointment?”',
-    },
-    {
-      id: 'EVT-HISTORY-REPLY-01', timestamp: 'Sep 23, 2026 • 10:18 AM CT', actor: 'Camila Lopez', actorRole: 'PATIENT', action: 'Prepared reply received',
-      description: '“I think my ride is set. I’ll confirm tomorrow.”',
-    },
-    {
-      id: 'EVT-HISTORY-FOLLOWUP-01', timestamp: 'Sep 23, 2026 • 10:19 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Follow-up scheduled',
-      description: 'Next prepared check-in scheduled for Sep 24 at 10:06 AM CT.',
-    },
-    {
-      id: 'EVT-HISTORY-SMS-02', timestamp: 'Sep 24, 2026 • 10:06 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Prepared follow-up SMS sent',
-      description: '“Please confirm your ride plan or let us know if you need help.”',
-    }
-  ],
+  auditEvents: [...PREPARED_OUTREACH_EVENTS],
 
   contextualCases: [
     {
@@ -296,7 +273,6 @@ export const INITIAL_STATE: WorkflowState = {
   ]
 };
 
-export const PREPARED_REPLY = "My ride was cancelled—and I’m not feeling well today.";
 const SOURCE_REPLY_ID = 'source-prepared-reply-2026-09-24T10:12:00-05:00';
 
 export type WorkflowAction =

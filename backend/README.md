@@ -25,6 +25,24 @@ DATABASE_URL='postgresql+psycopg://...' \
   backend/.venv/bin/alembic -c backend/alembic/alembic.ini upgrade head
 ```
 
+## One-shot live outreach
+
+The private page at `/operator/live` requires the existing `OPERATOR_TOKEN`.
+The server must also have `DATABASE_URL`, `OUTREACH_ENABLED=true`,
+`OUTREACH_CONSENT_CONFIRMED=true`, an E.164 `OUTREACH_RECIPIENT`,
+`TWILIO_ACCOUNT_SID`, `TWILIO_AUTH_TOKEN`, `TWILIO_FROM_NUMBER`,
+`ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, and
+`ELEVENLABS_PHONE_NUMBER_ID`. Keep these values server-side only.
+
+Run the Alembic migration before enabling outreach. The operator checks status,
+arms once for `OUTREACH_ARM_MINUTES` (default 30), then can submit one SMS and
+one call. The ledger reserves each action before provider submission and is not
+cleared by scenario reset. An ambiguous submission stays `unknown` and cannot
+be retried. Status reads poll Twilio for actual message/call state; `sent` is not
+SMS delivery, and `completed` is not patient acknowledgment. The ElevenLabs
+agent must have a verified Twilio phone number and a 60-second maximum call
+duration. The presenter verifies audible speech on the consenting phone.
+
 Install and run locally:
 
 ```bash

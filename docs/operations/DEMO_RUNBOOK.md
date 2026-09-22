@@ -47,11 +47,11 @@ Record actual interactions. Editing out waiting time is acceptable; do not fabri
 
 ## Live call moment
 
-1. Verify the participant has the phone, sound is audible and consent is current.
-2. Confirm actual-time arm/window, fixed recipient/audio, one-call reservation and remaining cap.
-3. Trigger the protected one-shot call once. Show ringing/verified state and let the room hear the prepared nonclinical audio.
-4. End within the cap. State only what occurred; completed call is not patient acknowledgment.
-5. Continue the closing vision/funding ask. Ongoing conversation or automatic clinical/workflow updates are unnecessary.
+1. Verify the participant has the phone, sound is audible and consent is current. Keep the private operator token out of the recording.
+2. The presenter says, “Let’s see our core feature: live call now.” Open `/operator/live`, check the current status, and confirm the arm/window and one-call allowance.
+3. Press **Place live call** once. Show `initiating → ringing`; the participant answers on speaker and says one sentence. The ElevenLabs agent replies briefly and ends the call within its 60-second limit.
+4. Wait for Twilio to report `completed` and confirm the exchange was audible. State only what occurred; completed call is not patient acknowledgment.
+5. Start **Video Part 2** to continue the prepared patient story, then continue the closing vision/funding ask. Ongoing conversation or automatic clinical/workflow updates are unnecessary.
 
 If the stage call fails or remains unknown, say “Here is the recorded call from rehearsal,” play the local backup and preserve the actual failure state. Do not retry repeatedly on stage or silently replace live evidence.
 

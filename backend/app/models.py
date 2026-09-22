@@ -27,3 +27,19 @@ class FoundationProofRecord(Base):
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
 
+
+class OutreachArmRecord(Base):
+    __tablename__ = "outreach_arms"
+    key: Mapped[str] = mapped_column(String(32), primary_key=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class OutreachAttemptRecord(Base):
+    __tablename__ = "outreach_attempts"
+    kind: Mapped[str] = mapped_column(String(8), primary_key=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False)
+    provider_sid: Mapped[str | None] = mapped_column(String(64))
+    conversation_id: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())

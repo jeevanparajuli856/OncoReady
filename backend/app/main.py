@@ -13,6 +13,7 @@ from app.config import Settings
 from app.database import Database
 from app.logging import configure_logging
 from app.middleware import RequestContextMiddleware
+from app.outreach import router as outreach_router
 from app.repositories import FoundationProofRepository, get_proof_repository
 from app.schemas import (
     ErrorResponse,
@@ -71,6 +72,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         max_body_bytes=runtime_settings.max_request_body_bytes,
         logger=logger,
     )
+    application.include_router(outreach_router)
 
     @application.exception_handler(ApiError)
     async def api_error_handler(_: Request, error: ApiError) -> JSONResponse:

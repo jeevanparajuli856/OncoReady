@@ -4,11 +4,11 @@
 
 ## User-visible outcome
 
-One real SMS arrives and a real phone rings with a short prepared nonclinical voice message during the demonstration.
+One real SMS arrives and a real phone rings for a short nonclinical ElevenLabs agent exchange during the demonstration.
 
 ## Required scope
 
-Reuse the existing API and purchased Twilio/ElevenLabs accounts. Prepare reviewed audio before the event; implement a protected manual one-shot send/call, server-configured consenting recipient, durable attempt guard, verified outcomes and visible status. SMS can be recorded ahead of time; the call is the live highlight. Include prepared automatic-outreach history with scheduled/sent messages, original text, patient replies and follow-up changes; it demonstrates the workflow without a scheduler engine.
+Reuse the existing API and purchased Twilio/ElevenLabs accounts. Configure a reviewed agent opener and short response before the event; implement a protected manual one-shot send/call, server-configured consenting recipient, durable attempt guard, verified outcomes and visible status. The participant says one sentence, hears the agent's short reply, and the presenter starts Video Part 2 only after provider-completed status. SMS can be recorded ahead of time; the call is the live highlight. Include prepared automatic-outreach history with scheduled/sent messages, original text, patient replies and follow-up changes; it demonstrates the workflow without a scheduler engine.
 
 ## Deferred
 
@@ -32,7 +32,7 @@ TARGETED; HIGH risk with dedicated security review because real outbound actions
 ## Acceptance criteria
 
 1. One explicit protected SMS action sends the reviewed nonclinical text to the single configured consenting test recipient and the message is actually received; retain sanitized provider/recipient evidence. Provider acceptance alone is not delivery.
-2. One explicit protected call action rings the configured phone and plays the prepared reviewed audio audibly, then ends within the configured 60-second cap. A short recorded voice message is sufficient; retain sanitized live evidence.
+2. One explicit protected call action rings the configured phone. The reviewed ElevenLabs agent speaks an opener, listens to one sentence, gives a short nonclinical response, and ends within the configured 60-second cap. Retain sanitized live evidence and recipient confirmation of audible exchange.
 3. The browser cannot choose an arbitrary number or script, obtain secrets, or bypass operator protection, consent, arming, expiry and configured attempt/cost limits; verify negative API tests and dedicated security review.
 4. Double-clicks, request retries, process restart, repeated callbacks and scenario reset cannot dispatch an uncontrolled duplicate. Reserve the live attempt before sending; ambiguous provider submission becomes outcome unknown with no blind retry.
 5. Real status distinguishes submitted, delivered, ringing, answered/completed, failed/unknown and any explicit response. Success originates only from verified provider evidence; do not treat call completion as recipient acknowledgment.

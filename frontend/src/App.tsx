@@ -29,12 +29,14 @@ import { buildDirectoryRecords, filterDirectoryRecords } from './data/rosterDire
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 import { TransportationWorkspace } from './components/TransportationWorkspace';
+import { LiveOutreachControl } from './components/LiveOutreachControl';
 
 export const App: React.FC = () => {
   const legalPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') : '';
   if (legalPath === '/terms' || legalPath === '/privacy') {
     return <LegalPage document={legalPath.slice(1) as 'terms' | 'privacy'} />;
   }
+  if (legalPath === '/operator/live') return <LiveOutreachControl />;
 
   const [state, dispatch] = useReducer(workflowReducer, null, loadSavedWorkflowState);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
