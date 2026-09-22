@@ -47,6 +47,8 @@ Record actual interactions. Editing out waiting time is acceptable; do not fabri
 
 ## Live call moment
 
+The September 22 test call completed and used the current one-shot window. The operator page now presents that result as a previous call, not as the stage cue. The current backend does not support rearming: implement and authorize a new bounded event window before the live presentation; ordinary scenario reset cannot rearm delivery. The SMS test remains undelivered while Twilio A2P review is pending. No Video Part 2 or backup call media file is tracked in this repository yet, so verify those files and their playback before presenting.
+
 1. Verify the participant has the phone, sound is audible and consent is current. Keep the private operator token out of the recording.
 2. The presenter says, “Let’s see our core feature: live call now.” Open `/operator/live`, check the current status, and confirm the arm/window and one-call allowance.
 3. Press **Place live call** once. Show `initiating → ringing`; the participant answers on speaker and says one sentence. The ElevenLabs agent replies briefly and ends the call within its 60-second limit.
