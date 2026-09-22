@@ -3,7 +3,7 @@
   "task_id": "ACCESS-001",
   "title": "Public experience pricing and workspace access",
   "type": "feature",
-  "status": "PROPOSED",
+  "status": "PLANNING",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
