@@ -6,12 +6,12 @@ import {
   CaregiverProjection 
 } from '../types';
 
-const STORAGE_KEY = 'oncoready_workflow_state_v2';
+const STORAGE_KEY = 'oncoready_workflow_state_v3';
 const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
 export const INITIAL_STATE: WorkflowState = {
-  version: 3,
+  version: 4,
   isSimulated: true,
   currentPerspective: 'LANDING',
   staffRoute: 'COMMAND_CENTER',
@@ -583,15 +583,50 @@ export function loadSavedWorkflowState(): WorkflowState {
     if (typeof localStorage !== 'undefined') {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return INITIAL_STATE;
-      const parsed = JSON.parse(raw);
-      if (parsed && parsed.version === INITIAL_STATE.version && parsed.patient) {
-        return parsed;
+      const parsed: unknown = JSON.parse(raw);
+      if (isSavedWorkflowState(parsed)) {
+        return {
+          ...parsed,
+          currentPerspective: parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : parsed.currentPerspective,
+        };
       }
     }
   } catch {
     // ignore malformed storage
   }
   return INITIAL_STATE;
+}
+
+const savedPerspectives: Perspective[] = ['LANDING', 'TRUST', 'SIGN_IN', 'PATIENT', 'CAREGIVER', 'STAFF', 'SYSTEM'];
+const savedStaffRoutes: WorkflowState['staffRoute'][] = ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'];
+const savedReadinessStates: WorkflowState['overallReadiness'][] = ['ACTION_REQUIRED', 'AT_RISK', 'IN_PROGRESS', 'PLAN_CONFIRMED'];
+
+function isSavedWorkflowState(value: unknown): value is WorkflowState {
+  if (!value || typeof value !== 'object') return false;
+  const state = value as Partial<WorkflowState>;
+
+  return (
+    state.version === INITIAL_STATE.version &&
+    state.isSimulated === true &&
+    typeof state.currentPerspective === 'string' &&
+    savedPerspectives.includes(state.currentPerspective as Perspective) &&
+    typeof state.staffRoute === 'string' &&
+    savedStaffRoutes.includes(state.staffRoute as WorkflowState['staffRoute']) &&
+    typeof state.overallReadiness === 'string' &&
+    savedReadinessStates.includes(state.overallReadiness as WorkflowState['overallReadiness']) &&
+    typeof state.readinessCheckCompleted === 'boolean' &&
+    typeof state.patientAcknowledged === 'boolean' &&
+    state.patient?.id === INITIAL_STATE.patient.id &&
+    state.patient.name === INITIAL_STATE.patient.name &&
+    state.patient.mrn === INITIAL_STATE.patient.mrn &&
+    state.caregiver?.id === INITIAL_STATE.caregiver.id &&
+    state.caregiver.name === INITIAL_STATE.caregiver.name &&
+    state.appointment?.id === INITIAL_STATE.appointment.id &&
+    Array.isArray(state.tasks) &&
+    Array.isArray(state.auditEvents) &&
+    Array.isArray(state.labs) &&
+    Array.isArray(state.vitals)
+  );
 }
 
 export function saveWorkflowState(state: WorkflowState): void {

@@ -3,7 +3,7 @@
   "task_id": "ACCESS-001",
   "agent": "codex-frontend",
   "status": "COMPLETE",
-  "summary": "Implemented the approved record-free public story, exact two-plan pricing, one keyboard-accessible prepared-workspace gateway, Camila-led prepared persona entry, state-preserving workspace switching, transportation routing into the existing logistics context, and deterministic reset without changing global visual tokens or adding a backend boundary.",
+  "summary": "Implemented the approved record-free public story, exact two-plan pricing, one keyboard-accessible prepared-workspace gateway, Camila-led prepared persona entry, state-preserving workspace switching, transportation routing into the existing logistics context, deterministic reset, and a validated version-4 persistence boundary that rejects legacy or malformed saved scenarios without changing global visual tokens or adding a backend boundary.",
   "files_changed": [
     "frontend/src/App.tsx",
     "frontend/src/components/AuthModal.tsx",
@@ -38,7 +38,7 @@
       "npm run test:e2e",
       "Playwright screenshot capture at 1440x900 and 390x844 against baseline c099646 and current implementation"
     ],
-    "notes": "Build passed; 25 Vitest checks passed across 6 files; 7 Chromium journeys passed. Browser QA recorded no page or console errors. Matched baseline/current evidence confirms the header, hero, typography, tokens, component geometry, and motion language remain visually compatible. The mobile dialog is viewport-bounded, Staff receives initial focus, Escape restores the trigger, all public dock role buttons open the gateway, and reduced-motion content is immediately visible."
+    "notes": "Build passed; 27 Vitest checks passed across 6 files; 7 Chromium journeys passed. Browser QA recorded no page or console errors. Matched baseline/current evidence confirms the header, hero, typography, tokens, component geometry, and motion language remain visually compatible. The mobile dialog is viewport-bounded, Staff receives initial focus, Escape restores the trigger, all public dock role buttons open the gateway, and reduced-motion content is immediately visible. Persistence regressions seed the pre-change version-3 Maria state, a malformed same-version value, and the retired SIGN_IN perspective; each restores the reviewed record-free Camila start."
   },
   "blockers": [],
   "notes_for_next_agent": [

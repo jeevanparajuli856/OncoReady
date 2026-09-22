@@ -1,6 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { App } from '../src/App';
+import { INITIAL_STATE } from '../src/state/workflowState';
 
 describe('ACCESS-001 prepared workspace entry', () => {
   beforeAll(() => {
@@ -60,6 +61,41 @@ describe('ACCESS-001 prepared workspace entry', () => {
 
     expect(screen.getAllByText(/Camila Lopez/i).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(document.body.textContent).not.toContain('Camila Lopez');
+  });
+
+  it('rejects legacy and malformed persisted scenarios before public rendering', () => {
+    localStorage.setItem('oncoready_workflow_state_v2', JSON.stringify({
+      version: 3,
+      currentPerspective: 'SIGN_IN',
+      patient: { name: 'Maria Hernandez', mrn: 'OCH-882914' },
+    }));
+    localStorage.setItem('oncoready_workflow_state_v3', JSON.stringify({
+      version: 4,
+      currentPerspective: 'PATIENT',
+      patient: { name: 'Maria Hernandez' },
+    }));
+
+    render(<App />);
+
+    expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
+    expect(document.body.textContent).not.toContain('Maria Hernandez');
+    expect(document.body.textContent).not.toContain('OCH-882914');
+
+    fireEvent.click(screen.getAllByRole('button', { name: /Explore the workspace/i })[0]);
+    expect(screen.getByRole('dialog', { name: 'Prepared workspaces' })).toBeDefined();
+    expect(screen.getByTestId('auth-patient-card').textContent).toContain('Camila Lopez');
+  });
+
+  it('normalizes the retired sign-in perspective to the record-free landing', () => {
+    localStorage.setItem('oncoready_workflow_state_v3', JSON.stringify({
+      ...INITIAL_STATE,
+      currentPerspective: 'SIGN_IN',
+    }));
+
+    render(<App />);
+
     expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
     expect(document.body.textContent).not.toContain('Camila Lopez');
   });
