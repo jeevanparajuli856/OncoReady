@@ -2,7 +2,7 @@
   "schema_version": "1.0",
   "task_id": "RIDE-001",
   "reviewer": "codex-reviewer",
-  "reviewed_commit": "f3c1baa2bd3cf035921b191726223c1d76218b4e",
+  "reviewed_commit": "5b7a507da244fc08e37cbf361c3a6b68faaa5d44",
   "status": "APPROVED",
   "summary": "RIDE-001 is approved for human review with no blocking findings. The exact reviewed feature commit provides the operational CareLink Transportation dashboard, staged synthetic recovery with append-only failure history and required logistics, shared versioned caregiver/patient projections, isolated historical replay, static route presentation, direct Transportation login authorization, and responsive evidence. CareLink is consistently labeled synthetic; Uber Health is prominently labeled Integration-ready preview · not connected and has no state transition or network request. Fresh evidence passes 90 frontend tests, 9 Chromium journeys, type checking, production build, diff checks, privacy assertions, and desktop/mobile inspection.",
   "findings": []
