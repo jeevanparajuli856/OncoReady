@@ -219,7 +219,10 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
     await expect(page.getByRole('heading', { name: /Clinical contact/i })).toBeVisible();
+    await expect(page.getByText('“My ride was cancelled—and I’m not feeling well today.”')).toBeVisible();
+    await expect(page.getByText('Treatment at risk').first()).toBeVisible();
     await page.getByRole('button', { name: /Accept ownership/i }).click();
+    await expect(page.getByText('Ownership accepted')).toBeVisible();
     await page.getByRole('button', { name: /Record human disposition/i }).click();
     await page.getByRole('button', { name: /Complete current transport plan/i }).click();
 
@@ -235,7 +238,14 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
     await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i }).check();
     await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
-    await expect(page.getByText(/Continuity Plan Confirmed/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeVisible();
+
+    await page.getByRole('button', { name: /Camila Lopez/i }).click();
+    await page.getByText('Readiness Graph & Audit Log').click();
+    await expect(page.getByRole('heading', { name: 'Treatment Readiness Graph' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Upcoming Infusion Target Node' }).getByText('CONTINUITY PLAN CONFIRMED')).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
+    await expect(page.getByText('Current transport plan v1 acknowledged')).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
