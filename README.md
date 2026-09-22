@@ -8,6 +8,8 @@ The current delivery target is a polished, frontend-led demonstration completed 
 
 - one coherent, clickable patient/staff/caregiver/CareLink journey, including scheduled-message/reply history and a previous-trip dispatch replay;
 - actual Epic Sandbox data captured into JSON before playback, with source and capture time;
+- a read-only CareLink resource directory and access map shared by Care Navigator and the current Transportation route; dispatch operations remain deferred;
+- profile-dropdown workspace switching with a staff-sidebar Log out action that resets local scenario state and returns to `/login`;
 - a lightweight synthetic-data ML notebook whose exported predictions power Why flagged? and a two-state transportation what-if;
 - a visible at-risk-to-confirmed graph, clear ownership/next actions, a patient plan finish and an evidence-linked closing receipt;
 - one real SMS and one short live call to a consenting test phone, using a minimal protected server adapter;

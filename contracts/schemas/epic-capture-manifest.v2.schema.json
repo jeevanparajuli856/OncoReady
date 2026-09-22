@@ -1,0 +1,212 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://oncoready.me/contracts/epic-capture-manifest.v2.schema.json",
+  "title": "OncoReady Epic Sandbox Capture Manifest v2",
+  "description": "Immutable provenance and integrity contract for a reviewed, read-only Epic FHIR R4 Sandbox capture that is not bound to a prepared scenario alias. One manifest still describes exactly one patient; a roster is an index of several of these packages.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "captureId",
+    "mode",
+    "fhirVersion",
+    "source",
+    "capturedAt",
+    "patient",
+    "sourceIdentity",
+    "bounded",
+    "requests",
+    "resources",
+    "review"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 2
+    },
+    "captureId": {
+      "type": "string",
+      "pattern": "^epic-sandbox-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{8}$"
+    },
+    "mode": {
+      "const": "captured_epic_sandbox"
+    },
+    "fhirVersion": {
+      "const": "4.0.1"
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "label",
+        "environment",
+        "fhirBaseUrl"
+      ],
+      "properties": {
+        "label": {
+          "const": "Epic FHIR Sandbox"
+        },
+        "environment": {
+          "const": "Non-Production Sandbox"
+        },
+        "fhirBaseUrl": {
+          "const": "https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4"
+        }
+      }
+    },
+    "capturedAt": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "patient": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "resourceType",
+        "id"
+      ],
+      "properties": {
+        "resourceType": {
+          "const": "Patient"
+        },
+        "id": {
+          "$ref": "#/$defs/fhirId"
+        }
+      }
+    },
+    "sourceIdentity": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "observationCategories": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "laboratory",
+          "vital-signs"
+        ]
+      }
+    },
+    "requests": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "method",
+          "resourceType",
+          "redactedPath"
+        ],
+        "properties": {
+          "method": {
+            "const": "GET"
+          },
+          "resourceType": {
+            "$ref": "#/$defs/allowedResourceType"
+          },
+          "redactedPath": {
+            "type": "string",
+            "pattern": "^/(Patient|Appointment|MedicationRequest|Observation)(/|\\?)",
+            "maxLength": 500
+          }
+        }
+      }
+    },
+    "resources": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 100,
+      "contains": {
+        "type": "object",
+        "required": [
+          "resourceType"
+        ],
+        "properties": {
+          "resourceType": {
+            "const": "Patient"
+          }
+        }
+      },
+      "minContains": 1,
+      "maxContains": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "resourceType",
+          "id",
+          "path",
+          "sha256"
+        ],
+        "properties": {
+          "resourceType": {
+            "$ref": "#/$defs/allowedResourceType"
+          },
+          "id": {
+            "$ref": "#/$defs/fhirId"
+          },
+          "path": {
+            "type": "string",
+            "pattern": "^resources/(patient|appointment|medication-request|observation)-[A-Za-z0-9.-]+\\.json$"
+          },
+          "sha256": {
+            "type": "string",
+            "pattern": "^[a-f0-9]{64}$"
+          }
+        }
+      }
+    },
+    "review": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "reviewedAt",
+        "reviewedBy",
+        "distribution"
+      ],
+      "properties": {
+        "status": {
+          "const": "approved_for_frontend"
+        },
+        "reviewedAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "reviewedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 120
+        },
+        "distribution": {
+          "const": "reviewed_epic_sandbox_test_data"
+        }
+      }
+    },
+    "bounded": {
+      "type": "boolean",
+      "description": "True when the capture stopped at a configured page/resource ceiling, so the package is a bounded slice of the chart rather than every matching resource."
+    }
+  },
+  "$defs": {
+    "fhirId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9.-]{1,128}$"
+    },
+    "allowedResourceType": {
+      "type": "string",
+      "enum": [
+        "Patient",
+        "Appointment",
+        "MedicationRequest",
+        "Observation"
+      ]
+    }
+  }
+}

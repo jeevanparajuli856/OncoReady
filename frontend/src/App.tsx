@@ -8,7 +8,6 @@ import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
 import { StaffAppShell } from './components/StaffAppShell';
 import { PortalAuthScreen } from './components/PortalAuthScreen';
-import { TransportationWorkspace } from './components/TransportationWorkspace';
 import { PatientTreatmentHome } from './components/PatientTreatmentHome';
 import { ReadinessCheckModal } from './components/ReadinessCheckModal';
 import { StaffExceptionQueue } from './components/StaffExceptionQueue';
@@ -24,7 +23,8 @@ import {
   StaffResources,
 } from './components/staff/StaffPages';
 import { Logo } from './components/Logo';
-import { Perspective } from './types';
+import { Perspective, WorkspaceRole } from './types';
+import { buildDirectoryRecords, filterDirectoryRecords } from './data/rosterDirectory';
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 
@@ -118,7 +118,11 @@ export const App: React.FC = () => {
     setIsPatientResolutionOpen(false);
     setPatientSearch('');
     setPatientStatus('ALL');
-    
+  };
+
+  const handleLogout = () => {
+    handleReset();
+    handleSetPerspective('SIGN_IN');
   };
 
   const handleReadinessSubmit = (data: { transportNotes: string; clinicalConcernText: string }) => {
@@ -149,16 +153,16 @@ export const App: React.FC = () => {
     dispatch({ type: 'ACKNOWLEDGE_PATIENT_PLAN' });
   };
 
-  const patientDirectory = [
-    { name: state.patient.name, mrn: state.patient.mrn, treatment: state.appointment.treatmentName, status: state.overallReadiness, interactive: true },
-    { name: 'James Wilson', mrn: 'BHC-992102', treatment: 'Pembrolizumab Infusion', status: 'READY', interactive: false },
-    { name: 'David Chen', mrn: 'BHC-992104', treatment: 'Carboplatin + Pembrolizumab', status: 'IN_REVIEW', interactive: false },
-    { name: 'Renee Sutton', mrn: 'BHC-992110', treatment: 'Paclitaxel Infusion', status: 'ACTION_REQUIRED', interactive: false },
-  ].filter((record) => {
-    const matchesSearch = `${record.name} ${record.mrn} ${record.treatment}`.toLowerCase().includes(patientSearch.toLowerCase());
-    const matchesStatus = patientStatus === 'ALL' || record.status === patientStatus;
-    return matchesSearch && matchesStatus;
-  });
+  // The prepared scenario case plus the reviewed Epic Sandbox roster captures,
+  // scoped to whichever workspace is signed in. Clinical measurements reach the
+  // Care Team only; the Care Navigator directory stays coordination-only.
+  const directoryRole: WorkspaceRole =
+    state.currentPerspective === 'CARE_NAVIGATOR' ? 'CARE_NAVIGATOR' : 'CARE_TEAM';
+  const patientDirectory = filterDirectoryRecords(
+    buildDirectoryRecords(state, directoryRole),
+    patientSearch,
+    patientStatus,
+  );
 
   return (
     <div className={`oncoready-app min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
@@ -237,8 +241,7 @@ export const App: React.FC = () => {
               state={state} 
             workspaceRole={state.currentPerspective}
               onSetStaffRoute={(route) => dispatch({ type: 'SET_STAFF_ROUTE', payload: route as import('./types').StaffRoute })}
-              onSetPerspective={handleSetPerspective}
-              onReset={handleReset}
+              onLogout={handleLogout}
             >
               {state.staffRoute === 'COMMAND_CENTER' && (
                 <StaffCommandCenter
@@ -300,7 +303,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {state.currentPerspective === 'TRANSPORTATION' && <TransportationWorkspace />}
+        {state.currentPerspective === 'TRANSPORTATION' && <StaffResources />}
 
       </main>
 

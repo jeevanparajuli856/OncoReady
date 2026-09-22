@@ -47,7 +47,10 @@ describe('ACCESS-001 prepared workspace entry', () => {
 
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
     signIn('abct@oncoready.me');
-    expect(screen.getByRole('heading', { name: /Transportation operations are coming next/i })).toBeDefined();
+    // The transportation workspace now opens the read-only resource directory.
+    // It still carries no dispatch action, per the reserved-workspace contract.
+    expect(screen.getByRole('heading', { name: /Resource Directory/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /CareLink Transportation/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {

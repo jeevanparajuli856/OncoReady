@@ -7,17 +7,14 @@ import {
   LineChart,
   Link as LinkIcon,
   Settings,
-  Home,
-  Heart,
-  HeartHandshake,
+  LogOut,
 } from 'lucide-react';
-import { WorkflowState, Perspective, WorkspaceRole } from '../types';
+import { WorkflowState, WorkspaceRole } from '../types';
 
 interface StaffAppShellProps {
   state: WorkflowState;
   onSetStaffRoute: (route: string) => void;
-  onSetPerspective: (p: Perspective) => void;
-  onReset: () => void;
+  onLogout: () => void;
   workspaceRole: WorkspaceRole;
   children: React.ReactNode;
 }
@@ -25,7 +22,7 @@ interface StaffAppShellProps {
 export const StaffAppShell: React.FC<StaffAppShellProps> = ({
   state,
   onSetStaffRoute,
-  onSetPerspective,
+  onLogout,
   workspaceRole,
   children,
 }) => {
@@ -37,12 +34,6 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
   const navItems = workspaceRole === 'CARE_NAVIGATOR'
     ? [...sharedNavItems, { id: 'RESOURCES', label: 'CareLink', short: 'CareLink', icon: Car }, { id: 'INTEGRATIONS', label: 'Appointments', short: 'Appts', icon: LinkIcon }]
     : [...sharedNavItems, { id: 'INSIGHTS', label: 'Insights', short: 'Insights', icon: LineChart }, { id: 'INTEGRATIONS', label: 'Epic context', short: 'Epic', icon: LinkIcon }, { id: 'ADMIN', label: 'Admin', short: 'Admin', icon: Settings }];
-
-  const siteLinks: Array<{ id: Perspective; label: string; icon: typeof Home }> = [
-    { id: 'LANDING', label: 'Home', icon: Home },
-    { id: 'PATIENT', label: 'Patient', icon: Heart },
-    { id: 'CAREGIVER', label: 'Caregiver', icon: HeartHandshake },
-  ];
 
   const currentRoute = state.staffRoute;
   const pageTitle =
@@ -77,23 +68,15 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             );
           })}
 
-            <div className="hidden md:block mt-4 pt-4 border-t border-line px-1 space-y-1">
-            <div className="px-3 mb-2 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
-              Leave workspace
-            </div>
-            {siteLinks.map((link) => {
-              const Icon = link.icon;
-              return (
-                <button
-                  key={link.id}
-                  onClick={() => onSetPerspective(link.id)}
-                  className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-white"
-                >
-                  <Icon className="w-4 h-4" strokeWidth={2.5} />
-                  <span className="font-heading font-bold">{link.label}</span>
-                </button>
-              );
-            })}
+          <div className="hidden md:block mt-4 pt-4 border-t border-line px-1 space-y-1">
+            <button
+              type="button"
+              onClick={onLogout}
+              className="w-full flex items-center gap-3 px-3 py-2 text-sm rounded-xl hover:bg-white"
+            >
+              <LogOut className="w-4 h-4" strokeWidth={2.5} />
+              <span className="font-heading font-bold">Log out</span>
+            </button>
           </div>
         </nav>
       </aside>

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WorkflowState } from '../../types';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from '../RideMap';
 import { StickerCard } from '../ui';
 import { EpicCaptureSummary } from '../EpicClinicalContext';
+import { formatEpicCaptureTime, formatEpicSourceDate } from '../../data/epicCapture';
+import { EPIC_RECORD_STATUS, type DirectoryRecord } from '../../data/rosterDirectory';
 
 export const StaffCommandCenter: React.FC<{
   state: WorkflowState;
@@ -46,48 +48,127 @@ export const StaffCommandCenter: React.FC<{
 );
 
 export const StaffPatientDirectory: React.FC<{
-  records: Array<{ name: string; mrn: string; treatment: string; status: string; interactive: boolean }>;
+  records: DirectoryRecord[];
   search: string;
   status: string;
   onSearch: (value: string) => void;
   onStatus: (value: string) => void;
   onClear: () => void;
   onOpenCase: () => void;
-}> = ({ records, search, status, onSearch, onStatus, onClear, onOpenCase }) => (
-  <div className="card-sticker p-5 sm:p-6">
-    <h2 className="font-display text-2xl font-extrabold mb-4">Patient Directory</h2>
-    <div className="flex flex-col sm:flex-row gap-3 mb-4">
-      <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search name, MRN, or treatment" aria-label="Search patients" className="input-pop flex-1 text-sm" />
-      <select value={status} onChange={(event) => onStatus(event.target.value)} aria-label="Filter patients by status" className="input-pop sm:w-48 text-sm">
-        <option value="ALL">All states</option>
-        <option value="ACTION_REQUIRED">Action required</option>
-        <option value="IN_REVIEW">In review</option>
-        <option value="READY">Ready</option>
-      </select>
-      {(search || status !== 'ALL') && (
-        <button onClick={onClear} className="px-3 py-2 text-sm font-heading font-bold border-2 border-ink rounded-full bg-white hover:bg-sun">Clear filters</button>
+}> = ({ records, search, status, onSearch, onStatus, onClear, onOpenCase }) => {
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  return (
+    <div className="card-sticker p-5 sm:p-6">
+      <h2 className="font-display text-2xl font-extrabold mb-4">Patient Directory</h2>
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search name, MRN, or treatment" aria-label="Search patients" className="input-pop flex-1 text-sm" />
+        <select value={status} onChange={(event) => onStatus(event.target.value)} aria-label="Filter patients by status" className="input-pop sm:w-48 text-sm">
+          <option value="ALL">All states</option>
+          <option value="ACTION_REQUIRED">Action required</option>
+          <option value="IN_REVIEW">In review</option>
+          <option value="READY">Ready</option>
+          <option value={EPIC_RECORD_STATUS}>Epic record</option>
+        </select>
+        {(search || status !== 'ALL') && (
+          <button onClick={onClear} className="px-3 py-2 text-sm font-heading font-bold border-2 border-ink rounded-full bg-white hover:bg-sun">Clear filters</button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {records.map((record) => {
+          const expanded = expandedKey === record.key;
+          const isEpicRecord = record.source === 'EPIC_SANDBOX' && !record.unavailableReason;
+          return (
+            <div key={record.key} className="space-y-2">
+              <button
+                onClick={() => {
+                  if (record.interactive) onOpenCase();
+                  else if (isEpicRecord) setExpandedKey(expanded ? null : record.key);
+                }}
+                disabled={!record.interactive && !isEpicRecord}
+                aria-expanded={isEpicRecord ? expanded : undefined}
+                className="w-full flex items-center justify-between gap-4 p-3 rounded-xl border-2 border-ink text-left enabled:hover:bg-sun/20 disabled:opacity-70"
+              >
+                <div>
+                  <div className="font-heading font-bold">{record.name}</div>
+                  <div className="text-xs text-muted-fg">{record.identifierLabel}: {record.identifier}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm">{record.detail}</div>
+                  <div className="text-xs text-muted-fg">{record.statusLabel}</div>
+                </div>
+              </button>
+              {isEpicRecord && (
+                <p className="text-[11px] text-muted-fg px-3">
+                  {expanded ? 'Showing' : 'Select to show'} the read-only Epic Sandbox record for {record.name}.
+                </p>
+              )}
+              {record.unavailableReason && (
+                <p className="text-[11px] text-muted-fg px-3">{record.unavailableReason}</p>
+              )}
+              {expanded && isEpicRecord && <EpicRosterDetail record={record} />}
+            </div>
+          );
+        })}
+        {records.length === 0 && <div className="p-8 text-center text-sm text-muted-fg">No patients match these filters.</div>}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Read-only presentation of one captured Epic Sandbox patient. Vital signs are
+ * present only when the directory was built for the Care Team; a Care Navigator
+ * receives the coordination fields alone.
+ */
+const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => (
+  <div className="metric-tile space-y-4">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="label-caps text-muted-fg">Captured from Epic Sandbox</span>
+      <span className="chip">Read-only</span>
+      <span className="chip chip-mint">Captured once &middot; no live sync</span>
+      {record.bounded && <span className="chip chip-sun">Bounded slice of chart</span>}
+    </div>
+    <div>
+      <p className="label-caps text-muted-fg mb-2">Appointments</p>
+      {record.appointments && record.appointments.length > 0 ? (
+        <ul className="space-y-1.5">
+          {record.appointments.map((appointment) => (
+            <li key={appointment.id} className="text-sm">
+              <span className="font-heading font-semibold">{appointment.label}</span>
+              <span className="block text-xs text-muted-fg">{appointment.when}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-fg">No appointment present in captured record.</p>
       )}
     </div>
-    <div className="space-y-2">
-      {records.map((record) => (
-        <button
-          key={record.mrn}
-          onClick={() => record.interactive && onOpenCase()}
-          disabled={!record.interactive}
-          className="w-full flex items-center justify-between gap-4 p-3 rounded-xl border-2 border-ink text-left enabled:hover:bg-sun/20 disabled:opacity-70"
-        >
-          <div>
-            <div className="font-heading font-bold">{record.name}</div>
-            <div className="text-xs text-muted-fg">MRN: {record.mrn}</div>
+    {record.vitals && (
+      <div>
+        <p className="label-caps text-muted-fg mb-2">
+          Vital signs
+          {record.vitalsTotal && record.vitalsTotal > record.vitals.length
+            ? ` \u00b7 ${record.vitals.length} most recent of ${record.vitalsTotal}`
+            : ''}
+        </p>
+        {record.vitals.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {record.vitals.map((vital) => (
+              <div key={vital.id} className="metric-tile">
+                <div className="label-caps text-muted-fg">{vital.name ?? 'Unnamed observation'}</div>
+                <div className="font-display text-xl font-extrabold mt-1">{vital.value ?? 'Not present in captured record'}{vital.value && vital.unit ? ` ${vital.unit}` : ''}</div>
+                <div className="text-[11px] text-muted-fg">{vital.effectiveAt ? formatEpicSourceDate(vital.effectiveAt) ?? vital.effectiveAt : 'Collection time not present in captured record'}</div>
+              </div>
+            ))}
           </div>
-          <div className="text-right">
-            <div className="text-sm">{record.treatment}</div>
-            <div className="text-xs text-muted-fg">{record.status.replace('_', ' ')}</div>
-          </div>
-        </button>
-      ))}
-      {records.length === 0 && <div className="p-8 text-center text-sm text-muted-fg">No patients match these filters.</div>}
-    </div>
+        ) : (
+          <p className="text-sm text-muted-fg">No vital signs present in captured record.</p>
+        )}
+      </div>
+    )}
+    {record.capturedAt && (
+      <p className="text-[11px] text-muted-fg">Captured {formatEpicCaptureTime(record.capturedAt)} &middot; capture {record.captureId}</p>
+    )}
   </div>
 );
 

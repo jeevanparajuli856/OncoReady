@@ -84,31 +84,31 @@ export type EpicCaptureState =
   | { status: 'available'; context: EpicClinicalContext }
   | { status: 'unavailable'; reason: string };
 
-type JsonRecord = Record<string, unknown>;
+export type JsonRecord = Record<string, unknown>;
 
-const ALLOWED_TYPES = new Set<EpicResourceType>(['Patient', 'Appointment', 'MedicationRequest', 'Observation']);
-const RESOURCE_ID = /^[A-Za-z0-9.-]{1,128}$/;
-const SHA256 = /^[a-f0-9]{64}$/;
-const CAPTURE_ID = /^epic-sandbox-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{8}$/;
+export const ALLOWED_TYPES = new Set<EpicResourceType>(['Patient', 'Appointment', 'MedicationRequest', 'Observation']);
+export const RESOURCE_ID = /^[A-Za-z0-9.-]{1,128}$/;
+export const SHA256 = /^[a-f0-9]{64}$/;
+export const CAPTURE_ID = /^epic-sandbox-[0-9]{8}T[0-9]{6}Z-[a-f0-9]{8}$/;
 
 const resourceDocuments = import.meta.glob('./epic-capture/resources/*.json', {
   eager: true,
   import: 'default',
 }) as Record<string, unknown>;
 
-const isRecord = (value: unknown): value is JsonRecord =>
+export const isRecord = (value: unknown): value is JsonRecord =>
   typeof value === 'object' && value !== null && !Array.isArray(value);
 
-const isString = (value: unknown): value is string => typeof value === 'string' && value.length > 0;
+export const isString = (value: unknown): value is string => typeof value === 'string' && value.length > 0;
 
-const asRecord = (value: unknown): JsonRecord | undefined => isRecord(value) ? value : undefined;
+export const asRecord = (value: unknown): JsonRecord | undefined => isRecord(value) ? value : undefined;
 
-const asArray = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
+export const asArray = (value: unknown): unknown[] => Array.isArray(value) ? value : [];
 
-const firstString = (...values: unknown[]): string | undefined =>
+export const firstString = (...values: unknown[]): string | undefined =>
   values.find((value): value is string => isString(value));
 
-const nestedText = (value: unknown): string | undefined => {
+export const nestedText = (value: unknown): string | undefined => {
   const record = asRecord(value);
   if (!record) return undefined;
   const coding = asArray(record.coding).map(asRecord).find(Boolean);
@@ -121,7 +121,7 @@ const normalizeResourceDocuments = (documents: Record<string, unknown>): Record<
     return [resourceSegment ?? modulePath.replace(/^\.\//, ''), value];
   }));
 
-const parseManifestResource = (value: unknown): EpicManifestResource | undefined => {
+export const parseManifestResource = (value: unknown): EpicManifestResource | undefined => {
   const resource = asRecord(value);
   if (!resource || !isString(resource.resourceType) || !ALLOWED_TYPES.has(resource.resourceType as EpicResourceType)) return undefined;
   if (!isString(resource.id) || !RESOURCE_ID.test(resource.id)) return undefined;
@@ -135,7 +135,7 @@ const parseManifestResource = (value: unknown): EpicManifestResource | undefined
   };
 };
 
-const parseRequest = (value: unknown): EpicRequestEvidence | undefined => {
+export const parseRequest = (value: unknown): EpicRequestEvidence | undefined => {
   const request = asRecord(value);
   if (!request || request.method !== 'GET' || !isString(request.resourceType) || !ALLOWED_TYPES.has(request.resourceType as EpicResourceType)) return undefined;
   if (!isString(request.redactedPath) || !/^\/(Patient|Appointment|MedicationRequest|Observation)(\/|\?)/.test(request.redactedPath)) return undefined;
@@ -146,7 +146,7 @@ const parseRequest = (value: unknown): EpicRequestEvidence | undefined => {
   };
 };
 
-const patientReferenceMatches = (resource: JsonRecord, patientId: string, type: EpicResourceType): boolean => {
+export const patientReferenceMatches = (resource: JsonRecord, patientId: string, type: EpicResourceType): boolean => {
   const expected = `Patient/${patientId}`;
   if (type === 'Patient') return resource.id === patientId;
   if (type === 'Appointment') {
@@ -162,7 +162,7 @@ const isLaboratoryObservation = (resource: JsonRecord): boolean =>
   asArray(resource.category).some((category) =>
     asArray(asRecord(category)?.coding).some((coding) => asRecord(coding)?.code === 'laboratory'));
 
-const patientName = (resource: JsonRecord): string | undefined => {
+export const patientName = (resource: JsonRecord): string | undefined => {
   const names = asArray(resource.name).map(asRecord).filter((item): item is JsonRecord => Boolean(item));
   const chosen = names.find((name) => name.use === 'official') ?? names.find((name) => name.use === 'usual') ?? names[0];
   if (!chosen) return undefined;
@@ -178,7 +178,7 @@ const preferredLanguage = (resource: JsonRecord): string | undefined => {
   return nestedText(preferred?.language);
 };
 
-const mapPatient = (resource: JsonRecord): EpicPatientFacts => ({
+export const mapPatient = (resource: JsonRecord): EpicPatientFacts => ({
   id: String(resource.id),
   name: patientName(resource),
   birthDate: isString(resource.birthDate) ? resource.birthDate : undefined,
@@ -210,7 +210,7 @@ const mapMedication = (resource: JsonRecord): EpicMedicationFact => {
   };
 };
 
-const quantityValue = (quantity: JsonRecord | undefined): string | undefined => {
+export const quantityValue = (quantity: JsonRecord | undefined): string | undefined => {
   const value = quantity?.value;
   return typeof value === 'number' || isString(value) ? String(value) : undefined;
 };
@@ -255,7 +255,7 @@ const appointmentLocation = (resource: JsonRecord): string | undefined => {
   return firstString(location?.display, location?.reference);
 };
 
-const mapAppointment = (resource: JsonRecord): EpicAppointmentFact => ({
+export const mapAppointment = (resource: JsonRecord): EpicAppointmentFact => ({
   id: String(resource.id),
   status: isString(resource.status) ? resource.status : undefined,
   service: firstString(resource.description, nestedText(asArray(resource.serviceType)[0])),
@@ -269,7 +269,7 @@ const mapAppointment = (resource: JsonRecord): EpicAppointmentFact => ({
   },
 });
 
-const sortAppointments = (appointments: EpicAppointmentFact[], capturedAt: string): EpicAppointmentFact[] => {
+export const sortAppointments = (appointments: EpicAppointmentFact[], capturedAt: string): EpicAppointmentFact[] => {
   const captureTime = Date.parse(capturedAt);
   return [...appointments].sort((left, right) => {
     const leftTime = left.start ? Date.parse(left.start) : Number.NEGATIVE_INFINITY;

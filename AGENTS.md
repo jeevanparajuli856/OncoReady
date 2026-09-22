@@ -49,7 +49,7 @@ The prepared workspace gateway has two internal care-workspace roles plus one re
 
 - **Care Navigator Workspace — Marcus Vance, MSW**: CareLink, patient coordination, transportation, barriers, appointments, follow-ups, and only the shared patient/readiness data needed for coordination.
 - **Care Team (Readiness Team) Workspace — Nurses/Readiness Staff**: clinical and treatment readiness, labs, vitals, nursing/readiness tasks, clinical blockers, and escalations.
-- **Transportation (CareLink) Workspace**: reserved for transportation managers and vendor partners; intentionally empty until the future transportation sprint. Do not add dispatch actions yet.
+- **Transportation (CareLink) Workspace**: reserved for transportation managers and vendor partners; currently points to the Care Navigator's read-only CareLink resource directory and access map. Do not add dispatch actions yet.
 
 Do not recreate a combined `Staff` workspace or a separate `Readiness Graph & Audit Log` workspace. The readiness graph and audit timeline are embedded in the Care Navigator and Care Team case workspaces and must be permission-scoped to the role. Care Navigator views must not expose clinical verbatim concern text, nurse notes, or clinical-only actions. Care Team views must not expose CareLink dispatch controls or navigator-only operational routes. Transportation is separate and currently has no operational actions.
 
@@ -76,9 +76,44 @@ These are synthetic local demo fixtures only. They are intentionally documented 
 | `abcc@oncoready.me` | `1234` | Caregiver |
 | `abcs@oncoready.me` | `1234` | Care Team (Readiness Team) |
 | `abcn@oncoready.me` | `1234` | Care Navigator |
-| `abct@oncoready.me` | `1234` | Transportation (CareLink, currently empty) |
+| `abct@oncoready.me` | `1234` | Transportation (CareLink, read-only resource directory) |
 
 Epic sign-in accepts only the Care Team, Care Navigator, and Transportation demo identities. The simulated provider route is `/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready`; the standard login route is `/login`.
+
+### Epic Sandbox capture contract
+
+There are **two** Epic capture areas. They are not interchangeable and must not be merged.
+
+| Path | Task | Manifest | Contents | Status |
+|---|---|---|---|---|
+| `frontend/src/data/epic-capture/` | EPIC-001 | v1, scenario-bound | Appointments, medication, **laboratory** observations | **Frozen. Do not modify.** |
+| `frontend/src/data/epic-roster/<patientId>/` | EPIC-002 | v2, unbound | Appointments, **vital-sign** observations | One package per patient |
+
+The EPIC-001 capture is pinned by an exact capture id in `frontend/scripts/validate-epic-capture.mjs` and in `frontend/tests/epic-capture.test.tsx`. Changing its directory, manifest or resources breaks committed EPIC-001 evidence. Add new Epic data as a roster package instead.
+
+Rules that apply to roster work:
+
+- A v2 manifest describes exactly one patient and carries **no scenario alias**. Roster patients are presented under the identity the Sandbox recorded, never renamed to a prepared persona.
+- Roster patients are **read-only**. Only the prepared scenario patient has readiness state, tasks, a graph and an audit trail. Do not invent readiness status, MRN, appointments or vitals for a captured patient; absent stays absent.
+- `bounded: true` means the capture stopped at a configured ceiling. Such a package is a partial slice and must never be presented as a complete chart.
+- Care Navigator surfaces must not expose roster vital signs or any other clinical measurement. `buildDirectoryRecords` enforces this by role; keep it that way.
+- Loading is **fail-soft per package**: one unreadable package costs one directory row. This deliberately differs from EPIC-001's whole-capture fail-closed behaviour, which must stay fail-closed.
+
+### Scenario vitals take precedence over captured vitals
+
+Where a captured Epic vital describes the same measurement as a prepared scenario vital, **the scenario value is kept and the Epic reading is dropped**. Only non-duplicate Epic readings are appended, labelled as captured Sandbox data.
+
+Measurement identity is resolved through LOINC in `frontend/src/data/vitalsMerge.ts`, falling back to normalised display text only when a code is absent. Do not match on display name alone: Epic writes `BP` and `Pulse` where the scenario writes `Blood Pressure` and `Pulse / Heart Rate`, so text-only matching silently duplicates rows.
+
+### Running a capture
+
+Captures are operator-run and never part of the app runtime. The access token is read only from `EPIC_SANDBOX_ACCESS_TOKEN`; it is never a command argument and never committed. Observation searches are category-scoped, GET-only and patient-scoped, and staging happens outside the repository before review.
+
+```bash
+EPIC_SANDBOX_ACCESS_TOKEN=... scripts/capture-epic-roster.sh <staging-dir-outside-repo>
+```
+
+Promote a reviewed package into `frontend/src/data/epic-roster/<patientId>/`, then confirm `node frontend/scripts/validate-epic-capture.mjs` passes; it verifies checksums, patient scoping, vital-signs-only observations and absence of secret markers.
 
 ## 4. Agent ownership
 

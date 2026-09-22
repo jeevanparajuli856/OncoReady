@@ -14,6 +14,7 @@ from app.epic_capture import (
     CaptureError,
     CaptureReview,
     CaptureTransport,
+    ScenarioBinding,
     StdlibJsonTransport,
     capture_epic_sandbox,
 )
@@ -36,6 +37,34 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("--max-pages", type=int, default=4)
     parser.add_argument("--max-resources", type=int, default=20)
+    parser.add_argument("--page-size", type=int, default=50)
+    parser.add_argument(
+        "--truncate",
+        action="store_true",
+        help=(
+            "Stop cleanly at the page/resource ceiling instead of failing, and "
+            "record the capture as bounded. Without this the capture fails "
+            "closed on an oversized chart."
+        ),
+    )
+    parser.add_argument(
+        "--observation-categories",
+        nargs="+",
+        choices=("laboratory", "vital-signs"),
+        default=("laboratory",),
+        help=(
+            "Observation categories to capture. Each category is issued as its "
+            "own patient-scoped search."
+        ),
+    )
+    parser.add_argument(
+        "--scenario-id",
+        help=(
+            "Bind the capture to a prepared scenario. Requires "
+            "--presentation-alias. Omit both for an unbound roster capture."
+        ),
+    )
+    parser.add_argument("--presentation-alias")
     parser.add_argument(
         "--review-status",
         required=True,
@@ -82,6 +111,12 @@ def main(
             resource_types=tuple(args.resource_types),
             max_pages=args.max_pages,
             max_resources=args.max_resources,
+            observation_categories=tuple(args.observation_categories),
+            page_size=args.page_size,
+            truncate=args.truncate,
+        )
+        scenario_binding = _scenario_binding(
+            args.scenario_id, args.presentation_alias
         )
     except (CaptureError, ValueError) as error:
         print(f"Capture configuration rejected: {error}", file=sys.stderr)
@@ -96,6 +131,7 @@ def main(
             access_token=token,
             captured_at=captured_at or datetime.now(UTC),
             review=review,
+            scenario_binding=scenario_binding,
         )
     except CaptureError as error:
         print(f"Capture failed: {error}", file=sys.stderr)
@@ -104,6 +140,21 @@ def main(
     print(f"Capture staged privately at {output_directory}")
     print(f"Capture ID: {manifest['captureId']}")
     return 0
+
+
+def _scenario_binding(
+    scenario_id: str | None, presentation_alias: str | None
+) -> ScenarioBinding | None:
+    if scenario_id is None and presentation_alias is None:
+        return None
+    if scenario_id is None or presentation_alias is None:
+        raise CaptureError(
+            "--scenario-id and --presentation-alias must be supplied together"
+        )
+    return ScenarioBinding(
+        scenario_id=scenario_id,
+        presentation_alias=presentation_alias,
+    )
 
 
 def _parse_datetime(value: str) -> datetime:

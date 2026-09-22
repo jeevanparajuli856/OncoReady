@@ -1,0 +1,25 @@
+{
+  "schema_version": "1.0",
+  "task_id": "EPIC-002",
+  "agent": "codex-architect",
+  "status": "PARTIAL",
+  "summary": "",
+  "files_changed": [],
+  "impacts": {
+    "database": null,
+    "backend": null,
+    "frontend": null,
+    "frontend_design_required": null,
+    "infrastructure": null
+  },
+  "decisions": [],
+  "risks": [],
+  "blockers": [],
+  "notes_for_next_agent": [],
+  "execution": {
+    "contract_required": null,
+    "test_depth": null,
+    "security_risk": null,
+    "security_review_required": null
+  }
+}
