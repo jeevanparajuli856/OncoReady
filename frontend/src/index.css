@@ -585,7 +585,7 @@ select:focus-visible {
 }
 
 .landing-role-grid,
-.landing-step-grid,
+.landing-loop-road,
 .landing-business-grid,
 .landing-saas-grid {
   display: grid;
@@ -653,8 +653,8 @@ select:focus-visible {
 
 .landing-role-reveal,
 .landing-role-reveal .landing-role-card,
-.landing-step-grid .scroll-reveal,
-.landing-step-grid .landing-step-card,
+.landing-loop-road .scroll-reveal,
+.landing-loop-road .landing-step-card,
 .landing-saas-grid .scroll-reveal,
 .landing-saas-grid .landing-saas-card {
   height: 100%;
@@ -900,9 +900,79 @@ select:focus-visible {
   box-shadow: 0 24px 52px -44px rgba(15, 23, 42, 0.46);
 }
 
+.landing-loop-road {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 72rem);
+  margin-inline: auto;
+}
+
+.landing-loop-road__track {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 3%;
+  left: 3%;
+  height: 15rem;
+  border: 1.1rem solid rgba(226, 232, 240, 0.82);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 22px 44px -42px rgba(15, 23, 42, 0.7);
+  transform: translateY(-50%);
+}
+
+.landing-loop-road__track::before {
+  content: '';
+  position: absolute;
+  inset: 0.6rem;
+  border: 2px dashed rgba(79, 70, 229, 0.28);
+  border-radius: inherit;
+}
+
+.landing-loop-road__dash {
+  position: absolute;
+  top: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+  transform: translate(-50%, -50%);
+}
+
+.landing-loop-road__dash--one { left: 16.6%; }
+.landing-loop-road__dash--two { left: 50%; background: #d94e49; box-shadow: 0 0 0 4px rgba(242, 107, 99, 0.14); }
+.landing-loop-road__dash--three { left: 83.4%; background: var(--mint); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.14); }
+
+.landing-loop-road__finish {
+  position: absolute;
+  right: 1.6rem;
+  bottom: -0.8rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid rgba(5, 150, 105, 0.18);
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .landing-step-card {
   min-height: 20rem;
   padding: clamp(1.4rem, 3vw, 2.2rem);
+  position: relative;
+  z-index: 1;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.landing-step-card:hover {
+  border-color: rgba(79, 70, 229, 0.2);
+  box-shadow: 0 30px 58px -44px rgba(15, 23, 42, 0.64);
+  transform: translateY(-3px);
 }
 
 .landing-step-card__topline {
@@ -925,6 +995,29 @@ select:focus-visible {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.landing-step-card__marker {
+  position: absolute;
+  right: 50%;
+  bottom: -0.72rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  transform: translateX(50%);
+}
+
+[data-tone='coral'] .landing-step-card__marker {
+  background: #d94e49;
+  box-shadow: 0 0 0 3px rgba(242, 107, 99, 0.22);
+}
+
+[data-tone='mint'] .landing-step-card__marker {
+  background: var(--mint);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
 }
 
 .landing-business-card {
@@ -1318,7 +1411,7 @@ select:focus-visible {
   }
 
   .landing-role-grid,
-  .landing-step-grid,
+  .landing-loop-road,
   .landing-business-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1383,6 +1476,55 @@ select:focus-visible {
 }
 
 @media (max-width: 767px) {
+  .landing-loop-road {
+    gap: 1rem;
+    padding-left: 1.35rem;
+  }
+
+  .landing-loop-road__track {
+    top: 1.25rem;
+    right: auto;
+    bottom: 1.25rem;
+    left: 0.55rem;
+    width: 1.25rem;
+    height: auto;
+    border-width: 0.45rem;
+    border-radius: 999px;
+    transform: none;
+  }
+
+  .landing-loop-road__track::before {
+    inset: 0.35rem 0.25rem;
+    border-width: 1px;
+  }
+
+  .landing-loop-road__dash {
+    top: auto;
+    left: 50%;
+    width: 0.55rem;
+    height: 0.55rem;
+  }
+
+  .landing-loop-road__dash--one { top: 16.6%; }
+  .landing-loop-road__dash--two { top: 50%; }
+  .landing-loop-road__dash--three { top: 83.4%; }
+
+  .landing-loop-road__finish {
+    right: auto;
+    bottom: -0.75rem;
+    left: 1.1rem;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: left center;
+  }
+
+  .landing-step-card__marker {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: -1.72rem;
+    transform: translateY(-50%);
+  }
+
   .scroll-reveal[data-reveal-state='pending'][data-reveal-variant='patient'] {
     transform: translate3d(-8px, 18px, 0);
   }
