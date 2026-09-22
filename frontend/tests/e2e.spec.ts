@@ -153,7 +153,45 @@ test.describe('OncoReady UI-001 product experience', () => {
     }
   });
 
-  test('workspace routes and the complete Maria journey remain connected', async ({ page }) => {
+  test('public access stays record-free and enters all prepared workspaces through one gateway', async ({ page }) => {
+    const publicCopy = await page.locator('body').innerText();
+    for (const privateTerm of ['Camila Lopez', 'OR-882914', 'Colorectal Adenocarcinoma', 'mFOLFOX6']) {
+      expect(publicCopy).not.toContain(privateTerm);
+    }
+
+    const plans = page.getByTestId('pricing-plans');
+    await expect(plans.getByRole('article')).toHaveCount(2);
+    await expect(plans.getByText('$18,000/year')).toBeVisible();
+    await expect(plans.getByText('$1,500/month billed annually')).toBeVisible();
+    await expect(plans.getByText('5 staff seats')).toBeVisible();
+    await expect(plans.getByText('1 site')).toBeVisible();
+    await expect(plans.getByText('Talk to us')).toBeVisible();
+    await expect(plans.getByRole('button', { name: 'Contact setup unavailable' })).toBeDisabled();
+
+    const heroEntry = page.getByRole('button', { name: /Explore the workspace/i }).first();
+    await heroEntry.click();
+    const dialog = page.getByRole('dialog', { name: 'Prepared workspaces' });
+    await expect(dialog).toBeVisible();
+    await expect(dialog.getByText(/does not sign you in or grant provider access/i)).toBeVisible();
+    await expect(dialog.getByRole('button')).toHaveCount(5);
+    await expect(dialog.getByTestId('auth-staff-card')).toBeFocused();
+
+    await page.keyboard.press('Escape');
+    await expect(dialog).toBeHidden();
+    await expect(heroEntry).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.getByRole('navigation', { name: 'Workspace dock' }).getByRole('button', { name: 'Patient' }).click();
+    await expect(dialog).toBeVisible();
+    await dialog.getByTestId('auth-transport-card').click();
+    await expect(page.getByText(/Task 2: Transportation Navigation/i)).toBeVisible();
+
+    await page.getByTitle(/Reset Workspace/i).click();
+    await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('Camila Lopez');
+  });
+
+  test('workspace routes and the complete Camila journey remain connected', async ({ page }) => {
     await page.getByRole('button', { name: /Explore the workspace/i }).first().click();
     await expect(page.getByRole('dialog')).toBeVisible();
     await page.getByTestId('auth-patient-card').click();
@@ -192,7 +230,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     expect(caregiverCopy).not.toContain('tingling in fingers');
 
     await page.getByRole('button', { name: /Ana Hernandez/i }).click();
-    await page.getByText(/Patient Portal \(Maria Hernandez\)/i).click();
+    await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
     await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
     await page.getByRole('checkbox', { name: /I acknowledge the 7:45 AM Med-Van/i }).check();
     await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();

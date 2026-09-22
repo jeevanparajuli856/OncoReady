@@ -327,7 +327,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   </div>
                   <div>
                     <h3 className="text-xs font-bold text-slate-900">Patient Plan Confirmation</h3>
-                    <p className="text-[11px] text-slate-500">Maria Hernandez (Patient)</p>
+                    <p className="text-[11px] text-slate-500">Camila Lopez (Patient)</p>
                   </div>
                 </div>
 
@@ -339,7 +339,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 ) : allStaffResolved ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
                     <Clock className="w-3 h-3" />
-                    Awaiting Maria
+                    Awaiting Camila
                   </span>
                 ) : (
                   <span className="px-2 py-0.5 rounded-full text-[10px] bg-slate-100 text-slate-500">
@@ -350,7 +350,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
 
               <p className="text-xs text-slate-600 mt-2">
                 {patientAcknowledged
-                  ? 'Maria confirmed receipt of 7:45 AM ride and clinical guidance.'
+                  ? 'Camila confirmed receipt of the current ride and clinical guidance.'
                   : allStaffResolved
                   ? 'Staff actions complete. Awaiting final patient acknowledgment.'
                   : 'Requires Nurse Triage review and Transport dispatch before closure.'}
@@ -387,7 +387,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
               {selectedNode === 'CLINICAL' && 'Deterministic Clinical Review Task assigned to Sarah Jenkins, RN. Triage protocol preserves patient symptom input verbatim without automated diagnosis.'}
               {selectedNode === 'TRANSPORT' && 'Simulated Non-Emergency Medical Transport Task assigned to Marcus Vance, MSW. Coordinates vehicle pickup at 7:45 AM.'}
               {selectedNode === 'CENTER' && 'Upcoming FOLFOX6 Cycle 4 treatment anchor. Evaluates dependency graph status before confirming readiness.'}
-              {selectedNode === 'CLOSURE' && 'Patient confirmation closure gate. Ensures Maria receives and acknowledges updated care instructions.'}
+              {selectedNode === 'CLOSURE' && 'Patient confirmation closure gate. Ensures Camila receives and acknowledges updated care instructions.'}
             </p>
           </div>
           <button

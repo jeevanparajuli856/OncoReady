@@ -28,7 +28,7 @@ import {
 import { Logo } from './components/Logo';
 import { WorkspaceDock } from './components/WorkspaceDock';
 import { Network } from 'lucide-react';
-import { Perspective } from './types';
+import { Perspective, PreparedWorkspace } from './types';
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 
@@ -71,6 +71,16 @@ export const App: React.FC = () => {
 
   const handleSetPerspective = (p: Perspective) => {
     dispatch({ type: 'SET_PERSPECTIVE', payload: p });
+  };
+
+  const handleSelectPreparedWorkspace = (workspace: PreparedWorkspace) => {
+    if (workspace === 'TRANSPORTATION') {
+      dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
+      dispatch({ type: 'SET_PERSPECTIVE', payload: 'STAFF' });
+      return;
+    }
+
+    dispatch({ type: 'SET_PERSPECTIVE', payload: workspace });
   };
 
   const handleReset = () => {
@@ -146,10 +156,8 @@ export const App: React.FC = () => {
         {/* Perspective: LANDING (Commercial SaaS Showcase) */}
         {state.currentPerspective === 'LANDING' && (
           <LandingPage
-            state={state}
             reducedMotion={reducedMotion}
             onOpenAuthModal={() => setIsAuthModalOpen(true)}
-            onSelectPerspective={handleSetPerspective}
           />
         )}
 
@@ -162,7 +170,7 @@ export const App: React.FC = () => {
           />
         )}
 
-        {/* Perspective: PATIENT (Maria Hernandez) */}
+        {/* Perspective: PATIENT (Camila Lopez) */}
         {state.currentPerspective === 'PATIENT' && (
           <div>
             {isPatientResolutionOpen ? (
@@ -329,7 +337,7 @@ export const App: React.FC = () => {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         state={state}
-        onSelectPerspective={handleSetPerspective}
+        onSelectWorkspace={handleSelectPreparedWorkspace}
       />
 
       {/* Readiness Check Guided Modal */}

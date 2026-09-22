@@ -20,7 +20,7 @@ export const useDialogFocus = <T extends HTMLElement>(
     const dialog = dialogRef.current;
     const returnTarget = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     const focusable = () => Array.from(dialog.querySelectorAll<HTMLElement>(focusableSelector));
-    const initialTarget = focusable()[0] || dialog;
+    const initialTarget = dialog.querySelector<HTMLElement>('[data-dialog-initial-focus]') || focusable()[0] || dialog;
 
     initialTarget.focus();
 

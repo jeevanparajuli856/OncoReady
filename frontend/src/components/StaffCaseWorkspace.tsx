@@ -250,7 +250,7 @@ export const StaffCaseWorkspace: React.FC<StaffCaseWorkspaceProps> = ({
                   Clinical & Transport Triage Complete
                 </div>
                 <p className="text-sm text-cream/75">
-                  Both blocker tasks resolved. The updated plan is ready for Maria to review and acknowledge in her Patient Portal.
+                  Both blocker tasks resolved. The updated plan is ready for Camila to review and acknowledge in her Patient Portal.
                 </p>
               </div>
               <button onClick={() => onSwitchPerspective('PATIENT')} className="btn-candy !bg-sun !text-ink shrink-0">

@@ -21,8 +21,8 @@ export const INITIAL_STATE: WorkflowState = {
   
   patient: {
     id: 'PAT-882914',
-    mrn: 'OCH-882914',
-    name: 'Maria Hernandez',
+    mrn: 'OR-882914',
+    name: 'Camila Lopez',
     age: 54,
     gender: 'Female',
     diagnosis: 'Colorectal Adenocarcinoma',
@@ -30,7 +30,7 @@ export const INITIAL_STATE: WorkflowState = {
     oncologist: 'Dr. Aris Thorne, MD',
     phone: '(504) 555-0182',
     address: '1420 St. Charles Ave, New Orleans, LA 70130',
-    avatarUrl: avatarData('MH', '#4f46e5'),
+    avatarUrl: avatarData('CL', '#4f46e5'),
     ecogStatus: 1,
     bodySurfaceArea: '1.72 m²',
   },
@@ -41,7 +41,7 @@ export const INITIAL_STATE: WorkflowState = {
     relationship: 'Daughter & Health Proxy',
     phone: '(504) 555-0199',
     permissionScope: 'TRANSPORTATION_ONLY',
-    authorizedBy: 'Maria Hernandez',
+    authorizedBy: 'Camila Lopez',
     avatarUrl: avatarData('AH', '#0d9488'),
   },
 
@@ -210,7 +210,7 @@ export const INITIAL_STATE: WorkflowState = {
       actor: 'OncoReady Continuity Engine',
       actorRole: 'SYSTEM',
       action: 'Readiness Screening Window Opened',
-      description: 'T-24 hour pre-infusion barrier detection protocol active for Maria Hernandez.',
+      description: 'T-24 hour pre-infusion barrier detection protocol active for Camila Lopez.',
     }
   ],
 
@@ -512,7 +512,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         actor: state.patient.name,
         actorRole: 'PATIENT',
         action: 'Treatment Plan Acknowledged by Patient',
-        description: `Maria Hernandez reviewed confirmed transportation and pre-medication lab instructions, transitioning cycle status to PLAN_CONFIRMED.`,
+        description: `Camila Lopez reviewed confirmed transportation and pre-medication lab instructions, transitioning cycle status to PLAN_CONFIRMED.`,
         stateDiff: {
           field: 'overallReadiness',
           from: state.overallReadiness,
@@ -574,7 +574,7 @@ export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjec
       status: 'Confirmed & Dispatched',
     } : undefined,
     overallReadiness: state.overallReadiness,
-    privacyBoundaryNotice: 'Clinical symptoms, medication dosing, and nurse triage notes are confidential between Maria and her oncology care team.',
+    privacyBoundaryNotice: 'Clinical symptoms, medication dosing, and nurse triage notes are confidential between Camila and her oncology care team.',
   };
 }
 

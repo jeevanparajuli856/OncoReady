@@ -172,6 +172,7 @@ export interface CaregiverProjection {
 }
 
 export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'STAFF' | 'SYSTEM';
+export type PreparedWorkspace = 'STAFF' | 'PATIENT' | 'CAREGIVER' | 'TRANSPORTATION';
 export type StaffRoute = 'COMMAND_CENTER' | 'EXCEPTIONS' | 'PATIENTS' | 'CASE_WORKSPACE' | 'RESOURCES' | 'INSIGHTS' | 'INTEGRATIONS' | 'ADMIN';
 
 export interface ContextualQueueCase {

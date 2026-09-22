@@ -1,266 +1,161 @@
 import React, { useRef } from 'react';
-import { 
-  X, 
-  ShieldCheck, 
-  ArrowRight, 
-  Clock, 
-  Stethoscope, 
-  Network, 
-  Building2, 
-  Activity
+import {
+  ArrowRight,
+  Building2,
+  HeartHandshake,
+  Route,
+  ShieldCheck,
+  Stethoscope,
+  UserRound,
+  X,
 } from 'lucide-react';
-import { WorkflowState, Perspective } from '../types';
-import { Avatar } from './Avatar';
+import { PreparedWorkspace, WorkflowState } from '../types';
 import { useDialogFocus } from '../lib/useDialogFocus';
 
 interface AuthModalProps {
   isOpen: boolean;
   onClose: () => void;
   state: WorkflowState;
-  onSelectPerspective: (p: Perspective) => void;
+  onSelectWorkspace: (workspace: PreparedWorkspace) => void;
 }
+
+const destinationCopy: Array<{
+  id: PreparedWorkspace;
+  label: string;
+  title: string;
+  description: string;
+  testId: string;
+  Icon: typeof Stethoscope;
+  tone: string;
+}> = [
+  {
+    id: 'STAFF',
+    label: 'Recorded start',
+    title: 'Staff workspace',
+    description: 'Sarah Jenkins, RN and Marcus Vance, MSW coordinate the prepared case.',
+    testId: 'auth-staff-card',
+    Icon: Stethoscope,
+    tone: 'chip-accent',
+  },
+  {
+    id: 'PATIENT',
+    label: 'Patient',
+    title: 'Camila Lopez',
+    description: 'Report a concern and review the current continuity plan.',
+    testId: 'auth-patient-card',
+    Icon: UserRound,
+    tone: 'chip-accent',
+  },
+  {
+    id: 'CAREGIVER',
+    label: 'Caregiver',
+    title: 'Ana Hernandez',
+    description: 'Transportation details only; clinical content stays private.',
+    testId: 'auth-caregiver-card',
+    Icon: HeartHandshake,
+    tone: 'chip-mint',
+  },
+  {
+    id: 'TRANSPORTATION',
+    label: 'Transportation',
+    title: 'CareLink Dispatch',
+    description: 'Open the existing staff logistics context for the prepared scenario.',
+    testId: 'auth-transport-card',
+    Icon: Route,
+    tone: 'chip-sun',
+  },
+];
 
 export const AuthModal: React.FC<AuthModalProps> = ({
   isOpen,
   onClose,
   state,
-  onSelectPerspective,
+  onSelectWorkspace,
 }) => {
   const dialogRef = useRef<HTMLDivElement>(null);
   useDialogFocus(isOpen, dialogRef, onClose);
 
   if (!isOpen) return null;
 
-  const handleSelect = (p: Perspective) => {
-    onSelectPerspective(p);
+  const handleSelect = (workspace: PreparedWorkspace) => {
+    onSelectWorkspace(workspace);
     onClose();
   };
 
-  const pendingBlockers = state.tasks.filter((t) => t.status !== 'RESOLVED').length;
-
   return (
-    <div 
-      className="fixed inset-0 z-50 overflow-y-auto bg-ink/55 flex items-center justify-center p-4"
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-ink/55 flex items-start sm:items-center justify-center p-3 sm:p-4"
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-modal-title"
+      aria-describedby="auth-modal-description"
     >
-      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl max-w-2xl w-full border border-line shadow-glass-lg overflow-hidden animate-slide-up">
-        
-        {/* Modal Header */}
-        <div className="bg-ink text-white p-6 sm:p-7 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center">
-              <Activity className="w-6 h-6" strokeWidth={2} />
+      <div ref={dialogRef} tabIndex={-1} className="bg-white rounded-2xl max-w-2xl w-full max-h-[calc(100dvh-1.5rem)] sm:max-h-[calc(100dvh-2rem)] border border-line shadow-glass-lg overflow-hidden animate-slide-up flex flex-col">
+        <div className="bg-ink text-white p-6 sm:p-7 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3.5">
+            <div className="w-12 h-12 rounded-2xl bg-white/10 text-white flex items-center justify-center shrink-0">
+              <Building2 className="w-6 h-6" strokeWidth={2} aria-hidden="true" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-heading font-semibold bg-white/10 text-white">Workspace gateway</span>
-                <span className="text-xs text-white/70">Benson Cancer Center</span>
-              </div>
-              <h2 id="auth-modal-title" className="text-xl font-extrabold text-white mt-1">
-                Select Your Clinical Workspace
+              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-heading font-semibold bg-white/10 text-white">
+                Prepared scenario
+              </span>
+              <h2 id="auth-modal-title" className="text-xl font-extrabold text-white mt-2">
+                Prepared workspaces
               </h2>
+              <p id="auth-modal-description" className="text-xs text-white/70 mt-1 max-w-xl">
+                Choose a local view of one synthetic scenario. This does not sign you in or grant provider access.
+              </p>
             </div>
           </div>
 
           <button
+            type="button"
             onClick={onClose}
-            aria-label="Close modal"
-            className="p-2 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition"
+            aria-label="Close prepared workspaces"
+            className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition shrink-0"
           >
-            <X className="w-5 h-5" />
+            <X className="w-5 h-5" aria-hidden="true" />
           </button>
         </div>
 
-        {/* Modal Body: 4 Role Selection Cards */}
-        <div className="p-6 sm:p-7 space-y-4 max-h-[75vh] overflow-y-auto">
-          
-          {/* Card 1: Patient (Maria Hernandez) */}
-          <div 
-            data-testid="auth-patient-card"
-            onClick={() => handleSelect('PATIENT')}
-            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('PATIENT')}
-            role="button"
-            tabIndex={0}
-            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
-          >
-            <div className="flex items-center gap-4">
-              <Avatar
-                src={state.patient.avatarUrl}
-                alt={state.patient.name}
-                size="lg"
-                roleType="PATIENT"
-              />
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-heading font-extrabold text-base">
-                    {state.patient.name}
-                  </span>
-                  <span className="chip chip-accent">PATIENT</span>
-                </div>
-                <p className="text-xs text-muted-fg">
-                  {state.appointment.protocol} • Cycle {state.appointment.cycleNumber} (Tomorrow 8:30 AM)
-                </p>
-                <div className="text-[11px] text-muted-fg flex items-center gap-1 font-medium pt-0.5">
-                  <Clock className="w-3 h-3 text-accent" />
-                  <span>
-                    {state.overallReadiness === 'PLAN_CONFIRMED'
-                      ? 'Treatment Plan Confirmed'
-                      : state.readinessCheckCompleted
-                      ? 'Readiness Screening Under Triage'
-                      : 'Pre-Infusion Screening Pending (2 min)'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <span className="inline-flex items-center gap-1 text-xs font-heading font-bold text-accent shrink-0">
-              <span className="hidden sm:inline">Enter Portal</span>
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-
-          {/* Card 2: Authorized Caregiver (Ana Hernandez) */}
-          <div 
-            data-testid="auth-caregiver-card"
-            onClick={() => handleSelect('CAREGIVER')}
-            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('CAREGIVER')}
-            role="button"
-            tabIndex={0}
-            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
-          >
-            <div className="flex items-center gap-4">
-              <Avatar
-                src={state.caregiver.avatarUrl}
-                alt={state.caregiver.name}
-                size="lg"
-                roleType="CAREGIVER"
-              />
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-heading font-extrabold text-base">
-                    {state.caregiver.name}
-                  </span>
-                  <span className="chip chip-mint">CAREGIVER</span>
-                </div>
-                <p className="text-xs text-muted-fg">
-                  {state.caregiver.relationship}
-                </p>
-                <div className="text-[11px] text-ink flex items-center gap-1 font-medium pt-0.5">
-                  <ShieldCheck className="w-3.5 h-3.5 text-mint" />
-                  <span>Privacy Guard Active (Transit Logistics Only)</span>
-                </div>
-              </div>
-            </div>
-
-            <span className="inline-flex items-center gap-1 text-xs font-heading font-bold text-accent shrink-0">
-              <span className="hidden sm:inline">Enter Portal</span>
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-
-          {/* Card 3: Clinical Care Team (Sarah Jenkins RN & Marcus Vance MSW) */}
-          <div 
-            data-testid="auth-staff-card"
-            onClick={() => handleSelect('STAFF')}
-            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('STAFF')}
-            role="button"
-            tabIndex={0}
-            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
-          >
-            <div className="flex items-center gap-4">
-              <div className="flex -space-x-4 shrink-0">
-                <Avatar
-                  src=""
-                  alt="Sarah Jenkins RN"
-                  size="md"
-                  roleType="NURSE"
-                  className="ring-2 ring-white"
-                />
-                <Avatar
-                  src=""
-                  alt="Marcus Vance MSW"
-                  size="md"
-                  roleType="NAVIGATOR"
-                  className="ring-2 ring-white"
-                />
-              </div>
-
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-heading font-extrabold text-base">
-                    Oncology Triage &amp; Navigation Team
-                  </span>
-                  <span className="chip chip-accent">CARE TEAM</span>
-                </div>
-                <p className="text-xs text-muted-fg">
-                  Sarah Jenkins, RN (Triage) &amp; Marcus Vance, MSW (Navigation)
-                </p>
-                <div className="text-[11px] text-muted-fg flex items-center gap-1 font-medium pt-0.5">
-                  <Stethoscope className="w-3.5 h-3.5 text-accent" />
-                  <span>{pendingBlockers > 0 ? `${pendingBlockers} Active Infusion Blockers` : 'Exception Queue Cleared'}</span>
-                </div>
-              </div>
-            </div>
-
-            <span className="inline-flex items-center gap-1 text-xs font-heading font-bold text-accent shrink-0">
-              <span className="hidden sm:inline">Open Hub</span>
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-
-          {/* Card 4: Continuity Telemetry & Dependency Graph */}
-          <div 
-            data-testid="auth-system-card"
-            onClick={() => handleSelect('SYSTEM')}
-            onKeyDown={(event) => (event.key === 'Enter' || event.key === ' ') && handleSelect('SYSTEM')}
-            role="button"
-            tabIndex={0}
-            className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-300 cursor-pointer flex items-center justify-between gap-4 group shadow-glass"
-          >
-            <div className="flex items-center gap-4">
-              <Avatar
-                alt="Continuity Engine"
-                size="lg"
-                roleType="SYSTEM"
-              />
-              <div className="space-y-0.5">
-                <div className="flex items-center gap-2">
-                  <span className="font-heading font-extrabold text-base">
-                    Treatment Readiness Graph &amp; Audit Log
-                  </span>
-                  <span className="chip">ARCHITECTURE</span>
-                </div>
-                <p className="text-xs text-muted-fg">
-                  Deterministic Finite State Machine &amp; SVG Dependency Graph
-                </p>
-                <div className="text-[11px] text-muted-fg flex items-center gap-1 font-medium pt-0.5">
-                  <Network className="w-3.5 h-3.5 text-accent" />
-                  <span>Real-Time Clinical Telemetry</span>
-                </div>
-              </div>
-            </div>
-
-            <span className="inline-flex items-center gap-1 text-xs font-heading font-bold text-ink shrink-0">
-              <span className="hidden sm:inline">Inspect Graph</span>
-              <ArrowRight className="w-4 h-4" />
-            </span>
-          </div>
-
+        <div className="p-5 sm:p-7 grid grid-cols-1 sm:grid-cols-2 gap-4 overflow-y-auto flex-1 min-h-0">
+          {destinationCopy.map(({ id, label, title, description, testId, Icon, tone }) => (
+            <button
+              key={id}
+              type="button"
+              data-testid={testId}
+              data-dialog-initial-focus={id === 'STAFF' ? 'true' : undefined}
+              onClick={() => handleSelect(id)}
+              className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col items-start justify-between gap-5 text-left shadow-glass min-h-44"
+            >
+              <span className="w-full flex items-start justify-between gap-3">
+                <span className="w-11 h-11 rounded-xl bg-muted text-accent flex items-center justify-center shrink-0">
+                  <Icon className="w-5 h-5" strokeWidth={2.25} aria-hidden="true" />
+                </span>
+                <span className={`chip ${tone}`}>{label}</span>
+              </span>
+              <span>
+                <span className="block font-heading font-extrabold text-base text-ink">{title}</span>
+                <span className="block text-xs text-muted-fg leading-relaxed mt-1">{description}</span>
+              </span>
+              <span className="inline-flex items-center gap-1 text-xs font-heading font-bold text-accent">
+                Open local view
+                <ArrowRight className="w-4 h-4" aria-hidden="true" />
+              </span>
+            </button>
+          ))}
         </div>
 
-        {/* Modal Footer */}
-        <div className="p-4 sm:px-7 bg-muted/60 border-t border-line flex items-center justify-between text-xs">
-          <div className="flex items-center gap-2">
-            <Building2 className="w-4 h-4 text-accent" />
-            <span>Benson Cancer Center • Role-based product workspace</span>
-          </div>
+        <div className="p-4 sm:px-7 bg-muted/60 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs">
+          <span className="flex items-center gap-2">
+            <ShieldCheck className="w-4 h-4 text-mint" aria-hidden="true" />
+            Synthetic prepared personas • local navigation only
+          </span>
           <span className="text-muted-fg font-mono text-[11px]">
-            Choose a workspace view
+            Scenario {state.version}
           </span>
         </div>
-
       </div>
     </div>
   );

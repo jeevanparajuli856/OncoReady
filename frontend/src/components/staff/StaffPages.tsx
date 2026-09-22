@@ -10,7 +10,7 @@ export const StaffCommandCenter: React.FC<{
   <div className="card-sticker p-5 sm:p-6 space-y-6">
     <div>
       <h2 className="font-display text-2xl font-extrabold">Command Center</h2>
-      <p className="text-sm text-muted-fg mt-1">Morning view of treatments in the next 24-48 hours. Open Maria's case, or use Patient / Caregiver / Graph in the top bar.</p>
+      <p className="text-sm text-muted-fg mt-1">Morning view of treatments in the next 24-48 hours. Open Camila's case, or use Patient / Caregiver / Graph in the top bar.</p>
     </div>
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {[
@@ -207,7 +207,7 @@ export const StaffAdmin: React.FC<{
       <div>
         <h2 className="font-display text-2xl font-extrabold">Local Configuration</h2>
         <p className="text-sm text-muted-fg mt-1">
-          These workspace rules split Maria's report to Sarah and Marcus and keep clinical text out of Ana's transportation-only view.
+          These workspace rules split Camila's report to Sarah and Marcus and keep clinical text out of Ana's transportation-only view.
         </p>
       </div>
       <div className="space-y-3">
@@ -233,7 +233,7 @@ export const StaffAdmin: React.FC<{
         Admin is not a separate site. It describes the loop you can walk right now.
       </p>
       <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
-        <button onClick={onOpenCase} className="btn-candy btn-compact">Open Maria's case</button>
+        <button onClick={onOpenCase} className="btn-candy btn-compact">Open Camila's case</button>
         <button onClick={() => onSetPerspective('PATIENT')} className="btn-ghost btn-compact">Patient portal</button>
         <button onClick={() => onSetPerspective('CAREGIVER')} className="btn-ghost btn-compact">Caregiver view</button>
         <button onClick={() => onSetPerspective('SYSTEM')} className="btn-ghost btn-compact">Readiness graph</button>

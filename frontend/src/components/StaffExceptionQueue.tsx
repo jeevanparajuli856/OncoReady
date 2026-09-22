@@ -23,7 +23,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
 
   const clinicalTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
-  const isMariaResolved = state.overallReadiness === 'PLAN_CONFIRMED';
+  const isCamilaResolved = state.overallReadiness === 'PLAN_CONFIRMED';
 
   const filters = [
     ['ALL', 'All Exceptions (4)'],
@@ -67,7 +67,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
           <div className="metric-tile bg-sun/30">
             <div className="label-caps">Active exceptions</div>
             <div className="font-display text-2xl font-extrabold mt-1">
-              {isMariaResolved ? '3 Pending' : '4 Pending'}
+              {isCamilaResolved ? '3 Pending' : '4 Pending'}
             </div>
             <div className="text-[11px] text-muted-fg">1 Urgent Clinical</div>
           </div>
@@ -112,9 +112,9 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
         <div
           onClick={() => onOpenCase(state.patient.id)}
           className={`p-5 sm:p-6 cursor-pointer hover:bg-sun/10 transition ${
-            !isMariaResolved && state.readinessCheckCompleted
+            !isCamilaResolved && state.readinessCheckCompleted
               ? 'bg-sun/15'
-              : isMariaResolved
+              : isCamilaResolved
               ? 'bg-mint/15'
               : ''
           }`}

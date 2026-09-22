@@ -46,10 +46,11 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Explore Workspace/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/SaaS business model/i)).toBeDefined();
-    expect(screen.getByText(/Cancer centers and health systems/i)).toBeDefined();
-    expect(screen.getByText(/One treatment-readiness workspace/i)).toBeDefined();
-    expect(screen.getByText(/Shaped around the operation/i)).toBeDefined();
-    expect(screen.getByText(/Grow across the care network/i)).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Pilot' })).toBeDefined();
+    expect(screen.getByText('$18,000/year')).toBeDefined();
+    expect(screen.getByText('$1,500/month billed annually')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Network' })).toBeDefined();
+    expect(screen.getByText('Talk to us')).toBeDefined();
 
     const landingCopy = document.body.textContent?.toLowerCase() || '';
     ['demo', 'prototype', 'preview', 'portfolio', 'training environment'].forEach((term) => {
@@ -76,7 +77,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     const exploreWorkspaceBtn = screen.getAllByText(/Explore Workspace/i)[0];
     fireEvent.click(exploreWorkspaceBtn);
 
-    expect(screen.getByText(/Select Your Clinical Workspace/i)).toBeDefined();
+    expect(screen.getByText(/Prepared workspaces/i)).toBeDefined();
 
     // 2. Select Patient Portal from Auth Modal
     const patientCard = screen.getByTestId('auth-patient-card');
@@ -106,7 +107,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(exceptionsNav);
 
     expect(screen.getByText(/Pre-Treatment Exception Queue/i)).toBeDefined();
-    expect(screen.getAllByText(/Maria Hernandez/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Camila Lopez/i).length).toBeGreaterThan(0);
 
     // 6. Open Case Workspace
     const openCaseBtn = screen.getByRole('button', { name: /Open Case Workspace/i });
@@ -149,7 +150,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     const caregiverSwitcherBtn = screen.getAllByText(/Ana Hernandez/i)[0];
     fireEvent.click(caregiverSwitcherBtn);
 
-    const patientOption = screen.getByText(/Patient Portal \(Maria Hernandez\)/i);
+    const patientOption = screen.getByText(/Patient Portal \(Camila Lopez\)/i);
     fireEvent.click(patientOption);
 
     expect(screen.getByText(/Your Updated Treatment Plan is Ready for Review/i)).toBeDefined();

@@ -18,37 +18,46 @@ interface WorkspaceDockProps {
 export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
   currentPerspective,
   onSelectPerspective,
+  onOpenAuthModal,
 }) => {
   const iconClass = 'h-full w-full';
+  const isPublic = currentPerspective === 'LANDING' || currentPerspective === 'SIGN_IN';
+  const openOrSelect = (perspective: Perspective) => {
+    if (isPublic && perspective !== 'LANDING') {
+      onOpenAuthModal();
+      return;
+    }
+    onSelectPerspective(perspective);
+  };
   const items = [
     {
       title: 'Home',
       icon: <IconHome className={iconClass} />,
-      onClick: () => onSelectPerspective('LANDING'),
+      onClick: () => openOrSelect('LANDING'),
       active: currentPerspective === 'LANDING' || currentPerspective === 'SIGN_IN',
     },
     {
       title: 'Patient',
       icon: <IconHeart className={iconClass} />,
-      onClick: () => onSelectPerspective('PATIENT'),
+      onClick: () => openOrSelect('PATIENT'),
       active: currentPerspective === 'PATIENT',
     },
     {
       title: 'Staff',
       icon: <IconStethoscope className={iconClass} />,
-      onClick: () => onSelectPerspective('STAFF'),
+      onClick: () => openOrSelect('STAFF'),
       active: currentPerspective === 'STAFF',
     },
     {
       title: 'Caregiver',
       icon: <IconUsers className={iconClass} />,
-      onClick: () => onSelectPerspective('CAREGIVER'),
+      onClick: () => openOrSelect('CAREGIVER'),
       active: currentPerspective === 'CAREGIVER',
     },
     {
       title: 'Graph',
       icon: <IconChartDots3 className={iconClass} />,
-      onClick: () => onSelectPerspective('SYSTEM'),
+      onClick: () => openOrSelect('SYSTEM'),
       active: currentPerspective === 'SYSTEM',
     },
   ];

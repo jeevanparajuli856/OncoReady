@@ -7,32 +7,24 @@ import {
   ChevronDown,
   Clock3,
   Database,
-  Layers3,
   HeartHandshake,
   Lock,
   MapPin,
   Network,
   Route,
-  SlidersHorizontal,
   ShieldCheck,
   Sparkles,
   Stethoscope,
   UserRound,
   Users,
 } from 'lucide-react';
-import { Perspective, WorkflowState } from '../types';
-import { Avatar } from './Avatar';
 import { ContinuityField } from './ContinuityField';
-import { LogoMark } from './Logo';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 import { RevealVariant, ScrollReveal } from './ScrollReveal';
-import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
 
 interface LandingPageProps {
-  state: WorkflowState;
   reducedMotion?: boolean;
   onOpenAuthModal: () => void;
-  onSelectPerspective: (perspective: Perspective) => void;
 }
 
 const trustSignals = [
@@ -42,38 +34,32 @@ const trustSignals = [
   { Icon: Network, label: 'Deterministic audit trail' },
 ];
 
-const workspaces = [
+const rescueStages = [
   {
     number: '01',
-    title: 'Patient check-in',
-    copy: 'A focused two-minute check finds the ride, cost, caregiving, or clinical concern that could disrupt the next treatment.',
-    action: 'Open patient view',
+    title: 'Surface the signal',
+    copy: 'A focused check-in brings transportation, caregiving, cost, and patient-reported concerns into view before treatment day.',
     image: '/story-patient.jpg',
     tone: 'indigo',
     Icon: UserRound,
-    perspective: 'PATIENT' as const,
     reveal: 'patient' as RevealVariant,
   },
   {
     number: '02',
-    title: 'Staff exception hub',
-    copy: 'Nursing owns the patient-reported clinical concern. Navigation owns transportation. Both remain visible on one record.',
-    action: 'Open staff hub',
+    title: 'Give the work an owner',
+    copy: 'Nursing owns clinical contact. Navigation owns transportation. Each item carries a next action and due time.',
     image: '/story-staff.jpg',
     tone: 'coral',
     Icon: Stethoscope,
-    perspective: 'STAFF' as const,
     reveal: 'staff' as RevealVariant,
   },
   {
     number: '03',
-    title: 'Caregiver logistics',
-    copy: 'Family can see the authorized pickup plan without receiving diagnosis details, symptom text, or nurse notes.',
-    action: 'Open caregiver view',
+    title: 'Confirm the current plan',
+    copy: 'The patient and authorized caregiver receive the logistics they need while clinical details stay with the care team.',
     image: '/story-caregiver.jpg',
     tone: 'mint',
     Icon: HeartHandshake,
-    perspective: 'CAREGIVER' as const,
     reveal: 'caregiver' as RevealVariant,
   },
 ];
@@ -105,39 +91,31 @@ const workflowSteps = [
   },
 ];
 
-const saasModel = [
+const pricingPlans = [
   {
-    label: '01 • Institutional buyer',
-    title: 'Cancer centers and health systems',
-    copy: 'Oncology service lines subscribe at the program level to make pre-treatment readiness an accountable operating capability.',
-    features: ['Infusion operations', 'Clinical and navigation leaders'],
-    tone: 'mint',
-    Icon: Building2,
-  },
-  {
-    label: '02 • Subscribed capability',
-    title: 'One treatment-readiness workspace',
-    copy: 'Patient check-in, accountable exception routing, a shared readiness graph, and permission-limited logistics work as one service.',
-    features: ['Role-based workspaces', 'Visible ownership and closure'],
+    label: 'For one oncology program',
+    title: 'Pilot',
+    price: '$18,000/year',
+    billing: '$1,500/month billed annually',
+    copy: 'A focused readiness program for one care team and one site.',
+    features: ['5 staff seats', '1 site', 'Prepared workspace access'],
     tone: 'indigo',
     featured: true,
-    Icon: Layers3,
+    Icon: Building2,
+    action: 'Open prepared workspace',
+    enabled: true,
   },
   {
-    label: '03 • Configured implementation',
-    title: 'Shaped around the operation',
-    copy: 'Implementation aligns sites, roles, routing rules, escalation windows, and readiness checkpoints to the organization’s workflow.',
-    features: ['Center-defined responsibility', 'Workflow and mapping alignment'],
-    tone: 'coral',
-    Icon: SlidersHorizontal,
-  },
-  {
-    label: '04 • Expansion path',
-    title: 'Grow across the care network',
-    copy: 'Organizations can extend the same readiness model across additional sites, treatment programs, and operating roles.',
-    features: ['Additional programs and sites', 'Shared operating model'],
+    label: 'For multi-site programs',
+    title: 'Network',
+    price: 'Talk to us',
+    billing: 'Configured around your operating model',
+    copy: 'A tailored readiness program for larger care networks.',
+    features: ['Multiple sites', 'Expanded staff access', 'Implementation planning'],
     tone: 'lavender',
     Icon: Network,
+    action: 'Contact setup unavailable',
+    enabled: false,
   },
 ];
 
@@ -161,10 +139,8 @@ const faqs = [
 ];
 
 export const LandingPage: React.FC<LandingPageProps> = ({
-  state,
   reducedMotion = false,
   onOpenAuthModal,
-  onSelectPerspective,
 }) => {
   const [activeFaq, setActiveFaq] = useState<number | null>(0);
 
@@ -239,102 +215,36 @@ export const LandingPage: React.FC<LandingPageProps> = ({
       <section id="workspaces" className="landing-section landing-shell" aria-labelledby="workspaces-title">
         <div className="landing-section-heading landing-section-heading--split">
           <div>
-            <p className="landing-section-label">One record, the right view</p>
-            <h2 id="workspaces-title">Built around everyone responsible for tomorrow.</h2>
+            <p className="landing-section-label">Continuity Rescue Story</p>
+            <h2 id="workspaces-title">One concern becomes owned work and a confirmed plan.</h2>
           </div>
           <p>
-            Patient, staff, and caregiver experiences share one readiness state while showing only the information each person needs.
+            The public story explains the workflow without displaying a patient record. Prepared identities appear only after workspace access opens.
           </p>
         </div>
 
         <div className="landing-role-grid">
-          {workspaces.map(({ Icon, ...workspace }, index) => (
+          {rescueStages.map(({ Icon, ...stage }, index) => (
             <ScrollReveal
-              key={workspace.title}
-              variant={workspace.reveal}
+              key={stage.title}
+              variant={stage.reveal}
               delay={index * 80}
               reducedMotion={reducedMotion}
               className="landing-role-reveal"
             >
-              <button
-                type="button"
-                onClick={() => onSelectPerspective(workspace.perspective)}
-                className="landing-role-card"
-                data-tone={workspace.tone}
-              >
+              <article className="landing-role-card" data-tone={stage.tone}>
                 <div className="landing-role-card__image">
-                  <img src={workspace.image} alt="" loading="lazy" decoding="async" />
-                  <span>{workspace.number}</span>
+                  <img src={stage.image} alt="" loading="lazy" decoding="async" />
+                  <span>{stage.number}</span>
                 </div>
                 <div className="landing-role-card__body">
                   <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
-                  <h3>{workspace.title}</h3>
-                  <p>{workspace.copy}</p>
-                  <span className="landing-text-link">
-                    {workspace.action}
-                    <ArrowRight className="h-4 w-4" aria-hidden="true" />
-                  </span>
+                  <h3>{stage.title}</h3>
+                  <p>{stage.copy}</p>
                 </div>
-              </button>
+              </article>
             </ScrollReveal>
           ))}
-        </div>
-      </section>
-
-      <section className="landing-section landing-shell" aria-labelledby="readiness-proof-title">
-        <div className="landing-section-heading landing-section-heading--split">
-          <div>
-            <p className="landing-section-label">Live product proof</p>
-            <h2 id="readiness-proof-title">One report becomes accountable work.</h2>
-          </div>
-          <p>
-            An illustrative treatment-readiness record shows who owns each blocker, what happens next, and what evidence closes the loop.
-          </p>
-        </div>
-
-        <div className="landing-workspace-frame">
-          <div className="landing-workspace-frame__topbar">
-            <div className="landing-workspace-frame__identity">
-              <LogoMark size={44} />
-              <div>
-                <div className="flex flex-wrap items-center gap-2">
-                  <strong>Treatment Readiness Workspace</strong>
-                  <span className="landing-environment-pill">Illustrative record</span>
-                </div>
-                <p>Maria Hernandez • mFOLFOX6 Cycle 4 • Benson Cancer Center</p>
-              </div>
-            </div>
-            <div className="landing-workspace-frame__actions">
-              <button type="button" onClick={() => onSelectPerspective('PATIENT')} className="landing-button landing-button--small landing-button--secondary">
-                Patient view
-              </button>
-              <button type="button" onClick={() => onSelectPerspective('STAFF')} className="landing-button landing-button--small landing-button--primary">
-                Staff hub
-              </button>
-            </div>
-          </div>
-
-          <TreatmentReadinessGraph
-            appointment={state.appointment}
-            tasks={state.tasks}
-            overallReadiness={state.overallReadiness}
-            patientAcknowledged={state.patientAcknowledged}
-            readinessCheckCompleted={state.readinessCheckCompleted}
-            onNavigateToPatient={() => onSelectPerspective('PATIENT')}
-            onNavigateToStaff={() => onSelectPerspective('STAFF')}
-          />
-
-          <button type="button" onClick={() => onSelectPerspective('STAFF')} className="landing-case-row">
-            <Avatar src={state.patient.avatarUrl} alt={state.patient.name} size="lg" roleType="PATIENT" />
-            <span className="landing-case-row__copy">
-              <strong>{state.patient.name}</strong>
-              <span>{state.appointment.treatmentName} • {state.appointment.scheduledTime}</span>
-            </span>
-            <span className="landing-case-row__state">Action required</span>
-            <span className="landing-text-link">
-              Review case <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </span>
-          </button>
         </div>
       </section>
 
@@ -425,31 +335,39 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p>Subscribe at the program level, configure the operating model, and expand the same accountable loop as the organization grows.</p>
           </div>
 
-          <div className="landing-saas-grid">
-            {saasModel.map(({ Icon, ...model }, index) => (
-              <ScrollReveal key={model.title} variant="saas" delay={index * 55} reducedMotion={reducedMotion}>
-                <article className="landing-saas-card" data-tone={model.tone} data-featured={model.featured || undefined}>
+          <div className="landing-saas-grid" data-testid="pricing-plans">
+            {pricingPlans.map(({ Icon, ...plan }, index) => (
+              <ScrollReveal key={plan.title} variant="saas" delay={index * 55} reducedMotion={reducedMotion}>
+                <article className="landing-saas-card" data-tone={plan.tone} data-featured={plan.featured || undefined}>
                   <div className="landing-saas-card__topline">
-                    <span className="landing-saas-card__label">{model.label}</span>
+                    <span className="landing-saas-card__label">{plan.label}</span>
                     <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
                   </div>
-                  <h3>{model.title}</h3>
-                  <p>{model.copy}</p>
+                  <h3>{plan.title}</h3>
+                  <p className="landing-plan-price">{plan.price}</p>
+                  <p>{plan.billing}</p>
+                  <p>{plan.copy}</p>
                   <ul>
-                    {model.features.map((feature) => (
+                    {plan.features.map((feature) => (
                       <li key={feature}><Check className="h-4 w-4" aria-hidden="true" />{feature}</li>
                     ))}
                   </ul>
+                  {plan.enabled ? (
+                    <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--primary">
+                      {plan.action}
+                      <ArrowRight className="h-4 w-4" aria-hidden="true" />
+                    </button>
+                  ) : (
+                    <>
+                      <button type="button" disabled aria-describedby="network-contact-note" className="landing-button landing-button--secondary">
+                        {plan.action}
+                      </button>
+                      <p id="network-contact-note" className="landing-plan-note">Contact setup is outside this prepared experience.</p>
+                    </>
+                  )}
                 </article>
               </ScrollReveal>
             ))}
-          </div>
-
-          <div className="landing-saas-action">
-            <button type="button" onClick={onOpenAuthModal} className="landing-button landing-button--primary">
-              Explore the product workspaces
-              <ArrowRight className="h-4 w-4" aria-hidden="true" />
-            </button>
           </div>
         </div>
       </section>

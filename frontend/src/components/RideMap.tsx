@@ -221,7 +221,7 @@ const MapFallback: React.FC<RideMapProps> = ({
 
 export const NEW_ORLEANS_PICKUP: MapStop = {
   id: 'pickup',
-  label: 'Maria pickup',
+  label: 'Pickup area',
   detail: '1420 St. Charles Ave',
   lat: 29.9418,
   lng: -90.0782,

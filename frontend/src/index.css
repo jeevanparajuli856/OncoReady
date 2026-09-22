@@ -283,6 +283,13 @@ select:focus-visible {
   transform: translateY(-2px);
 }
 
+.landing-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+  transform: none;
+  box-shadow: none;
+}
+
 .landing-button--primary {
   border: 1px solid var(--accent);
   background: var(--accent);
@@ -662,12 +669,6 @@ select:focus-visible {
   transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
-.landing-role-card:hover {
-  transform: translateY(-2px);
-  border-color: rgba(79, 70, 229, 0.2);
-  box-shadow: 0 30px 70px -46px rgba(79, 70, 229, 0.42);
-}
-
 .landing-role-card__image {
   position: relative;
   height: clamp(13rem, 28vw, 18rem);
@@ -687,10 +688,6 @@ select:focus-visible {
   height: 100%;
   object-fit: cover;
   transition: transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
-}
-
-.landing-role-card:hover .landing-role-card__image img {
-  transform: scale(1.035);
 }
 
 .landing-role-card__image > span {
@@ -976,6 +973,8 @@ select:focus-visible {
 
 .landing-saas-card {
   padding: clamp(1.4rem, 3vw, 2rem);
+  display: flex;
+  flex-direction: column;
 }
 
 .landing-saas-card[data-featured='true'] {
@@ -1005,6 +1004,27 @@ select:focus-visible {
   margin-block: 1.4rem;
   display: grid;
   gap: 0.7rem;
+}
+
+.landing-saas-card .landing-button {
+  width: 100%;
+  margin-top: auto;
+}
+
+.landing-plan-price {
+  color: var(--ink) !important;
+  font-family: 'Outfit', sans-serif;
+  font-size: clamp(1.45rem, 3vw, 2.2rem) !important;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.1 !important;
+}
+
+.landing-plan-note {
+  margin-top: 0.65rem !important;
+  font-size: 0.72rem !important;
+  line-height: 1.45 !important;
+  text-align: center;
 }
 
 .landing-saas-card li {
@@ -1289,12 +1309,6 @@ select:focus-visible {
 
   .landing-trust-grid {
     grid-template-columns: repeat(2, minmax(0, max-content));
-  }
-}
-
-@media (min-width: 1180px) {
-  .landing-saas-grid {
-    grid-template-columns: repeat(4, minmax(0, 1fr));
   }
 }
 

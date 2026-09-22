@@ -91,7 +91,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
       eyebrow: 'Authorized Caregiver',
       title: state.caregiver.name,
       subtitle: state.caregiver.relationship,
-      body: "Caregiver view with strict data-minimization: Ana can track vehicle arrival and appointment times, while Maria's clinical symptom text is completely excluded.",
+      body: "Caregiver view with strict data-minimization: Ana can track vehicle arrival and appointment times, while Camila's clinical concern text is completely excluded.",
       foot: 'Family & Transit Logistics',
       cta: 'Enter Caregiver View',
       status: (
@@ -146,7 +146,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
         <div className="inline-flex flex-wrap items-center justify-center gap-2 p-2 px-3 rounded-xl bg-white/70 border border-white/80 text-xs font-heading font-semibold">
           <span className="inline-flex items-center gap-1.5">
             <Activity className="w-4 h-4 text-accent" strokeWidth={2.5} />
-            Target Patient: Maria Hernandez (54F)
+            Target Patient: Camila Lopez (54F)
           </span>
           <span className="hidden sm:inline text-muted-fg">•</span>
           <span className="inline-flex items-center gap-1.5">

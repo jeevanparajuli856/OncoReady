@@ -130,7 +130,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
             <div className="p-4 rounded-xl bg-cream border-2 border-ink/10 text-sm">
               <div className="font-heading font-bold">Transportation Pending Confirmation</div>
               <p className="text-muted-fg mt-1">
-                Oncology Navigator Marcus Vance is coordinating medical transit for Maria's 8:30 AM arrival. Updates will appear here as soon as dispatch confirms vehicle assignment.
+                Oncology Navigator Marcus Vance is coordinating medical transit for Camila's 9:30 AM arrival. Updates will appear here as soon as dispatch confirms vehicle assignment.
               </p>
             </div>
           )}
@@ -149,7 +149,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
       )}
 
       <p className="text-center text-xs text-muted-fg">
-        Caregiver access granted under Maria Hernandez's authorized healthcare proxy permissions.
+        Caregiver view prepared under Camila Lopez's transportation-only permissions.
       </p>
     </div>
   );

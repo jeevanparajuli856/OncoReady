@@ -215,9 +215,9 @@ export const Header: React.FC<HeaderProps> = ({
                   </div>
                   <div className="py-1">
                     <button onClick={() => { onSetPerspective('PATIENT'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'PATIENT' ? 'bg-accent/8 font-semibold' : ''}`}>
-                      <Avatar src={state.patient.avatarUrl} alt="Maria" size="xs" roleType="PATIENT" />
+                      <Avatar src={state.patient.avatarUrl} alt="Camila" size="xs" roleType="PATIENT" />
                       <div>
-                        <div>Patient Portal (Maria Hernandez)</div>
+                        <div>Patient Portal (Camila Lopez)</div>
                         <div className="text-[10px] text-muted-fg font-normal">Patient Readiness View</div>
                       </div>
                     </button>
@@ -250,9 +250,9 @@ export const Header: React.FC<HeaderProps> = ({
                       <Home className="w-3.5 h-3.5" />
                       <span>Return to Product Website</span>
                     </button>
-                    <button onClick={() => { onSetPerspective('SIGN_IN'); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-pop hover:bg-pop/8">
+                    <button onClick={() => { onOpenAuthModal(); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-pop hover:bg-pop/8">
                       <LogOut className="w-3.5 h-3.5" />
-                      <span>Sign Out to Gateway</span>
+                      <span>Open Prepared Workspace Gateway</span>
                     </button>
                   </div>
                 </div>

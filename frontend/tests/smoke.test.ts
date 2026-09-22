@@ -7,7 +7,7 @@ import {
 
 describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
   it('1. Initial opening state is deterministic with readiness check pending', () => {
-    expect(INITIAL_STATE.patient.name).toBe('Maria Hernandez');
+    expect(INITIAL_STATE.patient.name).toBe('Camila Lopez');
     expect(INITIAL_STATE.overallReadiness).toBe('ACTION_REQUIRED');
     expect(INITIAL_STATE.readinessCheckCompleted).toBe(false);
     expect(INITIAL_STATE.tasks.length).toBe(0);
@@ -54,7 +54,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     });
 
     const projectionBeforeDispatch = deriveCaregiverProjection(stateWithTasks);
-    expect(projectionBeforeDispatch.patientName).toBe('Maria Hernandez');
+    expect(projectionBeforeDispatch.patientName).toBe('Camila Lopez');
     expect(projectionBeforeDispatch.transportConfirmed).toBe(false);
     
     // Critical privacy assertion: Ensure no clinical symptom or triage note exists in caregiver projection
