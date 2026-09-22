@@ -2,17 +2,41 @@
   "schema_version": "1.0",
   "task_id": "ML-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "Implemented the approved staff-case Insights tab with a strict unknown-input/integrity validator, exact bundled and public ML evidence, three checkpoint disclosures, honest metrics/limitations, an isolated two-state transportation comparison, scoped unavailable states, responsive/keyboard behavior, and no workflow-state or global design-system changes.",
+  "files_changed": [
+    "frontend/src/components/StaffCaseWorkspace.tsx",
+    "frontend/src/components/ReadinessInsights.tsx",
+    "frontend/src/data/mlInsights.ts",
+    "frontend/src/data/ml-insights.json",
+    "frontend/public/evidence/ml/readiness-demo.ipynb",
+    "frontend/public/evidence/ml/synthetic-readiness.csv",
+    "frontend/public/evidence/ml/demo-insights.json",
+    "frontend/public/evidence/ml/DATA_DICTIONARY.md",
+    "frontend/tests/ml-insights.test.tsx",
+    "frontend/artifacts/ML-001/current/desktop-staff-insights.png",
+    "frontend/artifacts/ML-001/current/mobile-staff-insights.png",
+    ".ai/tasks/ML-001/frontend-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "RED: npm run test:smoke -- tests/ml-insights.test.tsx (expected failure: ReadinessInsights module absent)",
+      "GREEN: npm run test:smoke -- tests/ml-insights.test.tsx (6 passed)",
+      "npm run test:smoke (11 files, 50 tests passed)",
+      "npm run build (TypeScript and Vite production build passed)",
+      "PLAYWRIGHT_PORT=4179 npx playwright test --grep \"workspace routes and the complete Camila journey remain connected\" (1 passed)",
+      "Playwright production-preview inspection at 1440x900 and 390x844 (saved evidence links returned 2xx, selected what-if persisted locally, selected tab visible, no page overflow or browser errors)",
+      "cmp and SHA-256 parity checks for ml/artifacts/demo-insights.json, frontend/src/data/ml-insights.json, and frontend/public/evidence/ml/demo-insights.json"
+    ],
+    "notes": "Focused tests cover canonical byte parity, public evidence presence, integrity tampering, model/checkpoint/factor/metric parity, all three Why flagged? disclosures, workflow-rule attribution, evidence hrefs, comparison selection/reset, missing-factor behavior, missing-comparison behavior, malformed fallback, roving tab keyboard order, local-state remount reset, and workflow localStorage isolation. Result screenshots were visually inspected against the committed baselines; no global CSS, token, font, shell, theme, or existing-tab restyle was introduced."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "The canonical and both frontend JSON copies share SHA-256 f13482c5c4b530257250ca7469102d901bd113ca1993a822ee457239c4fb8d21; the internal artifact integrity hash is independently verified by the typed frontend parser.",
+    "ReadinessInsights local state is destroyed when its tab panel unmounts, so checkpoint disclosure and transportation comparison always return to the saved baseline without dispatching workflow commands.",
+    "The user-owned landing-only commit e0214c3ddb0c53b159ea2208cfb31072b81e284a was treated as the adjusted implementation base. LandingPage.tsx and index.css were not edited by this worker.",
+    "Review the saved desktop/mobile captures under frontend/artifacts/ML-001/current and preserve the exact Clinical Glass extension during integration."
+  ]
 }

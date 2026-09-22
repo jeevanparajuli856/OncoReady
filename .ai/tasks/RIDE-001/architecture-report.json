@@ -2,24 +2,101 @@
   "schema_version": "1.0",
   "task_id": "RIDE-001",
   "agent": "codex-architect",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Defined RIDE-001 as a frontend-only extension of FLOW's single versioned Camila scenario: typed synthetic current-trip transitions, append-only assignment history, current-plan patient and caregiver acknowledgments, privacy-minimized projections, and an isolated cancellable replay of carelink-prior-001 drive the existing staff, graph, timeline, patient, and caregiver surfaces without a dispatch API, database, infrastructure, or provider claim.",
+  "files_changed": [
+    ".ai/tasks/RIDE-001/architecture-report.json"
+  ],
   "impacts": {
-    "database": null,
-    "backend": null,
-    "frontend": null,
-    "frontend_design_required": null,
-    "infrastructure": null
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
   },
-  "decisions": [],
-  "risks": [],
+  "decisions": [
+    "Implement RIDE-001 entirely in the existing React and TypeScript frontend and FLOW's single WorkflowState/workflowReducer boundary. Extend the current versioned camila-demo-v2 fixture, reducer, selectors, persistence validation, and existing staff/patient/caregiver/graph/timeline surfaces; do not create a second store, dispatch service, server route, database record, vendor adapter, scheduler, or new page family.",
+    "Evolve the persisted workflow schema rather than accepting partially shaped old state. Add typed ride state for the current synthetic trip, its provider-assignment history, the current caregiver-seen record, and historical replay progress; bump the stored schema version and strictly validate trip IDs, event/assignment IDs, plan versions, replay bounds, acknowledgment consistency, and derived readiness. A stale, malformed, cross-version, or impossible payload falls back to the canonical start fixture.",
+    "Keep two explicit identities: the historical fixture remains trip carelink-prior-001 for the September 11, 2026 replay, while the September 25 current recovery uses a stable, different synthetic trip ID. Historical fixture events, original scenario timestamps, driver/provider/map facts, and replay offsets are immutable data; current provider assignments and plan fields never read from that fixture.",
+    "Represent the current trip as deterministic commands with stable command/event IDs and reducer preconditions: request the ride, assign fictional CareLink Partner A, record its failure, assign fictional CareLink Partner B, and save the recovered logistics. Repeated or out-of-order commands are no-ops. The primary assignment remains in append-only assignment history with FAILED status and a stable audit event after the backup becomes current; selecting a backup adds a new assignment instead of overwriting history.",
+    "Preserve FLOW's transportation task and plan-version interface. The recovered plan is complete only when the current nonfailed assignment and outbound pickup window, planned arrival, return arrangement, named logistics contact, and backup owner/path are present. Missing fields, an unavailable option, or a failed current assignment leaves the task open and Treatment at risk; reducer code must not inject default success values merely because a control was clicked.",
+    "Use one material-plan-change helper for current-trip failure or later edits. It increments the current planVersion when a replacement plan is opened, reopens the transportation task, clears current plan-dependent logistics as applicable, invalidates patientAcknowledgedPlanVersion and the current caregiver-seen record, and recomputes readiness. Earlier assignment, failure, patient acknowledgment, and caregiver-seen audit events remain historical evidence and are never rewritten.",
+    "Keep FLOW's confirmation selector authoritative: continuity is confirmed only after the existing human clinical disposition is nonblocking, the current transport plan is complete, and Camila's patient acknowledgment references exactly the current planVersion. Caregiver seen, provider assignment, replay completion, graph animation, map state, or a no-option result cannot independently confirm continuity or count as clinical clearance or treatment attendance.",
+    "Add a bounded MARK_CURRENT_LOGISTICS_SEEN action for Ana only after a complete current plan exists. Store a stable event ID, actor identity/role, exact current planVersion, and fixed scenario time; expose current status as seen only on exact version equality. This action cannot assign or fail a provider, change logistics, affect clinical disposition, satisfy Camila's acknowledgment, or add a new closure condition.",
+    "Use explicit data-minimized selectors at component boundaries. A transportation workspace projection may include the current transport task, provider assignment history, permitted pickup/arrival/return/contact/backup data, current plan version, and synthetic-source labels, but not the verbatim clinical concern, nurse notes/disposition, regimen, labs, or Epic context. The caregiver projection is narrower and excludes all clinical/Epic fields. Local prepared-persona routing remains presentation, not authorization, so browser assets must remain synthetic or otherwise approved for frontend distribution.",
+    "Derive the patient finish only from the current-plan selector: current pickup window and planned arrival, return arrangement, named logistics contact, current plan version, caregiver seen/pending state for that version, and Camila's acknowledgment state. Remove hard-coded fallback provider, vehicle, driver, date, or logistics values from this selected finish so no September 11 replay field or obsolete assignment can appear in the September 25 plan.",
+    "Project current-trip commands into the existing shared staff audit timeline, transportation task card, readiness graph, patient finish, and caregiver view. Request/assignment/failure/recovery/seen/acknowledgment events all read the same state and stable IDs. Keep the historical replay feed dedicated to its replay panel instead of appending replay progress to the current audit timeline or communications ledger.",
+    "Implement historical playback as an isolated replay substate containing fixture trip ID, status IDLE/PLAYING/PAUSED/COMPLETE, visible event index, and a monotonic local session token. A component-level timer driver dispatches only ADVANCE_HISTORICAL_REPLAY for the matching trip/session. Pause cancels the pending timer and retains the index; resume continues; restart cancels, advances the session token, resets to the first event, and starts deterministically; exit and workflow reset cancel timers and return replay to IDLE. Timer handles never enter persisted domain state, and stale callbacks are rejected by the session token.",
+    "Replay progression uses short local playback offsets but always displays each fixture's original September 11 scenario timestamp. It must advance requested, accepted, driver-assigned, arriving, and pickup-confirmed/completed states in order, support repeat playback, and remain operational with networking disabled. Reduced motion may shorten or immediately reveal transitions while preserving the same ordered readable states and controls.",
+    "RIDE actions perform no fetch, XHR, WebSocket, provider SDK, callback, geolocation, or live tile requirement. Use reviewed local fixtures and the existing static map fallback for the selected replay/current journey so it works offline; if the reusable RideMap needs a static/offline mode, add that narrow mode rather than treating OpenStreetMap tiles as dispatch evidence. Copy must identify fictional/synthetic provider and driver details, previous scenario replay, illustrative routing, and planned times, and must not claim live GPS, real ETA, booking, funding approval, provider contract, Uber success, or completed real-world transportation. A read-only adapter preview may name CareLink and Uber Health only when CareLink is identified as the synthetic scenario provider and Uber Health is explicitly labeled Integration-ready preview - not connected; the preview is static presentation data and cannot enter reducer state or dispatch commands.",
+    "Scenario reset and checkpoint reconstruction must include deterministic RIDE command sequences while retaining FLOW's boundary: reset only the named synthetic scenario storage, stop replay, restore the same fixture, and leave separately owned Epic capture, ML evidence, OUTREACH live-attempt limits/results, and provider evidence untouched. Persona switches and opening/closing replay are presentation actions and cannot mutate the current trip, acknowledgments, graph confirmation, or external ledger.",
+    "No formal contract is required because RIDE is one sequentially implemented local TypeScript state boundary with no independently deployed consumer. Typed fixture, state, command, selector, and projection interfaces are sufficient. If implementation introduces an external dispatch/map/provider API, server persistence, credentials, real recipient/location data, or a separately implemented interface, return RIDE-001 to PLANNING and reassess contracts, impacts, and security risk.",
+    "Frontend design Phase A is required because RIDE adds visible replay controls/feed, provider failure/recovery states, current-plan logistics, caregiver seen/pending, and the patient finish. The phase is a compatibility extension under ADR-0003: reuse current runtime tokens, components, icon language, density, motion, responsive behavior, focus treatment, and static map family; do not change global tokens, restyle existing pages, prescribe a new aesthetic, or disturb the current CARE_NAVIGATOR/CARE_TEAM workspace split.",
+    "Accessibility is part of the implementation contract: replay/request/assignment/failure/backup/seen/acknowledgment controls are semantic buttons with visible focus and accurate disabled explanations; status is conveyed by icon and text, not color alone; advancing replay changes have an appropriately bounded readable status announcement without excessive live-region chatter; focus remains predictable after pause/restart/exit; the experience works by keyboard at desktop and mobile sizes and honors the product reduced-motion setting.",
+    "No new ADR is required. This slice applies ADR-0003's locked visual system and ADR-0004's frontend-led synthetic CareLink boundary without changing a long-lived platform decision."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "Historical replay or an obsolete failed assignment could leak into the current plan and falsely change Camila's acknowledgment, Ana's seen state, graph confirmation, or communications evidence.",
+      "mitigation": "Use distinct trip and assignment IDs, separate replay/current slices, current-only selectors, exact plan-version equality, a dedicated replay feed, and targeted snapshot/isolation assertions before and after full replay, restart, exit, and reset."
+    },
+    {
+      "severity": "high",
+      "description": "Transportation personas currently receive the full WorkflowState in some components, and the shared case header can render Camila's verbatim clinical concern, creating a role-projection privacy failure.",
+      "mitigation": "Introduce explicit minimized transportation and caregiver selectors/props, omit clinical/Epic tabs and copy from the navigator path, and independently inspect rendered text and accessible output for forbidden clinical/Epic markers."
+    },
+    {
+      "severity": "medium",
+      "description": "Overlapping timers or a stale timeout after pause, restart, exit, reset, or unmount can skip replay events, duplicate them, or mutate state after the user leaves.",
+      "mitigation": "Own one timer in a cleanup effect, cancel before every mode change, identify each run with a monotonic session token checked by the reducer, and use fake-timer tests for every control sequence and repeated playback."
+    },
+    {
+      "severity": "medium",
+      "description": "The current one-click transportation completion and hard-coded patient finish can manufacture complete logistics or show values that do not belong to the current version.",
+      "mitigation": "Replace the selected click path with staged typed commands and validated required fields, derive the patient finish from one current-plan projection, and test incomplete/no-option states plus a plan mutation after both acknowledgments."
+    },
+    {
+      "severity": "medium",
+      "description": "A map or status label can imply a real dispatch, GPS feed, real ETA, provider relationship, or external success, and existing Leaflet tiles can make offline replay appear network-dependent.",
+      "mitigation": "Use local synthetic fixtures and the static fallback on the selected path, make zero provider/network calls from ride actions, label replay/routing/planned times truthfully at the specific boundary, label Uber Health as an integration-ready preview that is not connected, and assert offline playback plus no CareLink or Uber dispatch-request traffic."
+    },
+    {
+      "severity": "medium",
+      "description": "Adding ride and seen fields without a persistence-version/validation update can hydrate impossible mixed FLOW/RIDE states or retain acknowledgments for a noncurrent plan.",
+      "mitigation": "Bump the schema, validate every new union and invariant, derive readiness after hydration, reject legacy/impossible payloads, and cover corrupt, stale-version, and mismatched-acknowledgment cases."
+    },
+    {
+      "severity": "medium",
+      "description": "The number of visible ride states and replay controls can overflow mobile layouts, produce keyboard traps, create noisy announcements, or drift from the approved interface.",
+      "mitigation": "Require the digest-bound compatibility design gate, compose existing primitives, define compact responsive stacking, retain 44px patient/caregiver targets, bound live announcements, honor reduced motion, and compare matched baseline/current screenshots."
+    },
+    {
+      "severity": "low",
+      "description": "Caregiver seen could be mistaken for consent, patient acknowledgment, medical clearance, or an additional readiness requirement.",
+      "mitigation": "Label it as logistics-plan visibility only, keep it version-bound and separately attributed, exclude it from isContinuityPlanConfirmed, and test that seen alone changes no assignment, clinical, patient-acknowledgment, or readiness field."
+    }
+  ],
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Frontend specialist: complete design Phase A, commit its report, obtain digest-bound compatibility approval, and pass the design gate before production edits. Compare the current CARE_NAVIGATOR case/actions/resources path, patient resolution view, caregiver view, graph/timeline, map fallback, and both supported viewports; preserve the visual lock and the in-progress workspace-role/landing-loop work.",
+    "Suggested implementation ownership is frontend/src/types/index.ts, frontend/src/state/workflowState.ts, a small local synthetic CareLink fixture module, the existing CARE_NAVIGATOR case or CareLink resource surface, CaregiverView, PatientResolutionView, RideMap only if a static/offline prop is required, App wiring, and RIDE-focused tests. Avoid unrelated navigation, global token, Epic, ML, OUTREACH, backend, database, or contract edits.",
+    "State handoff for acceptance 1-4: add staged request/primary assignment/failure/backup/logistics commands with stable IDs; retain failed assignment and audit history; require all outbound/arrival/return/contact/backup fields; implement the no-option at-risk state; invalidate both version-bound acknowledgments on a later failure/material change; keep FLOW's clinical and closure selectors authoritative.",
+    "Projection handoff for acceptance 5, 10, and 11: pass the navigator a transport-only projection, narrow Ana to permitted current logistics, derive the patient finish from exactly the current plan, and add a separate Ana seen event with actor, version, and fixed scenario time. Patient acknowledgment and caregiver seen must display independently and return to pending on a plan change.",
+    "Replay handoff for acceptance 8-9: use the immutable carelink-prior-001 event fixture, a dedicated replay feed, one cleanup-safe timer driver, pause/resume/restart/exit/reset controls, session-token stale-callback protection, original timestamps, and a distinct current trip ID. Do not append replay events to the current audit timeline or expose a replay command that can touch current tasks or external ledgers.",
+    "Truthfulness handoff for acceptance 6: all providers, drivers, assignments, map paths, and times are synthetic/local scenario facts. The selected RIDE path should render the static map offline, issue no provider/network requests, and use planned/illustrative language rather than live/real/contracted/confirmed-real-world claims.",
+    "Design/accessibility handoff for acceptance 7: select placement and composition within existing components; keep semantic controls, visible focus, disabled explanations, icon-plus-text states, bounded live status, keyboard traversal, mobile stacking, and reduced-motion parity. Capture matched desktop/mobile baseline and result screenshots; do not alter global tokens or restyle unrelated surfaces.",
+    "Independent TARGETED tester: extend the focused reducer/selector suite to cover the staged happy path, primary failure preserved after backup, missing each required logistics field, no-option at-risk behavior, patient and caregiver version invalidation, caregiver-seen noninterference, duplicate/out-of-order command no-ops, persistence rejection, and deterministic checkpoint/reset behavior.",
+    "Independent TARGETED tester: add fake-timer coverage for ordered replay, pause without advancement, resume, restart from the first event, exit/reset/unmount cancellation, stale session callbacks, complete replay, repeat playback, and byte-for-byte snapshots proving the current trip, current audit events, patient/caregiver acknowledgments, graph confirmation, and a reserved live-communications sentinel do not change.",
+    "Independent TARGETED tester: add a rendered privacy/accessibility test that the navigator and caregiver output omit the exact clinical reply, nurse disposition, regimen/labs, and Epic-only content while showing only the required logistics; verify seen actor/version/time and separate patient acknowledgment. Inspect text and accessible roles, not CSS classes alone.",
+    "Independent TARGETED tester: run one selected Playwright journey from open transport work through request, primary assignment, failure, backup, complete logistics, Ana seen, Camila acknowledgment, and final staff graph/timeline; include an incomplete-plan negative path and the full replay controls with networking disabled. Assert no request targets any dispatch/provider endpoint and no historical trip value appears in the current patient finish.",
+    "After integration, run focused RIDE tests, relevant existing FLOW/component/smoke tests, production build, the selected browser journey, matched responsive/keyboard/reduced-motion checks, then repository verification on the committed integrated revision. TARGETED requires the independent test report before review; LOW risk does not require a separate security specialist.",
+    "If real dispatch, GPS/geolocation, external tiles as a required dependency, vendor credentials, backend persistence, real person/location data, protected multiuser access, or a live provider result enters scope, stop and return RIDE-001 to PLANNING because the frontend-only, contract-free, LOW-risk controls no longer apply."
+  ],
   "execution": {
-    "contract_required": null,
-    "test_depth": null,
-    "security_risk": null,
-    "security_review_required": null
+    "contract_required": false,
+    "test_depth": "TARGETED",
+    "security_risk": "LOW",
+    "security_review_required": false
   }
 }

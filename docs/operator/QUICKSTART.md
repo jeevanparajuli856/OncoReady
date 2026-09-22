@@ -18,7 +18,7 @@ Tell Codex:
 
 ```text
 This is a brand-new product. Treat my idea as PROJECT INCEPTION.
-Follow AGENTS.md and the project-inception skill.
+Follow AGENTS.md and the `ship-build-mvp` skill.
 Optimize for a memorable hero journey, real end-to-end functionality, strong technical credibility, exceptional frontend presentation, demo reliability, and rapid delivery.
 Keep architecture and backlog small; prefer vertical slices and avoid unnecessary production hardening.
 Do not implement or create tasks yet.

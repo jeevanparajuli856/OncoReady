@@ -49,8 +49,9 @@ package manager: pnpm (pnpm-lock.yaml)
 build: pnpm run build | typecheck: pnpm exec tsc --noEmit | test: (none found)
 ```
 
-If the stack is `Unrecognized`, say so and use the `generic-stack` skill to find
-the real commands before continuing.
+If the stack is `Unrecognized`, say so and read the repository itself — root
+`AGENTS.md`, `Makefile`, `package.json` scripts, `pyproject.toml` — to find the
+real build, test, and run commands before continuing.
 
 ## Step 2 — Interview for the brief
 

@@ -6,27 +6,25 @@ import {
   CheckCircle2,
   Clock,
 } from 'lucide-react';
-import { WorkflowState } from '../types';
-import { deriveCaregiverProjection } from '../state/workflowState';
+import { CaregiverProjection } from '../types';
 import { BENSON_CENTER, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 
 interface CaregiverViewProps {
-  state: WorkflowState;
+  projection: CaregiverProjection;
+  onMarkSeen: () => void;
 }
 
-export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
-  const projection = deriveCaregiverProjection(state);
-
+export const CaregiverView: React.FC<CaregiverViewProps> = ({ projection, onMarkSeen }) => {
   return (
     <div className="page-shell space-y-5 overflow-x-clip">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-xs font-heading font-bold uppercase tracking-wider text-muted-fg">Caregiver</p>
           <h1 className="font-display text-2xl sm:text-3xl font-extrabold text-ink">
-            Caregiver Portal • {state.caregiver.name}
+            Caregiver Portal • {projection.caregiverName}
           </h1>
           <p className="text-sm text-muted-fg mt-1">
-            Supporting {projection.patientName} • {state.caregiver.relationship}
+            Supporting {projection.patientName} • {projection.caregiverRelationship}
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -86,7 +84,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
             {projection.transportConfirmed ? (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-heading font-bold bg-mint/30 text-ink border-2 border-ink">
                 <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-                {projection.transportInfo?.status ?? 'Current plan complete'}
+                Current plan v{projection.currentPlan?.planVersion}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-heading font-bold bg-sun/40 text-ink border-2 border-ink">
@@ -96,7 +94,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
             )}
           </div>
 
-          {projection.transportConfirmed && projection.transportInfo ? (
+          {projection.transportConfirmed && projection.currentPlan ? (
             <div className="space-y-3">
               <div className="p-4 rounded-xl bg-mint/15 border-2 border-ink/10 text-sm space-y-3">
                 <div className="font-heading font-bold flex items-center gap-1.5">
@@ -106,24 +104,39 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <div className="label-caps text-muted-fg">Pickup time</div>
-                    <div className="font-semibold">{projection.transportInfo.pickupTime}</div>
+                    <div className="font-semibold">{projection.currentPlan.pickupTime}</div>
                   </div>
                   <div>
-                    <div className="label-caps text-muted-fg">Assigned vehicle</div>
-                    <div className="font-semibold">{projection.transportInfo.vehicleId}</div>
+                    <div className="label-caps text-muted-fg">Planned arrival</div>
+                    <div className="font-semibold">{projection.currentPlan.plannedArrival}</div>
                   </div>
                   <div>
-                    <div className="label-caps text-muted-fg">Driver</div>
-                    <div className="font-semibold">{projection.transportInfo.driverName}</div>
+                    <div className="label-caps text-muted-fg">Return arrangement</div>
+                    <div className="font-semibold">{projection.currentPlan.returnArrangement}</div>
                   </div>
                   <div>
                     <div className="label-caps text-muted-fg">Pickup address</div>
-                    <div className="font-semibold">{projection.transportInfo.pickupAddress}</div>
+                    <div className="font-semibold">{projection.currentPlan.pickupAddress}</div>
+                  </div>
+                  <div>
+                    <div className="label-caps text-muted-fg">Logistics contact</div>
+                    <div className="font-semibold">{projection.currentPlan.logisticsContact}</div>
+                  </div>
+                  <div>
+                    <div className="label-caps text-muted-fg">Backup owner</div>
+                    <div className="font-semibold">{projection.currentPlan.backupOwner}</div>
                   </div>
                 </div>
               </div>
+              {projection.seen ? (
+                <div className="p-3 rounded-xl bg-mint/20 border-2 border-ink/10 text-sm" role="status">
+                  Seen by {projection.seen.actor} for plan v{projection.seen.planVersion} · {projection.seen.timestamp}
+                </div>
+              ) : (
+                <button type="button" className="btn-candy w-full min-h-11" onClick={onMarkSeen}>Mark logistics seen</button>
+              )}
               <p className="text-sm text-muted-fg">
-                This view shows only the current transportation arrangement and omits clinical details.
+                Caregiver visibility does not replace Camila’s acknowledgment or indicate clinical clearance.
               </p>
             </div>
           ) : (
@@ -134,11 +147,16 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
               </p>
             </div>
           )}
+          {!projection.transportConfirmed && (
+            <button type="button" className="btn-ghost w-full min-h-11" disabled aria-describedby="caregiver-plan-incomplete">Mark logistics seen</button>
+          )}
+          {!projection.transportConfirmed && <p id="caregiver-plan-incomplete" className="text-xs text-muted-fg">Complete the current logistics plan first.</p>}
         </div>
       </div>
 
       {projection.transportConfirmed && (
         <RideMap
+          staticOnly
           title="Ride corridor"
           subtitle="Pickup to Benson Suite B. Caregiver-safe route only."
           pickup={NEW_ORLEANS_PICKUP}

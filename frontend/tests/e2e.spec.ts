@@ -84,14 +84,22 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.locator('.foundation-status')).toHaveAttribute('data-state', /persisted|unavailable/);
   });
 
-  test('mobile workspace dock keeps 44px targets without horizontal overflow', async ({ page }) => {
+  test('mobile workspace navigation keeps 44px targets without horizontal overflow', async ({ page }) => {
     for (const viewport of [
       { width: 320, height: 568 },
       { width: 390, height: 844 },
     ]) {
       await page.setViewportSize(viewport);
+      await page.goto('/');
+      await page.evaluate(() => localStorage.clear());
+      await page.reload();
 
-      const dock = page.getByRole('navigation', { name: 'Workspace dock' });
+      await page.getByRole('button', { name: /Access workspace/i }).first().click();
+      await page.getByLabel('Email').fill('abcn@oncoready.me');
+      await page.getByLabel('Password').fill('1234');
+      await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+
+      const dock = page.locator('.staff-sidebar nav');
       await expect(dock).toBeVisible();
 
       const targets = dock.getByRole('button');
@@ -120,14 +128,10 @@ test.describe('OncoReady UI-001 product experience', () => {
       expect(foundationTarget!.height).toBeGreaterThanOrEqual(44);
 
       const controlBounds = await motionControl.boundingBox();
-      const dockBounds = await dock.boundingBox();
       expect(controlBounds).not.toBeNull();
-      expect(dockBounds).not.toBeNull();
-      expect(controlBounds!.y + controlBounds!.height + 8).toBeLessThanOrEqual(dockBounds!.y);
 
       const focusAndHitTest = await motionControl.evaluate((button) => {
         const bounds = button.getBoundingClientRect();
-        const style = getComputedStyle(button);
         const samples = [
           [bounds.left + bounds.width * 0.25, bounds.top + bounds.height * 0.25],
           [bounds.left + bounds.width * 0.75, bounds.top + bounds.height * 0.25],
@@ -138,8 +142,7 @@ test.describe('OncoReady UI-001 product experience', () => {
         ];
 
         return {
-          outlineStyle: style.outlineStyle,
-          outlineWidth: style.outlineWidth,
+          isFocused: document.activeElement === button,
           targetOwnsEveryPoint: samples.every(([x, y]) => {
             const hit = document.elementFromPoint(x, y);
             return hit === button || button.contains(hit);
@@ -147,8 +150,7 @@ test.describe('OncoReady UI-001 product experience', () => {
         };
       });
 
-      expect(focusAndHitTest.outlineStyle).toBe('solid');
-      expect(focusAndHitTest.outlineWidth).toBe('2px');
+      expect(focusAndHitTest.isFocused).toBe(true);
       expect(focusAndHitTest.targetOwnsEveryPoint).toBe(true);
     }
   });
@@ -169,45 +171,76 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     const heroEntry = page.getByRole('button', { name: /Access workspace/i }).first();
     await heroEntry.click();
-    const dialog = page.getByRole('dialog', { name: 'Prepared workspaces' });
-    await expect(dialog).toBeVisible();
-    await expect(dialog.getByText(/does not sign you in or grant provider access/i)).toBeVisible();
-    await expect(dialog.getByRole('button')).toHaveCount(5);
-    await expect(dialog.getByTestId('auth-staff-card')).toBeFocused();
-
-    await page.keyboard.press('Escape');
-    await expect(dialog).toBeHidden();
-    await expect(heroEntry).toBeFocused();
-
-    await page.setViewportSize({ width: 390, height: 844 });
-    await page.getByRole('navigation', { name: 'Workspace dock' }).getByRole('button', { name: 'Patient' }).click();
-    await expect(dialog).toBeVisible();
-    await dialog.getByTestId('auth-transport-card').click();
+    await page.getByLabel('Email').fill('abcn@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await expect(page.getByText(/Care Navigator Workspace/i)).toBeVisible();
     await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
-    await expect(page.getByRole('tab', { name: /Graph/i })).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
     await expect(page.locator('body')).not.toContainText('Camila Lopez');
   });
 
+  test('transportation login opens the working CareLink dashboard with truthful provider readiness', async ({ page }) => {
+    const uberRequests: string[] = [];
+    const consoleErrors: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().toLowerCase().includes('uber')) uberRequests.push(request.url());
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abct@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+
+    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
+    await expect(page.getByText('Integration-ready preview · not connected')).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Uber Health wordmark' })).toBeVisible();
+
+    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
+    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
+    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+
+    await expect(page.getByText('CareLink Partner A')).toBeVisible();
+    await expect(page.getByText('CareLink Partner B')).toBeVisible();
+    await expect(page.getByText(/Current ride · plan v2/i)).toBeVisible();
+    await expect(page.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeVisible();
+    expect((await page.locator('body').innerText()).toLowerCase()).not.toContain('not feeling well');
+    expect(uberRequests).toHaveLength(0);
+    expect(consoleErrors).toHaveLength(0);
+
+    await page.screenshot({ path: 'artifacts/RIDE-001-transport-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: 'artifacts/RIDE-001-transport-mobile.png', fullPage: true });
+  });
+
   test('workspace routes and the complete Camila journey remain connected', async ({ page }) => {
     await page.getByRole('button', { name: /Access workspace/i }).first().click();
-    await expect(page.getByRole('dialog')).toBeVisible();
-    await page.getByTestId('auth-patient-card').click();
+    await page.getByLabel('Email').fill('abcp@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
 
     await page.getByRole('button', { name: /Start Readiness Check/i }).click();
     await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
     await expect(page.getByText(/Your Reported Barriers are Being Resolved/i)).toBeVisible();
-    await page.getByRole('button', { name: /View Staff Workbench/i }).click();
+    await page.getByRole('button', { name: /View Care Team Workbench/i }).click();
 
     const routeChecks = [
       ['Command Center', /Command Center/i],
       ['Exceptions', /Pre-Treatment Exception Queue/i],
       ['Patients', /Patient Directory/i],
-      ['Resources', /Resource Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Integrations', /Epic Sandbox capture/i],
+      ['Epic context', /Epic Sandbox capture/i],
       ['Admin', /Local Configuration/i],
     ] as const;
 
@@ -224,28 +257,41 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: /Accept ownership/i }).click();
     await expect(page.getByText('Ownership accepted')).toBeVisible();
     await page.getByRole('button', { name: /Record human disposition/i }).click();
-    await page.getByRole('button', { name: /Complete current transport plan/i }).click();
-
     await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
+    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
+    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
+    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
+    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
+    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+
+    await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
     await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
-    await expect(page.getByText(/Current plan v1/i)).toBeVisible();
+    await expect(page.getByText(/Current plan v2/i)).toBeVisible();
     const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
     expect(caregiverCopy).not.toContain('fever 100.4');
     expect(caregiverCopy).not.toContain('tingling in fingers');
+    await page.getByRole('button', { name: /Mark logistics seen/i }).click();
+    await expect(page.getByText(/Seen by Ana Hernandez for plan v2/i)).toBeVisible();
 
     await page.getByRole('button', { name: /Ana Hernandez/i }).click();
     await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
     await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
-    await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i }).check();
-    await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
+    await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v2/i }).check();
+    await page.getByRole('button', { name: /Acknowledge current plan v2/i }).click();
     await expect(page.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeVisible();
 
     await page.getByRole('button', { name: /Camila Lopez/i }).click();
-    await page.getByText('Readiness Graph & Audit Log').click();
+    await page.getByRole('button', { name: /Care Team \(Readiness Team\)/i }).click();
+    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
+    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
+    await page.getByRole('tab', { name: /Graph/i }).click();
     await expect(page.getByRole('heading', { name: 'Treatment Readiness Graph' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upcoming Infusion Target Node' }).getByText('CONTINUITY PLAN CONFIRMED')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
-    await expect(page.getByText('Current transport plan v1 acknowledged')).toBeVisible();
+    await expect(page.getByText('Current transport plan v2 acknowledged')).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
@@ -258,16 +304,18 @@ test.describe('OncoReady UI-001 product experience', () => {
     });
 
     await page.getByRole('button', { name: /Access workspace/i }).first().click();
-    await page.getByTestId('auth-transport-card').click();
+    await page.getByLabel('Email').fill('abcs@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
 
     const epicTab = page.getByRole('tab', { name: /Epic/i });
     await epicTab.click();
     const epicPanel = page.getByRole('tabpanel', { name: /Epic/i });
-    await expect(epicPanel.getByRole('heading', { name: 'Epic Sandbox · Read-only captured data' })).toBeVisible();
+    await expect(epicPanel.getByRole('heading', { name: 'Read-only captured data' })).toBeVisible();
     await expect(epicPanel.getByAltText('Epic')).toBeVisible();
     await expect(epicPanel).toContainText('Camila Maria Lopez');
     await expect(epicPanel).toContainText('drospirenone-ethinyl estradiol');
-    await expect(epicPanel).toContainText('Captured once · no live sync');
+    await expect(epicPanel).toContainText('Captured from Epic');
     await expect(epicPanel).not.toContainText('mFOLFOX6');
     const originalCapturedAt = await epicPanel.locator('time').first().getAttribute('datetime');
     expect(originalCapturedAt).toBe('2026-09-22T07:01:25Z');

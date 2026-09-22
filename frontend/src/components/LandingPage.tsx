@@ -258,17 +258,24 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <p>Three moments keep a concern from disappearing into another inbox.</p>
           </div>
 
-          <div className="landing-step-grid">
+          <div className="landing-loop-road" aria-label="The three-step readiness loop">
+            <div className="landing-loop-road__track" aria-hidden="true">
+              <span className="landing-loop-road__dash landing-loop-road__dash--one" />
+              <span className="landing-loop-road__dash landing-loop-road__dash--two" />
+              <span className="landing-loop-road__dash landing-loop-road__dash--three" />
+              <span className="landing-loop-road__finish">Closed</span>
+            </div>
             {workflowSteps.map(({ Icon, ...step }, index) => (
               <ScrollReveal key={step.number} variant="workflow" delay={index * 60} reducedMotion={reducedMotion}>
                 <article className="landing-step-card" data-tone={step.tone}>
                   <div className="landing-step-card__topline">
-                    <span>{step.number}</span>
+                    <span className="landing-step-card__number">{step.number}</span>
                     <span className="landing-icon-well"><Icon className="h-5 w-5" aria-hidden="true" /></span>
                   </div>
                   <p className="landing-step-card__eyebrow">{step.eyebrow}</p>
                   <h3>{step.title}</h3>
                   <p>{step.copy}</p>
+                  <span className="landing-step-card__marker" aria-hidden="true" />
                 </article>
               </ScrollReveal>
             ))}

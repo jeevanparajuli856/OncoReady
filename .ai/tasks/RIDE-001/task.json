@@ -3,7 +3,7 @@
   "task_id": "RIDE-001",
   "title": "Playable CareLink recovery and plan acknowledgment",
   "type": "feature",
-  "status": "PROPOSED",
+  "status": "REVIEW",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
@@ -241,7 +241,8 @@
     "Playing the previous-trip dispatch advances requested, accepted, driver-assigned, arriving and pickup/completion events with original timestamps. Pause/restart/exit cleanly control local replay; no real dispatch or GPS is implied. Verify replay with networking disabled.",
     "Historical replay has a distinct trip ID and cannot change the current ride, patient acknowledgment, graph confirmation or real communications ledger. Reset/exit cancels replay timers; verify isolation and repeat playback.",
     "After current-trip recovery, the patient finish shows the current pickup/arrival, return arrangement, named logistics contact, caregiver seen/pending state and patient acknowledgment together using existing components. Every value comes from the current plan; no historical trip date or assignment appears. Verify the patient/caregiver round trip.",
-    "Ana can mark the permitted current logistics plan as seen through a bounded local scenario action. The shared view records the actor, plan version and scenario time; a changed plan returns this state to pending. This cannot change assignments, disclose clinical details, substitute for Camila's acknowledgment or become an additional clinical-clearance condition. Verify these boundaries."
+    "Ana can mark the permitted current logistics plan as seen through a bounded local scenario action. The shared view records the actor, plan version and scenario time; a changed plan returns this state to pending. This cannot change assignments, disclose clinical details, substitute for Camila's acknowledgment or become an additional clinical-clearance condition. Verify these boundaries.",
+    "The provider/integration area labels both CareLink and Uber Health. CareLink remains the synthetic playable scenario provider; Uber Health is presented only as Integration-ready preview - not connected, with no Uber booking, success, contract or API claim and no effect on scenario state. Verify the label and zero Uber network activity."
   ],
   "created_by": "human"
 }

@@ -24,6 +24,10 @@ import { useDialogFocus } from '../lib/useDialogFocus';
 
 const NOT_PRESENT = 'Not present in captured record';
 
+const formatAdministrativeSex = (value?: string): string | undefined => value
+  ? `${value.charAt(0).toUpperCase()}${value.slice(1)}`
+  : undefined;
+
 const MissingValue: React.FC = () => (
   <span className="inline-flex items-center gap-1.5 text-sm text-muted-fg">
     <FileQuestion className="w-4 h-4 text-sun" aria-hidden="true" />
@@ -222,20 +226,18 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
             <img src="/epic-logo.svg" alt="Epic" width="64" height="32" className="w-16 h-8 object-contain" />
           </div>
           <div className="min-w-0">
-            <p className="label-caps">Captured from Epic Sandbox</p>
-            <h2 id="epic-capture-title" className="font-heading font-extrabold text-lg mt-1">Epic Sandbox · Read-only captured data</h2>
+            <p className="label-caps">Captured from Epic</p>
+            <h2 id="epic-capture-title" className="font-heading font-extrabold text-lg mt-1">Read-only captured data</h2>
             <p className="text-sm text-muted-fg mt-1">
               <time dateTime={context.capturedAt}>Captured {formatEpicCaptureTime(context.capturedAt)}</time>
             </p>
           </div>
         </div>
         <div className="flex flex-col lg:items-end gap-2">
-          <span className="chip chip-mint"><CloudDownload className="w-3.5 h-3.5" aria-hidden="true" />Captured once · no live sync</span>
-          <span className="chip"><LockKeyhole className="w-3.5 h-3.5" aria-hidden="true" />Offline playback · read-only</span>
+          <span className="chip"><LockKeyhole className="w-3.5 h-3.5" aria-hidden="true" />Read-only</span>
         </div>
       </div>
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-3 border-t border-line">
-        <p className="text-xs text-muted-fg">Reviewed FHIR R4 JSON · {context.resources.length} source resources · no Epic writeback</p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-end gap-3 pt-3 border-t border-line">
         <button
           type="button"
           onClick={() => setDrawerOpen(true)}
@@ -255,7 +257,7 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
       <dl className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <FactTile label="Epic source name" value={context.patient.name} />
         <FactTile label="Date of birth" value={formatEpicSourceDate(context.patient.birthDate)} />
-        <FactTile label="Administrative sex" value={context.patient.gender} />
+        <FactTile label="Administrative sex" value={formatAdministrativeSex(context.patient.gender)} />
         <FactTile label="Record status" value={context.patient.active === undefined ? undefined : context.patient.active ? 'Active' : 'Inactive'} />
         <FactTile label="Preferred language" value={context.patient.preferredLanguage} />
       </dl>

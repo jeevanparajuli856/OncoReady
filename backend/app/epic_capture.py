@@ -22,6 +22,9 @@ TOKEN_ENVIRONMENT_VARIABLE = "EPIC_SANDBOX_ACCESS_TOKEN"
 SEARCH_RESOURCE_TYPES = frozenset(
     {"Appointment", "MedicationRequest", "Observation"}
 )
+# Observation searches stay category-scoped so a capture can never sweep the
+# whole chart. Each configured category is issued as its own bounded search.
+OBSERVATION_CATEGORIES = frozenset({"laboratory", "vital-signs"})
 # Epic Sandbox emits some opaque ids that are 66 characters long even though
 # the nominal FHIR R4 id limit is 64. Keep the character allowlist and a tight
 # upper bound while accepting the source system's observed representation.
@@ -76,6 +79,30 @@ class CaptureReview:
 
 
 @dataclass(frozen=True)
+class ScenarioBinding:
+    """Binds a capture to a prepared OncoReady scenario alias.
+
+    Roster captures leave this unset: they present the Sandbox identity as it
+    was recorded, with no scenario alias attached.
+    """
+
+    scenario_id: str
+    presentation_alias: str
+
+    def __post_init__(self) -> None:
+        if not 1 <= len(self.scenario_id.strip()) <= 64:
+            raise ValueError("scenario_id must be a non-empty identifier")
+        if not 1 <= len(self.presentation_alias.strip()) <= 120:
+            raise ValueError("presentation_alias must be a non-empty name")
+
+
+LEGACY_SCENARIO_BINDING = ScenarioBinding(
+    scenario_id="camila-demo-v2",
+    presentation_alias="Camila Lopez",
+)
+
+
+@dataclass(frozen=True)
 class CaptureConfig:
     base_url: str
     patient_id: str
@@ -87,6 +114,9 @@ class CaptureConfig:
     )
     max_pages: int = 4
     max_resources: int = 20
+    observation_categories: tuple[str, ...] = ("laboratory",)
+    page_size: int = SEARCH_PAGE_SIZE
+    truncate: bool = False
 
     def __post_init__(self) -> None:
         if self.base_url != EPIC_SANDBOX_FHIR_BASE_URL:
@@ -97,15 +127,44 @@ class CaptureConfig:
             raise ValueError("max_pages must be between 1 and 6")
         if not 1 <= self.max_resources <= 100:
             raise ValueError("max_resources must be between 1 and 100")
+        if not 1 <= self.page_size <= SEARCH_PAGE_SIZE:
+            raise ValueError(f"page_size must be between 1 and {SEARCH_PAGE_SIZE}")
         if len(set(self.resource_types)) != len(self.resource_types):
             raise ValueError("resource_types must not contain duplicates")
         unsupported = set(self.resource_types) - SEARCH_RESOURCE_TYPES
         if unsupported:
             raise ValueError("resource_types contains a non-allowlisted search type")
-        if 1 + self.max_pages * len(self.resource_types) > 20:
+        if len(set(self.observation_categories)) != len(self.observation_categories):
+            raise ValueError("observation_categories must not contain duplicates")
+        if not self.observation_categories:
+            raise ValueError("observation_categories must select at least one category")
+        if set(self.observation_categories) - OBSERVATION_CATEGORIES:
+            raise ValueError(
+                "observation_categories contains a non-allowlisted category"
+            )
+        if 1 + self.max_pages * self.search_plan_count > 20:
             raise ValueError("configured page ceiling exceeds the manifest request limit")
         object.__setattr__(self, "output_directory", Path(self.output_directory))
         object.__setattr__(self, "resource_types", tuple(sorted(self.resource_types)))
+        object.__setattr__(
+            self, "observation_categories", tuple(sorted(self.observation_categories))
+        )
+
+    @property
+    def search_plan_count(self) -> int:
+        """Number of bounded searches this capture will issue.
+
+        Observation is searched once per configured category so each request
+        stays category-scoped; every other type is a single search.
+        """
+
+        plans = 0
+        for resource_type in self.resource_types:
+            if resource_type == "Observation":
+                plans += len(set(self.observation_categories))
+            else:
+                plans += 1
+        return plans
 
 
 class StdlibJsonTransport:
@@ -159,6 +218,7 @@ def capture_epic_sandbox(
     captured_at: datetime,
     review: CaptureReview | None,
     access_token: str | None = None,
+    scenario_binding: ScenarioBinding | None = LEGACY_SCENARIO_BINDING,
 ) -> dict[str, Any]:
     """Capture one allowlisted patient snapshot into a private JSON package."""
 
@@ -193,22 +253,28 @@ def capture_epic_sandbox(
 
     resources: list[dict[str, Any]] = [patient]
     seen_resource_keys = {("Patient", config.patient_id)}
-    for resource_type in config.resource_types:
+    bounded = False
+    for resource_type, observation_category in _search_plans(config):
         search_resources = _capture_search(
             config=config,
             transport=transport,
             headers=headers,
             request_evidence=requests,
             resource_type=resource_type,
+            observation_category=observation_category,
         )
         for resource in search_resources:
             key = (resource["resourceType"], resource["id"])
             if key in seen_resource_keys:
                 raise CaptureError("Epic Sandbox returned a duplicate resource id")
             seen_resource_keys.add(key)
+            if len(resources) >= config.max_resources:
+                if not config.truncate:
+                    resources.append(resource)
+                    raise CaptureError("capture resource ceiling exceeded")
+                bounded = True
+                break
             resources.append(resource)
-            if len(resources) > config.max_resources:
-                raise CaptureError("capture resource ceiling exceeded")
 
     resource_entries, resource_files = _resource_entries(resources, token)
     manifest = _build_manifest(
@@ -218,6 +284,13 @@ def capture_epic_sandbox(
         requests=requests,
         resource_entries=resource_entries,
         review=review,
+        scenario_binding=scenario_binding,
+        bounded=bounded,
+        observation_categories=(
+            config.observation_categories
+            if "Observation" in config.resource_types
+            else ()
+        ),
     )
     serialized_manifest = _canonical_json_bytes(manifest)
     if token.encode() in serialized_manifest:
@@ -230,6 +303,21 @@ def capture_epic_sandbox(
     return manifest
 
 
+def _search_plans(config: CaptureConfig) -> list[tuple[str, str | None]]:
+    """Expand configured resource types into bounded per-category searches."""
+
+    plans: list[tuple[str, str | None]] = []
+    for resource_type in config.resource_types:
+        if resource_type == "Observation":
+            plans.extend(
+                (resource_type, category)
+                for category in config.observation_categories
+            )
+        else:
+            plans.append((resource_type, None))
+    return plans
+
+
 def _capture_search(
     *,
     config: CaptureConfig,
@@ -237,11 +325,14 @@ def _capture_search(
     headers: dict[str, str],
     request_evidence: list[dict[str, str]],
     resource_type: str,
+    observation_category: str | None = None,
 ) -> list[dict[str, Any]]:
+    if resource_type == "Observation" and observation_category is None:
+        raise CaptureError("Observation searches must be category-scoped")
     query: list[tuple[str, str]] = [("patient", config.patient_id)]
-    if resource_type == "Observation":
-        query.append(("category", "laboratory"))
-    query.append(("_count", str(SEARCH_PAGE_SIZE)))
+    if observation_category is not None:
+        query.append(("category", observation_category))
+    query.append(("_count", str(config.page_size)))
     next_url: str | None = f"{config.base_url}/{resource_type}?{urlencode(query)}"
     visited_urls: set[str] = set()
     resources: list[dict[str, Any]] = []
@@ -263,14 +354,20 @@ def _capture_search(
             bundle=bundle,
             resource_type=resource_type,
             patient_id=config.patient_id,
+            observation_category=observation_category,
         )
         resources.extend(page_resources)
         if 1 + len(resources) > config.max_resources:
-            raise CaptureError("capture resource ceiling exceeded")
+            if not config.truncate:
+                raise CaptureError("capture resource ceiling exceeded")
+            del resources[max(0, config.max_resources - 1):]
+            return resources
         if following_url is not None:
             _validate_pagination_url(following_url, config.base_url, resource_type)
             if page_count >= config.max_pages:
-                raise CaptureError("capture page ceiling exceeded")
+                if not config.truncate:
+                    raise CaptureError("capture page ceiling exceeded")
+                return resources
         next_url = following_url
 
     return resources
@@ -315,6 +412,7 @@ def _validate_search_bundle(
     bundle: Mapping[str, Any],
     resource_type: str,
     patient_id: str,
+    observation_category: str | None = None,
 ) -> tuple[list[dict[str, Any]], str | None]:
     if bundle.get("resourceType") != "Bundle" or bundle.get("type") != "searchset":
         raise CaptureError("search response must be a FHIR searchset Bundle")
@@ -326,10 +424,17 @@ def _validate_search_bundle(
         if not isinstance(entry, dict) or not isinstance(entry.get("resource"), dict):
             raise CaptureError("malformed Bundle entry resource")
         resource = entry["resource"]
+        search_mode = entry.get("search")
+        mode = search_mode.get("mode") if isinstance(search_mode, dict) else None
+        if mode in {"outcome", "include"} or resource.get("resourceType") == "OperationOutcome":
+            # Search metadata, not a result. Never captured.
+            continue
         if resource.get("resourceType") != resource_type:
             raise CaptureError("Bundle contained an unexpected resource type")
         _validate_resource_id(resource.get("id"))
-        _validate_patient_scope(resource, resource_type, patient_id)
+        _validate_patient_scope(
+            resource, resource_type, patient_id, observation_category
+        )
         resources.append(resource)
 
     links = bundle.get("link", [])
@@ -359,6 +464,7 @@ def _validate_patient_scope(
     resource: Mapping[str, Any],
     resource_type: str,
     patient_id: str,
+    observation_category: str | None = None,
 ) -> None:
     if resource_type == "Appointment":
         participants = resource.get("participant")
@@ -387,8 +493,12 @@ def _validate_patient_scope(
         reference, patient_id
     ):
         raise CaptureError(f"{resource_type} does not match the selected patient")
-    if resource_type == "Observation" and not _is_laboratory_observation(resource):
-        raise CaptureError("Observation is not in the laboratory category")
+    if resource_type == "Observation":
+        expected_category = observation_category or "laboratory"
+        if not _observation_has_category(resource, expected_category):
+            raise CaptureError(
+                f"Observation is not in the {expected_category} category"
+            )
 
 
 def _is_patient_reference(reference: str) -> bool:
@@ -412,7 +522,9 @@ def _reference_matches_patient(reference: str, patient_id: str) -> bool:
     )
 
 
-def _is_laboratory_observation(resource: Mapping[str, Any]) -> bool:
+def _observation_has_category(
+    resource: Mapping[str, Any], expected_category: str
+) -> bool:
     categories = resource.get("category")
     if not isinstance(categories, list):
         return False
@@ -423,9 +535,13 @@ def _is_laboratory_observation(resource: Mapping[str, Any]) -> bool:
         if not isinstance(codings, list):
             continue
         for coding in codings:
-            if isinstance(coding, dict) and coding.get("code") == "laboratory":
+            if isinstance(coding, dict) and coding.get("code") == expected_category:
                 return True
     return False
+
+
+def _is_laboratory_observation(resource: Mapping[str, Any]) -> bool:
+    return _observation_has_category(resource, "laboratory")
 
 
 def _validate_pagination_url(
@@ -518,6 +634,9 @@ def _build_manifest(
     requests: Sequence[dict[str, str]],
     resource_entries: Sequence[dict[str, str]],
     review: CaptureReview,
+    scenario_binding: ScenarioBinding | None = None,
+    observation_categories: Sequence[str] = (),
+    bounded: bool = False,
 ) -> dict[str, Any]:
     captured_timestamp = _utc_timestamp(captured_at)
     review_timestamp = _utc_timestamp(review.reviewed_at)
@@ -531,8 +650,8 @@ def _build_manifest(
     }
     digest = hashlib.sha256(_canonical_json_bytes(capture_key)).hexdigest()[:8]
     capture_id_time = captured_at.astimezone(UTC).strftime("%Y%m%dT%H%M%SZ")
-    return {
-        "schemaVersion": 1,
+    manifest: dict[str, Any] = {
+        "schemaVersion": 1 if scenario_binding is not None else 2,
         "captureId": f"epic-sandbox-{capture_id_time}-{digest}",
         "mode": "captured_epic_sandbox",
         "fhirVersion": "4.0.1",
@@ -543,15 +662,6 @@ def _build_manifest(
         },
         "capturedAt": captured_timestamp,
         "patient": {"resourceType": "Patient", "id": patient_id},
-        "scenarioBinding": {
-            "scenarioId": "camila-demo-v2",
-            "presentationAlias": "Camila Lopez",
-            "sourceIdentity": source_identity,
-            "identityMatch": _source_identity_matches_alias(
-                source_identity,
-                "Camila Lopez",
-            ),
-        },
         "requests": list(requests),
         "resources": list(resource_entries),
         "review": {
@@ -561,6 +671,22 @@ def _build_manifest(
             "distribution": review.distribution,
         },
     }
+    if scenario_binding is not None:
+        # Scenario-bound capture: present the patient under its prepared alias.
+        alias = scenario_binding.presentation_alias.strip()
+        manifest["scenarioBinding"] = {
+            "scenarioId": scenario_binding.scenario_id.strip(),
+            "presentationAlias": alias,
+            "sourceIdentity": source_identity,
+            "identityMatch": _source_identity_matches_alias(source_identity, alias),
+        }
+        return manifest
+    # Roster capture: no scenario alias, the Sandbox identity stands on its own.
+    manifest["sourceIdentity"] = source_identity
+    manifest["bounded"] = bounded
+    if observation_categories:
+        manifest["observationCategories"] = sorted(set(observation_categories))
+    return manifest
 
 
 def _patient_source_identity(patient: Mapping[str, Any], patient_id: str) -> str:

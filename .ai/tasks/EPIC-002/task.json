@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.0",
+  "task_id": "EPIC-002",
+  "title": "Epic Sandbox roster and captured vital signs",
+  "type": "feature",
+  "status": "PROPOSED",
+  "priority": "medium",
+  "owners": {
+    "orchestrator": "codex",
+    "architecture": "codex",
+    "database": "codex",
+    "backend": "codex",
+    "frontend": "codex",
+    "tester": "codex",
+    "security": "codex",
+    "review": "codex"
+  },
+  "spec": "docs/features/EPIC-002.md",
+  "contracts": [],
+  "scope": {
+    "database": [
+      "database/**",
+      "supabase/**"
+    ],
+    "backend": [
+      "backend/**"
+    ],
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": []
+  },
+  "permissions": {
+    "orchestrator": {
+      "allowed_write_paths": [
+        ".ai/tasks/EPIC-002/task.json",
+        "docs/features/EPIC-002.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "contracts/**",
+        ".ai/tasks/EPIC-002/frontend-design-review.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "tests/**",
+        "docs/standards/**",
+        ".ai/tasks/EPIC-002/frontend-design-report.json"
+      ],
+      "forbidden_paths": []
+    },
+    "architecture": {
+      "allowed_write_paths": [
+        "docs/features/EPIC-002.md",
+        "docs/architecture/**",
+        "docs/adr/**",
+        ".ai/tasks/EPIC-002/architecture-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "docs/standards/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ],
+      "forbidden_paths": [
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "database": {
+      "allowed_write_paths": [
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/EPIC-002/database-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "backend/**",
+        ".ai/tasks/EPIC-002/task.json",
+        ".ai/tasks/EPIC-002/architecture-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "backend": {
+      "allowed_write_paths": [
+        "backend/**",
+        "tests/backend/**",
+        ".ai/tasks/EPIC-002/backend-report.json"
+      ],
+      "read_only_paths": [
+        "contracts/**",
+        "docs/**",
+        "database/**",
+        "supabase/**",
+        ".ai/tasks/EPIC-002/task.json",
+        ".ai/tasks/EPIC-002/architecture-report.json",
+        ".ai/tasks/EPIC-002/database-report.json"
+      ],
+      "forbidden_paths": [
+        "frontend/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "frontend": {
+      "allowed_write_paths": [
+        "frontend/**",
+        "tests/frontend/**",
+        "docs/design/**",
+        ".ai/tasks/EPIC-002/frontend-design-report.json",
+        ".ai/tasks/EPIC-002/frontend-report.json"
+      ],
+      "read_only_paths": [
+        "docs/features/**",
+        "docs/architecture/**",
+        "docs/adr/**",
+        "docs/standards/**",
+        "docs/operations/**",
+        "docs/operator/**",
+        "contracts/**",
+        ".ai/tasks/EPIC-002/task.json",
+        ".ai/tasks/EPIC-002/architecture-report.json",
+        ".ai/tasks/EPIC-002/database-report.json",
+        ".ai/tasks/EPIC-002/backend-report.json",
+        ".ai/tasks/EPIC-002/frontend-design-review.json"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "tester": {
+      "allowed_write_paths": [
+        "tests/**",
+        ".ai/tasks/EPIC-002/test-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        ".ai/tasks/EPIC-002/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "security": {
+      "allowed_write_paths": [
+        ".ai/tasks/EPIC-002/security-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/EPIC-002/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    },
+    "review": {
+      "allowed_write_paths": [
+        ".ai/tasks/EPIC-002/review-report.json"
+      ],
+      "read_only_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "docs/**",
+        "tests/**",
+        ".ai/tasks/EPIC-002/**"
+      ],
+      "forbidden_paths": [
+        "backend/**",
+        "frontend/**",
+        "database/**",
+        "supabase/**",
+        "contracts/**",
+        "tests/**",
+        ".ai/tasks/EPIC-002/task.json"
+      ]
+    }
+  },
+  "state_write_policy": {
+    "task_file": ".ai/tasks/EPIC-002/task.json",
+    "single_writer": "orchestrator",
+    "worker_agents_must_use_reports": true
+  },
+  "dependencies": [],
+  "acceptance_criteria": [],
+  "created_by": "human"
+}

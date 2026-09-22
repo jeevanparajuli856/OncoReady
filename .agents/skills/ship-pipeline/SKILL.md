@@ -62,7 +62,7 @@ Each phase delegates — it does not do the work inline.
   doc and extract scope, locked decisions, and a feature list.
 - **1. Research & Reuse** — per `rules/common/development-workflow.md`: read
   `PROJECT.md` for the locked stack and non-goals, then Context7 / vendor docs
-  (`documentation-lookup`), then package registries, then `gh search repos` /
+  (`find-docs`), then package registries, then `gh search repos` /
   `gh search code`. Prefer adopting a proven implementation over net-new code.
 - **2. Plan** — delegate to the `planner` agent (or `architect` for structural
   decisions). Output a `task_list` ordered as thin vertical slices, **plus the

@@ -1,8 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { WorkflowState } from '../../types';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from '../RideMap';
 import { StickerCard } from '../ui';
 import { EpicCaptureSummary } from '../EpicClinicalContext';
+import { formatEpicCaptureTime, formatEpicSourceDate } from '../../data/epicCapture';
+import { EPIC_RECORD_STATUS, type DirectoryRecord } from '../../data/rosterDirectory';
 
 export const StaffCommandCenter: React.FC<{
   state: WorkflowState;
@@ -46,48 +48,127 @@ export const StaffCommandCenter: React.FC<{
 );
 
 export const StaffPatientDirectory: React.FC<{
-  records: Array<{ name: string; mrn: string; treatment: string; status: string; interactive: boolean }>;
+  records: DirectoryRecord[];
   search: string;
   status: string;
   onSearch: (value: string) => void;
   onStatus: (value: string) => void;
   onClear: () => void;
   onOpenCase: () => void;
-}> = ({ records, search, status, onSearch, onStatus, onClear, onOpenCase }) => (
-  <div className="card-sticker p-5 sm:p-6">
-    <h2 className="font-display text-2xl font-extrabold mb-4">Patient Directory</h2>
-    <div className="flex flex-col sm:flex-row gap-3 mb-4">
-      <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search name, MRN, or treatment" aria-label="Search patients" className="input-pop flex-1 text-sm" />
-      <select value={status} onChange={(event) => onStatus(event.target.value)} aria-label="Filter patients by status" className="input-pop sm:w-48 text-sm">
-        <option value="ALL">All states</option>
-        <option value="ACTION_REQUIRED">Action required</option>
-        <option value="IN_REVIEW">In review</option>
-        <option value="READY">Ready</option>
-      </select>
-      {(search || status !== 'ALL') && (
-        <button onClick={onClear} className="px-3 py-2 text-sm font-heading font-bold border-2 border-ink rounded-full bg-white hover:bg-sun">Clear filters</button>
+}> = ({ records, search, status, onSearch, onStatus, onClear, onOpenCase }) => {
+  const [expandedKey, setExpandedKey] = useState<string | null>(null);
+  return (
+    <div className="card-sticker p-5 sm:p-6">
+      <h2 className="font-display text-2xl font-extrabold mb-4">Patient Directory</h2>
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
+        <input value={search} onChange={(event) => onSearch(event.target.value)} placeholder="Search name, MRN, or treatment" aria-label="Search patients" className="input-pop flex-1 text-sm" />
+        <select value={status} onChange={(event) => onStatus(event.target.value)} aria-label="Filter patients by status" className="input-pop sm:w-48 text-sm">
+          <option value="ALL">All states</option>
+          <option value="ACTION_REQUIRED">Action required</option>
+          <option value="IN_REVIEW">In review</option>
+          <option value="READY">Ready</option>
+          <option value={EPIC_RECORD_STATUS}>Epic record</option>
+        </select>
+        {(search || status !== 'ALL') && (
+          <button onClick={onClear} className="px-3 py-2 text-sm font-heading font-bold border-2 border-ink rounded-full bg-white hover:bg-sun">Clear filters</button>
+        )}
+      </div>
+      <div className="space-y-2">
+        {records.map((record) => {
+          const expanded = expandedKey === record.key;
+          const isEpicRecord = record.source === 'EPIC_SANDBOX' && !record.unavailableReason;
+          return (
+            <div key={record.key} className="space-y-2">
+              <button
+                onClick={() => {
+                  if (record.interactive) onOpenCase();
+                  else if (isEpicRecord) setExpandedKey(expanded ? null : record.key);
+                }}
+                disabled={!record.interactive && !isEpicRecord}
+                aria-expanded={isEpicRecord ? expanded : undefined}
+                className="w-full flex items-center justify-between gap-4 p-3 rounded-xl border-2 border-ink text-left enabled:hover:bg-sun/20 disabled:opacity-70"
+              >
+                <div>
+                  <div className="font-heading font-bold">{record.name}</div>
+                  <div className="text-xs text-muted-fg">{record.identifierLabel}: {record.identifier}</div>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm">{record.detail}</div>
+                  <div className="text-xs text-muted-fg">{record.statusLabel}</div>
+                </div>
+              </button>
+              {isEpicRecord && (
+                <p className="text-[11px] text-muted-fg px-3">
+                  {expanded ? 'Showing' : 'Select to show'} the read-only Epic Sandbox record for {record.name}.
+                </p>
+              )}
+              {record.unavailableReason && (
+                <p className="text-[11px] text-muted-fg px-3">{record.unavailableReason}</p>
+              )}
+              {expanded && isEpicRecord && <EpicRosterDetail record={record} />}
+            </div>
+          );
+        })}
+        {records.length === 0 && <div className="p-8 text-center text-sm text-muted-fg">No patients match these filters.</div>}
+      </div>
+    </div>
+  );
+};
+
+/**
+ * Read-only presentation of one captured Epic Sandbox patient. Vital signs are
+ * present only when the directory was built for the Care Team; a Care Navigator
+ * receives the coordination fields alone.
+ */
+const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => (
+  <div className="metric-tile space-y-4">
+    <div className="flex flex-wrap items-center gap-2">
+      <span className="label-caps text-muted-fg">Captured from Epic Sandbox</span>
+      <span className="chip">Read-only</span>
+      <span className="chip chip-mint">Captured once &middot; no live sync</span>
+      {record.bounded && <span className="chip chip-sun">Bounded slice of chart</span>}
+    </div>
+    <div>
+      <p className="label-caps text-muted-fg mb-2">Appointments</p>
+      {record.appointments && record.appointments.length > 0 ? (
+        <ul className="space-y-1.5">
+          {record.appointments.map((appointment) => (
+            <li key={appointment.id} className="text-sm">
+              <span className="font-heading font-semibold">{appointment.label}</span>
+              <span className="block text-xs text-muted-fg">{appointment.when}</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="text-sm text-muted-fg">No appointment present in captured record.</p>
       )}
     </div>
-    <div className="space-y-2">
-      {records.map((record) => (
-        <button
-          key={record.mrn}
-          onClick={() => record.interactive && onOpenCase()}
-          disabled={!record.interactive}
-          className="w-full flex items-center justify-between gap-4 p-3 rounded-xl border-2 border-ink text-left enabled:hover:bg-sun/20 disabled:opacity-70"
-        >
-          <div>
-            <div className="font-heading font-bold">{record.name}</div>
-            <div className="text-xs text-muted-fg">MRN: {record.mrn}</div>
+    {record.vitals && (
+      <div>
+        <p className="label-caps text-muted-fg mb-2">
+          Vital signs
+          {record.vitalsTotal && record.vitalsTotal > record.vitals.length
+            ? ` \u00b7 ${record.vitals.length} most recent of ${record.vitalsTotal}`
+            : ''}
+        </p>
+        {record.vitals.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {record.vitals.map((vital) => (
+              <div key={vital.id} className="metric-tile">
+                <div className="label-caps text-muted-fg">{vital.name ?? 'Unnamed observation'}</div>
+                <div className="font-display text-xl font-extrabold mt-1">{vital.value ?? 'Not present in captured record'}{vital.value && vital.unit ? ` ${vital.unit}` : ''}</div>
+                <div className="text-[11px] text-muted-fg">{vital.effectiveAt ? formatEpicSourceDate(vital.effectiveAt) ?? vital.effectiveAt : 'Collection time not present in captured record'}</div>
+              </div>
+            ))}
           </div>
-          <div className="text-right">
-            <div className="text-sm">{record.treatment}</div>
-            <div className="text-xs text-muted-fg">{record.status.replace('_', ' ')}</div>
-          </div>
-        </button>
-      ))}
-      {records.length === 0 && <div className="p-8 text-center text-sm text-muted-fg">No patients match these filters.</div>}
-    </div>
+        ) : (
+          <p className="text-sm text-muted-fg">No vital signs present in captured record.</p>
+        )}
+      </div>
+    )}
+    {record.capturedAt && (
+      <p className="text-[11px] text-muted-fg">Captured {formatEpicCaptureTime(record.capturedAt)} &middot; capture {record.captureId}</p>
+    )}
   </div>
 );
 
@@ -98,14 +179,14 @@ export const StaffResources: React.FC = () => (
       <p className="text-sm text-muted-fg mb-5">Illustrative transportation and community access nodes for tomorrow's infusion corridor.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">CareLink Transportation</h3>
-          <p className="text-sm text-muted-fg mt-1">Illustrative non-emergency transportation coordination.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">3 coordination windows</div>
+          <h3 className="font-heading font-bold">CareLink</h3>
+          <p className="text-sm text-muted-fg mt-1">Playable local recovery and replay using synthetic provider records.</p>
+          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">Synthetic scenario provider</div>
         </StickerCard>
         <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">Community Mobility Network</h3>
-          <p className="text-sm text-muted-fg mt-1">Illustrative community transportation directory.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Directory mapping</div>
+          <h3 className="font-heading font-bold">Uber Health</h3>
+          <p className="text-sm text-muted-fg mt-1">Provider adapter preview only. No booking, API call, contract, or dispatch success is represented.</p>
+          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Integration-ready preview · not connected</div>
         </StickerCard>
       </div>
     </div>
@@ -193,7 +274,7 @@ export const StaffIntegrations: React.FC = () => (
 
 export const StaffAdmin: React.FC<{
   onOpenCase: () => void;
-  onSetPerspective: (p: 'LANDING' | 'PATIENT' | 'CAREGIVER' | 'SYSTEM') => void;
+  onSetPerspective: (p: 'LANDING' | 'PATIENT' | 'CAREGIVER') => void;
 }> = ({ onOpenCase, onSetPerspective }) => (
   <div className="page-shell space-y-5">
     <div className="card-sticker p-5 sm:p-6 space-y-4">
@@ -208,7 +289,7 @@ export const StaffAdmin: React.FC<{
           ['Clinical Triage Routing', 'Route GI symptoms to: Sarah Jenkins, RN', 'Shown on Task 1 in the case workspace.'],
           ['Caregiver permissions', 'Transportation-only projection', 'This is why Ana never sees fever or nurse notes.'],
           ['Escalation window', '30 minutes before ownership review', 'Keeps an exception from sitting unowned.'],
-          ['Communication channels', 'Patient portal and staff workspace', 'Same state updates Patient, Staff, Caregiver, and Graph.'],
+          ['Communication channels', 'Patient portal and care workspaces', 'The same state updates patient, navigator, care team, and embedded graph/audit views.'],
           ['Navigator Assignment', 'Route SDOH/Transport to: Marcus Vance, MSW', 'Shown on Task 2 and the caregiver ride card.'],
         ].map(([title, detail, why]) => (
           <div key={title} className="p-3.5 border-2 border-ink rounded-xl bg-cream">
@@ -229,7 +310,7 @@ export const StaffAdmin: React.FC<{
         <button onClick={onOpenCase} className="btn-candy btn-compact">Open Camila's case</button>
         <button onClick={() => onSetPerspective('PATIENT')} className="btn-ghost btn-compact">Patient portal</button>
         <button onClick={() => onSetPerspective('CAREGIVER')} className="btn-ghost btn-compact">Caregiver view</button>
-        <button onClick={() => onSetPerspective('SYSTEM')} className="btn-ghost btn-compact">Readiness graph</button>
+        <button onClick={onOpenCase} className="btn-ghost btn-compact">Open graph + audit</button>
         <button onClick={() => onSetPerspective('LANDING')} className="btn-ghost btn-compact">Home</button>
       </div>
     </div>

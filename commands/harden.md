@@ -56,8 +56,9 @@ path: if a step has no test, it has no alarm when it breaks.
 ### 6. Security review
 
 If any of it touched auth, payments, user input, database queries, file paths, or
-crypto, run the `security-reviewer` agent now. RLS policies get the two-user
-check from `supabase-auth`: a second user must see none of the first user's rows.
+crypto, run the `security-reviewer` agent now. Row-level authorization gets the
+two-user check from `security-review`: a second user must see none of the first
+user's rows, enforced in logic rather than only in the UI.
 
 ### 7. Gate and review
 

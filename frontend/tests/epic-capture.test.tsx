@@ -8,7 +8,9 @@ const CAPTURE_ID = 'epic-sandbox-20260922T070125Z-0dac7d6b';
 
 const openStaffCase = () => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId('auth-transport-card'));
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcs@oncoready.me' } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+  fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 };
 
 describe('EPIC-001 reviewed Epic Sandbox capture', () => {
@@ -35,9 +37,10 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     fireEvent.click(epicTab);
 
     const epicPanel = screen.getByRole('tabpanel', { name: /Epic/i });
-    expect(within(epicPanel).getByRole('heading', { name: 'Epic Sandbox · Read-only captured data' })).toBeDefined();
+      expect(within(epicPanel).getByRole('heading', { name: 'Read-only captured data' })).toBeDefined();
     expect(within(epicPanel).getByAltText('Epic')).toBeDefined();
     expect(epicPanel.textContent).toContain('Camila Maria Lopez');
+    expect(epicPanel.textContent).toContain('Female');
     expect(epicPanel.textContent).toContain('drospirenone-ethinyl estradiol');
     expect(epicPanel.textContent).toContain('Hemoglobin A1C');
     expect(epicPanel.textContent).toContain('5.1');
@@ -53,8 +56,8 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Epic/i }));
     const epicPanel = screen.getByRole('tabpanel', { name: /Epic/i });
 
-    expect(epicPanel.textContent).toMatch(/Captured.*Sep.*22.*2026.*2:01.*CT/i);
-    expect(epicPanel.textContent).toMatch(/Captured once.*no live sync/i);
+      expect(epicPanel.textContent).toMatch(/Captured.*Sep.*22.*2026.*2:01.*CT/i);
+      expect(epicPanel.textContent).toContain('Captured from Epic');
     expect(epicPanel.textContent).not.toMatch(/\bConnected\b/i);
     expect(epicPanel.textContent).not.toMatch(/\bLive synchronization\b/i);
 
@@ -85,7 +88,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     expect(drawer.textContent).toContain('Epic FHIR Sandbox');
     expect(drawer.textContent).toContain('Non-Production Sandbox');
     expect(drawer.textContent).toContain('FHIR 4.0.1');
-    expect(drawer.textContent).toContain('2026-09-22T07:01:25Z');
+      expect(drawer.textContent).toContain('2026-09-22T07:01:25Z');
     expect(drawer.textContent).toContain(CAPTURE_ID);
     expect(drawer.textContent).toContain(`Patient/${PATIENT_RESOURCE_ID}`);
     expect(drawer.textContent).toContain(`MedicationRequest/${MEDICATION_RESOURCE_ID}`);
@@ -99,7 +102,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
   it('uses Integrations only as secondary capture evidence without a false live connection claim', () => {
     render(<App />);
     openStaffCase();
-    fireEvent.click(screen.getByRole('button', { name: 'Integrations' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Epic context' }));
 
     expect(screen.getByRole('heading', { name: /Epic Sandbox capture/i })).toBeDefined();
     const integrationCopy = document.body.textContent || '';
@@ -120,7 +123,9 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     expect(document.body.textContent).not.toContain('Camila Maria Lopez');
 
     fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-    fireEvent.click(screen.getByTestId('auth-patient-card'));
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcp@oncoready.me' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
+    fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 
     expect(document.body.textContent).not.toContain(PATIENT_RESOURCE_ID);
     expect(document.body.textContent).not.toContain(CAPTURE_ID);

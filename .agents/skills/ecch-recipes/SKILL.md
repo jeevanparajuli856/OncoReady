@@ -143,8 +143,8 @@ slices, GATE 1 on the slice plan) then `ship` per remaining MUST-DEMO item, then
 demo path clean.
 
 **Match:** `/ecc-recipes fix a bug in my Go service` → Best fit: `ship-fix`
-(reproduce as a failing test, fix, review, commit). Go has no pack here, so
-`generic-stack` supplies the real build and test commands first. STOP: the
+(reproduce as a failing test, fix, review, commit). Go has no pack here, so read
+the repository's own build and test commands first. STOP: the
 regression test is green and review passes. If three attempts fail, switch to
 `debug-fast` rather than continuing.
 

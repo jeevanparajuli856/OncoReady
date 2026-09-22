@@ -37,7 +37,10 @@ const getAvailableContext = (): EpicClinicalContext => {
 
 const openPreparedWorkspace = (testId: string) => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId(testId));
+  const credentials = testId.includes('patient') ? ['abcp@oncoready.me', '1234'] : testId.includes('caregiver') ? ['abcc@oncoready.me', '1234'] : ['abcs@oncoready.me', '1234'];
+  fireEvent.change(screen.getByLabelText('Email'), { target: { value: credentials[0] } });
+  fireEvent.change(screen.getByLabelText('Password'), { target: { value: credentials[1] } });
+  fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 };
 
 describe('EPIC-001 independent acceptance evidence', () => {
@@ -144,7 +147,7 @@ describe('EPIC-001 independent acceptance evidence', () => {
       },
     }} />);
 
-    await screen.findByRole('heading', { name: 'Epic Sandbox · Read-only captured data' });
+    await screen.findByRole('heading', { name: 'Read-only captured data' });
     expect(screen.getAllByText('Not present in captured record').length).toBeGreaterThanOrEqual(8);
     expect(document.body.textContent).not.toContain('mFOLFOX6');
   });
@@ -178,10 +181,10 @@ describe('EPIC-001 independent acceptance evidence', () => {
     caregiver.unmount();
     localStorage.clear();
 
-    const system = render(<App />);
-    openPreparedWorkspace('auth-staff-card');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Graph' })[0]);
+    const team = render(<App />);
+    openPreparedWorkspace('auth-care-team-card');
+    fireEvent.click(screen.getByRole('tab', { name: /Graph/i }));
     assertAbsent();
-    system.unmount();
+    team.unmount();
   });
 });

@@ -31,7 +31,7 @@ Guessing "trivial" to skip work is a violation of this rule, not a shortcut.
 
 **1. Research & Reuse** _(standard and large; light at small)_
 - **Project brief first:** read `PROJECT.md` for the locked stack, non-goals, and demo path.
-- **Live docs second:** Context7 (`documentation-lookup`) or primary vendor docs to confirm
+- **Live docs second:** the `find-docs` skill (`ctx7` CLI) or primary vendor docs to confirm
   API behavior and version-specific details before implementing.
 - **Package registries third:** search npm, PyPI, crates.io before writing utility code.
   Prefer battle-tested libraries over hand-rolled solutions.

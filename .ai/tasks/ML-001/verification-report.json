@@ -1,8 +1,166 @@
 {
   "schema_version": "1.0",
   "task_id": "ML-001",
-  "commit": "",
-  "status": "FAILED",
-  "generated_at": "",
-  "checks": []
+  "commit": "6d1c863aadca5ec5d34aa2069110586ae2fe8626",
+  "status": "PASSED",
+  "generated_at": "2026-09-22T18:12:20+00:00",
+  "checks": [
+    {
+      "name": "project-schema",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "task-schema-and-reports",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python",
+        "scripts/validate-task.py",
+        "ML-001"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "agentic-framework-tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "/Users/jeevaparajuli/Desktop/Project_Active/OncoReady/backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-q",
+        "tests/agentic"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "project manifest",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "scripts/validate-project.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "OpenAPI contract",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python3",
+        "scripts/validate-contracts.py"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "backend fast tests",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-c",
+        "backend/pyproject.toml",
+        "-m",
+        "not integration",
+        "tests/backend",
+        "--cov=app",
+        "--cov-report=term-missing",
+        "-q"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "PostgreSQL migration and integration",
+      "status": "SKIPPED",
+      "required": false,
+      "command": [
+        "backend/.venv/bin/python",
+        "-m",
+        "pytest",
+        "-c",
+        "backend/pyproject.toml",
+        "-m",
+        "integration",
+        "tests/backend",
+        "-q"
+      ],
+      "notes": "User-approved task-scoped skip: ML-001 architecture declares database impact false; no database behavior changed."
+    },
+    {
+      "name": "frontend build",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "build"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend critical-path smoke",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:smoke"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "frontend end-to-end",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "npm",
+        "run",
+        "test:e2e"
+      ],
+      "notes": ""
+    },
+    {
+      "name": "ML synthetic pipeline and notebook",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "python",
+        "-m",
+        "unittest",
+        "ml.tests.test_pipeline"
+      ],
+      "notes": "4 tests passed; clean notebook execution reproduced the committed dataset and artifact byte-for-byte."
+    },
+    {
+      "name": "ML artifact parity",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "sha256sum",
+        "ml/artifacts/demo-insights.json",
+        "frontend/src/data/ml-insights.json",
+        "frontend/public/evidence/ml/demo-insights.json"
+      ],
+      "notes": "All three copies match SHA-256 f13482c5c4b530257250ca7469102d901bd113ca1993a822ee457239c4fb8d21."
+    },
+    {
+      "name": "tracked-secret-file-baseline",
+      "status": "PASSED",
+      "required": true,
+      "command": [
+        "git",
+        "ls-files"
+      ],
+      "notes": ""
+    }
+  ]
 }

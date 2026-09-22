@@ -3,15 +3,25 @@ import {
   Task, 
   AuditEvent, 
   Perspective, 
-  CaregiverProjection 
+  CaregiverProjection,
+  RideAssignment,
 } from '../types';
 
 const STORAGE_KEY = 'oncoready_workflow_state_v4';
 const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
+export const HISTORICAL_RIDE_EVENTS = [
+  { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Previous scenario ride requested.' },
+  { id: 'RIDE-HIST-ACCEPTED', status: 'Accepted', timestamp: 'Sep 11, 2026 • 7:43 AM CT', detail: 'Fictional CareLink provider accepted the scenario trip.' },
+  { id: 'RIDE-HIST-DRIVER', status: 'Driver assigned', timestamp: 'Sep 11, 2026 • 7:47 AM CT', detail: 'Scenario driver Ellis Morgan assigned to vehicle CL-218.' },
+  { id: 'RIDE-HIST-ARRIVING', status: 'Arriving', timestamp: 'Sep 11, 2026 • 8:02 AM CT', detail: 'Planned arrival advanced in the saved scenario.' },
+  { id: 'RIDE-HIST-PICKUP', status: 'Pickup confirmed', timestamp: 'Sep 11, 2026 • 8:18 AM CT', detail: 'Pickup was confirmed in the previous scenario.' },
+  { id: 'RIDE-HIST-COMPLETE', status: 'Completed', timestamp: 'Sep 11, 2026 • 9:06 AM CT', detail: 'Previous scenario replay completed.' },
+] as const;
+
 export const INITIAL_STATE: WorkflowState = {
-  version: 5,
+  version: 6,
   scenarioId: 'camila-demo-v2',
   isSimulated: true,
   currentPerspective: 'LANDING',
@@ -24,6 +34,18 @@ export const INITIAL_STATE: WorkflowState = {
   processedSourceEventIds: [],
   currentCheckpoint: 'START',
   attendanceStatus: 'UNKNOWN',
+  ride: {
+    currentTripId: 'carelink-current-2026-09-25',
+    currentStatus: 'OPEN',
+    assignments: [],
+    caregiverSeen: null,
+    replay: {
+      tripId: 'carelink-prior-001',
+      status: 'IDLE',
+      visibleEventCount: 0,
+      sessionToken: 0,
+    },
+  },
   
   patient: {
     id: 'PAT-882914',
@@ -283,6 +305,19 @@ export type WorkflowAction =
   | { type: 'RECORD_CLINICAL_DISPOSITION'; payload: { disposition: string; followUpBlocking: boolean; commandId?: string } }
   | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string; returnArrangement?: string; logisticsContact?: string; backupPlan?: string; commandId?: string } }
   | { type: 'FAIL_TRANSPORTATION'; payload?: { commandId?: string } }
+  | { type: 'REQUEST_CURRENT_RIDE' }
+  | { type: 'ASSIGN_PRIMARY_RIDE' }
+  | { type: 'FAIL_PRIMARY_RIDE' }
+  | { type: 'ASSIGN_BACKUP_RIDE' }
+  | { type: 'SAVE_RECOVERED_RIDE'; payload: { pickupTime: string; plannedArrival: string; returnArrangement: string; logisticsContact: string; backupOwner: string } }
+  | { type: 'MARK_NO_RIDE_OPTION' }
+  | { type: 'FAIL_CURRENT_RIDE' }
+  | { type: 'MARK_CURRENT_LOGISTICS_SEEN' }
+  | { type: 'PLAY_HISTORICAL_RIDE' }
+  | { type: 'PAUSE_HISTORICAL_RIDE' }
+  | { type: 'RESTART_HISTORICAL_RIDE' }
+  | { type: 'EXIT_HISTORICAL_RIDE' }
+  | { type: 'ADVANCE_HISTORICAL_RIDE'; payload: { tripId: 'carelink-prior-001'; sessionToken: number } }
   | { type: 'ACKNOWLEDGE_PATIENT_PLAN'; payload?: { commandId?: string } }
   | { type: 'LOAD_CHECKPOINT'; payload: WorkflowState['currentCheckpoint'] }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
@@ -306,7 +341,8 @@ export const isCurrentTransportPlanComplete = (state: WorkflowState) => {
   return Boolean(
     transport?.status === 'RESOLVED' && details && !details.planFailed &&
     details.dispatchStatus === 'CONFIRMED' && details.confirmedPickupTime &&
-    details.returnArrangement && details.logisticsContact && details.backupPlan,
+    details.plannedArrival && details.returnArrangement && details.logisticsContact &&
+    details.backupPlan && details.backupOwner,
   );
 };
 
@@ -326,6 +362,91 @@ const readinessFor = (state: WorkflowState): WorkflowState['overallReadiness'] =
 
 const addEvent = (state: WorkflowState, event: AuditEvent) =>
   state.auditEvents.some((existing) => existing.id === event.id) ? state.auditEvents : [...state.auditEvents, event];
+
+const isRoleMutationAllowed = (state: WorkflowState, role: 'CARE_NAVIGATOR' | 'CARE_TEAM') =>
+  state.currentPerspective === role ||
+  state.currentPerspective === 'LANDING' ||
+  (role === 'CARE_NAVIGATOR' && state.currentPerspective === 'TRANSPORTATION');
+
+const normalizePerspective = (perspective: Perspective): Perspective =>
+  perspective === 'STAFF' || perspective === 'SYSTEM' ? 'CARE_TEAM' : perspective;
+
+const canOpenRoute = (perspective: Perspective, route: WorkflowState['staffRoute']) => {
+  if (perspective === 'CARE_NAVIGATOR') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INTEGRATIONS'].includes(route);
+  if (perspective === 'CARE_TEAM') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'].includes(route);
+  return false;
+};
+
+const failCurrentRidePlan = (
+  state: WorkflowState,
+  eventId: string,
+  timestamp: string,
+  action: string,
+): WorkflowState => {
+  const currentVersion = getCurrentPlanVersion(state);
+  const nextVersion = currentVersion + 1;
+  const assignments = state.ride.assignments.map((assignment): RideAssignment =>
+    assignment.status === 'CURRENT'
+      ? { ...assignment, status: 'FAILED', failedAt: timestamp }
+      : assignment,
+  );
+  let next: WorkflowState = {
+    ...state,
+    patientAcknowledged: false,
+    patientAcknowledgedPlanVersion: null,
+    currentCheckpoint: 'FAILED_RIDE',
+    ride: {
+      ...state.ride,
+      currentStatus: 'PRIMARY_FAILED',
+      assignments,
+      caregiverSeen: null,
+    },
+    tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+      ? {
+        ...item,
+        status: 'ASSIGNED',
+        nextAction: 'Recover outbound and return plan with a backup',
+        waitingReason: `Current transport plan v${nextVersion}`,
+        transportDetails: {
+          ...item.transportDetails!,
+          planVersion: nextVersion,
+          planFailed: true,
+          dispatchStatus: 'UNASSIGNED',
+          vehicleId: undefined,
+          driverName: undefined,
+          confirmedPickupTime: undefined,
+          plannedArrival: undefined,
+          returnArrangement: undefined,
+          logisticsContact: undefined,
+          backupPlan: undefined,
+          backupOwner: undefined,
+          dispatchedBy: undefined,
+        },
+      }
+      : item),
+  };
+  next = {
+    ...next,
+    auditEvents: addEvent(next, {
+      id: eventId,
+      timestamp,
+      actor: 'Marcus Vance, MSW',
+      actorRole: 'NAVIGATOR',
+      action,
+      description: `Current plan v${nextVersion} is open; earlier assignment and acknowledgment evidence remain in history.`,
+      stateDiff: { field: 'transport.planVersion', from: String(currentVersion), to: String(nextVersion) },
+    }),
+  };
+  return { ...next, overallReadiness: readinessFor(next) };
+};
+
+const hasCompleteLogistics = (payload: {
+  pickupTime: string;
+  plannedArrival: string;
+  returnArrangement: string;
+  logisticsContact: string;
+  backupOwner: string;
+}) => Object.values(payload).every((value) => value.trim().length > 0);
 
 export function workflowReducer(state: WorkflowState, action: WorkflowAction): WorkflowState {
   switch (action.type) {
@@ -361,6 +482,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
+      if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
       const commandId = action.payload?.commandId ?? 'cmd-ack-clinical-v1';
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ASSIGNED' || commandApplied(state, commandId)) return state;
@@ -370,6 +492,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'RECORD_CLINICAL_DISPOSITION': {
+      if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
       const commandId = action.payload.commandId ?? `cmd-disposition-${action.payload.followUpBlocking ? 'blocking' : 'nonblocking'}-v1`;
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ACKNOWLEDGED' || !action.payload.disposition.trim() || commandApplied(state, commandId)) return state;
@@ -380,25 +503,154 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'CONFIRM_TRANSPORTATION': {
-      const planVersion = getCurrentPlanVersion(state);
-      const commandId = action.payload?.commandId ?? `cmd-complete-transport-v${planVersion}`;
-      const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
-      if (!task || commandApplied(state, commandId)) return state;
-      const now = planVersion === 1 ? 'Sep 24, 2026 • 10:36 AM CT' : 'Sep 24, 2026 • 10:52 AM CT';
-      let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION' ? { ...item, status: 'RESOLVED', nextAction: 'Monitor the current plan', waitingReason: 'Nothing outstanding', transportDetails: { ...item.transportDetails!, dispatchStatus: 'CONFIRMED', planFailed: false, vehicleId: action.payload?.vehicleId ?? 'CareLink Vehicle #402', driverName: action.payload?.driverName ?? 'Jerome Davis', confirmedPickupTime: action.payload?.pickupTime ?? 'Sep 25, 8:15–8:30 AM CT pickup • 9:15 AM planned arrival', returnArrangement: action.payload?.returnArrangement ?? 'Return coordination 1:00–4:00 PM CT', logisticsContact: action.payload?.logisticsContact ?? 'CareLink Dispatch • (504) 555-0124', backupPlan: action.payload?.backupPlan ?? 'Ana Hernandez is the named backup owner', dispatchedBy: 'Marcus Vance, MSW' } } : item) };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-TRANSPORT-V${planVersion}`, timestamp: now, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Current transport plan v${planVersion} completed`, description: 'Outbound, return, logistics contact, and backup arrangements are recorded.', stateDiff: { field: 'transport.status', from: 'ASSIGNED', to: 'RESOLVED' } }) };
-      return { ...next, overallReadiness: readinessFor(next), currentCheckpoint: planVersion > 1 ? 'RECOVERED_PLAN' : next.currentCheckpoint };
+      const payload = action.payload;
+      if (!payload?.pickupTime || !payload.returnArrangement || !payload.logisticsContact || !payload.backupPlan) return state;
+      return workflowReducer(state, {
+        type: 'SAVE_RECOVERED_RIDE',
+        payload: {
+          pickupTime: payload.pickupTime,
+          plannedArrival: payload.pickupTime,
+          returnArrangement: payload.returnArrangement,
+          logisticsContact: payload.logisticsContact,
+          backupOwner: payload.backupPlan,
+        },
+      });
     }
-    case 'FAIL_TRANSPORTATION': {
-      const currentVersion = getCurrentPlanVersion(state);
-      const commandId = action.payload?.commandId ?? `cmd-fail-transport-v${currentVersion}`;
+    case 'REQUEST_CURRENT_RIDE': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR')) return state;
       const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
-      if (!task || task.transportDetails?.planFailed || commandApplied(state, commandId)) return state;
-      const nextVersion = currentVersion + 1;
-      const now = 'Sep 24, 2026 • 10:46 AM CT';
-      let next: WorkflowState = { ...state, patientAcknowledged: false, patientAcknowledgedPlanVersion: null, currentCheckpoint: 'FAILED_RIDE', appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION' ? { ...item, status: 'ASSIGNED', nextAction: 'Recover outbound and return plan with a backup', waitingReason: `Current transport plan v${nextVersion}`, transportDetails: { ...item.transportDetails!, planVersion: nextVersion, planFailed: true, dispatchStatus: 'UNASSIGNED', vehicleId: undefined, driverName: undefined, confirmedPickupTime: undefined, returnArrangement: undefined, logisticsContact: undefined, backupPlan: undefined } } : item) };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-TRANSPORT-FAILED-V${currentVersion}`, timestamp: now, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Transport plan v${currentVersion} failed`, description: `Plan v${nextVersion} is now current; the prior patient acknowledgment is expired.`, stateDiff: { field: 'transport.planVersion', from: String(currentVersion), to: String(nextVersion) } }) };
+      if (!task || state.ride.currentStatus !== 'OPEN') return state;
+      let next: WorkflowState = {
+        ...state,
+        ride: { ...state.ride, currentStatus: 'REQUESTED' },
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? { ...item, nextAction: 'Assign fictional CareLink Partner A', waitingReason: 'Synthetic provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Synthetic ride requested', description: 'Current trip carelink-current-2026-09-25 opened locally; no provider request was sent.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
+    }
+    case 'ASSIGN_PRIMARY_RIDE': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'REQUESTED') return state;
+      const assignment: RideAssignment = {
+        id: 'RIDE-ASG-PRIMARY-001',
+        providerName: 'CareLink Partner A',
+        providerKind: 'FICTIONAL',
+        status: 'CURRENT',
+        assignedAt: 'Sep 24, 2026 • 10:34 AM CT',
+        driverName: 'Jordan Lee',
+        vehicleId: 'CL-A-114',
+      };
+      let next: WorkflowState = {
+        ...state,
+        ride: { ...state.ride, currentStatus: 'PRIMARY_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'Fictional Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner A assigned', description: 'Synthetic primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
+      return next;
+    }
+    case 'FAIL_PRIMARY_RIDE':
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
+      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Fictional Partner A unavailable');
+    case 'ASSIGN_BACKUP_RIDE': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
+      const assignment: RideAssignment = {
+        id: 'RIDE-ASG-BACKUP-002',
+        providerName: 'CareLink Partner B',
+        providerKind: 'FICTIONAL',
+        status: 'CURRENT',
+        assignedAt: 'Sep 24, 2026 • 10:49 AM CT',
+        driverName: 'Jerome Davis',
+        vehicleId: 'CareLink Vehicle #402',
+      };
+      let next: WorkflowState = {
+        ...state,
+        ride: { ...state.ride, currentStatus: 'BACKUP_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner B selected', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      return next;
+    }
+    case 'SAVE_RECOVERED_RIDE': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'BACKUP_ASSIGNED' || !hasCompleteLogistics(action.payload)) return state;
+      const version = getCurrentPlanVersion(state);
+      const now = 'Sep 24, 2026 • 10:52 AM CT';
+      let next: WorkflowState = {
+        ...state,
+        ride: { ...state.ride, currentStatus: 'RECOVERED' },
+        currentCheckpoint: 'RECOVERED_PLAN',
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? {
+            ...item,
+            status: 'RESOLVED',
+            nextAction: 'Monitor the current plan',
+            waitingReason: 'Nothing outstanding',
+            transportDetails: {
+              ...item.transportDetails!,
+              dispatchStatus: 'CONFIRMED',
+              planFailed: false,
+              confirmedPickupTime: action.payload.pickupTime.trim(),
+              plannedArrival: action.payload.plannedArrival.trim(),
+              returnArrangement: action.payload.returnArrangement.trim(),
+              logisticsContact: action.payload.logisticsContact.trim(),
+              backupOwner: action.payload.backupOwner.trim(),
+              backupPlan: `${action.payload.backupOwner.trim()} is the named backup owner`,
+              dispatchedBy: 'Marcus Vance, MSW',
+            },
+          }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-RECOVERED-V${version}`, timestamp: now, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Current transport plan v${version} recovered`, description: 'Planned outbound, arrival, return, logistics contact, and backup owner are recorded.', stateDiff: { field: 'transport.status', from: 'ASSIGNED', to: 'RESOLVED' } }) };
+      return { ...next, overallReadiness: readinessFor(next) };
+    }
+    case 'MARK_NO_RIDE_OPTION': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
+      let next: WorkflowState = {
+        ...state,
+        ride: { ...state.ride, currentStatus: 'NO_OPTION' },
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? { ...item, status: 'ASSIGNED', nextAction: 'Escalate transportation recovery', waitingReason: 'No synthetic provider option available' }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-NO-OPTION-V${getCurrentPlanVersion(state)}`, timestamp: 'Sep 24, 2026 • 10:49 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'No synthetic ride option available', description: 'The transportation blocker remains open and treatment stays at risk.' }) };
+      return { ...next, overallReadiness: readinessFor(next) };
+    }
+    case 'MARK_CURRENT_LOGISTICS_SEEN': {
+      if (state.currentPerspective !== 'CAREGIVER' || !isCurrentTransportPlanComplete(state)) return state;
+      const version = getCurrentPlanVersion(state);
+      if (state.ride.caregiverSeen?.planVersion === version) return state;
+      const seen = { eventId: `EVT-RIDE-CAREGIVER-SEEN-V${version}`, actor: 'Ana Hernandez' as const, actorRole: 'CAREGIVER' as const, planVersion: version, timestamp: 'Sep 24, 2026 • 10:57 AM CT' };
+      let next: WorkflowState = { ...state, ride: { ...state.ride, caregiverSeen: seen } };
+      next = { ...next, auditEvents: addEvent(next, { id: seen.eventId, timestamp: seen.timestamp, actor: seen.actor, actorRole: seen.actorRole, action: `Current logistics plan v${version} seen`, description: 'Caregiver logistics visibility recorded. This does not replace patient acknowledgment or clinical clearance.' }) };
+      return next;
+    }
+    case 'FAIL_CURRENT_RIDE':
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'RECOVERED') return state;
+      return failCurrentRidePlan(state, `EVT-RIDE-CURRENT-FAILED-V${getCurrentPlanVersion(state)}`, 'Sep 24, 2026 • 11:08 AM CT', `Current transport plan v${getCurrentPlanVersion(state)} failed`);
+    case 'FAIL_TRANSPORTATION':
+      return workflowReducer(state, { type: 'FAIL_CURRENT_RIDE' });
+    case 'PLAY_HISTORICAL_RIDE': {
+      if (state.ride.replay.status === 'COMPLETE') return workflowReducer(state, { type: 'RESTART_HISTORICAL_RIDE' });
+      const sessionToken = state.ride.replay.sessionToken + 1;
+      return { ...state, ride: { ...state.ride, replay: { ...state.ride.replay, status: 'PLAYING', visibleEventCount: Math.max(1, state.ride.replay.visibleEventCount), sessionToken } } };
+    }
+    case 'PAUSE_HISTORICAL_RIDE':
+      if (state.ride.replay.status !== 'PLAYING') return state;
+      return { ...state, ride: { ...state.ride, replay: { ...state.ride.replay, status: 'PAUSED', sessionToken: state.ride.replay.sessionToken + 1 } } };
+    case 'RESTART_HISTORICAL_RIDE':
+      return { ...state, ride: { ...state.ride, replay: { ...state.ride.replay, status: 'PLAYING', visibleEventCount: 1, sessionToken: state.ride.replay.sessionToken + 1 } } };
+    case 'EXIT_HISTORICAL_RIDE':
+      return { ...state, ride: { ...state.ride, replay: { ...state.ride.replay, status: 'IDLE', visibleEventCount: 0, sessionToken: state.ride.replay.sessionToken + 1 } } };
+    case 'ADVANCE_HISTORICAL_RIDE': {
+      const replay = state.ride.replay;
+      if (replay.status !== 'PLAYING' || action.payload.tripId !== replay.tripId || action.payload.sessionToken !== replay.sessionToken) return state;
+      const visibleEventCount = Math.min(HISTORICAL_RIDE_EVENTS.length, replay.visibleEventCount + 1);
+      const status = visibleEventCount === HISTORICAL_RIDE_EVENTS.length ? 'COMPLETE' as const : 'PLAYING' as const;
+      return { ...state, ride: { ...state.ride, replay: { ...replay, visibleEventCount, status } } };
     }
     case 'ACKNOWLEDGE_PATIENT_PLAN': {
       const version = getCurrentPlanVersion(state);
@@ -410,11 +662,13 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'LOAD_CHECKPOINT':
+      if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'TRANSPORTATION' && state.currentPerspective !== 'LANDING') return state;
       return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
     case 'SET_PERSPECTIVE':
-      return { ...state, currentPerspective: action.payload === 'SIGN_IN' ? 'LANDING' : action.payload };
+      return { ...state, currentPerspective: normalizePerspective(action.payload) };
     case 'SET_STAFF_ROUTE':
-      return { ...state, currentPerspective: 'STAFF', staffRoute: action.payload };
+      if (!canOpenRoute(state.currentPerspective, action.payload)) return state;
+      return { ...state, staffRoute: action.payload };
     case 'RESET_WORKFLOW':
       if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
       return { ...INITIAL_STATE };
@@ -424,20 +678,26 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
 }
 
 export function buildCheckpoint(checkpoint: WorkflowState['currentCheckpoint'], perspective: Perspective = 'LANDING', staffRoute: WorkflowState['staffRoute'] = 'COMMAND_CENTER'): WorkflowState {
-  let state: WorkflowState = { ...INITIAL_STATE, currentPerspective: perspective, staffRoute, currentCheckpoint: checkpoint === 'CONTEXT_INSIGHTS' ? checkpoint : 'START' };
-  if (checkpoint === 'START' || checkpoint === 'CONTEXT_INSIGHTS') return state;
+  const requestedPerspective = normalizePerspective(perspective);
+  const finish = (state: WorkflowState) => ({ ...state, currentPerspective: requestedPerspective });
+  let state: WorkflowState = { ...INITIAL_STATE, currentPerspective: 'LANDING', staffRoute, currentCheckpoint: checkpoint === 'CONTEXT_INSIGHTS' ? checkpoint : 'START' };
+  if (checkpoint === 'START' || checkpoint === 'CONTEXT_INSIGHTS') return finish(state);
   state = workflowReducer(state, { type: 'SUBMIT_READINESS', payload: { transportNotes: 'Ride cancelled; transportation recovery needed.', clinicalConcernText: PREPARED_REPLY } });
-  if (checkpoint === 'SPLIT_WORK') return { ...state, currentCheckpoint: checkpoint };
+  if (checkpoint === 'SPLIT_WORK') return finish({ ...state, currentCheckpoint: checkpoint });
   state = workflowReducer(state, { type: 'ACKNOWLEDGE_CLINICAL_TASK' });
   state = workflowReducer(state, { type: 'RECORD_CLINICAL_DISPOSITION', payload: { disposition: 'Human contact completed; no blocking follow-up recorded.', followUpBlocking: false } });
-  state = workflowReducer(state, { type: 'CONFIRM_TRANSPORTATION' });
+  state = workflowReducer(state, { type: 'REQUEST_CURRENT_RIDE' });
+  state = workflowReducer(state, { type: 'ASSIGN_PRIMARY_RIDE' });
+  state = workflowReducer(state, { type: 'FAIL_PRIMARY_RIDE' });
+  if (checkpoint === 'FAILED_RIDE') return finish({ ...state, currentCheckpoint: checkpoint });
+  state = workflowReducer(state, { type: 'ASSIGN_BACKUP_RIDE' });
+  state = workflowReducer(state, { type: 'SAVE_RECOVERED_RIDE', payload: { pickupTime: 'Sep 25, 8:15–8:30 AM CT', plannedArrival: 'Sep 25, 9:15 AM CT', returnArrangement: 'Return coordination 1:00–4:00 PM CT', logisticsContact: 'CareLink Dispatch • (504) 555-0124', backupOwner: 'Ana Hernandez' } });
+  if (checkpoint === 'RECOVERED_PLAN') return finish({ ...state, currentCheckpoint: checkpoint });
+  state = workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'CAREGIVER' });
+  state = workflowReducer(state, { type: 'MARK_CURRENT_LOGISTICS_SEEN' });
+  state = workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'PATIENT' });
   state = workflowReducer(state, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
-  state = workflowReducer(state, { type: 'FAIL_TRANSPORTATION' });
-  if (checkpoint === 'FAILED_RIDE') return { ...state, currentCheckpoint: checkpoint };
-  state = workflowReducer(state, { type: 'CONFIRM_TRANSPORTATION' });
-  if (checkpoint === 'RECOVERED_PLAN') return { ...state, currentCheckpoint: checkpoint };
-  state = workflowReducer(state, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
-  return { ...state, currentCheckpoint: 'FINAL_CONFIRMATION' };
+  return finish({ ...state, currentCheckpoint: 'FINAL_CONFIRMATION' });
 }
 
 export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjection {
@@ -445,10 +705,23 @@ export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjec
   const details = task?.transportDetails;
   const complete = isCurrentTransportPlanComplete(state);
   return {
-    patientName: state.patient.name, appointmentTime: state.appointment.scheduledTime, appointmentLocation: state.appointment.location,
-    treatmentName: state.appointment.treatmentName, transportConfirmed: complete,
-    transportInfo: complete && details ? { pickupTime: details.confirmedPickupTime!, pickupAddress: details.pickupAddress, destination: details.destination, vehicleId: details.vehicleId!, driverName: details.driverName!, status: `Current plan v${details.planVersion}` } : undefined,
-    overallReadiness: readinessFor(state),
+    caregiverName: state.caregiver.name,
+    caregiverRelationship: state.caregiver.relationship,
+    patientName: state.patient.name,
+    appointmentTime: state.appointment.scheduledTime,
+    appointmentLocation: state.appointment.location,
+    transportConfirmed: complete,
+    currentPlan: complete && details ? {
+      planVersion: details.planVersion,
+      pickupTime: details.confirmedPickupTime!,
+      plannedArrival: details.plannedArrival!,
+      pickupAddress: details.pickupAddress,
+      destination: details.destination,
+      returnArrangement: details.returnArrangement!,
+      logisticsContact: details.logisticsContact!,
+      backupOwner: details.backupOwner!,
+    } : undefined,
+    seen: state.ride.caregiverSeen?.planVersion === details?.planVersion ? state.ride.caregiverSeen : null,
     privacyBoundaryNotice: 'This transportation-only view excludes Camila’s clinical concern, nurse notes, and human disposition.',
   };
 }
@@ -459,7 +732,10 @@ export function loadSavedWorkflowState(): WorkflowState {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return INITIAL_STATE;
       const parsed: unknown = JSON.parse(raw);
-      if (isSavedWorkflowState(parsed)) return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective: parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : parsed.currentPerspective };
+      if (isSavedWorkflowState(parsed)) {
+        const currentPerspective = normalizePerspective(parsed.currentPerspective);
+        return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective };
+      }
     }
   } catch { /* fall through to canonical fixture */ }
   return INITIAL_STATE;
@@ -482,24 +758,38 @@ const isVital = (value: unknown) => isRecord(value) && hasStrings(value, ['name'
 const isSubmission = (value: unknown) => isRecord(value) && typeof value.hasTransportIssue === 'boolean' && typeof value.transportNotes === 'string' && typeof value.hasClinicalConcern === 'boolean' && typeof value.clinicalConcernText === 'string' && (value.submittedAt === null || typeof value.submittedAt === 'string');
 const isOwner = (value: unknown) => isRecord(value) && hasStrings(value, ['id','name','role','department','badge','avatarUrl']);
 const isClinicalDetails = (value: unknown) => isRecord(value) && typeof value.verbatimReport === 'string' && ['PENDING_REVIEW','REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) && ['nurseNotes','ownershipAcknowledgedAt','disposition','dispositionRecordedAt','acknowledgedAt','reviewedBy'].every((key) => optionalString(value[key])) && (value.followUpBlocking === undefined || typeof value.followUpBlocking === 'boolean');
-const isTransportDetails = (value: unknown) => isRecord(value) && hasStrings(value, ['pickupAddress','destination','requestedTime','vehicleType']) && ['UNASSIGNED','DISPATCH_IN_PROGRESS','CONFIRMED'].includes(String(value.dispatchStatus)) && typeof value.planVersion === 'number' && value.planVersion >= 1 && typeof value.planFailed === 'boolean' && ['vehicleId','driverName','confirmedPickupTime','dispatchedBy','returnArrangement','logisticsContact','backupPlan'].every((key) => optionalString(value[key]));
+const isTransportDetails = (value: unknown) => isRecord(value) && hasStrings(value, ['pickupAddress','destination','requestedTime','vehicleType']) && ['UNASSIGNED','DISPATCH_IN_PROGRESS','CONFIRMED'].includes(String(value.dispatchStatus)) && typeof value.planVersion === 'number' && value.planVersion >= 1 && typeof value.planFailed === 'boolean' && ['vehicleId','driverName','confirmedPickupTime','plannedArrival','dispatchedBy','returnArrangement','logisticsContact','backupPlan','backupOwner'].every((key) => optionalString(value[key]));
 const isTask = (value: unknown) => {
   if (!isRecord(value) || !hasStrings(value, ['id','title','patientId','createdAt','dueTime','nextAction','waitingReason']) || !['CLINICAL_REVIEW','TRANSPORTATION_NAVIGATION'].includes(String(value.type)) || !['DETECTED','ASSIGNED','ACKNOWLEDGED','ACTIONED','CONFIRMED','RESOLVED'].includes(String(value.status)) || !['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority)) || !isOwner(value.owner)) return false;
   return value.type === 'CLINICAL_REVIEW' ? isClinicalDetails(value.clinicalDetails) && value.transportDetails === undefined : isTransportDetails(value.transportDetails) && value.clinicalDetails === undefined;
 };
 const isAuditEvent = (value: unknown) => isRecord(value) && hasStrings(value, ['id','timestamp','actor','action','description']) && ['PATIENT','SYSTEM','TRIAGE_NURSE','NAVIGATOR','CAREGIVER'].includes(String(value.actorRole)) && (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field','from','to'])));
 const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value, ['id','patientName','mrn','diagnosis','protocol','appointmentTime','blockerType','ownerName','ownerRole','avatarUrl']) && ['PENDING','IN_REVIEW'].includes(String(value.status)) && ['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority));
+const isRideAssignment = (value: unknown) => isRecord(value) && hasStrings(value, ['id','providerName','assignedAt']) && value.providerKind === 'FICTIONAL' && ['CURRENT','FAILED'].includes(String(value.status)) && ['failedAt','driverName','vehicleId'].every((key) => optionalString(value[key]));
+const isCaregiverSeen = (value: unknown) => value === null || (isRecord(value) && hasStrings(value, ['eventId','actor','actorRole','timestamp']) && value.actor === 'Ana Hernandez' && value.actorRole === 'CAREGIVER' && typeof value.planVersion === 'number' && value.planVersion >= 1);
+const isRideState = (value: unknown) => {
+  if (!isRecord(value) || value.currentTripId !== 'carelink-current-2026-09-25' || !['OPEN','REQUESTED','PRIMARY_ASSIGNED','PRIMARY_FAILED','BACKUP_ASSIGNED','RECOVERED','NO_OPTION'].includes(String(value.currentStatus))) return false;
+  if (!Array.isArray(value.assignments) || !value.assignments.every(isRideAssignment) || !uniqueIds(value.assignments) || !isCaregiverSeen(value.caregiverSeen)) return false;
+  const replay = value.replay;
+  if (!isRecord(replay) || replay.tripId !== 'carelink-prior-001' || !['IDLE','PLAYING','PAUSED','COMPLETE'].includes(String(replay.status)) || !Number.isInteger(replay.visibleEventCount) || Number(replay.visibleEventCount) < 0 || Number(replay.visibleEventCount) > HISTORICAL_RIDE_EVENTS.length || !Number.isInteger(replay.sessionToken) || Number(replay.sessionToken) < 0) return false;
+  const currentAssignments = value.assignments.filter((assignment) => isRecord(assignment) && assignment.status === 'CURRENT').length;
+  if (['OPEN','REQUESTED','PRIMARY_FAILED','NO_OPTION'].includes(String(value.currentStatus)) && currentAssignments !== 0) return false;
+  if (['PRIMARY_ASSIGNED','BACKUP_ASSIGNED','RECOVERED'].includes(String(value.currentStatus)) && currentAssignments !== 1) return false;
+  return true;
+};
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
-  if (!isRecord(value) || value.version !== 5 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
-  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
+  if (!isRecord(value) || value.version !== 6 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
+  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','TRANSPORTATION','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
   if (typeof value.readinessCheckCompleted !== 'boolean' || typeof value.patientAcknowledged !== 'boolean' || (value.patientAcknowledgedPlanVersion !== null && typeof value.patientAcknowledgedPlanVersion !== 'number')) return false;
-  if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission)) return false;
+  if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission) || !isRideState(value.ride)) return false;
   if (!Array.isArray(value.labs) || !value.labs.every(isLab) || !Array.isArray(value.vitals) || !value.vitals.every(isVital) || !Array.isArray(value.contextualCases) || !value.contextualCases.every(isContextualCase)) return false;
   if (!Array.isArray(value.tasks) || !value.tasks.every(isTask) || !uniqueIds(value.tasks) || !Array.isArray(value.auditEvents) || !value.auditEvents.every(isAuditEvent) || !uniqueIds(value.auditEvents) || !uniqueStrings(value.appliedCommandIds) || !uniqueStrings(value.processedSourceEventIds)) return false;
   const state = value as unknown as WorkflowState;
   const version = getCurrentPlanVersion(state);
   if (state.patientAcknowledged !== (state.patientAcknowledgedPlanVersion !== null) || (state.patientAcknowledgedPlanVersion !== null && state.patientAcknowledgedPlanVersion !== version)) return false;
+  if (state.ride.caregiverSeen !== null && (state.ride.caregiverSeen.planVersion !== version || !isCurrentTransportPlanComplete(state))) return false;
+  if ((state.ride.currentStatus === 'RECOVERED') !== isCurrentTransportPlanComplete(state)) return false;
   const derived = isContinuityPlanConfirmed(state);
   if ((state.overallReadiness === 'PLAN_CONFIRMED') !== derived || state.overallReadiness !== readinessFor(state)) return false;
   return true;

@@ -18,6 +18,7 @@ interface RideMapProps {
   extras?: MapStop[];
   confirmed?: boolean;
   height?: number;
+  staticOnly?: boolean;
 }
 
 const TONE_COLOR: Record<NonNullable<MapStop['tone']>, string> = {
@@ -57,6 +58,8 @@ export const RideMap: React.FC<RideMapProps> = (props) => {
 
     return () => observer?.disconnect();
   }, []);
+
+  if (props.staticOnly) return <MapFallback {...props} />;
 
   return (
     <div ref={boundaryRef} className="ride-map-boundary">

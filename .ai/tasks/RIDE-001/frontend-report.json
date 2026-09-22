@@ -2,17 +2,47 @@
   "schema_version": "1.0",
   "task_id": "RIDE-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "Implemented the playable synthetic CareLink ride lifecycle across the direct Transportation dashboard and shared FLOW state: request, primary assignment and failure, backup recovery, required logistics, versioned caregiver seen and patient acknowledgment, failure invalidation, no-option risk, isolated historical replay, minimized role views, and a truthful Uber Health integration-ready preview that is explicitly not connected.",
+  "files_changed": [
+    "frontend/src/types/index.ts",
+    "frontend/src/state/workflowState.ts",
+    "frontend/src/App.tsx",
+    "frontend/src/components/CareLinkRidePanel.tsx",
+    "frontend/src/components/TransportationWorkspace.tsx",
+    "frontend/src/components/StaffCaseWorkspace.tsx",
+    "frontend/src/components/CaregiverView.tsx",
+    "frontend/src/components/PatientResolutionView.tsx",
+    "frontend/src/components/RideMap.tsx",
+    "frontend/src/components/staff/StaffPages.tsx",
+    "frontend/tests/ride.test.ts",
+    "frontend/tests/ride-ui.test.tsx",
+    "frontend/tests/access.test.tsx",
+    "frontend/tests/component.test.tsx",
+    "frontend/tests/smoke.test.ts",
+    "frontend/tests/e2e.spec.ts",
+    "frontend/artifacts/RIDE-001-transport-desktop.png",
+    "frontend/artifacts/RIDE-001-transport-mobile.png",
+    ".ai/tasks/RIDE-001/frontend-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "RED: npm run test:smoke -- tests/access.test.tsx (expected failure before the Transportation dashboard was wired)",
+      "npm run test:smoke (18 files, 90 tests passed)",
+      "npm run build (TypeScript and Vite production build passed)",
+      "npx --no-install tsc --noEmit (passed)",
+      "npm run test:e2e (9 Chromium journeys passed)",
+      "git diff --check (passed)",
+      "RIDE browser inspection at 1440px and 375px (no horizontal overflow, no console errors, zero Uber requests)"
+    ],
+    "notes": "The Transportation login now opens CareLink Transportation Workspace rather than Resource Directory. The committed desktop/mobile captures show the recovered v2 plan, failed primary retained beside the current backup, provider readiness cards, replay controls, required logistics, and truthful demo-only labels."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Uber Health remains presentation-only and has no reducer action, API request, booking path, contract claim, or success state.",
+    "CareLink provider, driver, trip, time, map, and contact values are synthetic scenario data; the selected map is static and does not represent live GPS.",
+    "Security review is not required by the approved LOW-risk frontend-only architecture."
+  ]
 }

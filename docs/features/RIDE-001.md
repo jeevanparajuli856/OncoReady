@@ -8,11 +8,11 @@ CareLink visibly recovers Camila's transportation plan through working frontend 
 
 ## Required scope
 
-Use fictional provider/driver records for one request, assignment, primary failure, backup recovery, outbound pickup, return plan and current-plan acknowledgment. Update staff, transportation, caregiver, patient, graph and timeline together. Show minimum relevant logistics using existing components. Add a short timed replay of a previous scenario dispatch with acceptance, driver assignment and advancing status feed, using a separate historical trip identity. Finish with one clear patient plan summary, including current pickup, return, contact and a versioned caregiver-seen status.
+Use fictional provider/driver records for one request, assignment, primary failure, backup recovery, outbound pickup, return plan and current-plan acknowledgment. Update staff, transportation, caregiver, patient, graph and timeline together. Show minimum relevant logistics using existing components. Add a short timed replay of a previous scenario dispatch with acceptance, driver assignment and advancing status feed, using a separate historical trip identity. Finish with one clear patient plan summary, including current pickup, return, contact and a versioned caregiver-seen status. The read-only provider area may name CareLink and Uber Health to communicate adapter extensibility, but Uber Health must be labeled `Integration-ready preview · not connected` and cannot participate in the playable dispatch path.
 
 ## Deferred
 
-Real provider integration, ride booking, callbacks, GPS/ETA feeds, fleet management, broad eligibility engine, payments and Uber Health execution.
+Real provider integration, ride booking, callbacks, GPS/ETA feeds, fleet management, broad eligibility engine, payments, Uber Health execution and any claim of an active Uber Health contract or connection.
 
 ## Architecture and contract guidance
 
@@ -42,5 +42,7 @@ TARGETED; LOW risk for synthetic-only actions. Independent tests cover failed-pl
 
 10. After current-trip recovery, the patient finish shows the current pickup/arrival, return arrangement, named logistics contact, caregiver seen/pending state and patient acknowledgment together using existing components. Every value comes from the current plan; no historical trip date or assignment appears. Verify the patient/caregiver round trip.
 11. Ana can mark the permitted current logistics plan as seen through a bounded local scenario action. The shared view records the actor, plan version and scenario time; a changed plan returns this state to pending. This cannot change assignments, disclose clinical details, substitute for Camila's acknowledgment or become an additional clinical-clearance condition. Verify these boundaries.
+
+12. The provider/integration area labels both CareLink and Uber Health. CareLink remains the synthetic playable scenario provider; Uber Health is presented only as `Integration-ready preview · not connected`, with no Uber booking, success, contract or API claim and no effect on scenario state. Verify the label and zero Uber network activity.
 
 See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.

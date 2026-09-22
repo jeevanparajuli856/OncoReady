@@ -2,24 +2,75 @@
   "schema_version": "1.0",
   "task_id": "ML-001",
   "agent": "codex-architect",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "ML-001 is an offline synthetic-data pipeline plus a staff-side playback surface: a reproducible CPU notebook exports the actual checkpoint and transportation what-if results into versioned JSON, and the frontend validates and displays an exact copy without runtime inference, persistence, or changes to FLOW-001 workflow state.",
+  "files_changed": [
+    ".ai/tasks/ML-001/architecture-report.json"
+  ],
   "impacts": {
-    "database": null,
-    "backend": null,
-    "frontend": null,
-    "frontend_design_required": null,
-    "infrastructure": null
+    "database": false,
+    "backend": true,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
   },
-  "decisions": [],
-  "risks": [],
+  "decisions": [
+    "Backend impact means offline ML artifacts under ml/** only. Create a documented synthetic dataset/generator, data dictionary, executable notebook, clean-run instructions, and ml/artifacts/demo-insights.json; add no FastAPI route, database, hosted model, queue, scheduler, or infrastructure.",
+    "Use seed 20260921, a patient-separated train/test split, a simple baseline, and one small CPU classifier that can be implemented with minimal or standard-library-friendly tooling. Record feature availability, split seed, sample counts, model identity/version, actual held-out metrics, confusion matrix, export time, and limitations. Keep ML-only dependencies isolated from the deployed API runtime.",
+    "The target is a synthetic unresolved practical-readiness blocker at the treatment horizon, not clinical deterioration, urgency, prognosis, attendance, or treatment eligibility. Exclude identity and future information, including the later patient reply, task dispositions, ride outcomes, and acknowledgments, from earlier scores.",
+    "The notebook must score documented T-7, T-2, and T-1 scenario rows through the fitted model and export the actual values without hand editing or forcing a rising trajectory. Export up to three honest factors per checkpoint with readable raw values and signed model association; do not call ordinary contributions SHAP or causal effects.",
+    "The same fitted model must export a baseline row and a transportation-available row with only transportation availability changed, all other fields explicitly held constant, plus both actual scores, factors, delta, and model identity. A supportive next action is exported or mapped as a separately attributed workflow rule, never as learned clinical advice or channel selection.",
+    "Use ml/artifacts/demo-insights.json as the source and frontend/src/data/ml-insights.json as the exact bundled copy. Validate schema/version, finite score ranges, checkpoint completeness, what-if invariants, and SHA-256/content parity in build/test. No formal contracts/ artifact is required because this is one trusted, versioned, sequentially produced file boundary on the shared branch with no deployed or external consumer.",
+    "The frontend must parse the artifact as unknown through a typed validator and fail closed to an honest Insights unavailable state for missing, malformed, unsupported, non-finite, or incomplete data. Missing insights cannot block the prepared reply, human-owned work, graph, timeline, or continuity workflow and cannot be replaced with decorative scores.",
+    "Add the visible ML experience inside the existing staff case workspace, preferably as an Insights tab/component rather than a new page family. Show the three dated outputs, keyboard-operable Why flagged? details, synthetic dataset/model/metrics/limitations, working local evidence links, and the two-state transportation comparison using the locked design system.",
+    "Keep selected checkpoint and what-if mode in component-local presentation state only. Toggling, exiting, checkpoint loading, or reset performs no inference and cannot mutate WorkflowState, tasks, plan version, graph, timeline, outreach, acknowledgment, provider state, or Continuity plan confirmed; returning to the view starts from the actual baseline output.",
+    "FLOW-001 remains authoritative for explicit patient concerns and closure. Consume its independently reviewed dependency commit b8be8018c2746ab36ce5f51e4c865d4d773e8761; the exact reply still opens human clinical and transportation work regardless of score or insight availability.",
+    "Frontend design Phase A is required because this adds a visible trajectory, disclosure, failure state, evidence treatment, and interactive what-if. It is a compatibility extension only: reuse current staff cards, tabs, chips, typography, tokens, focus behavior, responsive layout, and reduced-motion treatment; do not alter global tokens or establish a new visual pattern.",
+    "No new ADR is required. This implements ADR-0003's visual lock and ADR-0004's offline synthetic-model boundary."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "Hand-edited metrics, scores, factors, or frontend copies could fake the core ML behavior.",
+      "mitigation": "Generate all model-derived values in the notebook, bind copies by exact content/hash, and smoke-check every checkpoint and both what-if rows against the saved artifact."
+    },
+    {
+      "severity": "high",
+      "description": "Synthetic model output could be mistaken for clinical urgency, causation, calibrated patient risk, or validated effectiveness.",
+      "mitigation": "Use explicit synthetic operational-readiness language and limitations, separate workflow-rule guidance, and prohibit model output from controlling clinical work or continuity closure."
+    },
+    {
+      "severity": "medium",
+      "description": "Identity or future workflow outcomes could leak into earlier features and inflate apparent held-out performance.",
+      "mitigation": "Use patient-separated splits, document feature availability at each checkpoint, assert forbidden columns/future values are absent, and report actual baseline/model results without a minimum threshold."
+    },
+    {
+      "severity": "medium",
+      "description": "The what-if could mutate the real scenario or be presented as a causal transport benefit.",
+      "mitigation": "Precompute exactly two rows, hold other inputs fixed, keep selection local and command-free, reset it on exit, and label the delta as model sensitivity only."
+    },
+    {
+      "severity": "medium",
+      "description": "Missing or invalid JSON could crash the staff case or block the hero workflow.",
+      "mitigation": "Validate at the frontend boundary, disable only the affected insight controls, render a truthful unavailable state, and test that FLOW continues unchanged."
+    },
+    {
+      "severity": "low",
+      "description": "The new chart and disclosure interactions could drift visually or lose keyboard/mobile usability.",
+      "mitigation": "Use the digest-bound compatibility design gate, existing primitives, textual equivalents, focus handling, reduced motion, and matched staff screenshots."
+    }
+  ],
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Use sequential shared-checkout handoffs. Backend/ML ownership is exactly ml/** plus .ai/tasks/ML-001/backend-report.json: ml/README.md, ml/data/synthetic-readiness.csv, ml/data/DATA_DICTIONARY.md, ml/notebooks/readiness-demo.ipynb, ml/artifacts/demo-insights.json, and deterministic validation helpers/tests under ml/**. Keep the clean CPU run standard-library-friendly; any optional notebook dependency manifest stays under ml/**.",
+    "After clean notebook execution, complete frontend design Phase A and its digest gate. Frontend ownership is frontend/src/data/ml-insights.json, frontend/src/data/mlInsights.ts, frontend/src/components/ReadinessInsights.tsx, the smallest StaffCaseWorkspace integration edit, frontend/public/evidence/ml/**, focused frontend smoke tests, .ai/tasks/ML-001/frontend-design-report.json, and .ai/tasks/ML-001/frontend-report.json.",
+    "SMOKE evidence must cover clean notebook execution, patient split/leakage assertions, real baseline/model metrics and confusion matrix, exact artifact/UI parity, all Why flagged? checkpoints, both what-if rows, evidence links, keyboard use, invalid/missing artifact behavior, and proof that comparison/reset does not mutate FLOW state.",
+    "If implementation introduces runtime inference, arbitrary feature input, model upload/deserialization, real patient data, a server API, persistence, or ML-driven clinical/closure decisions, return ML-001 to PLANNING because these execution controls no longer apply."
+  ],
   "execution": {
-    "contract_required": null,
-    "test_depth": null,
-    "security_risk": null,
-    "security_review_required": null
+    "contract_required": false,
+    "test_depth": "SMOKE",
+    "security_risk": "LOW",
+    "security_review_required": false
   }
 }

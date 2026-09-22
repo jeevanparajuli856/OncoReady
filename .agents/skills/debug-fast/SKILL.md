@@ -64,7 +64,7 @@ Rules for the three attempts:
 2. **Read before you edit.** `code-explorer` to trace the actual path is a better
    use of an attempt than a guess.
 3. **Check your assumptions are current.** Verify the API you think you are
-   calling with `documentation-lookup` rather than from memory. A surprising
+   calling with `find-docs` rather than from memory. A surprising
    number of "impossible" bugs are a signature that changed.
 4. **Revert failed attempts immediately.** Do not accumulate speculative edits.
 

@@ -516,6 +516,325 @@ select:focus-visible {
   scroll-margin-top: 5.5rem;
 }
 
+.login-page {
+  background:
+    radial-gradient(circle at 10% 18%, rgba(119, 104, 232, 0.16), transparent 22rem),
+    radial-gradient(circle at 92% 82%, rgba(5, 150, 105, 0.1), transparent 24rem),
+    var(--landing-canvas);
+}
+
+.login-layout {
+  display: grid;
+  gap: clamp(2rem, 7vw, 7rem);
+  align-items: center;
+}
+
+.login-intro {
+  padding: clamp(0rem, 2vw, 1.5rem);
+}
+
+.login-intro h1 {
+  margin-top: 1.2rem;
+  letter-spacing: -0.055em;
+}
+
+.login-trust-list {
+  display: grid;
+  gap: 0.7rem;
+  margin-top: 2rem;
+  color: #475569;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.login-trust-list div {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.login-card {
+  max-width: 30rem;
+  width: 100%;
+  justify-self: end;
+}
+
+.login-back-link,
+.epic-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--accent);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.login-icon {
+  width: 2.7rem;
+  height: 2.7rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.9rem;
+  background: rgba(79, 70, 229, 0.1);
+  color: var(--accent);
+}
+
+.login-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 1.3rem 0;
+  color: #94a3b8;
+  font-size: 0.72rem;
+}
+
+.login-divider::before,
+.login-divider::after {
+  content: '';
+  height: 1px;
+  flex: 1;
+  background: var(--line);
+}
+
+.epic-entry-button {
+  width: 100%;
+  min-height: 3rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.75rem;
+  background: white;
+  color: var(--ink);
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.epic-entry-button:hover {
+  border-color: #0d9488;
+  box-shadow: 0 12px 26px -20px rgba(15, 23, 42, 0.65);
+  transform: translateY(-1px);
+}
+
+.epic-entry-button:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.epic-entry-button img {
+  width: 3.4rem;
+  height: 1.25rem;
+  object-fit: contain;
+}
+
+.epic-login-page {
+  position: relative;
+  overflow: hidden;
+  align-items: stretch;
+  justify-content: center;
+  padding: 0;
+  height: 100dvh;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  background: #9ccdb8 url('/epic-login-forest.svg') center / cover no-repeat;
+}
+
+.login-redirect-page {
+  background:
+    radial-gradient(circle at 50% 35%, rgba(119, 104, 232, 0.14), transparent 22rem),
+    var(--landing-canvas);
+}
+
+.login-redirect-card {
+  width: min(100%, 22rem);
+  padding: 2.5rem 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+.login-redirect-logo {
+  width: 7rem;
+  height: auto;
+}
+
+.login-redirect-card h1 {
+  color: var(--ink);
+  font-family: 'Outfit', sans-serif;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.login-redirect-card p {
+  color: #64748b;
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.login-redirect-spinner {
+  width: 1.4rem;
+  height: 1.4rem;
+  border: 3px solid rgba(79, 70, 229, 0.2);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: epic-spin 700ms linear infinite;
+}
+
+.epic-login-page::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 61, 65, 0.08);
+  pointer-events: none;
+}
+
+.epic-login-card {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 31.25rem);
+  height: 100dvh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 0;
+  border-radius: 0;
+  background: #eef0f3;
+  box-shadow: 0 0 2rem rgba(15, 23, 42, 0.14);
+}
+
+.epic-login-brand {
+  padding: 7.8rem 2rem 1.2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: linear-gradient(180deg, #f3f5f7, #e6e9ed);
+  color: #7d8798;
+  letter-spacing: 0.42em;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.epic-login-brand img {
+  width: 12rem;
+  height: auto;
+  margin-bottom: 0.35rem;
+}
+
+.epic-login-brand sup { letter-spacing: 0; font-size: 0.45em; }
+.epic-login-brand small { margin-top: 0.25rem; font-size: 0.58rem; letter-spacing: 0.02em; }
+
+.epic-login-form {
+  width: min(100%, 20rem);
+  margin: 4.5rem auto 0;
+  padding: 0 0 2rem;
+}
+
+.epic-legal {
+  position: absolute;
+  z-index: 2;
+  left: 0.45rem;
+  bottom: 1.1rem;
+  width: min(25rem, 38vw);
+  margin: 0;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: Arial, sans-serif;
+  font-size: 0.62rem;
+  line-height: 1.35;
+  text-shadow: 0 1px 2px rgba(15, 23, 42, 0.7);
+}
+
+.epic-input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.6rem 0.7rem;
+  border: 1px solid #aeb8c5;
+  border-radius: 0.12rem;
+  background: white;
+  color: #293241;
+  font-family: Arial, sans-serif;
+  font-size: 0.9rem;
+}
+
+.epic-input-wrap {
+  position: relative;
+}
+
+.epic-input-wrap .epic-input {
+  padding-right: 2.4rem;
+}
+
+.epic-input-icon {
+  position: absolute;
+  top: 50%;
+  right: 0.55rem;
+  width: 1.15rem;
+  height: 1.15rem;
+  color: #1769d1;
+  transform: translateY(-50%);
+}
+
+.epic-input:focus { outline: 2px solid #1677d2; outline-offset: 1px; }
+
+.epic-login-submit {
+  width: 100%;
+  min-height: 2.7rem;
+  border: 1px solid #767f89;
+  border-radius: 0.12rem;
+  background: #eceff2;
+  color: #38414c;
+  font-family: Arial, sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.epic-login-submit:hover:not(:disabled) { background: #dce2e8; }
+
+.epic-login-submit:focus-visible,
+.epic-input:focus-visible {
+  outline: 2px solid #1677d2;
+  outline-offset: 1px;
+}
+
+.epic-login-error {
+  margin-top: 1rem;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #e11d48;
+  background: #fff1f2;
+  color: #b91c1c;
+  font-family: Arial, sans-serif;
+  font-size: 0.72rem;
+  line-height: 1.45;
+}
+
+.epic-back-button { color: #1677d2; font-family: Arial, sans-serif; font-size: 0.72rem; }
+
+.epic-redirect-state {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-top: 1rem;
+  color: #1677d2;
+  font-family: Arial, sans-serif;
+  font-size: 0.76rem;
+  font-weight: 700;
+}
+
+.epic-redirect-spinner {
+  width: 0.9rem;
+  height: 0.9rem;
+  border: 2px solid #bdd3ea;
+  border-top-color: #1677d2;
+  border-radius: 50%;
+  animation: epic-spin 700ms linear infinite;
+}
+
+@keyframes epic-spin { to { transform: rotate(360deg); } }
+
 .landing-section--soft,
 .landing-section--aurora {
   width: 100%;
@@ -585,7 +904,7 @@ select:focus-visible {
 }
 
 .landing-role-grid,
-.landing-step-grid,
+.landing-loop-road,
 .landing-business-grid,
 .landing-saas-grid {
   display: grid;
@@ -653,8 +972,8 @@ select:focus-visible {
 
 .landing-role-reveal,
 .landing-role-reveal .landing-role-card,
-.landing-step-grid .scroll-reveal,
-.landing-step-grid .landing-step-card,
+.landing-loop-road .scroll-reveal,
+.landing-loop-road .landing-step-card,
 .landing-saas-grid .scroll-reveal,
 .landing-saas-grid .landing-saas-card {
   height: 100%;
@@ -900,9 +1219,79 @@ select:focus-visible {
   box-shadow: 0 24px 52px -44px rgba(15, 23, 42, 0.46);
 }
 
+.landing-loop-road {
+  position: relative;
+  isolation: isolate;
+  width: min(100%, 72rem);
+  margin-inline: auto;
+}
+
+.landing-loop-road__track {
+  position: absolute;
+  z-index: -1;
+  top: 50%;
+  right: 3%;
+  left: 3%;
+  height: 15rem;
+  border: 1.1rem solid rgba(226, 232, 240, 0.82);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.3);
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.9), 0 22px 44px -42px rgba(15, 23, 42, 0.7);
+  transform: translateY(-50%);
+}
+
+.landing-loop-road__track::before {
+  content: '';
+  position: absolute;
+  inset: 0.6rem;
+  border: 2px dashed rgba(79, 70, 229, 0.28);
+  border-radius: inherit;
+}
+
+.landing-loop-road__dash {
+  position: absolute;
+  top: 50%;
+  width: 0.7rem;
+  height: 0.7rem;
+  border: 3px solid white;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.12);
+  transform: translate(-50%, -50%);
+}
+
+.landing-loop-road__dash--one { left: 16.6%; }
+.landing-loop-road__dash--two { left: 50%; background: #d94e49; box-shadow: 0 0 0 4px rgba(242, 107, 99, 0.14); }
+.landing-loop-road__dash--three { left: 83.4%; background: var(--mint); box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.14); }
+
+.landing-loop-road__finish {
+  position: absolute;
+  right: 1.6rem;
+  bottom: -0.8rem;
+  padding: 0.25rem 0.55rem;
+  border: 1px solid rgba(5, 150, 105, 0.18);
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #047857;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .landing-step-card {
   min-height: 20rem;
   padding: clamp(1.4rem, 3vw, 2.2rem);
+  position: relative;
+  z-index: 1;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+
+.landing-step-card:hover {
+  border-color: rgba(79, 70, 229, 0.2);
+  box-shadow: 0 30px 58px -44px rgba(15, 23, 42, 0.64);
+  transform: translateY(-3px);
 }
 
 .landing-step-card__topline {
@@ -925,6 +1314,29 @@ select:focus-visible {
   font-weight: 700;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+.landing-step-card__marker {
+  position: absolute;
+  right: 50%;
+  bottom: -0.72rem;
+  width: 1.1rem;
+  height: 1.1rem;
+  border: 4px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+  transform: translateX(50%);
+}
+
+[data-tone='coral'] .landing-step-card__marker {
+  background: #d94e49;
+  box-shadow: 0 0 0 3px rgba(242, 107, 99, 0.22);
+}
+
+[data-tone='mint'] .landing-step-card__marker {
+  background: var(--mint);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
 }
 
 .landing-business-card {
@@ -1313,12 +1725,16 @@ select:focus-visible {
 }
 
 @media (min-width: 768px) {
+  .login-layout {
+    grid-template-columns: minmax(0, 1fr) minmax(22rem, 30rem);
+  }
+
   .landing-section-heading--split {
     grid-template-columns: minmax(0, 1.3fr) minmax(18rem, 0.7fr);
   }
 
   .landing-role-grid,
-  .landing-step-grid,
+  .landing-loop-road,
   .landing-business-grid {
     grid-template-columns: repeat(3, minmax(0, 1fr));
   }
@@ -1383,6 +1799,55 @@ select:focus-visible {
 }
 
 @media (max-width: 767px) {
+  .landing-loop-road {
+    gap: 1rem;
+    padding-left: 1.35rem;
+  }
+
+  .landing-loop-road__track {
+    top: 1.25rem;
+    right: auto;
+    bottom: 1.25rem;
+    left: 0.55rem;
+    width: 1.25rem;
+    height: auto;
+    border-width: 0.45rem;
+    border-radius: 999px;
+    transform: none;
+  }
+
+  .landing-loop-road__track::before {
+    inset: 0.35rem 0.25rem;
+    border-width: 1px;
+  }
+
+  .landing-loop-road__dash {
+    top: auto;
+    left: 50%;
+    width: 0.55rem;
+    height: 0.55rem;
+  }
+
+  .landing-loop-road__dash--one { top: 16.6%; }
+  .landing-loop-road__dash--two { top: 50%; }
+  .landing-loop-road__dash--three { top: 83.4%; }
+
+  .landing-loop-road__finish {
+    right: auto;
+    bottom: -0.75rem;
+    left: 1.1rem;
+    transform: rotate(-90deg) translateX(-50%);
+    transform-origin: left center;
+  }
+
+  .landing-step-card__marker {
+    top: 50%;
+    right: auto;
+    bottom: auto;
+    left: -1.72rem;
+    transform: translateY(-50%);
+  }
+
   .scroll-reveal[data-reveal-state='pending'][data-reveal-variant='patient'] {
     transform: translate3d(-8px, 18px, 0);
   }

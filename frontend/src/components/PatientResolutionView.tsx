@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   CheckCircle2,
   Car,
@@ -33,6 +33,12 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
   const planVersion = getCurrentPlanVersion(state);
   const canAcknowledge = isClinicalDispositionComplete(state) && isCurrentTransportPlanComplete(state);
   const isConfirmed = isContinuityPlanConfirmed(state);
+  const transportDetails = transportTask?.transportDetails;
+  const caregiverSeen = state.ride.caregiverSeen?.planVersion === planVersion ? state.ride.caregiverSeen : null;
+
+  useEffect(() => {
+    setHasAgreed(false);
+  }, [planVersion]);
 
   const handleConfirmClick = () => {
     setIsSubmitting(true);
@@ -83,8 +89,8 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
           </div>
           <div className={`text-center p-4 rounded-xl border-2 border-ink min-w-[150px] ${isConfirmed ? 'bg-white' : 'bg-white/10'}`}>
             <div className="label-caps">Arrival time</div>
-            <div className="font-display text-2xl font-extrabold mt-0.5">9:30 AM</div>
-            <div className="text-xs mt-0.5">Sep 25, 2026 • CT</div>
+            <div className="font-display text-lg font-extrabold mt-0.5">{transportDetails?.plannedArrival ?? 'Pending'}</div>
+            <div className="text-xs mt-0.5">Planned time · not a live ETA</div>
           </div>
         </div>
       </div>
@@ -135,28 +141,24 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
                 <p className="text-xs text-muted-fg">Coordinated by Marcus Vance, MSW</p>
               </div>
             </div>
-            <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">
+            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-heading font-bold border-2 border-ink ${canAcknowledge ? 'bg-mint/30' : 'bg-sun/30'}`}>
               <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-              Vehicle Dispatched
+              {canAcknowledge ? 'Synthetic plan complete' : 'Plan incomplete'}
             </span>
           </div>
-          <div className="p-3.5 rounded-xl bg-cream grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-            <div>
-              <div className="label-caps text-muted-fg">Pickup window</div>
-              <div className="font-heading font-bold">Sep 25, 8:15–8:30 AM CT</div>
-              <div className="text-xs text-muted-fg mt-0.5">Planned arrival 9:15 AM</div>
-              <div className="text-xs text-muted-fg mt-0.5">1420 St. Charles Ave, New Orleans</div>
-            </div>
-            <div>
-              <div className="label-caps text-muted-fg">Vehicle & driver</div>
-              <div className="font-heading font-bold">
-                {transportTask?.transportDetails?.vehicleId || 'CareLink Vehicle #402'}
-              </div>
-              <div className="text-xs text-muted-fg mt-0.5">
-                Driver: {transportTask?.transportDetails?.driverName || 'Jerome Davis'}
-              </div>
-            </div>
-          </div>
+          {canAcknowledge && transportDetails ? (
+            <dl className="p-3.5 rounded-xl bg-cream grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+              <div><dt className="label-caps text-muted-fg">Planned pickup</dt><dd className="font-heading font-bold">{transportDetails.confirmedPickupTime}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Planned arrival</dt><dd className="font-heading font-bold">{transportDetails.plannedArrival}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Return arrangement</dt><dd className="font-heading font-bold">{transportDetails.returnArrangement}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Logistics contact</dt><dd className="font-heading font-bold">{transportDetails.logisticsContact}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Backup owner</dt><dd className="font-heading font-bold">{transportDetails.backupOwner}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Plan visibility</dt><dd className="font-heading font-bold">{caregiverSeen ? `Seen by Ana · plan v${planVersion}` : `Ana pending · plan v${planVersion}`}</dd></div>
+              <div><dt className="label-caps text-muted-fg">Patient acknowledgment</dt><dd className="font-heading font-bold">{state.patientAcknowledgedPlanVersion === planVersion ? `Camila acknowledged · plan v${planVersion}` : `Camila pending · plan v${planVersion}`}</dd></div>
+            </dl>
+          ) : (
+            <p className="p-3.5 rounded-xl bg-sun/20 border-2 border-ink/10 text-sm">The current outbound, arrival, return, contact, and backup logistics must be complete before acknowledgment.</p>
+          )}
         </div>
       </div>
 
@@ -186,7 +188,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             className={`btn-candy w-full text-center ${hasAgreed && canAcknowledge && !isSubmitting ? '' : '!bg-muted !text-muted-fg !shadow-none cursor-not-allowed'}`}
           >
             <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
-            <span>{isSubmitting ? 'Confirming Plan...' : 'Acknowledge & Confirm Treatment Plan'}</span>
+            <span>{isSubmitting ? 'Recording acknowledgment...' : `Acknowledge current plan v${planVersion}`}</span>
           </button>
         </div>
       ) : (

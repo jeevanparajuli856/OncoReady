@@ -4,6 +4,24 @@ import {
   workflowReducer, 
   deriveCaregiverProjection 
 } from '../src/state/workflowState';
+import type { WorkflowState } from '../src/types';
+
+const recoverRide = (startingState: WorkflowState) => {
+  let state = workflowReducer(startingState, { type: 'REQUEST_CURRENT_RIDE' });
+  state = workflowReducer(state, { type: 'ASSIGN_PRIMARY_RIDE' });
+  state = workflowReducer(state, { type: 'FAIL_PRIMARY_RIDE' });
+  state = workflowReducer(state, { type: 'ASSIGN_BACKUP_RIDE' });
+  return workflowReducer(state, {
+    type: 'SAVE_RECOVERED_RIDE',
+    payload: {
+      pickupTime: 'Tomorrow, 7:45 AM',
+      plannedArrival: 'Tomorrow, 9:15 AM',
+      returnArrangement: 'Return coordination 1:00–4:00 PM CT',
+      logisticsContact: 'CareLink Dispatch • (504) 555-0124',
+      backupOwner: 'Ana Hernandez',
+    },
+  });
+};
 
 describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
   it('1. Initial opening state is deterministic with readiness check pending', () => {
@@ -64,21 +82,13 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     expect(projectionJson).not.toContain('neuropathy');
     expect(projectionJson).not.toContain('CLINICAL_REVIEW');
 
-    // Confirm transport
-    const stateAfterTransport = workflowReducer(stateWithTasks, {
-      type: 'CONFIRM_TRANSPORTATION',
-      payload: {
-        vehicleId: 'CareLink Vehicle #402',
-        driverName: 'Jerome Davis',
-        pickupTime: 'Tomorrow, 7:45 AM',
-      },
-    });
+    const stateAfterTransport = recoverRide(stateWithTasks);
 
     const projectionAfterDispatch = deriveCaregiverProjection(stateAfterTransport);
     expect(projectionAfterDispatch.transportConfirmed).toBe(true);
-    expect(projectionAfterDispatch.transportInfo?.vehicleId).toBe('CareLink Vehicle #402');
-    expect(projectionAfterDispatch.transportInfo?.driverName).toBe('Jerome Davis');
-    expect(projectionAfterDispatch.transportInfo?.pickupTime).toBe('Tomorrow, 7:45 AM');
+    expect(projectionAfterDispatch.currentPlan?.pickupTime).toBe('Tomorrow, 7:45 AM');
+    expect(projectionAfterDispatch.currentPlan?.plannedArrival).toBe('Tomorrow, 9:15 AM');
+    expect(projectionAfterDispatch.currentPlan?.backupOwner).toBe('Ana Hernandez');
 
     // Re-verify privacy after transport confirmation
     const projectionJsonAfter = JSON.stringify(projectionAfterDispatch);
@@ -112,15 +122,8 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     const clnTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
     expect(clnTask?.clinicalDetails?.clearanceState).toBe('REVIEWED_AND_ACKNOWLEDGED');
 
-    // Step 3: Navigator confirms transport
-    state = workflowReducer(state, {
-      type: 'CONFIRM_TRANSPORTATION',
-      payload: {
-        vehicleId: 'CareLink Vehicle #402',
-        driverName: 'Jerome Davis',
-        pickupTime: 'Tomorrow, 7:45 AM',
-      },
-    });
+    // Step 3: Navigator recovers transport through primary failure and backup
+    state = recoverRide(state);
     const trnTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
     expect(trnTask?.transportDetails?.dispatchStatus).toBe('CONFIRMED');
     expect(state.overallReadiness).toBe('IN_PROGRESS');
@@ -135,7 +138,7 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
 
     // Verify causal audit events are recorded
     expect(state.auditEvents.length).toBeGreaterThanOrEqual(6);
-    const hasClosureEvent = state.auditEvents.some((e) => e.action === 'Current transport plan v1 acknowledged');
+    const hasClosureEvent = state.auditEvents.some((e) => e.action === 'Current transport plan v2 acknowledged');
     expect(hasClosureEvent).toBe(true);
 
     // Step 5: Reset restores initial state
@@ -156,8 +159,8 @@ describe('CORE-001 Treatment Readiness Golden Path Smoke Test', () => {
     expect(workflowReducer(submitted, { type: 'ACKNOWLEDGE_PATIENT_PLAN' })).toBe(submitted);
     const reviewed = workflowReducer(submitted, { type: 'ACKNOWLEDGE_CLINICAL_TASK' });
     expect(workflowReducer(reviewed, { type: 'ACKNOWLEDGE_CLINICAL_TASK' })).toBe(reviewed);
-    const transported = workflowReducer(reviewed, { type: 'CONFIRM_TRANSPORTATION' });
-    expect(workflowReducer(transported, { type: 'CONFIRM_TRANSPORTATION' })).toBe(transported);
+    const transported = recoverRide(reviewed);
+    expect(workflowReducer(transported, { type: 'SAVE_RECOVERED_RIDE', payload: { pickupTime: '', plannedArrival: '', returnArrangement: '', logisticsContact: '', backupOwner: '' } })).toBe(transported);
     const confirmed = workflowReducer(transported, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
     expect(workflowReducer(confirmed, { type: 'ACKNOWLEDGE_PATIENT_PLAN' })).toBe(confirmed);
   });

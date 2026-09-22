@@ -297,9 +297,8 @@ Practical consequences:
 - **Naming, immutability, error handling, `console.log`** — already in
   `rules/typescript/coding-style.md`, always in context
 - **Runtime performance** — types are erased; see
-  [react-performance](../react-performance/SKILL.md)
+  [react-patterns](../react-patterns/SKILL.md)
 - **Build/bundler configuration** — see [vite-patterns](../vite-patterns/SKILL.md)
-  or [nextjs-react](../nextjs-react/SKILL.md)
 
 ## Related
 
