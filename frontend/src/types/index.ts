@@ -46,12 +46,61 @@ export interface TransportDetails {
   vehicleId?: string;
   driverName?: string;
   confirmedPickupTime?: string;
+  plannedArrival?: string;
   dispatchedBy?: string;
   planVersion: number;
   returnArrangement?: string;
   logisticsContact?: string;
   backupPlan?: string;
+  backupOwner?: string;
   planFailed: boolean;
+}
+
+export type RideAssignmentStatus = 'CURRENT' | 'FAILED';
+
+export interface RideAssignment {
+  id: string;
+  providerName: string;
+  providerKind: 'FICTIONAL';
+  status: RideAssignmentStatus;
+  assignedAt: string;
+  failedAt?: string;
+  driverName?: string;
+  vehicleId?: string;
+}
+
+export interface CaregiverSeenRecord {
+  eventId: string;
+  actor: 'Ana Hernandez';
+  actorRole: 'CAREGIVER';
+  planVersion: number;
+  timestamp: string;
+}
+
+export type CurrentRideStatus =
+  | 'OPEN'
+  | 'REQUESTED'
+  | 'PRIMARY_ASSIGNED'
+  | 'PRIMARY_FAILED'
+  | 'BACKUP_ASSIGNED'
+  | 'RECOVERED'
+  | 'NO_OPTION';
+
+export type HistoricalReplayStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'COMPLETE';
+
+export interface HistoricalRideReplay {
+  tripId: 'carelink-prior-001';
+  status: HistoricalReplayStatus;
+  visibleEventCount: number;
+  sessionToken: number;
+}
+
+export interface RideState {
+  currentTripId: 'carelink-current-2026-09-25';
+  currentStatus: CurrentRideStatus;
+  assignments: RideAssignment[];
+  caregiverSeen: CaregiverSeenRecord | null;
+  replay: HistoricalRideReplay;
 }
 
 export interface Task {
@@ -164,20 +213,23 @@ export interface ReadinessSubmission {
 }
 
 export interface CaregiverProjection {
+  caregiverName: string;
+  caregiverRelationship: string;
   patientName: string;
   appointmentTime: string;
   appointmentLocation: string;
-  treatmentName: string;
   transportConfirmed: boolean;
-  transportInfo?: {
+  currentPlan?: {
+    planVersion: number;
     pickupTime: string;
+    plannedArrival: string;
     pickupAddress: string;
     destination: string;
-    vehicleId: string;
-    driverName: string;
-    status: string;
+    returnArrangement: string;
+    logisticsContact: string;
+    backupOwner: string;
   };
-  overallReadiness: ReadinessStatus;
+  seen: CaregiverSeenRecord | null;
   privacyBoundaryNotice: string;
 }
 
@@ -221,6 +273,7 @@ export interface WorkflowState {
   processedSourceEventIds: string[];
   currentCheckpoint: ScenarioCheckpoint;
   attendanceStatus: 'UNKNOWN';
+  ride: RideState;
   contextualCases: ContextualQueueCase[];
   isSimulated: boolean;
   version: number;
