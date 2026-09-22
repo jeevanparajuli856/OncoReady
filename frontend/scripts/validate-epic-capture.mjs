@@ -47,6 +47,17 @@ if (manifest.scenarioBinding?.scenarioId !== 'camila-demo-v2' || manifest.scenar
 if (!Array.isArray(manifest.resources) || manifest.resources.length === 0) fail('resource inventory is empty');
 if (!Array.isArray(manifest.requests) || manifest.requests.some((request) => request.method !== 'GET')) fail('request evidence must be GET-only');
 
+// The capture id embeds the capture timestamp, and a capture cannot be
+// reviewed before it was taken. Both caught a hand-edited capturedAt.
+const capturedStamp = manifest.captureId.slice('epic-sandbox-'.length, 'epic-sandbox-'.length + 16);
+const capturedFromTimestamp = manifest.capturedAt.replace(/[-:]/g, '');
+if (capturedStamp !== capturedFromTimestamp) {
+  fail(`capturedAt ${manifest.capturedAt} does not match the capture id timestamp ${capturedStamp}`);
+}
+if (Date.parse(manifest.review.reviewedAt) < Date.parse(manifest.capturedAt)) {
+  fail('capture review predates the capture it reviewed');
+}
+
 const expectedFiles = new Set(manifest.resources.map((entry) => entry.path.replace('resources/', '')));
 const actualFiles = new Set(await readdir(join(captureRoot, 'resources')));
 if (expectedFiles.size !== actualFiles.size || [...expectedFiles].some((name) => !actualFiles.has(name))) fail('resource directory does not exactly match the manifest');

@@ -56,7 +56,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Epic/i }));
     const epicPanel = screen.getByRole('tabpanel', { name: /Epic/i });
 
-      expect(epicPanel.textContent).toMatch(/Captured.*Sep.*25.*2026.*2:01.*CT/i);
+      expect(epicPanel.textContent).toMatch(/Captured.*Sep.*22.*2026.*2:01.*CT/i);
       expect(epicPanel.textContent).toContain('Captured from Epic');
     expect(epicPanel.textContent).not.toMatch(/\bConnected\b/i);
     expect(epicPanel.textContent).not.toMatch(/\bLive synchronization\b/i);
@@ -88,7 +88,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     expect(drawer.textContent).toContain('Epic FHIR Sandbox');
     expect(drawer.textContent).toContain('Non-Production Sandbox');
     expect(drawer.textContent).toContain('FHIR 4.0.1');
-      expect(drawer.textContent).toContain('2026-09-25T07:01:25Z');
+      expect(drawer.textContent).toContain('2026-09-22T07:01:25Z');
     expect(drawer.textContent).toContain(CAPTURE_ID);
     expect(drawer.textContent).toContain(`Patient/${PATIENT_RESOURCE_ID}`);
     expect(drawer.textContent).toContain(`MedicationRequest/${MEDICATION_RESOURCE_ID}`);
