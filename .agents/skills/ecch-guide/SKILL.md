@@ -83,7 +83,7 @@ The two human gates — after Plan, before Commit — always apply.
 | "the build fails" | `/fix` or the `build-error-resolver` agent |
 | "what did we decide last time?" | `session-memory`, `.ecch/memory/` |
 | "what has it learned?" | `/instinct-status` |
-| "which library/API do I use?" | `documentation-lookup` (Context7) |
+| "which library/API do I use?" | `find-docs` (ctx7) |
 | "should we even build this?" | `product-lens`, then `council` if it is a real fork |
 
 ## Hook profiles

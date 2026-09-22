@@ -3,7 +3,7 @@ description = "Database specialist for schema, migrations, integrity, indexes, R
 model_reasoning_effort = "high"
 
 developer_instructions = """
-Use AGENTS.md and .agents/skills/database-development/SKILL.md.
+Use AGENTS.md, docs/standards/DATABASE.md, and the `database-migrations` and `postgres-patterns` skills.
 Read task permissions before writes.
 Git-tracked migrations/schema are authoritative.
 When Supabase is selected, use CLI-generated timestamp migrations and the CLI migration lifecycle; use project-scoped DEV MCP primarily for inspection/verification/advisors/diagnostics.

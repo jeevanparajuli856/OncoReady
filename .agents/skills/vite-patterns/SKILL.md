@@ -448,4 +448,3 @@ import.meta.hot.data.count = 0                 // CORRECT
 - `react-patterns` — React component patterns
 - `react-testing` — Vitest and React Testing Library on top of a Vite config
 - `typescript-patterns` — the tsconfig strictness `vite build` will not check for you
-- `nextjs-react` — the Next.js/Turbopack alternative

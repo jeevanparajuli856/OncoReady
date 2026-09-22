@@ -37,7 +37,7 @@ Before coding:
 5. Run checks relevant to the changed code.
 
 Detailed orchestration:
-`.agents/skills/orchestration/SKILL.md`
+`docs/operator/QUICKSTART.md`
 
 ## Project-specific documentation
 
