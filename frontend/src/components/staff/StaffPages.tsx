@@ -2,6 +2,7 @@ import React from 'react';
 import { WorkflowState } from '../../types';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from '../RideMap';
 import { StickerCard } from '../ui';
+import { EpicCaptureSummary } from '../EpicClinicalContext';
 
 export const StaffCommandCenter: React.FC<{
   state: WorkflowState;
@@ -167,34 +168,26 @@ export const StaffInsights: React.FC = () => {
 };
 
 export const StaffIntegrations: React.FC = () => (
-  <div className="card-sticker p-5 sm:p-6 space-y-4">
-    <h2 className="font-display text-2xl font-extrabold">Proposed Data Flow Mapping</h2>
-    <div className="p-4 rounded-xl bg-cream border-2 border-ink">
-      <h3 className="font-heading font-bold text-sm">FHIR Schedule Mapping</h3>
-      <pre className="mt-2 text-xs bg-white p-3 rounded-lg border-2 border-ink text-muted-fg overflow-x-auto">{`{
-  "resourceType": "Appointment",
-  "status": "booked",
-  "serviceType": [
-    {
-      "coding": [
-        {
-          "system": "http://terminology.hl7.org/CodeSystem/service-type",
-          "code": "108",
-          "display": "Oncology"
-        }
-      ]
-    }
-  ]
-}`}</pre>
-    </div>
-    <div className="grid sm:grid-cols-3 gap-3">
-      {['Patient + Appointment', 'Task + Owner', 'Communication + Audit'].map((mapping) => (
-        <div key={mapping} className="p-3 border-2 border-ink rounded-xl bg-white">
-          <div className="text-sm font-heading font-bold">{mapping}</div>
-          <div className="text-xs text-muted-fg mt-1">FHIR mapping • Not connected</div>
-        </div>
-      ))}
-    </div>
+  <div className="space-y-5">
+    <EpicCaptureSummary />
+    <section className="card-sticker p-5 sm:p-6 space-y-3" aria-labelledby="integration-boundary-title">
+      <h2 id="integration-boundary-title" className="font-heading font-bold">Integration boundary</h2>
+      <p className="text-sm text-muted-fg">
+        The selected staff path reads reviewed Epic Sandbox FHIR R4 JSON locally. OncoReady workflow, task ownership, outreach, transportation, and acknowledgments remain separate product data.
+      </p>
+      <div className="grid sm:grid-cols-3 gap-3">
+        {[
+          ['Captured clinical context', 'Patient, appointments, medication, and laboratory Observations'],
+          ['OncoReady workflow', 'Generated scenario actions stay in the existing case sections'],
+          ['Deferred', 'Runtime SMART lifecycle, continuous sync, production access, and writeback'],
+        ].map(([title, detail]) => (
+          <div key={title} className="metric-tile">
+            <h3 className="text-sm font-heading font-bold">{title}</h3>
+            <p className="text-xs text-muted-fg mt-1">{detail}</p>
+          </div>
+        ))}
+      </div>
+    </section>
   </div>
 );
 

@@ -2,17 +2,45 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "agent": "codex-frontend",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Implemented the approved staff-only Epic capture experience using the reviewed Camila Sandbox package: a strict typed adapter outside WorkflowState, deterministic build/test integrity validation, accessible Epic tab and source-provenance drawer, explicit missing/unavailable states, immutable capture-time and no-live-sync language, official Epic branding localized to the source boundary, and a secondary Integrations evidence view. OncoReady scenario regimen/labs/workflow remain separately labeled and no Epic content is rendered in non-staff presentation.",
+  "files_changed": [
+    "frontend/package.json",
+    "frontend/public/epic-logo.svg",
+    "frontend/scripts/validate-epic-capture.mjs",
+    "frontend/src/data/epicCapture.ts",
+    "frontend/src/data/epic-capture/manifest.json",
+    "frontend/src/data/epic-capture/resources/*.json",
+    "frontend/src/components/EpicClinicalContext.tsx",
+    "frontend/src/components/StaffCaseWorkspace.tsx",
+    "frontend/src/components/staff/StaffPages.tsx",
+    "frontend/tests/epic-capture.test.tsx",
+    "frontend/tests/epic-adapter.test.ts",
+    "frontend/tests/access.test.tsx",
+    "frontend/tests/e2e.spec.ts"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/schemas/epic-capture-manifest.v1.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "node frontend/scripts/validate-epic-capture.mjs",
+      "npm --prefix frontend run test:smoke -- tests/epic-capture.test.tsx tests/epic-adapter.test.ts",
+      "npm --prefix frontend run test:smoke",
+      "npm --prefix frontend run build",
+      "npm --prefix frontend run test:e2e",
+      "python scripts/agentctl.py scope check EPIC-001 frontend --base daccf16"
+    ],
+    "notes": "Capture validator passed for the immutable reviewed package and exact official logo, verifying 20 manifest-referenced resources, SHA-256 values, resource identity/type, patient scope, laboratory category, GET-only evidence, source identity, distribution review, exact file inventory, and secret-marker exclusion. Focused Epic suites passed 9/9; all frontend Vitest suites passed 41/41; production TypeScript/Vite build passed; Chromium E2E passed 8/8 including desktop/mobile Epic tab, source drawer focus/Escape/return, no horizontal overflow, scenario separation, immutable capture wording, public exclusion, and the complete pre-existing Camila journey."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "Dedicated security review should recheck that the committed package is the reviewed Epic Sandbox test-data capture, the exact official logo checksum remains unchanged, no tokens/authorization material are present, and browser publication is acceptable for these reviewed Sandbox records.",
+    "The frontend adapter validates manifest version/mode/source/review/scenario identity, referenced file/resource identity, patient scope, laboratory category, and present-field mapping at runtime. SHA-256 and secret-marker validation run before both build and Vitest through the Node validator; no runtime Epic network or OAuth path exists.",
+    "Epic capture state is imported independently of WorkflowState and is not written to localStorage, checkpoints, reset, commands, tasks, or audit events. Patient, caregiver, transportation, landing, and system presentation do not receive or render the Epic context.",
+    "The Genotype Observation contains the source valueString `Genotype Value`; it is rendered because it is present. The explicit `Not present in captured record` state truthfully covers absent reference ranges and is also used for omitted optional fields/families in the generic component path.",
+    "Targeted visual QA at 768x1024 moved the primary Epic source header and status alignment breakpoint from `sm` to `lg`, keeping the header stacked in the narrow post-sidebar tablet content area while preserving the established mobile and 1440px desktop layouts.",
+    "Browser QA completed against the production preview. No separate committed screenshot baseline was added; the Playwright assertions cover the new desktop/mobile interaction path, while final visual review should compare captured frames to baseline 5aaef0a for locked-system drift."
+  ]
 }

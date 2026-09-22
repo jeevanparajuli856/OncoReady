@@ -5,8 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/validate-epic-capture.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
+    "pretest:smoke": "node scripts/validate-epic-capture.mjs",
     "test:smoke": "vitest run",
     "test:e2e": "playwright test"
   },

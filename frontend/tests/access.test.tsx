@@ -46,7 +46,7 @@ describe('ACCESS-001 prepared workspace entry', () => {
 
     fireEvent.click(screen.getByTestId('auth-transport-card'));
     expect(screen.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeDefined();
-    expect(screen.getByRole('button', { name: /Readiness graph/i })).toBeDefined();
+    expect(screen.getByRole('tab', { name: /Graph/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {

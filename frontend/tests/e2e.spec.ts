@@ -184,7 +184,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(dialog).toBeVisible();
     await dialog.getByTestId('auth-transport-card').click();
     await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
-    await expect(page.getByRole('button', { name: /Readiness graph/i })).toBeVisible();
+    await expect(page.getByRole('tab', { name: /Graph/i })).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
@@ -207,7 +207,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       ['Patients', /Patient Directory/i],
       ['Resources', /Resource Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Integrations', /Proposed Data Flow Mapping/i],
+      ['Integrations', /Epic Sandbox capture/i],
       ['Admin', /Local Configuration/i],
     ] as const;
 
@@ -249,5 +249,34 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+  });
+
+  test('reviewed Epic capture stays source-separated and keyboard accessible on desktop and mobile', async ({ page }) => {
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByTestId('auth-transport-card').click();
+
+    const epicTab = page.getByRole('tab', { name: /Epic/i });
+    await epicTab.click();
+    const epicPanel = page.getByRole('tabpanel', { name: /Epic/i });
+    await expect(epicPanel.getByRole('heading', { name: 'Epic Sandbox · Read-only captured data' })).toBeVisible();
+    await expect(epicPanel.getByAltText('Epic')).toBeVisible();
+    await expect(epicPanel).toContainText('Camila Maria Lopez');
+    await expect(epicPanel).toContainText('drospirenone-ethinyl estradiol');
+    await expect(epicPanel).toContainText('Captured once · no live sync');
+    await expect(epicPanel).not.toContainText('mFOLFOX6');
+
+    const sourceButton = epicPanel.getByRole('button', { name: 'View source details' });
+    await sourceButton.click();
+    const drawer = page.getByRole('dialog', { name: /Epic source details/i });
+    await expect(drawer).toContainText('epic-sandbox-20260922T070125Z-0dac7d6b');
+    await expect(drawer).toContainText('Patient/erXuFYUfucBZaryVksYEcMg3');
+    await expect(drawer.getByRole('button', { name: /Close Epic source details/i })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+    await expect(sourceButton).toBeFocused();
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await expect(page.locator('body')).not.toContainText('Epic capture unavailable');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });

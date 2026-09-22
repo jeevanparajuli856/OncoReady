@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
-import { AlertTriangle, ArrowLeft, Car, CheckCircle2, FlaskConical, HeartPulse, Network, Pill, Stethoscope } from 'lucide-react';
+import React, { KeyboardEvent, useRef, useState } from 'react';
+import { AlertTriangle, ArrowLeft, Car, CheckCircle2, CloudDownload, FlaskConical, HeartPulse, Network, Pill, Stethoscope } from 'lucide-react';
 import { WorkflowState } from '../types';
 import { isClinicalDispositionComplete, isContinuityPlanConfirmed, isCurrentTransportPlanComplete } from '../state/workflowState';
 import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
+import { EpicClinicalContextPanel } from './EpicClinicalContext';
 
 interface Props {
   state: WorkflowState;
@@ -24,7 +25,10 @@ const TaskMeta = ({ owner, next, due, waiting }: { owner: string; next: string; 
 );
 
 export const StaffCaseWorkspace: React.FC<Props> = ({ state, onBackToQueue, onAcknowledgeClinical, onRecordClinicalDisposition, onConfirmTransportation, onFailTransportation, onLoadCheckpoint, onSwitchPerspective }) => {
-  const [activeTab, setActiveTab] = useState<'ACTIONS' | 'REGIMEN' | 'LABS' | 'GRAPH'>('ACTIONS');
+  type CaseTab = 'ACTIONS' | 'REGIMEN' | 'LABS' | 'EPIC' | 'GRAPH';
+  const tabOrder: CaseTab[] = ['ACTIONS', 'REGIMEN', 'LABS', 'EPIC', 'GRAPH'];
+  const [activeTab, setActiveTab] = useState<CaseTab>('ACTIONS');
+  const tabRefs = useRef<Partial<Record<CaseTab, HTMLButtonElement | null>>>({});
   const [disposition, setDisposition] = useState('Human contact completed; no blocking follow-up recorded.');
   const [followUpBlocking, setFollowUpBlocking] = useState(false);
   const clinical = state.tasks.find((task) => task.type === 'CLINICAL_REVIEW');
@@ -34,6 +38,33 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, onBackToQueue, onAc
   const confirmed = isContinuityPlanConfirmed(state);
   const ownershipAccepted = Boolean(clinical?.clinicalDetails?.ownershipAcknowledgedAt);
   const planVersion = transport?.transportDetails?.planVersion ?? 1;
+  const selectTab = (tab: CaseTab) => setActiveTab(tab);
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, tab: CaseTab) => {
+    if (event.key === 'Enter' || event.key === ' ') {
+      event.preventDefault();
+      selectTab(tab);
+      return;
+    }
+    const index = tabOrder.indexOf(tab);
+    let nextIndex: number | undefined;
+    if (event.key === 'ArrowRight') nextIndex = (index + 1) % tabOrder.length;
+    if (event.key === 'ArrowLeft') nextIndex = (index - 1 + tabOrder.length) % tabOrder.length;
+    if (event.key === 'Home') nextIndex = 0;
+    if (event.key === 'End') nextIndex = tabOrder.length - 1;
+    if (nextIndex === undefined) return;
+    event.preventDefault();
+    tabRefs.current[tabOrder[nextIndex]]?.focus();
+  };
+  const tabProps = (tab: CaseTab) => ({
+    id: `case-tab-${tab.toLowerCase()}`,
+    role: 'tab' as const,
+    'aria-selected': activeTab === tab,
+    'aria-controls': `case-panel-${tab.toLowerCase()}`,
+    tabIndex: activeTab === tab ? 0 : -1,
+    ref: (element: HTMLButtonElement | null) => { tabRefs.current[tab] = element; },
+    onClick: () => selectTab(tab),
+    onKeyDown: (event: KeyboardEvent<HTMLButtonElement>) => handleTabKeyDown(event, tab),
+  });
 
   return <div className="page-shell space-y-5 pb-8">
     <div className="flex flex-wrap items-center justify-between gap-3">
@@ -50,23 +81,25 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, onBackToQueue, onAc
     <section className="card-sticker p-5 sm:p-6 space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div><p className="label-caps text-muted-fg">Camila scenario • attendance unknown</p><h1 className="font-display text-xl font-extrabold">{state.patient.name}</h1><p className="text-sm text-muted-fg">{state.appointment.scheduledTime} • Current transport plan v{planVersion}</p></div>
-        <div className="filter-bar">
-          <button onClick={() => setActiveTab('ACTIONS')} className={`filter-pill ${activeTab === 'ACTIONS' ? 'filter-pill-active' : ''}`}>Triage actions ({state.tasks.length})</button>
-          <button onClick={() => setActiveTab('REGIMEN')} className={`filter-pill ${activeTab === 'REGIMEN' ? 'filter-pill-active' : ''}`}><Pill className="w-3.5 h-3.5 inline mr-1" />Chemo protocol &amp; pre-meds</button>
-          <button onClick={() => setActiveTab('LABS')} className={`filter-pill ${activeTab === 'LABS' ? 'filter-pill-active' : ''}`}><FlaskConical className="w-3.5 h-3.5 inline mr-1" />Labs &amp; vitals ({state.labs.length})</button>
-          <button onClick={() => setActiveTab('GRAPH')} className={`filter-pill ${activeTab === 'GRAPH' ? 'filter-pill-active' : ''}`}><Network className="w-3.5 h-3.5 inline mr-1" />Readiness graph</button>
+        <div className="filter-bar" role="tablist" aria-label="Case information">
+          <button {...tabProps('ACTIONS')} className={`filter-pill ${activeTab === 'ACTIONS' ? 'filter-pill-active' : ''}`}>Actions ({state.tasks.length})</button>
+          <button {...tabProps('REGIMEN')} className={`filter-pill ${activeTab === 'REGIMEN' ? 'filter-pill-active' : ''}`}><Pill className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Regimen</button>
+          <button {...tabProps('LABS')} className={`filter-pill ${activeTab === 'LABS' ? 'filter-pill-active' : ''}`}><FlaskConical className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Labs ({state.labs.length})</button>
+          <button {...tabProps('EPIC')} className={`filter-pill ${activeTab === 'EPIC' ? 'filter-pill-active' : ''}`}><CloudDownload className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Epic</button>
+          <button {...tabProps('GRAPH')} className={`filter-pill ${activeTab === 'GRAPH' ? 'filter-pill-active' : ''}`}><Network className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Graph</button>
         </div>
       </div>
       {state.readinessCheckCompleted && <blockquote className="metric-tile text-sm italic">“{state.readinessSubmission.clinicalConcernText}”<footer className="not-italic label-caps text-muted-fg mt-2">Exact prepared reply • Sep 24, 10:12 AM CT</footer></blockquote>}
     </section>
 
-    {activeTab === 'GRAPH' ? <TreatmentReadinessGraph appointment={state.appointment} tasks={state.tasks} overallReadiness={state.overallReadiness} patientAcknowledged={state.patientAcknowledgedPlanVersion === planVersion} readinessCheckCompleted={state.readinessCheckCompleted} onNavigateToPatient={() => onSwitchPerspective('PATIENT')} /> : activeTab === 'REGIMEN' ? (
-      <section className="card-sticker p-5 sm:p-6 space-y-4"><div className="pb-4 border-b-2 border-ink/10"><h2 className="font-heading font-extrabold text-lg">mFOLFOX6 + Bevacizumab Protocol Order Set</h2><p className="text-sm text-muted-fg">Cycle 4 of 12 • Standard colorectal regimen</p></div><div className="space-y-3">{state.appointment.drugs.map((drug) => <div key={drug.name} className="metric-tile space-y-1"><div className="flex flex-wrap justify-between gap-1"><span className="font-heading font-bold">{drug.name}</span><span className="chip chip-accent font-mono">{drug.dosage}</span></div><p className="text-sm text-muted-fg"><strong className="text-ink">Administration:</strong> {drug.route} ({drug.schedule})</p><p className="text-xs text-muted-fg">Pharmacology: {drug.indication}</p></div>)}</div><div className="metric-tile"><h3 className="font-heading font-bold">Pre-medication protocol</h3><ul className="list-disc list-inside text-sm text-muted-fg mt-2 space-y-1">{state.appointment.premeds.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
+    <div role="tabpanel" id={`case-panel-${activeTab.toLowerCase()}`} aria-labelledby={`case-tab-${activeTab.toLowerCase()}`}>
+    {activeTab === 'EPIC' ? <EpicClinicalContextPanel /> : activeTab === 'GRAPH' ? <TreatmentReadinessGraph appointment={state.appointment} tasks={state.tasks} overallReadiness={state.overallReadiness} patientAcknowledged={state.patientAcknowledgedPlanVersion === planVersion} readinessCheckCompleted={state.readinessCheckCompleted} onNavigateToPatient={() => onSwitchPerspective('PATIENT')} /> : activeTab === 'REGIMEN' ? (
+      <section className="card-sticker p-5 sm:p-6 space-y-4"><div className="pb-4 border-b-2 border-ink/10"><p className="label-caps text-muted-fg mb-1">OncoReady scenario</p><h2 className="font-heading font-extrabold text-lg">mFOLFOX6 + Bevacizumab Protocol Order Set</h2><p className="text-sm text-muted-fg">Cycle 4 of 12 • Standard colorectal regimen</p></div><div className="space-y-3">{state.appointment.drugs.map((drug) => <div key={drug.name} className="metric-tile space-y-1"><div className="flex flex-wrap justify-between gap-1"><span className="font-heading font-bold">{drug.name}</span><span className="chip chip-accent font-mono">{drug.dosage}</span></div><p className="text-sm text-muted-fg"><strong className="text-ink">Administration:</strong> {drug.route} ({drug.schedule})</p><p className="text-xs text-muted-fg">Pharmacology: {drug.indication}</p></div>)}</div><div className="metric-tile"><h3 className="font-heading font-bold">Pre-medication protocol</h3><ul className="list-disc list-inside text-sm text-muted-fg mt-2 space-y-1">{state.appointment.premeds.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
     ) : activeTab === 'LABS' ? (
-      <div className="space-y-5"><section className="card-sticker p-5 sm:p-6 space-y-4"><h2 className="font-heading font-bold flex items-center gap-2"><FlaskConical className="w-4 h-4 text-accent" />Pre-infusion diagnostic labs</h2><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b-2 border-ink/10">{['Test name','Result','Reference range','Status','Collection'].map((h) => <th key={h} className="py-2.5 label-caps text-muted-fg">{h}</th>)}</tr></thead><tbody className="divide-y divide-ink/10">{state.labs.map((lab) => <tr key={lab.name}><td className="py-3 font-heading font-bold">{lab.name}</td><td className="py-3 font-mono">{lab.value} {lab.unit}</td><td className="py-3 text-muted-fg font-mono text-xs">{lab.referenceRange}</td><td className="py-3"><span className={`chip ${lab.status === 'NORMAL' ? 'chip-mint' : 'chip-sun'}`}>{lab.status}</span></td><td className="py-3 text-xs text-muted-fg">{lab.collectedAt}</td></tr>)}</tbody></table></div></section><section className="card-sticker p-5 sm:p-6 space-y-4"><h2 className="font-heading font-bold flex items-center gap-2"><HeartPulse className="w-4 h-4 text-pop" />Vital signs &amp; clinical monitoring</h2><div className="grid grid-cols-1 sm:grid-cols-3 gap-3">{state.vitals.map((vital) => <div key={vital.name} className="metric-tile"><div className="label-caps text-muted-fg">{vital.name}</div><div className="font-display text-xl font-extrabold mt-1">{vital.value}</div><div className="text-[11px] text-muted-fg">{vital.collectedAt}</div></div>)}</div></section></div>
+      <div className="space-y-5"><section className="card-sticker p-5 sm:p-6 space-y-4"><div><p className="label-caps text-muted-fg mb-1">OncoReady scenario</p><h2 className="font-heading font-bold flex items-center gap-2"><FlaskConical className="w-4 h-4 text-accent" />Pre-infusion diagnostic labs</h2></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b-2 border-ink/10">{['Test name','Result','Reference range','Status','Collection'].map((h) => <th key={h} className="py-2.5 label-caps text-muted-fg">{h}</th>)}</tr></thead><tbody className="divide-y divide-ink/10">{state.labs.map((lab) => <tr key={lab.name}><td className="py-3 font-heading font-bold">{lab.name}</td><td className="py-3 font-mono">{lab.value} {lab.unit}</td><td className="py-3 text-muted-fg font-mono text-xs">{lab.referenceRange}</td><td className="py-3"><span className={`chip ${lab.status === 'NORMAL' ? 'chip-mint' : 'chip-sun'}`}>{lab.status}</span></td><td className="py-3 text-xs text-muted-fg">{lab.collectedAt}</td></tr>)}</tbody></table></div></section><section className="card-sticker p-5 sm:p-6 space-y-4"><p className="label-caps text-muted-fg">OncoReady scenario</p><h2 className="font-heading font-bold flex items-center gap-2"><HeartPulse className="w-4 h-4 text-pop" />Vital signs &amp; clinical monitoring</h2><div className="grid grid-cols-1 sm:grid-cols-3 gap-3">{state.vitals.map((vital) => <div key={vital.name} className="metric-tile"><div className="label-caps text-muted-fg">{vital.name}</div><div className="font-display text-xl font-extrabold mt-1">{vital.value}</div><div className="text-[11px] text-muted-fg">{vital.collectedAt}</div></div>)}</div></section></div>
     ) :
       !clinical || !transport ? <section className="card-sticker p-6 text-center space-y-3"><AlertTriangle className="w-6 h-6 mx-auto text-accent" /><h2 className="font-heading font-bold">Prepared reply has not opened work yet</h2><p className="text-sm text-muted-fg">Submit Camila’s prepared reply or load the Split work checkpoint.</p></section> :
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="space-y-3"><p className="label-caps text-muted-fg">OncoReady workflow</p><div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <section className={`card-sticker p-5 space-y-4 ${clinicalDone ? 'bg-mint/10' : ''}`}>
           <div className="flex items-start justify-between gap-3"><div className="flex gap-2"><span className="icon-bubble w-10 h-10 bg-accent text-white"><Stethoscope className="w-4 h-4" /></span><div><h2 className="font-heading font-bold">Clinical contact</h2><p className="text-xs text-muted-fg">{clinical.id}</p></div></div><span className={`chip ${clinicalDone ? 'chip-mint' : 'chip-sun'}`}>{clinicalDone ? 'Human disposition recorded' : ownershipAccepted ? 'Ownership accepted' : 'Contact required'}</span></div>
           <TaskMeta owner={clinical.owner.name} next={clinical.nextAction} due={clinical.dueTime} waiting={clinical.waitingReason} />
@@ -78,7 +111,8 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, onBackToQueue, onAc
           <TaskMeta owner={transport.owner.name} next={transport.nextAction} due={transport.dueTime} waiting={transport.waitingReason} />
           {transportDone ? <div className="space-y-3"><div className="p-3 rounded-xl bg-mint/20 border-2 border-ink/10 text-sm space-y-1"><p><strong>Outbound:</strong> {transport.transportDetails?.confirmedPickupTime}</p><p><strong>Return:</strong> {transport.transportDetails?.returnArrangement}</p><p><strong>Contact:</strong> {transport.transportDetails?.logisticsContact}</p><p><strong>Backup:</strong> {transport.transportDetails?.backupPlan}</p></div><button onClick={onFailTransportation} className="btn-ghost w-full">Record plan change or failure</button></div> : <button onClick={() => onConfirmTransportation({})} className="btn-candy w-full">Complete current transport plan</button>}
         </section>
-      </div>}
+      </div></div>}
+    </div>
 
     {confirmed && <section className="card-sticker p-5 bg-mint/20 flex flex-wrap items-center justify-between gap-3"><div><h2 className="font-heading font-bold">Continuity plan confirmed</h2><p className="text-sm text-muted-fg">Human disposition, complete plan v{planVersion}, and Camila’s current-version acknowledgment are recorded. Attendance remains unknown.</p></div><button onClick={() => onSwitchPerspective('SYSTEM')} className="btn-ghost">View graph and timeline</button></section>}
   </div>;
