@@ -52,7 +52,7 @@
       {
         "name": "backend fast tests",
         "command": [
-          "python3",
+          "backend/.venv/bin/python",
           "-m",
           "pytest",
           "-c",
@@ -70,7 +70,7 @@
       {
         "name": "PostgreSQL migration and integration",
         "command": [
-          "python3",
+          "backend/.venv/bin/python",
           "-m",
           "pytest",
           "-c",
