@@ -2,24 +2,96 @@
   "schema_version": "1.0",
   "task_id": "FLOW-001",
   "agent": "codex-architect",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Defined FLOW-001 as a frontend-only extension of the existing versioned Camila scenario: one typed reducer and derived selectors drive the exact reply, separately owned clinical and transportation work, deterministic checkpoints, graph/timeline projections, plan-version acknowledgment, and closure rules without adding a backend, database, or provider boundary.",
+  "files_changed": [
+    ".ai/tasks/FLOW-001/architecture-report.json"
+  ],
   "impacts": {
-    "database": null,
-    "backend": null,
-    "frontend": null,
-    "frontend_design_required": null,
-    "infrastructure": null
+    "database": false,
+    "backend": false,
+    "frontend": true,
+    "frontend_design_required": true,
+    "infrastructure": false
   },
-  "decisions": [],
-  "risks": [],
+  "decisions": [
+    "Implement FLOW-001 entirely inside the existing React and TypeScript frontend. Extend the current WorkflowState, workflowReducer, local persistence, and selectors instead of creating a second store, event service, backend API, database table, scheduler, or dependency.",
+    "Use one versioned scenario fixture identified as camila-demo-v2. The canonical start fixture plus deterministic command sequences define the private checkpoints start, context/insights, split work, failed ride, recovered plan, and final confirmation; checkpoint loading must pass through the same reducer and closure rules as recorded clicks rather than loading independently edited UI snapshots.",
+    "Represent the September 24 prepared reply as one immutable source event with a stable sourceEventId and the exact text: \"My ride was cancelled—and I’m not feeling well today.\" Processing that source event records the verbatim staff-visible reply once and creates exactly one clinical-contact task for Sarah Jenkins, RN and one transportation-recovery task for Marcus Vance, MSW. Transportation and caregiver projections receive only permitted logistics, never the clinical clause or nurse notes.",
+    "Separate nurse task acknowledgment from human contact and disposition. ACKNOWLEDGE_CLINICAL_TASK records ownership acceptance only; RECORD_CLINICAL_DISPOSITION records the human contact outcome, responsible nurse, scenario timestamp, neutral disposition text, and whether follow-up remains blocking. Remove advice-generation and clearance semantics from this workflow: the software must not diagnose, downgrade urgency, prescribe, or state that Camila is medically cleared.",
+    "Model each selected work item with stable identity, named owner, structured nextAction, dueAt, status, and waitingReason. Use the scenario settings for the proposed due times of 2026-09-24 10:42 America/Chicago for nurse contact and 2026-09-24 11:12 America/Chicago for transport recovery; display them as operational scenario targets rather than clinical policy or real SLAs.",
+    "Keep current transport-plan completeness separate from task completion. The current plan has an incrementing planVersion and must include a valid outbound pickup/arrival window, return arrangement, named logistics contact, and backup owner/path. A primary failure or any change to those current-plan details increments planVersion, reopens the transportation blocker, and invalidates acknowledgments tied to an older version. RIDE-001 may add detailed fictional dispatch and caregiver-seen behavior later, but it must preserve this plan-version and closure interface.",
+    "Make continuity confirmation a pure derived selector, not a freely assigned status. It is true only when a human clinical disposition exists with no blocking follow-up, the current transport task is resolved against a complete non-failed outbound/return/backup plan, and Camila's patient acknowledgment references exactly the current planVersion. Caregiver-seen state, graph animation, historical replay, task acknowledgment alone, or attendance assumptions cannot satisfy this rule.",
+    "Treat commands as idempotent. The reducer returns the existing state when the stable sourceEventId or command id was already applied, when an action repeats an already satisfied transition, or when preconditions are not met. Audit event IDs are stable consequences of commands, not array-length or wall-clock values, so duplicate clicks, history reopen, replay, refresh, and checkpoint reconstruction cannot create a second effective transition.",
+    "Derive staff, patient, caregiver, transportation, graph, task counts, closing status, and audit timeline from the same scenario state and selectors. Persona and staff-route changes are presentation state only. They cannot mutate tasks, plan version, acknowledgments, checkpoint, source history, or confirmation, and every projection must render the same owner, next action, due time, waiting status, and current plan version where permitted.",
+    "Keep prepared outreach history as immutable checkpoint-aware fixture data with original scenario timestamps and provenance. Opening or replaying history is read-only; only the final prepared reply's stable sourceEventId can dispatch the split-work command, and its processed marker prevents a second task or event. FLOW adds no scheduler, provider call, or claim that prepared messages were actually sent.",
+    "Keep time domains explicit. Scenario events use fixed ISO timestamps with America/Chicago offsets and format through one scenario-time helper; Epic source dates/capture times remain immutable EPIC-owned provenance; real delivery times remain OUTREACH-owned actual wall-clock evidence. Reset and checkpoint navigation never call Date.now, rewrite Epic/provider timestamps, or imply attendance; treatment attendance remains unknown.",
+    "Reset only the synthetic scenario persistence key and transient scenario presentation state. Do not use localStorage.clear and do not own, erase, re-arm, or synthesize Epic capture data, provider evidence, consent, attempt limits, recipient configuration, or live activation state. A private checkpoint jump reconstructs the requested synthetic scene while preserving all separately owned external evidence and live-control storage unchanged.",
+    "Version and fully validate the expanded persisted state. A stale, malformed, impossible, or cross-version payload falls back to the canonical start fixture. Validation must reject inconsistent confirmation, a patient acknowledgment for a non-current plan version, duplicate effective task/source IDs, and task-detail shapes that do not match task type.",
+    "Extend the visible workflow within the human-approved design system. Reuse existing task cards, graph, timeline, status chips, dialogs, motion, tokens, responsive behavior, and focus treatment; add non-color labels and reduced-motion equivalents for every graph state. Design Phase A is a compatibility plan with matched before/after screenshots, not permission to change global tokens or introduce a new page family.",
+    "No formal contract is required because FLOW changes one sequentially implemented local TypeScript state boundary. Typed state, command, checkpoint, and selector interfaces are sufficient. If implementation introduces a server call, actual provider action, shared-user persistence, or new externally consumed interface, return the task to PLANNING and reconsider contract and security requirements.",
+    "No new ADR is required. This slice applies ADR-0003's visual lock and ADR-0004's frontend-led controlled-scenario boundary without making a new long-lived platform decision."
+  ],
+  "risks": [
+    {
+      "severity": "high",
+      "description": "The existing reducer can set PLAN_CONFIRMED after two coarse RESOLVED task flags and combines nurse acknowledgment with disposition, which can present coordination closure without the required human and logistics evidence.",
+      "mitigation": "Split clinical acknowledgment from disposition, introduce current transport-plan completeness and plan-version acknowledgment, and compute confirmation through one selector exercised against each blocking boundary."
+    },
+    {
+      "severity": "high",
+      "description": "Current array-length event IDs and replacement of the task list during submission can duplicate or erase effective work when the same prepared reply is clicked, replayed, reopened, or restored from a checkpoint.",
+      "mitigation": "Use stable source and command IDs, reducer preconditions, canonical task IDs, and deterministic checkpoint command sequences; repeated commands must return the same state and event set."
+    },
+    {
+      "severity": "medium",
+      "description": "Graph, timeline, persona views, task counts, and local persistence can drift if components derive status independently or preserve a stale schema.",
+      "mitigation": "Centralize closure and projection selectors, bump and validate the persistence version, make persona changes navigation-only, and test the selected cross-persona path from one shared state."
+    },
+    {
+      "severity": "medium",
+      "description": "A ride change or failure can leave a stale patient acknowledgment attached to an obsolete plan and falsely keep the scenario confirmed.",
+      "mitigation": "Bind patient acknowledgment to planVersion, increment that version for material plan changes/failures, derive confirmation from exact version equality, and verify both failure and recovery sequences."
+    },
+    {
+      "severity": "medium",
+      "description": "Reset or checkpoint code can accidentally erase or fabricate Epic/provider evidence and live-attempt safeguards when later tasks add those concerns.",
+      "mitigation": "Limit FLOW reset to its named synthetic scenario key/slice, preserve unrelated storage and immutable source assets, and include a reserved-live-attempt sentinel in the focused reset test."
+    },
+    {
+      "severity": "medium",
+      "description": "Scenario, Epic, and actual wall-clock timestamps can be blended into a misleading chronology or reformatted inconsistently across views.",
+      "mitigation": "Store fixed timezone-aware scenario instants, retain source-specific provenance fields, format through one helper, label prepared history, and keep attendance unknown."
+    },
+    {
+      "severity": "medium",
+      "description": "Adding checkpoint controls, task metadata, waiting states, and graph transitions can cause visual drift or inaccessible motion inside the locked interface.",
+      "mitigation": "Require the digest-bound compatibility design gate, reuse current primitives, expose text labels in addition to color, preserve keyboard focus, honor reduced motion, and compare only the affected matched screenshots."
+    },
+    {
+      "severity": "low",
+      "description": "Prepared clinical text or workflow language can be mistaken for automated advice, medical clearance, a real send, or confirmed attendance.",
+      "mitigation": "Preserve Camila's words verbatim, attribute disposition to Sarah, use neutral workflow language, label prepared history and synthetic events, and never derive attendance or medical clearance."
+    }
+  ],
   "blockers": [],
-  "notes_for_next_agent": [],
+  "notes_for_next_agent": [
+    "Complete frontend design Phase A and its digest-bound compatibility review before production frontend edits because FLOW adds visible checkpoint, task, graph, timeline, waiting, failure, and success states. Preserve the current global visual system exactly.",
+    "Likely implementation areas are frontend/src/types/index.ts, frontend/src/state/workflowState.ts, App, ReadinessCheckModal or a prepared-history trigger, StaffCaseWorkspace, PatientTreatmentHome/PatientResolutionView, CaregiverView, TreatmentReadinessGraph, AuditTimeline, and focused tests. Keep domain transitions in the reducer and components declarative.",
+    "Prefer a small state evolution over a general event-sourcing framework: a canonical fixture, typed commands, stable applied IDs, derived selectors, and deterministic checkpoint command lists are sufficient for this controlled scenario.",
+    "Replace old August scenario labels, times, default fever/neuropathy copy, generic two-hour/three-hour SLA language, and advice/clearance text in the selected journey with camila-demo-v2 settings. Do not broaden this into an application-wide historical data migration.",
+    "The exact reply is one source record. Staff may see it verbatim; transport and caregiver projections must not receive the clinical clause. A split into two owned tasks is a deterministic workflow rule, not model inference or an external send.",
+    "Keep ACKNOWLEDGE_CLINICAL_TASK and RECORD_CLINICAL_DISPOSITION as separate actions and visible states. Acknowledgment alone leaves the clinical blocker open; a human disposition with blocking follow-up also leaves it open.",
+    "Expose one canConfirmContinuity selector and use it for graph, patient acknowledgment availability, overall readiness, timeline wording, and final view. Do not set confirmed state from component click handlers or animations.",
+    "RIDE-001 owns the detailed fictional provider assignment/failure/backup interactions, historical dispatch replay, and caregiver-seen event. FLOW should establish only the current-plan completeness/version contract needed for closure and avoid implementing a provider adapter or replay engine.",
+    "TARGETED testing should stay minimal: one reducer/selector suite covering the exact reply split, separate nurse acknowledgment/disposition, the three confirmation blockers, plan-change invalidation, duplicate no-op behavior, checkpoint reconstruction, and scenario-only reset; one selected projection/browser journey covering persona preservation, owner/next action/due/waiting text, graph/timeline agreement, reduced motion, and affected screenshots. Update or reuse the existing golden-path test rather than duplicating it, then run the repository's required verification once on the integrated commit.",
+    "For the reset boundary test, place a reserved live-attempt sentinel and source timestamp under a separate key or root-state fixture, invoke scenario reset/checkpoint loading, and assert the sentinel is byte-for-byte unchanged. Ordinary FLOW tests must make no network or paid-provider calls.",
+    "If a real server boundary, actual recipient/provider action, protected clinical source payload, or multiuser authorization enters this task, stop and return to architecture; the current LOW-risk, contract-free, frontend-only decision would no longer be valid."
+  ],
   "execution": {
-    "contract_required": null,
-    "test_depth": null,
-    "security_risk": null,
-    "security_review_required": null
+    "contract_required": false,
+    "test_depth": "TARGETED",
+    "security_risk": "LOW",
+    "security_review_required": false
   }
 }
