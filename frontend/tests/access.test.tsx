@@ -72,9 +72,12 @@ describe('ACCESS-001 prepared workspace entry', () => {
       patient: { name: 'Maria Hernandez', mrn: 'OCH-882914' },
     }));
     localStorage.setItem('oncoready_workflow_state_v3', JSON.stringify({
-      version: 4,
+      ...INITIAL_STATE,
       currentPerspective: 'PATIENT',
-      patient: { name: 'Maria Hernandez' },
+      appointment: {
+        ...INITIAL_STATE.appointment,
+        drugs: undefined,
+      },
     }));
 
     render(<App />);

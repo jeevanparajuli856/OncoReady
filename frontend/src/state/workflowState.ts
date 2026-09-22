@@ -600,10 +600,113 @@ export function loadSavedWorkflowState(): WorkflowState {
 const savedPerspectives: Perspective[] = ['LANDING', 'TRUST', 'SIGN_IN', 'PATIENT', 'CAREGIVER', 'STAFF', 'SYSTEM'];
 const savedStaffRoutes: WorkflowState['staffRoute'][] = ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'];
 const savedReadinessStates: WorkflowState['overallReadiness'][] = ['ACTION_REQUIRED', 'AT_RISK', 'IN_PROGRESS', 'PLAN_CONFIRMED'];
+const taskTypes = ['CLINICAL_REVIEW', 'TRANSPORTATION_NAVIGATION'];
+const taskStatuses = ['DETECTED', 'ASSIGNED', 'ACKNOWLEDGED', 'ACTIONED', 'CONFIRMED', 'RESOLVED'];
+const taskPriorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'ROUTINE'];
+const actorRoles = ['PATIENT', 'SYSTEM', 'TRIAGE_NURSE', 'NAVIGATOR', 'CAREGIVER'];
+
+type UnknownRecord = Record<string, unknown>;
+
+const isRecord = (value: unknown): value is UnknownRecord =>
+  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+
+const hasStrings = (value: UnknownRecord, keys: string[]) =>
+  keys.every((key) => typeof value[key] === 'string');
+
+const isOptionalString = (value: unknown) => value === undefined || typeof value === 'string';
+
+const isPatient = (value: unknown) =>
+  isRecord(value) &&
+  value.id === INITIAL_STATE.patient.id &&
+  value.name === INITIAL_STATE.patient.name &&
+  value.mrn === INITIAL_STATE.patient.mrn &&
+  hasStrings(value, ['gender', 'diagnosis', 'stage', 'oncologist', 'phone', 'address', 'avatarUrl', 'bodySurfaceArea']) &&
+  typeof value.age === 'number' &&
+  typeof value.ecogStatus === 'number';
+
+const isCaregiver = (value: unknown) =>
+  isRecord(value) &&
+  value.id === INITIAL_STATE.caregiver.id &&
+  value.name === INITIAL_STATE.caregiver.name &&
+  value.permissionScope === 'TRANSPORTATION_ONLY' &&
+  hasStrings(value, ['relationship', 'phone', 'authorizedBy', 'avatarUrl']);
+
+const isDrug = (value: unknown) =>
+  isRecord(value) && hasStrings(value, ['name', 'dosage', 'route', 'schedule', 'indication']);
+
+const isAppointment = (value: unknown) =>
+  isRecord(value) &&
+  value.id === INITIAL_STATE.appointment.id &&
+  hasStrings(value, [
+    'protocol', 'treatmentName', 'scheduledTime', 'location', 'room', 'infusionChair',
+    'infusionDuration', 'oncologist', 'oncologistAvatar', 'nurseTeam',
+  ]) &&
+  typeof value.cycleNumber === 'number' &&
+  typeof value.totalCycles === 'number' &&
+  Array.isArray(value.drugs) && value.drugs.every(isDrug) &&
+  Array.isArray(value.premeds) && value.premeds.every((item) => typeof item === 'string');
+
+const isLab = (value: unknown) =>
+  isRecord(value) &&
+  hasStrings(value, ['name', 'value', 'unit', 'referenceRange', 'collectedAt']) &&
+  ['NORMAL', 'EVALUATED', 'CRITICAL'].includes(String(value.status));
+
+const isVital = (value: unknown) =>
+  isRecord(value) &&
+  hasStrings(value, ['name', 'value', 'unit', 'collectedAt']) &&
+  ['NORMAL', 'ATTENTION'].includes(String(value.status));
+
+const isSubmission = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.hasTransportIssue === 'boolean' &&
+  typeof value.transportNotes === 'string' &&
+  typeof value.hasClinicalConcern === 'boolean' &&
+  typeof value.clinicalConcernText === 'string' &&
+  (value.submittedAt === null || typeof value.submittedAt === 'string');
+
+const isOwner = (value: unknown) =>
+  isRecord(value) && hasStrings(value, ['id', 'name', 'role', 'department', 'badge', 'avatarUrl']);
+
+const isClinicalDetails = (value: unknown) =>
+  isRecord(value) &&
+  typeof value.verbatimReport === 'string' &&
+  ['PENDING_REVIEW', 'REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) &&
+  ['nurseNotes', 'adviceGiven', 'acknowledgedAt', 'reviewedBy'].every((key) => isOptionalString(value[key]));
+
+const isTransportDetails = (value: unknown) =>
+  isRecord(value) &&
+  hasStrings(value, ['pickupAddress', 'destination', 'requestedTime', 'vehicleType']) &&
+  ['UNASSIGNED', 'DISPATCH_IN_PROGRESS', 'CONFIRMED'].includes(String(value.dispatchStatus)) &&
+  ['vehicleId', 'driverName', 'confirmedPickupTime', 'dispatchedBy'].every((key) => isOptionalString(value[key]));
+
+const isTask = (value: unknown) => {
+  if (!isRecord(value) ||
+    !hasStrings(value, ['id', 'title', 'patientId', 'createdAt', 'dueTime']) ||
+    !taskTypes.includes(String(value.type)) ||
+    !taskStatuses.includes(String(value.status)) ||
+    !taskPriorities.includes(String(value.priority)) ||
+    !isOwner(value.owner)) return false;
+
+  return value.type === 'CLINICAL_REVIEW'
+    ? isClinicalDetails(value.clinicalDetails) && value.transportDetails === undefined
+    : isTransportDetails(value.transportDetails) && value.clinicalDetails === undefined;
+};
+
+const isAuditEvent = (value: unknown) =>
+  isRecord(value) &&
+  hasStrings(value, ['id', 'timestamp', 'actor', 'action', 'description']) &&
+  actorRoles.includes(String(value.actorRole)) &&
+  (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field', 'from', 'to'])));
+
+const isContextualCase = (value: unknown) =>
+  isRecord(value) &&
+  hasStrings(value, ['id', 'patientName', 'mrn', 'diagnosis', 'protocol', 'appointmentTime', 'blockerType', 'ownerName', 'ownerRole', 'avatarUrl']) &&
+  ['PENDING', 'IN_REVIEW'].includes(String(value.status)) &&
+  taskPriorities.includes(String(value.priority));
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
-  if (!value || typeof value !== 'object') return false;
-  const state = value as Partial<WorkflowState>;
+  if (!isRecord(value)) return false;
+  const state = value;
 
   return (
     state.version === INITIAL_STATE.version &&
@@ -616,16 +719,15 @@ function isSavedWorkflowState(value: unknown): value is WorkflowState {
     savedReadinessStates.includes(state.overallReadiness as WorkflowState['overallReadiness']) &&
     typeof state.readinessCheckCompleted === 'boolean' &&
     typeof state.patientAcknowledged === 'boolean' &&
-    state.patient?.id === INITIAL_STATE.patient.id &&
-    state.patient.name === INITIAL_STATE.patient.name &&
-    state.patient.mrn === INITIAL_STATE.patient.mrn &&
-    state.caregiver?.id === INITIAL_STATE.caregiver.id &&
-    state.caregiver.name === INITIAL_STATE.caregiver.name &&
-    state.appointment?.id === INITIAL_STATE.appointment.id &&
-    Array.isArray(state.tasks) &&
-    Array.isArray(state.auditEvents) &&
-    Array.isArray(state.labs) &&
-    Array.isArray(state.vitals)
+    isPatient(state.patient) &&
+    isCaregiver(state.caregiver) &&
+    isAppointment(state.appointment) &&
+    isSubmission(state.readinessSubmission) &&
+    Array.isArray(state.tasks) && state.tasks.every(isTask) &&
+    Array.isArray(state.auditEvents) && state.auditEvents.every(isAuditEvent) &&
+    Array.isArray(state.labs) && state.labs.every(isLab) &&
+    Array.isArray(state.vitals) && state.vitals.every(isVital) &&
+    Array.isArray(state.contextualCases) && state.contextualCases.every(isContextualCase)
   );
 }
 
