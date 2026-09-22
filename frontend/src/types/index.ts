@@ -181,8 +181,9 @@ export interface CaregiverProjection {
   privacyBoundaryNotice: string;
 }
 
-export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'STAFF' | 'SYSTEM';
-export type PreparedWorkspace = 'STAFF' | 'PATIENT' | 'CAREGIVER' | 'TRANSPORTATION';
+export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'CARE_NAVIGATOR' | 'CARE_TEAM' | 'STAFF' | 'SYSTEM';
+export type PreparedWorkspace = 'CARE_NAVIGATOR' | 'CARE_TEAM' | 'PATIENT' | 'CAREGIVER';
+export type WorkspaceRole = 'CARE_NAVIGATOR' | 'CARE_TEAM';
 export type StaffRoute = 'COMMAND_CENTER' | 'EXCEPTIONS' | 'PATIENTS' | 'CASE_WORKSPACE' | 'RESOURCES' | 'INSIGHTS' | 'INTEGRATIONS' | 'ADMIN';
 
 export interface ContextualQueueCase {

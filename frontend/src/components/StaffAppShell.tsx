@@ -9,16 +9,16 @@ import {
   Settings,
   Home,
   Heart,
-  Network,
   HeartHandshake,
 } from 'lucide-react';
-import { WorkflowState, Perspective } from '../types';
+import { WorkflowState, Perspective, WorkspaceRole } from '../types';
 
 interface StaffAppShellProps {
   state: WorkflowState;
   onSetStaffRoute: (route: string) => void;
   onSetPerspective: (p: Perspective) => void;
   onReset: () => void;
+  workspaceRole: WorkspaceRole;
   children: React.ReactNode;
 }
 
@@ -26,23 +26,22 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
   state,
   onSetStaffRoute,
   onSetPerspective,
+  workspaceRole,
   children,
 }) => {
-  const navItems = [
+  const sharedNavItems = [
     { id: 'COMMAND_CENTER', label: 'Command Center', short: 'Command', icon: LayoutDashboard },
     { id: 'EXCEPTIONS', label: 'Exceptions', short: 'Exceptions', icon: ListTodo },
     { id: 'PATIENTS', label: 'Patients', short: 'Patients', icon: Users },
-    { id: 'RESOURCES', label: 'Resources', short: 'Rides', icon: Car },
-    { id: 'INSIGHTS', label: 'Insights', short: 'Insights', icon: LineChart },
-    { id: 'INTEGRATIONS', label: 'Integrations', short: 'Maps', icon: LinkIcon },
-    { id: 'ADMIN', label: 'Admin', short: 'Admin', icon: Settings },
   ];
+  const navItems = workspaceRole === 'CARE_NAVIGATOR'
+    ? [...sharedNavItems, { id: 'RESOURCES', label: 'CareLink', short: 'CareLink', icon: Car }, { id: 'INTEGRATIONS', label: 'Appointments', short: 'Appts', icon: LinkIcon }]
+    : [...sharedNavItems, { id: 'INSIGHTS', label: 'Insights', short: 'Insights', icon: LineChart }, { id: 'INTEGRATIONS', label: 'Epic context', short: 'Epic', icon: LinkIcon }, { id: 'ADMIN', label: 'Admin', short: 'Admin', icon: Settings }];
 
   const siteLinks: Array<{ id: Perspective; label: string; icon: typeof Home }> = [
     { id: 'LANDING', label: 'Home', icon: Home },
     { id: 'PATIENT', label: 'Patient', icon: Heart },
     { id: 'CAREGIVER', label: 'Caregiver', icon: HeartHandshake },
-    { id: 'SYSTEM', label: 'Graph', icon: Network },
   ];
 
   const currentRoute = state.staffRoute;
@@ -55,7 +54,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
       <aside className="staff-sidebar order-1 w-full md:w-56 bg-white/95 border-b md:border-b-0 md:border-r border-line flex flex-row md:flex-col shrink-0 max-w-full md:self-start md:sticky md:top-[4.25rem]">
         <nav className="flex-1 flex flex-wrap md:flex-col px-2 py-2 md:py-4 gap-1">
           <div className="hidden md:block mb-2 px-3 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
-            Staff tools
+            {workspaceRole === 'CARE_NAVIGATOR' ? 'Care Navigator tools' : 'Readiness Team tools'}
           </div>
           {navItems.map((item) => {
             const Icon = item.icon;
@@ -78,9 +77,9 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
             );
           })}
 
-          <div className="hidden md:block mt-4 pt-4 border-t border-line px-1 space-y-1">
+            <div className="hidden md:block mt-4 pt-4 border-t border-line px-1 space-y-1">
             <div className="px-3 mb-2 text-[11px] font-heading font-bold text-muted-fg uppercase tracking-wider">
-              Leave staff
+              Leave workspace
             </div>
             {siteLinks.map((link) => {
               const Icon = link.icon;
@@ -102,11 +101,11 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
       <div className="order-1 md:order-2 flex-1 flex flex-col min-w-0">
         <div className="px-3 sm:px-5 lg:px-6 py-3 border-b border-line bg-white/90 flex items-center justify-between gap-3 shrink-0">
           <div>
-            <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">Staff workspace</p>
+              <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">{workspaceRole === 'CARE_NAVIGATOR' ? 'Care Navigator Workspace' : 'Care Team (Readiness Team) Workspace'}</p>
             <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>
           </div>
           <p className="hidden sm:block text-xs text-muted-fg text-right max-w-xs">
-            Use the shared workspace navigation to move between Patient, Caregiver, and Graph.
+            Graph and audit context are embedded in the case workspace for this role.
           </p>
         </div>
         <div className="flex-1">

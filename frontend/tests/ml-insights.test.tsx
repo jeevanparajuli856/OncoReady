@@ -21,7 +21,7 @@ const reseal = (value: Record<string, unknown>): Record<string, unknown> => {
 
 const openStaffCase = () => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId('auth-transport-card'));
+  fireEvent.click(screen.getByTestId('auth-care-team-card'));
 };
 
 describe('ML-001 saved staff insights', () => {

@@ -8,7 +8,7 @@ const CAPTURE_ID = 'epic-sandbox-20260922T070125Z-0dac7d6b';
 
 const openStaffCase = () => {
   fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
-  fireEvent.click(screen.getByTestId('auth-transport-card'));
+  fireEvent.click(screen.getByTestId('auth-care-team-card'));
 };
 
 describe('EPIC-001 reviewed Epic Sandbox capture', () => {
@@ -99,7 +99,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
   it('uses Integrations only as secondary capture evidence without a false live connection claim', () => {
     render(<App />);
     openStaffCase();
-    fireEvent.click(screen.getByRole('button', { name: 'Integrations' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Epic context' }));
 
     expect(screen.getByRole('heading', { name: /Epic Sandbox capture/i })).toBeDefined();
     const integrationCopy = document.body.textContent || '';

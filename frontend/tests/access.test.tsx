@@ -39,12 +39,17 @@ describe('ACCESS-001 prepared workspace entry', () => {
     const dialog = screen.getByRole('dialog', { name: 'Prepared workspaces' });
     expect(within(dialog).getByText(/does not sign you in or grant provider access/i)).toBeDefined();
     expect(within(dialog).getAllByRole('button')).toHaveLength(5);
-    expect(screen.getByTestId('auth-staff-card')).toBeDefined();
+    expect(screen.getByTestId('auth-care-team-card')).toBeDefined();
+    expect(screen.getByTestId('auth-care-navigator-card')).toBeDefined();
     expect(screen.getByTestId('auth-patient-card')).toBeDefined();
     expect(screen.getByTestId('auth-caregiver-card')).toBeDefined();
-    expect(screen.getByTestId('auth-transport-card')).toBeDefined();
+    fireEvent.click(screen.getByTestId('auth-care-navigator-card'));
+    expect(screen.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeDefined();
+    expect(screen.getByRole('tab', { name: /Graph/i })).toBeDefined();
 
-    fireEvent.click(screen.getByTestId('auth-transport-card'));
+    fireEvent.click(screen.getByTitle(/Reset Workspace/i));
+    fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
+    fireEvent.click(screen.getByTestId('auth-care-team-card'));
     expect(screen.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeDefined();
     expect(screen.getByRole('tab', { name: /Graph/i })).toBeDefined();
   });
@@ -56,7 +61,7 @@ describe('ACCESS-001 prepared workspace entry', () => {
     fireEvent.click(screen.getByTestId('auth-patient-card'));
     fireEvent.click(screen.getByRole('button', { name: /Start Readiness Check/i }));
     fireEvent.click(screen.getByRole('button', { name: /Submit Readiness Report/i }));
-    fireEvent.click(screen.getByRole('button', { name: /View Staff Workbench/i }));
+    fireEvent.click(screen.getByRole('button', { name: /View Care Team Workbench/i }));
 
     expect(screen.getAllByText(/Camila Lopez/i).length).toBeGreaterThan(0);
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));

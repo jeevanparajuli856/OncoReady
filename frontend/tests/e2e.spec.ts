@@ -173,7 +173,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(dialog).toBeVisible();
     await expect(dialog.getByText(/does not sign you in or grant provider access/i)).toBeVisible();
     await expect(dialog.getByRole('button')).toHaveCount(5);
-    await expect(dialog.getByTestId('auth-staff-card')).toBeFocused();
+    await expect(dialog.getByTestId('auth-care-team-card')).toBeFocused();
 
     await page.keyboard.press('Escape');
     await expect(dialog).toBeHidden();
@@ -182,7 +182,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.getByRole('navigation', { name: 'Workspace dock' }).getByRole('button', { name: 'Patient' }).click();
     await expect(dialog).toBeVisible();
-    await dialog.getByTestId('auth-transport-card').click();
+    await dialog.getByTestId('auth-care-navigator-card').click();
     await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
     await expect(page.getByRole('tab', { name: /Graph/i })).toBeVisible();
 
@@ -199,15 +199,14 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: /Start Readiness Check/i }).click();
     await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
     await expect(page.getByText(/Your Reported Barriers are Being Resolved/i)).toBeVisible();
-    await page.getByRole('button', { name: /View Staff Workbench/i }).click();
+    await page.getByRole('button', { name: /View Care Team Workbench/i }).click();
 
     const routeChecks = [
       ['Command Center', /Command Center/i],
       ['Exceptions', /Pre-Treatment Exception Queue/i],
       ['Patients', /Patient Directory/i],
-      ['Resources', /Resource Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Integrations', /Epic Sandbox capture/i],
+      ['Epic context', /Epic Sandbox capture/i],
       ['Admin', /Local Configuration/i],
     ] as const;
 
@@ -224,9 +223,13 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: /Accept ownership/i }).click();
     await expect(page.getByText('Ownership accepted')).toBeVisible();
     await page.getByRole('button', { name: /Record human disposition/i }).click();
+    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
+    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
+    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
     await page.getByRole('button', { name: /Complete current transport plan/i }).click();
 
-    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
     await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
     await expect(page.getByText(/Current plan v1/i)).toBeVisible();
     const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
@@ -241,7 +244,10 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeVisible();
 
     await page.getByRole('button', { name: /Camila Lopez/i }).click();
-    await page.getByText('Readiness Graph & Audit Log').click();
+    await page.getByRole('button', { name: /Care Team \(Readiness Team\)/i }).click();
+    await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
+    await page.getByRole('button', { name: /Open Case Workspace/i }).click();
+    await page.getByRole('tab', { name: /Graph/i }).click();
     await expect(page.getByRole('heading', { name: 'Treatment Readiness Graph' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upcoming Infusion Target Node' }).getByText('CONTINUITY PLAN CONFIRMED')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
@@ -258,7 +264,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     });
 
     await page.getByRole('button', { name: /Access workspace/i }).first().click();
-    await page.getByTestId('auth-transport-card').click();
+    await page.getByTestId('auth-care-team-card').click();
 
     const epicTab = page.getByRole('tab', { name: /Epic/i });
     await epicTab.click();

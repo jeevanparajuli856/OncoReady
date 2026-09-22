@@ -6,7 +6,6 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  Network,
   Home,
   Menu,
   X,
@@ -47,12 +46,13 @@ export const Header: React.FC<HeaderProps> = ({
     switch (currentPerspective) {
       case 'PATIENT':
         return { name: state.patient.name, role: 'Patient Workspace', avatar: state.patient.avatarUrl, roleType: 'PATIENT' as const };
+      case 'CARE_NAVIGATOR':
+        return { name: 'Marcus Vance, MSW', role: 'Care Navigator', avatar: '', roleType: 'NAVIGATOR' as const };
+      case 'CARE_TEAM':
       case 'STAFF':
         return { name: 'Sarah Jenkins, RN', role: 'Oncology Triage Team', avatar: '', roleType: 'NURSE' as const };
       case 'CAREGIVER':
         return { name: state.caregiver.name, role: 'Caregiver Proxy', avatar: state.caregiver.avatarUrl, roleType: 'CAREGIVER' as const };
-      case 'SYSTEM':
-        return { name: 'Continuity Telemetry', role: 'Graph & Audit Engine', avatar: '', roleType: 'SYSTEM' as const };
       default:
         return null;
     }
@@ -162,10 +162,9 @@ export const Header: React.FC<HeaderProps> = ({
 
         <nav className="hidden md:flex items-center gap-1 text-sm font-heading font-medium">
           {([
-            ['PATIENT', 'Patient'],
-            ['STAFF', 'Staff'],
+            ['CARE_NAVIGATOR', 'Care Navigator'],
+            ['CARE_TEAM', 'Care Team'],
             ['CAREGIVER', 'Caregiver'],
-            ['SYSTEM', 'Graph'],
           ] as const).map(([id, label]) => (
             <button
               key={id}
@@ -217,11 +216,18 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="text-[10px] text-muted-fg font-normal">Patient Readiness View</div>
                       </div>
                     </button>
-                    <button onClick={() => { onSetPerspective('STAFF'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'STAFF' ? 'bg-accent/8 font-semibold' : ''}`}>
+                    <button onClick={() => { onSetPerspective('CARE_NAVIGATOR'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CARE_NAVIGATOR' ? 'bg-mint/10 font-semibold' : ''}`}>
+                      <Avatar alt="Marcus Vance" size="xs" roleType="NAVIGATOR" />
+                      <div>
+                        <div>Care Navigator (Marcus Vance, MSW)</div>
+                        <div className="text-[10px] text-muted-fg font-normal">CareLink & Patient Coordination</div>
+                      </div>
+                    </button>
+                    <button onClick={() => { onSetPerspective('CARE_TEAM'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'CARE_TEAM' ? 'bg-accent/8 font-semibold' : ''}`}>
                       <Avatar alt="Nurse Sarah" size="xs" roleType="NURSE" />
                       <div>
-                        <div>Staff Hub (Sarah Jenkins, RN)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Triage & Exception Workbench</div>
+                        <div>Care Team (Readiness Team)</div>
+                        <div className="text-[10px] text-muted-fg font-normal">Clinical & Treatment Readiness</div>
                       </div>
                     </button>
                     <button onClick={() => { onSetPerspective('CAREGIVER'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CAREGIVER' ? 'bg-mint/10 font-semibold' : ''}`}>
@@ -229,15 +235,6 @@ export const Header: React.FC<HeaderProps> = ({
                       <div>
                         <div>Caregiver Portal (Ana Hernandez)</div>
                         <div className="text-[10px] text-muted-fg font-normal">Transit Status Only</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { onSetPerspective('SYSTEM'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'SYSTEM' ? 'bg-muted font-semibold' : ''}`}>
-                      <div className="w-6 h-6 rounded-lg bg-ink text-white flex items-center justify-center">
-                        <Network className="w-3.5 h-3.5 text-white" />
-                      </div>
-                      <div>
-                        <div>Readiness Graph & Audit Log</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Engine Architecture</div>
                       </div>
                     </button>
                   </div>

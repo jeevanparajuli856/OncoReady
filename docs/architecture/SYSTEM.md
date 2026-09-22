@@ -30,7 +30,11 @@ Prepared UI transitions never call a provider. Only an explicitly armed and prot
 
 ## Frontend scenario boundary
 
-Reuse existing state machinery before introducing a new abstraction. One store drives patient, caregiver, staff, CareLink, graph, timeline and scenario counts. Commands perform concrete visible transitions; read-only context and prepared insight assets are separate.
+Reuse existing state machinery before introducing a new abstraction. One store drives patient, caregiver, Care Navigator, Care Team, CareLink, graph, timeline and scenario counts. Commands perform concrete visible transitions; read-only context and prepared insight assets are separate.
+
+The prepared gateway exposes two role-scoped care workspaces only: Care Navigator (Marcus Vance, MSW) for CareLink, transportation, patient coordination, barriers, appointments and follow-ups; and Care Team (Readiness Team) for clinical/treatment readiness, labs, vitals, nursing actions, blockers and escalations. Do not add a combined Staff workspace or a standalone Graph/Audit workspace. Graph and audit are embedded case views, projected from shared state and filtered to each role's allowed data.
+
+The frontend enforces these local role boundaries in route selection and reducer mutation guards as well as navigation rendering. This is a prepared-persona presentation mechanism, not production authentication or backend authorization; multiuser authorization remains deferred.
 
 Required states: initial risk → exact reply → distinct clinical/transport tasks → human clinical disposition → primary ride failure → backup plan → current-plan acknowledgment → confirmed continuity. A changed/failed plan invalidates the previous acknowledgment. Open clinical work or absent outbound/return logistics prevents confirmation.
 

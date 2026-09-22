@@ -29,11 +29,20 @@ const destinationCopy: Array<{
   tone: string;
 }> = [
   {
-    id: 'STAFF',
-    label: 'Recorded start',
-    title: 'Staff workspace',
-    description: 'Sarah Jenkins, RN and Marcus Vance, MSW coordinate the prepared case.',
-    testId: 'auth-staff-card',
+    id: 'CARE_NAVIGATOR',
+    label: 'Care Navigator',
+    title: 'Marcus Vance',
+    description: 'CareLink, transportation, patient coordination, barriers, appointments, and follow-ups.',
+    testId: 'auth-care-navigator-card',
+    Icon: Route,
+    tone: 'chip-mint',
+  },
+  {
+    id: 'CARE_TEAM',
+    label: 'Readiness Team',
+    title: 'Care Team workspace',
+    description: 'Nurses and readiness staff manage clinical review, labs, vitals, blockers, and escalations.',
+    testId: 'auth-care-team-card',
     Icon: Stethoscope,
     tone: 'chip-accent',
   },
@@ -54,15 +63,6 @@ const destinationCopy: Array<{
     testId: 'auth-caregiver-card',
     Icon: HeartHandshake,
     tone: 'chip-mint',
-  },
-  {
-    id: 'TRANSPORTATION',
-    label: 'Transportation',
-    title: 'CareLink Dispatch',
-    description: 'Open the existing staff logistics context for the prepared scenario.',
-    testId: 'auth-transport-card',
-    Icon: Route,
-    tone: 'chip-sun',
   },
 ];
 
@@ -125,7 +125,7 @@ export const AuthModal: React.FC<AuthModalProps> = ({
               key={id}
               type="button"
               data-testid={testId}
-              data-dialog-initial-focus={id === 'STAFF' ? 'true' : undefined}
+              data-dialog-initial-focus={id === 'CARE_TEAM' ? 'true' : undefined}
               onClick={() => handleSelect(id)}
               className="p-4 sm:p-5 rounded-2xl border border-line bg-white/80 hover:bg-white hover:-translate-y-0.5 transition-all duration-200 cursor-pointer flex flex-col items-start justify-between gap-5 text-left shadow-glass min-h-44"
             >

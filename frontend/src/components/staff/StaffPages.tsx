@@ -193,7 +193,7 @@ export const StaffIntegrations: React.FC = () => (
 
 export const StaffAdmin: React.FC<{
   onOpenCase: () => void;
-  onSetPerspective: (p: 'LANDING' | 'PATIENT' | 'CAREGIVER' | 'SYSTEM') => void;
+  onSetPerspective: (p: 'LANDING' | 'PATIENT' | 'CAREGIVER') => void;
 }> = ({ onOpenCase, onSetPerspective }) => (
   <div className="page-shell space-y-5">
     <div className="card-sticker p-5 sm:p-6 space-y-4">
@@ -208,7 +208,7 @@ export const StaffAdmin: React.FC<{
           ['Clinical Triage Routing', 'Route GI symptoms to: Sarah Jenkins, RN', 'Shown on Task 1 in the case workspace.'],
           ['Caregiver permissions', 'Transportation-only projection', 'This is why Ana never sees fever or nurse notes.'],
           ['Escalation window', '30 minutes before ownership review', 'Keeps an exception from sitting unowned.'],
-          ['Communication channels', 'Patient portal and staff workspace', 'Same state updates Patient, Staff, Caregiver, and Graph.'],
+          ['Communication channels', 'Patient portal and care workspaces', 'The same state updates patient, navigator, care team, and embedded graph/audit views.'],
           ['Navigator Assignment', 'Route SDOH/Transport to: Marcus Vance, MSW', 'Shown on Task 2 and the caregiver ride card.'],
         ].map(([title, detail, why]) => (
           <div key={title} className="p-3.5 border-2 border-ink rounded-xl bg-cream">
@@ -229,7 +229,7 @@ export const StaffAdmin: React.FC<{
         <button onClick={onOpenCase} className="btn-candy btn-compact">Open Camila's case</button>
         <button onClick={() => onSetPerspective('PATIENT')} className="btn-ghost btn-compact">Patient portal</button>
         <button onClick={() => onSetPerspective('CAREGIVER')} className="btn-ghost btn-compact">Caregiver view</button>
-        <button onClick={() => onSetPerspective('SYSTEM')} className="btn-ghost btn-compact">Readiness graph</button>
+        <button onClick={onOpenCase} className="btn-ghost btn-compact">Open graph + audit</button>
         <button onClick={() => onSetPerspective('LANDING')} className="btn-ghost btn-compact">Home</button>
       </div>
     </div>

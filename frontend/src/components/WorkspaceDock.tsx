@@ -4,7 +4,7 @@ import {
   IconStethoscope,
   IconUsers,
   IconHeart,
-  IconChartDots3,
+  IconRoute,
 } from '@tabler/icons-react';
 import { FloatingDock } from './ui/floating-dock';
 import { Perspective } from '../types';
@@ -43,22 +43,22 @@ export const WorkspaceDock: React.FC<WorkspaceDockProps> = ({
       active: currentPerspective === 'PATIENT',
     },
     {
-      title: 'Staff',
+      title: 'Care Team',
       icon: <IconStethoscope className={iconClass} />,
-      onClick: () => openOrSelect('STAFF'),
-      active: currentPerspective === 'STAFF',
+      onClick: () => openOrSelect('CARE_TEAM'),
+      active: currentPerspective === 'CARE_TEAM',
+    },
+    {
+      title: 'Care Navigator',
+      icon: <IconRoute className={iconClass} />,
+      onClick: () => openOrSelect('CARE_NAVIGATOR'),
+      active: currentPerspective === 'CARE_NAVIGATOR',
     },
     {
       title: 'Caregiver',
       icon: <IconUsers className={iconClass} />,
       onClick: () => openOrSelect('CAREGIVER'),
       active: currentPerspective === 'CAREGIVER',
-    },
-    {
-      title: 'Graph',
-      icon: <IconChartDots3 className={iconClass} />,
-      onClick: () => openOrSelect('SYSTEM'),
-      active: currentPerspective === 'SYSTEM',
     },
   ];
 

@@ -43,6 +43,19 @@ Use the authoritative artifact for the question being answered:
 
 If authoritative artifacts conflict, stop the affected work and let the orchestrator reconcile the upstream artifact. Never silently invent missing API behavior, requirements, schema behavior, or security policy.
 
+### Workspace and role contract
+
+The prepared workspace gateway has exactly two internal care-workspace roles:
+
+- **Care Navigator Workspace — Marcus Vance, MSW**: CareLink, patient coordination, transportation, barriers, appointments, follow-ups, and only the shared patient/readiness data needed for coordination.
+- **Care Team (Readiness Team) Workspace — Nurses/Readiness Staff**: clinical and treatment readiness, labs, vitals, nursing/readiness tasks, clinical blockers, and escalations.
+
+Do not recreate a combined `Staff` workspace or a separate `Readiness Graph & Audit Log` workspace. The readiness graph and audit timeline are embedded in each role's case workspace and must be permission-scoped to the role. Care Navigator views must not expose clinical verbatim concern text, nurse notes, or clinical-only actions. Care Team views must not expose CareLink dispatch controls or navigator-only operational routes.
+
+Reuse the shared staff shell, case workspace, graph, audit, queue, and state machinery with role capabilities rather than duplicating components. Role boundaries must be enforced in routing/state mutation guards as well as in rendered navigation; hiding a button alone is not authorization.
+
+This repository currently uses local prepared personas, so these guards protect the local scenario state but do not provide production identity authentication or backend authorization. Do not claim that they do, and do not invent a server auth contract without an approved task/architecture change.
+
 ## 4. Agent ownership
 
 ### Codex orchestrator

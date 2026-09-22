@@ -36,7 +36,7 @@ interface PatientTreatmentHomeProps {
   vitals: VitalSign[];
   onStartReadinessCheck: () => void;
   onOpenResolutionView: () => void;
-  onSwitchPerspective: (p: 'STAFF' | 'CAREGIVER' | 'SYSTEM') => void;
+  onSwitchPerspective: (p: 'CARE_TEAM' | 'CAREGIVER') => void;
 }
 
 export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
@@ -253,8 +253,8 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
               </p>
             </div>
           </div>
-          <button onClick={() => onSwitchPerspective('STAFF')} className="btn-candy shrink-0">
-            <span>View Staff Workbench</span>
+          <button onClick={() => onSwitchPerspective('CARE_TEAM')} className="btn-candy shrink-0">
+            <span>View Care Team Workbench</span>
             <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>

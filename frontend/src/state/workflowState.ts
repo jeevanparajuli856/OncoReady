@@ -327,6 +327,18 @@ const readinessFor = (state: WorkflowState): WorkflowState['overallReadiness'] =
 const addEvent = (state: WorkflowState, event: AuditEvent) =>
   state.auditEvents.some((existing) => existing.id === event.id) ? state.auditEvents : [...state.auditEvents, event];
 
+const isRoleMutationAllowed = (state: WorkflowState, role: 'CARE_NAVIGATOR' | 'CARE_TEAM') =>
+  state.currentPerspective === role || state.currentPerspective === 'LANDING';
+
+const normalizePerspective = (perspective: Perspective): Perspective =>
+  perspective === 'STAFF' || perspective === 'SYSTEM' ? 'CARE_TEAM' : perspective;
+
+const canOpenRoute = (perspective: Perspective, route: WorkflowState['staffRoute']) => {
+  if (perspective === 'CARE_NAVIGATOR') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INTEGRATIONS'].includes(route);
+  if (perspective === 'CARE_TEAM') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'].includes(route);
+  return false;
+};
+
 export function workflowReducer(state: WorkflowState, action: WorkflowAction): WorkflowState {
   switch (action.type) {
     case 'SUBMIT_READINESS': {
@@ -361,6 +373,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
+      if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
       const commandId = action.payload?.commandId ?? 'cmd-ack-clinical-v1';
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ASSIGNED' || commandApplied(state, commandId)) return state;
@@ -370,6 +383,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'RECORD_CLINICAL_DISPOSITION': {
+      if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
       const commandId = action.payload.commandId ?? `cmd-disposition-${action.payload.followUpBlocking ? 'blocking' : 'nonblocking'}-v1`;
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ACKNOWLEDGED' || !action.payload.disposition.trim() || commandApplied(state, commandId)) return state;
@@ -380,6 +394,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'CONFIRM_TRANSPORTATION': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR')) return state;
       const planVersion = getCurrentPlanVersion(state);
       const commandId = action.payload?.commandId ?? `cmd-complete-transport-v${planVersion}`;
       const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
@@ -390,6 +405,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next), currentCheckpoint: planVersion > 1 ? 'RECOVERED_PLAN' : next.currentCheckpoint };
     }
     case 'FAIL_TRANSPORTATION': {
+      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR')) return state;
       const currentVersion = getCurrentPlanVersion(state);
       const commandId = action.payload?.commandId ?? `cmd-fail-transport-v${currentVersion}`;
       const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
@@ -410,11 +426,13 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'LOAD_CHECKPOINT':
+      if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'LANDING') return state;
       return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
     case 'SET_PERSPECTIVE':
-      return { ...state, currentPerspective: action.payload === 'SIGN_IN' ? 'LANDING' : action.payload };
+      return { ...state, currentPerspective: action.payload === 'SIGN_IN' ? 'LANDING' : normalizePerspective(action.payload) };
     case 'SET_STAFF_ROUTE':
-      return { ...state, currentPerspective: 'STAFF', staffRoute: action.payload };
+      if (!canOpenRoute(state.currentPerspective, action.payload)) return state;
+      return { ...state, staffRoute: action.payload };
     case 'RESET_WORKFLOW':
       if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
       return { ...INITIAL_STATE };
@@ -424,7 +442,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
 }
 
 export function buildCheckpoint(checkpoint: WorkflowState['currentCheckpoint'], perspective: Perspective = 'LANDING', staffRoute: WorkflowState['staffRoute'] = 'COMMAND_CENTER'): WorkflowState {
-  let state: WorkflowState = { ...INITIAL_STATE, currentPerspective: perspective, staffRoute, currentCheckpoint: checkpoint === 'CONTEXT_INSIGHTS' ? checkpoint : 'START' };
+  let state: WorkflowState = { ...INITIAL_STATE, currentPerspective: normalizePerspective(perspective), staffRoute, currentCheckpoint: checkpoint === 'CONTEXT_INSIGHTS' ? checkpoint : 'START' };
   if (checkpoint === 'START' || checkpoint === 'CONTEXT_INSIGHTS') return state;
   state = workflowReducer(state, { type: 'SUBMIT_READINESS', payload: { transportNotes: 'Ride cancelled; transportation recovery needed.', clinicalConcernText: PREPARED_REPLY } });
   if (checkpoint === 'SPLIT_WORK') return { ...state, currentCheckpoint: checkpoint };
@@ -459,7 +477,10 @@ export function loadSavedWorkflowState(): WorkflowState {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return INITIAL_STATE;
       const parsed: unknown = JSON.parse(raw);
-      if (isSavedWorkflowState(parsed)) return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective: parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : parsed.currentPerspective };
+      if (isSavedWorkflowState(parsed)) {
+        const currentPerspective = parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : normalizePerspective(parsed.currentPerspective);
+        return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective };
+      }
     }
   } catch { /* fall through to canonical fixture */ }
   return INITIAL_STATE;
@@ -492,7 +513,7 @@ const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
   if (!isRecord(value) || value.version !== 5 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
-  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
+  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
   if (typeof value.readinessCheckCompleted !== 'boolean' || typeof value.patientAcknowledged !== 'boolean' || (value.patientAcknowledgedPlanVersion !== null && typeof value.patientAcknowledgedPlanVersion !== 'number')) return false;
   if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission)) return false;
   if (!Array.isArray(value.labs) || !value.labs.every(isLab) || !Array.isArray(value.vitals) || !value.vitals.every(isVital) || !Array.isArray(value.contextualCases) || !value.contextualCases.every(isContextualCase)) return false;

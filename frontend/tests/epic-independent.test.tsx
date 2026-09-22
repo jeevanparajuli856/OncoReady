@@ -178,10 +178,10 @@ describe('EPIC-001 independent acceptance evidence', () => {
     caregiver.unmount();
     localStorage.clear();
 
-    const system = render(<App />);
-    openPreparedWorkspace('auth-staff-card');
-    fireEvent.click(screen.getAllByRole('button', { name: 'Graph' })[0]);
+    const team = render(<App />);
+    openPreparedWorkspace('auth-care-team-card');
+    fireEvent.click(screen.getByRole('tab', { name: /Graph/i }));
     assertAbsent();
-    system.unmount();
+    team.unmount();
   });
 });

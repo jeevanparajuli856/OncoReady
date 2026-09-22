@@ -15,8 +15,6 @@ import { StaffExceptionQueue } from './components/StaffExceptionQueue';
 import { StaffCaseWorkspace } from './components/StaffCaseWorkspace';
 import { CaregiverView } from './components/CaregiverView';
 import { PatientResolutionView } from './components/PatientResolutionView';
-import { TreatmentReadinessGraph } from './components/TreatmentReadinessGraph';
-import { AuditTimeline } from './components/AuditTimeline';
 import {
   StaffAdmin,
   StaffCommandCenter,
@@ -27,7 +25,6 @@ import {
 } from './components/staff/StaffPages';
 import { Logo } from './components/Logo';
 import { WorkspaceDock } from './components/WorkspaceDock';
-import { Network } from 'lucide-react';
 import { Perspective, PreparedWorkspace } from './types';
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
@@ -70,13 +67,20 @@ export const App: React.FC = () => {
   }, [state]);
 
   const handleSetPerspective = (p: Perspective) => {
-    dispatch({ type: 'SET_PERSPECTIVE', payload: p });
+    const normalizedPerspective = p === 'STAFF' || p === 'SYSTEM' ? 'CARE_TEAM' : p;
+    dispatch({ type: 'SET_PERSPECTIVE', payload: normalizedPerspective });
   };
 
   const handleSelectPreparedWorkspace = (workspace: PreparedWorkspace) => {
-    if (workspace === 'TRANSPORTATION') {
+    if (workspace === 'CARE_NAVIGATOR') {
+      dispatch({ type: 'SET_PERSPECTIVE', payload: 'CARE_NAVIGATOR' });
       dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
-      dispatch({ type: 'SET_PERSPECTIVE', payload: 'STAFF' });
+      return;
+    }
+
+    if (workspace === 'CARE_TEAM') {
+      dispatch({ type: 'SET_PERSPECTIVE', payload: 'CARE_TEAM' });
+      dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
       return;
     }
 
@@ -151,7 +155,7 @@ export const App: React.FC = () => {
       <main className={`flex-1 w-full mx-auto min-h-0 ${
         state.currentPerspective === 'LANDING'
           ? 'max-w-none px-0 py-0'
-          : state.currentPerspective === 'STAFF'
+          : state.currentPerspective === 'CARE_NAVIGATOR' || state.currentPerspective === 'CARE_TEAM'
           ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-0'
           : 'max-w-none px-3 sm:px-6 lg:px-10 py-3 sm:py-4 pb-28 md:pb-6'
       }`}>
@@ -201,10 +205,11 @@ export const App: React.FC = () => {
           </div>
         )}
 
-        {/* Perspective: STAFF (Clinical Triage & Navigator) */}
-        {state.currentPerspective === 'STAFF' && (
+          {/* Perspective: CARE NAVIGATOR / CARE TEAM */}
+          {(state.currentPerspective === 'CARE_NAVIGATOR' || state.currentPerspective === 'CARE_TEAM') && (
             <StaffAppShell 
               state={state} 
+            workspaceRole={state.currentPerspective}
               onSetStaffRoute={(route) => dispatch({ type: 'SET_STAFF_ROUTE', payload: route as import('./types').StaffRoute })}
               onSetPerspective={handleSetPerspective}
               onReset={handleReset}
@@ -238,6 +243,7 @@ export const App: React.FC = () => {
               {state.staffRoute === 'CASE_WORKSPACE' && (
                 <StaffCaseWorkspace
                   state={state}
+                  workspaceRole={state.currentPerspective}
                   onBackToQueue={() => dispatch({ type: 'SET_STAFF_ROUTE', payload: 'COMMAND_CENTER' })}
                   onAcknowledgeClinical={handleAcknowledgeClinical}
                   onRecordClinicalDisposition={handleRecordClinicalDisposition}
@@ -266,49 +272,6 @@ export const App: React.FC = () => {
           <CaregiverView
             state={state}
           />
-        )}
-
-        {/* Perspective: SYSTEM (Architecture, Graph & Timeline) */}
-        {state.currentPerspective === 'SYSTEM' && (
-          <div className="page-shell space-y-5">
-            {/* Embedded Live Treatment Readiness Graph */}
-            <TreatmentReadinessGraph
-              appointment={state.appointment}
-              tasks={state.tasks}
-              overallReadiness={state.overallReadiness}
-              patientAcknowledged={state.patientAcknowledged}
-              readinessCheckCompleted={state.readinessCheckCompleted}
-              onNavigateToPatient={() => handleSetPerspective('PATIENT')}
-            />
-
-            {/* Audit Event Timeline */}
-            <AuditTimeline events={state.auditEvents} />
-
-            {/* Architecture Explanatory Summary Box */}
-            <div className="card-sticker p-6 space-y-4">
-              <div className="flex items-center gap-2 font-heading font-bold text-base">
-                <Network className="w-5 h-5 text-accent" strokeWidth={2.5} />
-                <span>Deterministic Workflow Engine Architecture</span>
-              </div>
-              <p className="text-sm text-muted-fg leading-relaxed">
-                OncoReady executes as a typed deterministic finite state machine. A single pre-treatment report containing a transportation failure and patient clinical symptoms triggers dual-path routing: preserving untrusted clinical text for human nurse review, and dispatching medical transit for navigation fulfillment. Caregiver views are derived through an explicit permission filter that guarantees clinical confidentiality.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2 text-sm">
-                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
-                  <div className="font-heading font-semibold">1. Single Source of Truth</div>
-                  <div className="text-muted-fg mt-0.5">Unified workflow state drives patient, queue, graph, caregiver, and audit log synchronously.</div>
-                </div>
-                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
-                  <div className="font-heading font-semibold">2. Human Authority Guard</div>
-                  <div className="text-muted-fg mt-0.5">Clinical concerns are preserved verbatim and routed to named staff; zero automated AI diagnosis.</div>
-                </div>
-                <div className="p-3.5 bg-white/60 rounded-xl border border-line">
-                  <div className="font-heading font-semibold">3. Deterministic Closure</div>
-                  <div className="text-muted-fg mt-0.5">Treatment readiness reaches PLAN_CONFIRMED only after dual staff actions + patient acknowledgment.</div>
-                </div>
-              </div>
-            </div>
-          </div>
         )}
 
       </main>

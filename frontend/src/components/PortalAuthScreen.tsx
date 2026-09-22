@@ -3,8 +3,8 @@ import {
   ShieldCheck,
   Activity,
   ArrowRight,
-  Network,
   Clock,
+  Route,
   Stethoscope,
   Sparkles,
   Calendar,
@@ -66,13 +66,34 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
       ),
     },
     {
-      key: 'STAFF',
-      eyebrow: 'Clinical Care Team',
-      title: 'Oncology Triage & Hub',
-      subtitle: 'Sarah Jenkins, RN & Marcus Vance, MSW',
-      body: 'Exception operations with two owned actions: human clinical review and transportation coordination.',
-      foot: 'EHR Clinical Workspace',
-      cta: 'Open Staff Workspace',
+      key: 'CARE_NAVIGATOR',
+      eyebrow: 'Care Navigator Workspace',
+      title: 'Marcus Vance, MSW',
+      subtitle: 'CareLink • Patient Coordination',
+      body: 'Coordinate rides, barriers, appointments, follow-ups, and the shared readiness plan without opening clinical actions.',
+      foot: 'CareLink Coordination Workspace',
+      cta: 'Open Care Navigator',
+      status: (
+        <span className="chip chip-mint">
+          <Route className="w-3 h-3" strokeWidth={2.5} />
+          {pendingBlockers > 0 ? `${pendingBlockers} Coordination Items` : 'Queue Cleared'}
+        </span>
+      ),
+      media: (
+        <div className="flex -space-x-2">
+          <div className="w-12 h-12 rounded-xl bg-accent border-2 border-ink" />
+          <div className="w-12 h-12 rounded-xl bg-mint border-2 border-ink" />
+        </div>
+      ),
+    },
+    {
+      key: 'CARE_TEAM',
+      eyebrow: 'Care Team (Readiness Team)',
+      title: 'Nurses & Readiness Staff',
+      subtitle: 'Clinical treatment readiness',
+      body: 'Review labs, vitals, readiness tasks, clinical blockers, escalations, and human nursing actions.',
+      foot: 'Clinical Readiness Workspace',
+      cta: 'Open Care Team',
       status: (
         <span className="chip">
           <Stethoscope className="w-3 h-3" strokeWidth={2.5} />
@@ -82,7 +103,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
       media: (
         <div className="flex -space-x-2">
           <div className="w-12 h-12 rounded-xl bg-accent border-2 border-ink" />
-          <div className="w-12 h-12 rounded-xl bg-mint border-2 border-ink" />
+          <div className="w-12 h-12 rounded-xl bg-sun border-2 border-ink" />
         </div>
       ),
     },
@@ -106,26 +127,6 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
           alt={state.caregiver.name}
           className="w-14 h-14 rounded-xl object-cover border-2 border-ink"
         />
-      ),
-    },
-    {
-      key: 'SYSTEM',
-      eyebrow: 'Continuity Engine',
-      title: 'Readiness Graph & Audit',
-      subtitle: 'Deterministic Directed Graph',
-      body: 'Explore the dependency graph connecting patient reports and transportation to plan confirmation alongside the causal audit log.',
-      foot: 'System Telemetry & Architecture',
-      cta: 'Inspect Readiness Graph',
-      status: (
-        <span className="chip chip-accent">
-          <Activity className="w-3 h-3" strokeWidth={2.5} />
-          Current Graph
-        </span>
-      ),
-      media: (
-        <span className="icon-bubble w-14 h-14 bg-ink text-sun">
-          <Network className="w-6 h-6" strokeWidth={2.5} />
-        </span>
       ),
     },
   ];

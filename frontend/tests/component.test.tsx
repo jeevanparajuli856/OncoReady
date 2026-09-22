@@ -99,8 +99,8 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
       expect(screen.getByText(/Your Reported Barriers are Being Resolved/i)).toBeDefined();
     });
 
-    // 5. Switch to Staff perspective via "View Staff Workbench" CTA
-    const staffBtn = screen.getByRole('button', { name: /View Staff Workbench/i });
+    // 5. Switch to the Care Team perspective via the readiness CTA
+    const staffBtn = screen.getByRole('button', { name: /View Care Team Workbench/i });
     fireEvent.click(staffBtn);
 
     const exceptionsNav = screen.getByRole('button', { name: /^Exceptions$/i });
@@ -114,7 +114,6 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(openCaseBtn);
 
     expect(screen.getByRole('heading', { name: /Clinical contact/i })).toBeDefined();
-    expect(screen.getByRole('heading', { name: /Transportation recovery/i })).toBeDefined();
 
     // 7. Staff Action 1: Nurse Acknowledges Clinical Task
     const ackClinicalBtn = screen.getByRole('button', { name: /Accept ownership/i });
@@ -122,13 +121,15 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(screen.getByRole('button', { name: /Record human disposition/i }));
     expect(screen.getByText(/Human disposition recorded/i)).toBeDefined();
 
-    // 8. Staff Action 2: Navigator Confirms Transportation Dispatch
+    // 8. Switch to Marcus's workspace for transportation dispatch
+    fireEvent.click(screen.getByRole('button', { name: /Sarah Jenkins, RN/i }));
+    fireEvent.click(screen.getByText(/Care Navigator \(Marcus Vance, MSW\)/i));
     const confirmTransportBtn = screen.getByRole('button', { name: /Complete current transport plan/i });
     fireEvent.click(confirmTransportBtn);
     expect(screen.getByText(/Current plan complete/i)).toBeDefined();
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
-    const switcherBtn = screen.getByRole('button', { name: /Sarah Jenkins, RN/i });
+    const switcherBtn = screen.getByRole('button', { name: /Marcus Vance, MSW/i });
     fireEvent.click(switcherBtn);
 
     const caregiverOption = screen.getByText(/Caregiver Portal \(Ana Hernandez\)/i);
