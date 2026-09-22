@@ -3,7 +3,7 @@
   "task_id": "FLOW-001",
   "title": "Shared frontend continuity scenario",
   "type": "feature",
-  "status": "IMPLEMENTATION",
+  "status": "INTEGRATION",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
