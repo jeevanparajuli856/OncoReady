@@ -346,3 +346,77 @@ test.describe('OncoReady UI-001 product experience', () => {
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
 });
+
+test('presenter rehearsal follows the prepared story without live delivery', async ({ page }) => {
+  test.setTimeout(60000);
+  const consoleErrors: string[] = [];
+  const providerPosts: string[] = [];
+  page.on('pageerror', (error) => consoleErrors.push(error.message));
+  page.on('console', (message) => { if (message.type() === 'error') consoleErrors.push(message.text()); });
+  page.on('request', (request) => {
+    if (request.method() === 'POST' && request.url().includes('/operator/outreach/')) providerPosts.push(request.url());
+  });
+  await page.goto('/');
+  await page.evaluate(() => localStorage.clear());
+  await page.reload();
+  await page.getByRole('button', { name: /Access workspace/i }).first().click();
+  await page.getByLabel('Email').fill('abcs@oncoready.me');
+  await page.getByLabel('Password').fill('1234');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+
+  await page.getByRole('tab', { name: 'Graph' }).click();
+  await expect(page.getByText('Treatment at risk').first()).toBeVisible();
+  await page.getByRole('button', { name: 'Open prepared message thread' }).first().click();
+  await expect(page.getByText('Prepared scenario history · no provider request')).toBeVisible();
+  await expect(page.getByRole('region', { name: 'Continuity plan receipt' }).getByText('0 of 3 recorded')).toBeVisible();
+
+  await page.getByRole('tab', { name: 'Epic' }).click();
+  await page.getByRole('button', { name: 'View source details' }).click();
+  await expect(page.getByRole('dialog', { name: /Epic source details/i })).toContainText('Epic FHIR Sandbox');
+  await page.keyboard.press('Escape');
+  await page.getByRole('tab', { name: 'Insights' }).click();
+  await page.getByRole('button', { name: 'Why flagged at T-1?' }).click();
+  await page.getByRole('button', { name: /Transportation available · model score/i }).click();
+  await expect(page.getByText(/Comparison only: transportation availability/i)).toBeVisible();
+
+  await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+  await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
+  await page.getByRole('button', { name: /Start Readiness Check/i }).click();
+  await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
+  await page.getByRole('button', { name: /View Care Team Workbench/i }).click();
+  await page.getByRole('button', { name: /Accept ownership/i }).click();
+  await page.getByRole('button', { name: /Record human disposition/i }).click();
+
+  await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+  await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
+  await page.getByRole('button', { name: 'Play previous trip replay' }).click();
+  await expect(page.getByText('Requested', { exact: true })).toBeVisible();
+  await page.getByRole('button', { name: 'Pause previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Restart previous trip replay' }).click();
+  await expect(page.getByText('Completed', { exact: true })).toBeVisible({ timeout: 8000 });
+  await page.getByRole('button', { name: 'Exit previous trip replay' }).click();
+
+  await page.getByRole('button', { name: /Request synthetic ride/i }).click();
+  await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+  await page.getByRole('button', { name: /Record primary unavailable/i }).click();
+  await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+  await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+  await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
+  await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
+  await page.getByRole('button', { name: /Mark logistics seen/i }).click();
+  await page.getByRole('button', { name: /Ana Hernandez/i }).click();
+  await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
+  await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
+  await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v2/i }).check();
+  await page.getByRole('button', { name: /Acknowledge current plan v2/i }).click();
+  await expect(page.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeVisible();
+  await page.getByRole('button', { name: /Camila Lopez/i }).click();
+  await page.getByText(/Care Team \(Readiness Team\)/i).click();
+  await page.getByRole('tab', { name: 'Graph' }).click();
+  const receipt = page.getByRole('region', { name: 'Continuity plan receipt' });
+  await expect(receipt.getByText('3 of 3 recorded')).toBeVisible();
+  await receipt.getByRole('button', { name: 'Open timeline evidence' }).last().click();
+  await expect(receipt.getByText('EVT-FLOW-PATIENT-ACK-V2', { exact: false })).toBeVisible();
+  expect(providerPosts).toEqual([]);
+  expect(consoleErrors).toEqual([]);
+});
