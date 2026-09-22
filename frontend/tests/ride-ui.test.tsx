@@ -1,4 +1,4 @@
-import React, { useReducer } from 'react';
+import { useReducer } from 'react';
 import { describe, expect, it } from 'vitest';
 import { fireEvent, render, screen } from '@testing-library/react';
 import { TransportationWorkspace } from '../src/components/TransportationWorkspace';
@@ -13,15 +13,25 @@ const RideHarness = () => {
   return <CareLinkRidePanel state={state} reducedMotion onAction={dispatch} />;
 };
 
+const TransportationHarness = () => {
+  const [state, dispatch] = useReducer(
+    workflowReducer,
+    buildCheckpoint('SPLIT_WORK', 'TRANSPORTATION'),
+  );
+  return <TransportationWorkspace state={state} reducedMotion onRideAction={dispatch} />;
+};
+
 describe('RIDE-001 provider extensibility labels', () => {
   it('shows CareLink and a truthful non-connected Uber Health preview', () => {
-    render(<TransportationWorkspace />);
+    render(<TransportationHarness />);
 
-    expect(screen.getByText('CareLink')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
     expect(screen.getByText('Synthetic scenario provider')).toBeDefined();
-    expect(screen.getByText('Uber Health')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Uber Health logo' })).toBeDefined();
     expect(screen.getByText('Integration-ready preview · not connected')).toBeDefined();
-    expect(screen.getByText(/No dispatch actions are enabled/i)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Request synthetic ride' })).toBeDefined();
   });
 
   it('walks the staged recovery and keeps incomplete logistics disabled', () => {

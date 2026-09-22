@@ -125,9 +125,12 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     // 8. Switch to Marcus's workspace for transportation dispatch
     fireEvent.click(screen.getByRole('button', { name: /Sarah Jenkins, RN/i }));
     fireEvent.click(screen.getByText(/Care Navigator \(Marcus Vance, MSW\)/i));
-    const confirmTransportBtn = screen.getByRole('button', { name: /Complete current transport plan/i });
-    fireEvent.click(confirmTransportBtn);
-    expect(screen.getByText(/Current plan complete/i)).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /Request synthetic ride/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Assign fictional CareLink Partner A/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Record primary unavailable/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Select fictional CareLink Partner B/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Save recovered logistics/i }));
+    expect(screen.getAllByText(/Current plan complete/i).length).toBeGreaterThan(0);
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
     const switcherBtn = screen.getByRole('button', { name: /Marcus Vance, MSW/i });
@@ -137,9 +140,13 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     fireEvent.click(caregiverOption);
 
     expect(screen.getByText(/Caregiver Portal • Ana Hernandez/i)).toBeDefined();
-    expect(screen.getByText(/Current plan v1/i)).toBeDefined();
-    expect(screen.getByText(/CareLink Vehicle #402/i)).toBeDefined();
+    expect(screen.getByText(/Current plan v2/i)).toBeDefined();
+    expect(screen.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeDefined();
+    expect(screen.getByText(/CareLink Dispatch/i)).toBeDefined();
     expect(screen.getByText(/Patient Privacy Boundary Enforced/i)).toBeDefined();
+
+    fireEvent.click(screen.getByRole('button', { name: /Mark logistics seen/i }));
+    expect(screen.getByText(/Seen by Ana Hernandez for plan v2/i)).toBeDefined();
 
     // Verify clinical symptoms are NOT rendered in Caregiver view
     const caregiverHtml = document.body.innerHTML.toLowerCase();
@@ -148,7 +155,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(caregiverHtml).not.toContain('peripheral neuropathy');
 
     // 10. Patient Perspective & Final Plan Acknowledgment
-    const caregiverSwitcherBtn = screen.getAllByText(/Ana Hernandez/i)[0];
+    const caregiverSwitcherBtn = screen.getByRole('button', { name: /Ana Hernandez/i });
     fireEvent.click(caregiverSwitcherBtn);
 
     const patientOption = screen.getByText(/Patient Portal \(Camila Lopez\)/i);
@@ -161,10 +168,10 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Review Updated Treatment Plan/i)).toBeDefined();
 
     // Check agreement
-    const agreeCheckbox = screen.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i });
+    const agreeCheckbox = screen.getByRole('checkbox', { name: /I acknowledge current transportation plan v2/i });
     fireEvent.click(agreeCheckbox);
 
-    const finalizeBtn = screen.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i });
+    const finalizeBtn = screen.getByRole('button', { name: /Acknowledge current plan v2/i });
     fireEvent.click(finalizeBtn);
 
     await waitFor(() => {

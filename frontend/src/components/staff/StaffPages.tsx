@@ -179,14 +179,14 @@ export const StaffResources: React.FC = () => (
       <p className="text-sm text-muted-fg mb-5">Illustrative transportation and community access nodes for tomorrow's infusion corridor.</p>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">CareLink Transportation</h3>
-          <p className="text-sm text-muted-fg mt-1">Illustrative non-emergency transportation coordination.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">3 coordination windows</div>
+          <h3 className="font-heading font-bold">CareLink</h3>
+          <p className="text-sm text-muted-fg mt-1">Playable local recovery and replay using synthetic provider records.</p>
+          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">Synthetic scenario provider</div>
         </StickerCard>
         <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">Community Mobility Network</h3>
-          <p className="text-sm text-muted-fg mt-1">Illustrative community transportation directory.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Directory mapping</div>
+          <h3 className="font-heading font-bold">Uber Health</h3>
+          <p className="text-sm text-muted-fg mt-1">Provider adapter preview only. No booking, API call, contract, or dispatch success is represented.</p>
+          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Integration-ready preview · not connected</div>
         </StickerCard>
       </div>
     </div>

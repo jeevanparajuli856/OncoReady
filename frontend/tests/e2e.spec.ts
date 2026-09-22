@@ -182,6 +182,48 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.locator('body')).not.toContainText('Camila Lopez');
   });
 
+  test('transportation login opens the working CareLink dashboard with truthful provider readiness', async ({ page }) => {
+    const uberRequests: string[] = [];
+    const consoleErrors: string[] = [];
+    page.on('request', (request) => {
+      if (request.url().toLowerCase().includes('uber')) uberRequests.push(request.url());
+    });
+    page.on('console', (message) => {
+      if (message.type() === 'error') consoleErrors.push(message.text());
+    });
+
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abct@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+
+    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
+    await expect(page.getByText('Integration-ready preview · not connected')).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Uber Health logo' })).toBeVisible();
+
+    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
+    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
+    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+
+    await expect(page.getByText('CareLink Partner A')).toBeVisible();
+    await expect(page.getByText('CareLink Partner B')).toBeVisible();
+    await expect(page.getByText(/Current ride · plan v2/i)).toBeVisible();
+    await expect(page.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeVisible();
+    expect((await page.locator('body').innerText()).toLowerCase()).not.toContain('not feeling well');
+    expect(uberRequests).toHaveLength(0);
+    expect(consoleErrors).toHaveLength(0);
+
+    await page.screenshot({ path: 'artifacts/RIDE-001-transport-desktop.png', fullPage: true });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await page.screenshot({ path: 'artifacts/RIDE-001-transport-mobile.png', fullPage: true });
+  });
+
   test('workspace routes and the complete Camila journey remain connected', async ({ page }) => {
     await page.getByRole('button', { name: /Access workspace/i }).first().click();
     await page.getByLabel('Email').fill('abcp@oncoready.me');
@@ -219,20 +261,26 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
-    await page.getByRole('button', { name: /Complete current transport plan/i }).click();
+    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
+    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
+    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
 
     await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
     await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
-    await expect(page.getByText(/Current plan v1/i)).toBeVisible();
+    await expect(page.getByText(/Current plan v2/i)).toBeVisible();
     const caregiverCopy = (await page.locator('body').innerText()).toLowerCase();
     expect(caregiverCopy).not.toContain('fever 100.4');
     expect(caregiverCopy).not.toContain('tingling in fingers');
+    await page.getByRole('button', { name: /Mark logistics seen/i }).click();
+    await expect(page.getByText(/Seen by Ana Hernandez for plan v2/i)).toBeVisible();
 
     await page.getByRole('button', { name: /Ana Hernandez/i }).click();
     await page.getByText(/Patient Portal \(Camila Lopez\)/i).click();
     await page.getByRole('button', { name: /Review & Confirm Plan/i }).click();
-    await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v1/i }).check();
-    await page.getByRole('button', { name: /Acknowledge & Confirm Treatment Plan/i }).click();
+    await page.getByRole('checkbox', { name: /I acknowledge current transportation plan v2/i }).check();
+    await page.getByRole('button', { name: /Acknowledge current plan v2/i }).click();
     await expect(page.getByRole('heading', { name: 'Continuity Plan Confirmed' })).toBeVisible();
 
     await page.getByRole('button', { name: /Camila Lopez/i }).click();
@@ -243,7 +291,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.getByRole('heading', { name: 'Treatment Readiness Graph' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upcoming Infusion Target Node' }).getByText('CONTINUITY PLAN CONFIRMED')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
-    await expect(page.getByText('Current transport plan v1 acknowledged')).toBeVisible();
+    await expect(page.getByText('Current transport plan v2 acknowledged')).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();

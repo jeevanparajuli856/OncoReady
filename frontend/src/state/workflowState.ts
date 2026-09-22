@@ -364,7 +364,9 @@ const addEvent = (state: WorkflowState, event: AuditEvent) =>
   state.auditEvents.some((existing) => existing.id === event.id) ? state.auditEvents : [...state.auditEvents, event];
 
 const isRoleMutationAllowed = (state: WorkflowState, role: 'CARE_NAVIGATOR' | 'CARE_TEAM') =>
-  state.currentPerspective === role || state.currentPerspective === 'LANDING';
+  state.currentPerspective === role ||
+  state.currentPerspective === 'LANDING' ||
+  (role === 'CARE_NAVIGATOR' && state.currentPerspective === 'TRANSPORTATION');
 
 const normalizePerspective = (perspective: Perspective): Perspective =>
   perspective === 'STAFF' || perspective === 'SYSTEM' ? 'CARE_TEAM' : perspective;
@@ -660,7 +662,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'LOAD_CHECKPOINT':
-      if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'LANDING') return state;
+      if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'TRANSPORTATION' && state.currentPerspective !== 'LANDING') return state;
       return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
     case 'SET_PERSPECTIVE':
       return { ...state, currentPerspective: normalizePerspective(action.payload) };

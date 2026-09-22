@@ -2,7 +2,8 @@ import React, { useState, useReducer, useEffect } from 'react';
 import { 
   workflowReducer, 
   loadSavedWorkflowState, 
-  saveWorkflowState 
+  saveWorkflowState,
+  deriveCaregiverProjection,
 } from './state/workflowState';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
@@ -27,6 +28,7 @@ import { Perspective, WorkspaceRole } from './types';
 import { buildDirectoryRecords, filterDirectoryRecords } from './data/rosterDirectory';
 import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
+import { TransportationWorkspace } from './components/TransportationWorkspace';
 
 export const App: React.FC = () => {
   const legalPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') : '';
@@ -110,6 +112,9 @@ export const App: React.FC = () => {
     if (perspective === 'CARE_NAVIGATOR' || perspective === 'CARE_TEAM') {
       dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
     }
+    if (perspective === 'TRANSPORTATION' && !state.tasks.some((task) => task.type === 'TRANSPORTATION_NAVIGATION')) {
+      dispatch({ type: 'LOAD_CHECKPOINT', payload: 'SPLIT_WORK' });
+    }
   };
 
   const handleReset = () => {
@@ -140,13 +145,6 @@ export const App: React.FC = () => {
 
   const handleRecordClinicalDisposition = (disposition: string, followUpBlocking: boolean) => {
     dispatch({ type: 'RECORD_CLINICAL_DISPOSITION', payload: { disposition, followUpBlocking } });
-  };
-
-  const handleConfirmTransportation = (details: { vehicleId?: string; driverName?: string; pickupTime?: string; returnArrangement?: string; logisticsContact?: string; backupPlan?: string }) => {
-    dispatch({
-      type: 'CONFIRM_TRANSPORTATION',
-      payload: details,
-    });
   };
 
   const handleAcknowledgePlan = () => {
@@ -276,8 +274,8 @@ export const App: React.FC = () => {
                   onBackToQueue={() => dispatch({ type: 'SET_STAFF_ROUTE', payload: 'COMMAND_CENTER' })}
                   onAcknowledgeClinical={handleAcknowledgeClinical}
                   onRecordClinicalDisposition={handleRecordClinicalDisposition}
-                  onConfirmTransportation={handleConfirmTransportation}
-                  onFailTransportation={() => dispatch({ type: 'FAIL_TRANSPORTATION' })}
+                  onRideAction={dispatch}
+                  reducedMotion={reducedMotion}
                   onLoadCheckpoint={(checkpoint) => dispatch({ type: 'LOAD_CHECKPOINT', payload: checkpoint })}
                   onSwitchPerspective={(p) => handleSetPerspective(p)}
                 />
@@ -299,11 +297,18 @@ export const App: React.FC = () => {
         {/* Perspective: CAREGIVER (Ana Hernandez - Data Minimized) */}
         {state.currentPerspective === 'CAREGIVER' && (
           <CaregiverView
-            state={state}
+            projection={deriveCaregiverProjection(state)}
+            onMarkSeen={() => dispatch({ type: 'MARK_CURRENT_LOGISTICS_SEEN' })}
           />
         )}
 
-        {state.currentPerspective === 'TRANSPORTATION' && <StaffResources />}
+        {state.currentPerspective === 'TRANSPORTATION' && (
+          <TransportationWorkspace
+            state={state}
+            reducedMotion={reducedMotion}
+            onRideAction={dispatch}
+          />
+        )}
 
       </main>
 
