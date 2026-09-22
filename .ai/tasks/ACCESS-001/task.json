@@ -3,7 +3,7 @@
   "task_id": "ACCESS-001",
   "title": "Polished demo entry and prepared workspaces",
   "type": "feature",
-  "status": "IMPLEMENTATION",
+  "status": "INTEGRATION",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",
