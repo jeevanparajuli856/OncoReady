@@ -53,11 +53,11 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events }) => {
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <History className="w-5 h-5 text-accent" strokeWidth={2.5} />
-            <h2 className="font-display text-lg font-extrabold">Append-Only Causal Event Timeline</h2>
-            <span className="chip">Immutable Audit Log</span>
+            <h2 className="font-display text-lg font-extrabold">Prepared Scenario Timeline</h2>
+            <span className="chip">Stable event IDs</span>
           </div>
           <p className="text-sm text-muted-fg mt-1">
-            Transparent event sequence demonstrating causal transitions from detection to closure.
+            Fixed CT scenario times show the transition from the prepared reply to continuity-plan closure. They are separate from actual delivery time.
           </p>
         </div>
         <div className="filter-bar">

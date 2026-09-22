@@ -9,6 +9,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { WorkflowState } from '../types';
+import { getCurrentPlanVersion, isClinicalDispositionComplete, isContinuityPlanConfirmed, isCurrentTransportPlanComplete } from '../state/workflowState';
 
 interface PatientResolutionViewProps {
   state: WorkflowState;
@@ -29,7 +30,9 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
   const clinicalTask = state.tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
 
-  const isConfirmed = state.overallReadiness === 'PLAN_CONFIRMED' || state.patientAcknowledged;
+  const planVersion = getCurrentPlanVersion(state);
+  const canAcknowledge = isClinicalDispositionComplete(state) && isCurrentTransportPlanComplete(state);
+  const isConfirmed = isContinuityPlanConfirmed(state);
 
   const handleConfirmClick = () => {
     setIsSubmitting(true);
@@ -80,8 +83,8 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
           </div>
           <div className={`text-center p-4 rounded-xl border-2 border-ink min-w-[150px] ${isConfirmed ? 'bg-white' : 'bg-white/10'}`}>
             <div className="label-caps">Arrival time</div>
-            <div className="font-display text-2xl font-extrabold mt-0.5">8:30 AM</div>
-            <div className="text-xs mt-0.5">Tomorrow, Aug 24</div>
+            <div className="font-display text-2xl font-extrabold mt-0.5">9:30 AM</div>
+            <div className="text-xs mt-0.5">Sep 25, 2026 • CT</div>
           </div>
         </div>
       </div>
@@ -111,11 +114,11 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             <div className="p-3 bg-white rounded-xl border-2 border-ink/10">
               <div className="font-heading font-bold flex items-center gap-1 text-sm">
                 <ShieldCheck className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
-                Triage Nurse Instructions:
+                Human disposition:
               </div>
               <p className="text-sm mt-1 leading-relaxed">
                 {clinicalTask?.clinicalDetails?.nurseNotes ||
-                  'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.'}
+                  'Human contact and disposition have not yet been recorded.'}
               </p>
             </div>
           </div>
@@ -128,7 +131,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
                 <Car className="w-4 h-4" strokeWidth={2.5} />
               </span>
               <div>
-                <h2 className="font-heading font-bold">Confirmed Transportation Schedule</h2>
+                <h2 className="font-heading font-bold">Current Transportation Plan v{planVersion}</h2>
                 <p className="text-xs text-muted-fg">Coordinated by Marcus Vance, MSW</p>
               </div>
             </div>
@@ -140,7 +143,8 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
           <div className="p-3.5 rounded-xl bg-cream grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
               <div className="label-caps text-muted-fg">Pickup window</div>
-              <div className="font-heading font-bold">Tomorrow, 7:45 AM</div>
+              <div className="font-heading font-bold">Sep 25, 8:15–8:30 AM CT</div>
+              <div className="text-xs text-muted-fg mt-0.5">Planned arrival 9:15 AM</div>
               <div className="text-xs text-muted-fg mt-0.5">1420 St. Charles Ave, New Orleans</div>
             </div>
             <div>
@@ -161,7 +165,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
           <div>
             <h2 className="font-heading font-bold text-lg">Final Patient Acknowledgment</h2>
             <p className="text-sm text-muted-fg mt-1">
-              Confirm the ride time and the nurse instructions before tomorrow.
+              Acknowledge the current coordination plan version. This does not confirm attendance or provide medical advice.
             </p>
           </div>
           <div className="flex items-start gap-3 p-3.5 rounded-xl bg-sun/30 border-2 border-ink/10">
@@ -173,13 +177,13 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
               className="mt-1 h-4 w-4 accent-accent"
             />
             <label htmlFor="agree-checkbox" className="text-sm font-medium cursor-pointer">
-              I acknowledge the 7:45 AM Med-Van pickup time and will follow the oral hydration and pre-medication lab instructions given by Nurse Sarah.
+              I acknowledge current transportation plan v{planVersion}, including its outbound, return, contact, and backup arrangements.
             </label>
           </div>
           <button
             onClick={handleConfirmClick}
-            disabled={!hasAgreed || isSubmitting}
-            className={`btn-candy w-full text-center ${hasAgreed && !isSubmitting ? '' : '!bg-muted !text-muted-fg !shadow-none cursor-not-allowed'}`}
+            disabled={!hasAgreed || !canAcknowledge || isSubmitting}
+            className={`btn-candy w-full text-center ${hasAgreed && canAcknowledge && !isSubmitting ? '' : '!bg-muted !text-muted-fg !shadow-none cursor-not-allowed'}`}
           >
             <CheckCircle2 className="w-5 h-5" strokeWidth={2.5} />
             <span>{isSubmitting ? 'Confirming Plan...' : 'Acknowledge & Confirm Treatment Plan'}</span>
@@ -191,10 +195,10 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             <Sparkles className="w-6 h-6" strokeWidth={2.5} />
           </div>
           <h2 className="font-display text-xl font-extrabold">
-            Everything is Set for Tomorrow Morning!
+            Continuity Plan Confirmed
           </h2>
           <p className="text-sm text-muted-fg max-w-md mx-auto">
-            Your team has the confirmation. Med-Van arrives at 7:45 AM. Labs are queued for 8:00 AM.
+            Current plan v{planVersion} is acknowledged. Treatment attendance remains unknown.
           </p>
           <button onClick={onBackToHome} className="btn-ghost">
             Return to Treatment Dashboard

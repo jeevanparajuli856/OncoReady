@@ -66,7 +66,7 @@ export const Header: React.FC<HeaderProps> = ({
         return (
           <div className="chip chip-mint">
             <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2} />
-            <span>Ready for Tomorrow</span>
+            <span>Continuity plan confirmed</span>
           </div>
         );
       case 'AT_RISK':

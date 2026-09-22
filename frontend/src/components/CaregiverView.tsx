@@ -86,7 +86,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
             {projection.transportConfirmed ? (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-heading font-bold bg-mint/30 text-ink border-2 border-ink">
                 <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-                Ride Confirmed
+                {projection.transportInfo?.status ?? 'Current plan complete'}
               </span>
             ) : (
               <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-heading font-bold bg-sun/40 text-ink border-2 border-ink">
@@ -123,14 +123,14 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ state }) => {
                 </div>
               </div>
               <p className="text-sm text-muted-fg">
-                Jerome's arrival link will text 30 minutes before pickup.
+                This view shows only the current transportation arrangement and omits clinical details.
               </p>
             </div>
           ) : (
             <div className="p-4 rounded-xl bg-cream border-2 border-ink/10 text-sm">
               <div className="font-heading font-bold">Transportation Pending Confirmation</div>
               <p className="text-muted-fg mt-1">
-                Oncology Navigator Marcus Vance is coordinating medical transit for Camila's 9:30 AM arrival. Updates will appear here as soon as dispatch confirms vehicle assignment.
+                Oncology Navigator Marcus Vance is coordinating the current outbound, return, contact, and backup plan. Updates appear here after the full plan is recorded.
               </p>
             </div>
           )}

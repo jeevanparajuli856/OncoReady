@@ -35,8 +35,8 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
   const clinicalTask = tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
 
-  const clinicalResolved = clinicalTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED';
-  const transportResolved = transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
+  const clinicalResolved = Boolean(clinicalTask?.clinicalDetails?.dispositionRecordedAt && clinicalTask.clinicalDetails.followUpBlocking === false);
+  const transportResolved = Boolean(transportTask?.status === 'RESOLVED' && transportTask.transportDetails?.dispatchStatus === 'CONFIRMED' && !transportTask.transportDetails.planFailed && transportTask.transportDetails.returnArrangement && transportTask.transportDetails.logisticsContact && transportTask.transportDetails.backupPlan);
   const allStaffResolved = clinicalResolved && transportResolved;
 
   return (
@@ -45,10 +45,10 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-display font-extrabold tracking-tight">Treatment Readiness Graph</h2>
-            <span className="chip chip-accent">Live Dependency Network</span>
+            <span className="chip chip-accent">Shared Scenario State</span>
           </div>
           <p className="text-sm text-muted-fg mt-1">
-            Real-time multi-agent dependency mapping anchoring pre-treatment blockers to tomorrow's infusion.
+            Deterministic dependencies from the prepared September 2026 scenario. Attendance remains unknown.
           </p>
         </div>
 
@@ -214,7 +214,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 {transportResolved ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
                     <CheckCircle2 className="w-3 h-3" />
-                    Dispatched
+                    Current plan complete
                   </span>
                 ) : readinessCheckCompleted ? (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
@@ -232,7 +232,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 <div className="mt-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-100">
                   <div className="text-[11px] text-slate-400 font-mono">Pickup Request:</div>
                   <p className="text-slate-800">
-                    1420 St. Charles Ave (7:45 AM Pickup)
+                    1420 St. Charles Ave (8:15–8:30 AM pickup; 9:15 AM planned arrival)
                   </p>
                   {transportResolved && (
                     <div className="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-emerald-800 font-medium">
@@ -282,7 +282,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 {overallReadiness === 'PLAN_CONFIRMED' ? (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-600 text-white shadow-xs">
                     <CheckCircle2 className="w-4 h-4" />
-                    PLAN CONFIRMED & READY
+                    CONTINUITY PLAN CONFIRMED
                   </div>
                 ) : overallReadiness === 'AT_RISK' ? (
                   <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-amber-500 text-white shadow-xs animate-pulse-subtle">
@@ -350,7 +350,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
 
               <p className="text-xs text-slate-600 mt-2">
                 {patientAcknowledged
-                  ? 'Camila confirmed receipt of the current ride and clinical guidance.'
+                  ? 'Camila acknowledged the current coordination plan version.'
                   : allStaffResolved
                   ? 'Staff actions complete. Awaiting final patient acknowledgment.'
                   : 'Requires Nurse Triage review and Transport dispatch before closure.'}
@@ -385,9 +385,9 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
             </div>
             <p className="text-cream/80">
               {selectedNode === 'CLINICAL' && 'Deterministic Clinical Review Task assigned to Sarah Jenkins, RN. Triage protocol preserves patient symptom input verbatim without automated diagnosis.'}
-              {selectedNode === 'TRANSPORT' && 'Simulated Non-Emergency Medical Transport Task assigned to Marcus Vance, MSW. Coordinates vehicle pickup at 7:45 AM.'}
+              {selectedNode === 'TRANSPORT' && 'Transportation recovery is owned by Marcus Vance, MSW. Closure requires outbound, return, contact, and backup details for the current plan version.'}
               {selectedNode === 'CENTER' && 'Upcoming FOLFOX6 Cycle 4 treatment anchor. Evaluates dependency graph status before confirming readiness.'}
-              {selectedNode === 'CLOSURE' && 'Patient confirmation closure gate. Ensures Camila receives and acknowledges updated care instructions.'}
+              {selectedNode === 'CLOSURE' && 'Patient acknowledgment is tied to the current transport plan version and expires after a material plan change.'}
             </p>
           </div>
           <button

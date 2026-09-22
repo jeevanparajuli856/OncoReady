@@ -151,7 +151,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({
           <span className="hidden sm:inline text-muted-fg">•</span>
           <span className="inline-flex items-center gap-1.5">
             <Calendar className="w-3.5 h-3.5 text-accent" strokeWidth={2.5} />
-            mFOLFOX6 Cycle 4 • Tomorrow 8:30 AM
+            mFOLFOX6 Cycle 4 • Sep 25, 10:00 AM CT
           </span>
           <span className="hidden sm:inline text-muted-fg">•</span>
           <span className="inline-flex items-center gap-1.5 font-mono uppercase">

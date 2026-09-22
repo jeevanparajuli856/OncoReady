@@ -100,14 +100,17 @@ export const App: React.FC = () => {
     });
   };
 
-  const handleAcknowledgeClinical = (nurseNotes?: string) => {
+  const handleAcknowledgeClinical = () => {
     dispatch({
       type: 'ACKNOWLEDGE_CLINICAL_TASK',
-      payload: { nurseNotes },
     });
   };
 
-  const handleConfirmTransportation = (details: { vehicleId?: string; driverName?: string; pickupTime?: string }) => {
+  const handleRecordClinicalDisposition = (disposition: string, followUpBlocking: boolean) => {
+    dispatch({ type: 'RECORD_CLINICAL_DISPOSITION', payload: { disposition, followUpBlocking } });
+  };
+
+  const handleConfirmTransportation = (details: { vehicleId?: string; driverName?: string; pickupTime?: string; returnArrangement?: string; logisticsContact?: string; backupPlan?: string }) => {
     dispatch({
       type: 'CONFIRM_TRANSPORTATION',
       payload: details,
@@ -202,7 +205,7 @@ export const App: React.FC = () => {
         {state.currentPerspective === 'STAFF' && (
             <StaffAppShell 
               state={state} 
-              onSetStaffRoute={(route) => dispatch({ type: 'SET_STAFF_ROUTE', payload: route })}
+              onSetStaffRoute={(route) => dispatch({ type: 'SET_STAFF_ROUTE', payload: route as import('./types').StaffRoute })}
               onSetPerspective={handleSetPerspective}
               onReset={handleReset}
             >
@@ -237,7 +240,10 @@ export const App: React.FC = () => {
                   state={state}
                   onBackToQueue={() => dispatch({ type: 'SET_STAFF_ROUTE', payload: 'COMMAND_CENTER' })}
                   onAcknowledgeClinical={handleAcknowledgeClinical}
+                  onRecordClinicalDisposition={handleRecordClinicalDisposition}
                   onConfirmTransportation={handleConfirmTransportation}
+                  onFailTransportation={() => dispatch({ type: 'FAIL_TRANSPORTATION' })}
+                  onLoadCheckpoint={(checkpoint) => dispatch({ type: 'LOAD_CHECKPOINT', payload: checkpoint })}
                   onSwitchPerspective={(p) => handleSetPerspective(p)}
                 />
               )}

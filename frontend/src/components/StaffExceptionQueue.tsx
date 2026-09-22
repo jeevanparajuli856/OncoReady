@@ -74,7 +74,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
           <div className="metric-tile">
             <div className="label-caps text-muted-fg">Avg resolution time</div>
             <div className="font-display text-2xl font-extrabold mt-1">42 mins</div>
-            <div className="text-[11px] text-muted-fg">SLA Target &lt; 2h</div>
+            <div className="text-[11px] text-muted-fg">Prepared operational target</div>
           </div>
           <div className="metric-tile">
             <div className="label-caps text-muted-fg">Cancel rate mitigation</div>
@@ -142,7 +142,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
                 <div className="flex flex-wrap gap-2">
                   <span className="chip">
                     <Clock className="w-3 h-3" strokeWidth={2.5} />
-                    Tomorrow 8:30 AM (T-24h)
+                    Sep 25, 10:00 AM CT (prepared T−1 scene)
                   </span>
                   {state.readinessCheckCompleted ? (
                     <>

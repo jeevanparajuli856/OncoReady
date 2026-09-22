@@ -29,7 +29,10 @@ export interface ClinicalReviewDetails {
   verbatimReport: string;
   nurseNotes?: string;
   clearanceState: 'PENDING_REVIEW' | 'REVIEWED_AND_ACKNOWLEDGED';
-  adviceGiven?: string;
+  ownershipAcknowledgedAt?: string;
+  disposition?: string;
+  dispositionRecordedAt?: string;
+  followUpBlocking?: boolean;
   acknowledgedAt?: string;
   reviewedBy?: string;
 }
@@ -44,6 +47,11 @@ export interface TransportDetails {
   driverName?: string;
   confirmedPickupTime?: string;
   dispatchedBy?: string;
+  planVersion: number;
+  returnArrangement?: string;
+  logisticsContact?: string;
+  backupPlan?: string;
+  planFailed: boolean;
 }
 
 export interface Task {
@@ -56,6 +64,8 @@ export interface Task {
   owner: TaskOwner;
   createdAt: string;
   dueTime: string;
+  nextAction: string;
+  waitingReason: string;
   clinicalDetails?: ClinicalReviewDetails;
   transportDetails?: TransportDetails;
 }
@@ -191,6 +201,7 @@ export interface ContextualQueueCase {
 }
 
 export interface WorkflowState {
+  scenarioId: 'camila-demo-v2';
   patient: PatientProfile;
   caregiver: CaregiverProfile;
   appointment: AppointmentDetails;
@@ -204,7 +215,20 @@ export interface WorkflowState {
   currentPerspective: Perspective;
   staffRoute: StaffRoute;
   patientAcknowledged: boolean;
+  patientAcknowledgedPlanVersion: number | null;
+  appliedCommandIds: string[];
+  processedSourceEventIds: string[];
+  currentCheckpoint: ScenarioCheckpoint;
+  attendanceStatus: 'UNKNOWN';
   contextualCases: ContextualQueueCase[];
   isSimulated: boolean;
   version: number;
 }
+
+export type ScenarioCheckpoint =
+  | 'START'
+  | 'CONTEXT_INSIGHTS'
+  | 'SPLIT_WORK'
+  | 'FAILED_RIDE'
+  | 'RECOVERED_PLAN'
+  | 'FINAL_CONFIRMATION';

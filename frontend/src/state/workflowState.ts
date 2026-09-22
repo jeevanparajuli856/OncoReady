@@ -6,18 +6,24 @@ import {
   CaregiverProjection 
 } from '../types';
 
-const STORAGE_KEY = 'oncoready_workflow_state_v3';
+const STORAGE_KEY = 'oncoready_workflow_state_v4';
 const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
 export const INITIAL_STATE: WorkflowState = {
-  version: 4,
+  version: 5,
+  scenarioId: 'camila-demo-v2',
   isSimulated: true,
   currentPerspective: 'LANDING',
   staffRoute: 'COMMAND_CENTER',
   overallReadiness: 'ACTION_REQUIRED',
   readinessCheckCompleted: false,
   patientAcknowledged: false,
+  patientAcknowledgedPlanVersion: null,
+  appliedCommandIds: [],
+  processedSourceEventIds: [],
+  currentCheckpoint: 'START',
+  attendanceStatus: 'UNKNOWN',
   
   patient: {
     id: 'PAT-882914',
@@ -46,12 +52,12 @@ export const INITIAL_STATE: WorkflowState = {
   },
 
   appointment: {
-    id: 'APT-2026-0824',
+    id: 'APT-2026-0925',
     protocol: 'mFOLFOX6 + Bevacizumab',
     cycleNumber: 4,
     totalCycles: 12,
     treatmentName: 'Cycle 4 Infusion (Oxaliplatin / Leucovorin / 5-FU / Avastin)',
-    scheduledTime: 'Tomorrow, Aug 24 • 8:30 AM',
+    scheduledTime: 'Sep 25, 2026 • 10:00 AM CT',
     location: 'Benson Cancer Center, Infusion Suite B',
     room: 'Bay 4',
     infusionChair: 'Infusion Chair 14 (Window)',
@@ -111,7 +117,7 @@ export const INITIAL_STATE: WorkflowState = {
       unit: '× 10³/µL',
       referenceRange: '1.50 - 8.00',
       status: 'NORMAL',
-      collectedAt: 'Aug 22, 09:15 AM',
+      collectedAt: 'Sep 23, 09:15 AM CT',
     },
     {
       name: 'Platelet Count',
@@ -119,7 +125,7 @@ export const INITIAL_STATE: WorkflowState = {
       unit: '× 10³/µL',
       referenceRange: '150 - 450',
       status: 'NORMAL',
-      collectedAt: 'Aug 22, 09:15 AM',
+      collectedAt: 'Sep 23, 09:15 AM CT',
     },
     {
       name: 'Hemoglobin (Hgb)',
@@ -127,7 +133,7 @@ export const INITIAL_STATE: WorkflowState = {
       unit: 'g/dL',
       referenceRange: '12.0 - 16.0',
       status: 'EVALUATED',
-      collectedAt: 'Aug 22, 09:15 AM',
+      collectedAt: 'Sep 23, 09:15 AM CT',
     },
     {
       name: 'Serum Creatinine',
@@ -135,7 +141,7 @@ export const INITIAL_STATE: WorkflowState = {
       unit: 'mg/dL',
       referenceRange: '0.50 - 1.10',
       status: 'NORMAL',
-      collectedAt: 'Aug 22, 09:15 AM',
+      collectedAt: 'Sep 23, 09:15 AM CT',
     },
     {
       name: 'Total Bilirubin',
@@ -143,7 +149,7 @@ export const INITIAL_STATE: WorkflowState = {
       unit: 'mg/dL',
       referenceRange: '0.2 - 1.2',
       status: 'NORMAL',
-      collectedAt: 'Aug 22, 09:15 AM',
+      collectedAt: 'Sep 23, 09:15 AM CT',
     }
   ],
 
@@ -160,28 +166,28 @@ export const INITIAL_STATE: WorkflowState = {
       value: '124 / 78',
       unit: 'mmHg',
       status: 'NORMAL',
-      collectedAt: 'Clinic Visit Aug 20',
+      collectedAt: 'Clinic visit Sep 22',
     },
     {
       name: 'Pulse / Heart Rate',
       value: '72',
       unit: 'bpm',
       status: 'NORMAL',
-      collectedAt: 'Clinic Visit Aug 20',
+      collectedAt: 'Clinic visit Sep 22',
     },
     {
       name: 'SpO2 Oxygen Saturation',
       value: '99',
       unit: '%',
       status: 'NORMAL',
-      collectedAt: 'Clinic Visit Aug 20',
+      collectedAt: 'Clinic visit Sep 22',
     },
     {
       name: 'Patient Weight',
       value: '68.0',
       unit: 'kg (150 lbs)',
       status: 'NORMAL',
-      collectedAt: 'Clinic Visit Aug 20',
+      collectedAt: 'Clinic visit Sep 22',
     }
   ],
 
@@ -197,20 +203,28 @@ export const INITIAL_STATE: WorkflowState = {
 
   auditEvents: [
     {
-      id: 'EVT-001',
-      timestamp: 'Aug 23, 06:00 AM',
-      actor: 'Scheduling Interface',
+      id: 'EVT-HISTORY-SCHEDULED-01',
+      timestamp: 'Sep 23, 2026 • 10:05 AM CT',
+      actor: 'Prepared outreach history',
       actorRole: 'SYSTEM',
-      action: 'Cycle 4 Infusion Scheduled',
-      description: 'mFOLFOX6 Cycle 4 confirmed for 08/24 08:30 AM at Benson Cancer Center.',
+      action: 'Automatic check-in scheduled',
+      description: 'Prepared SMS due Sep 23 at 10:06 AM CT. This is scenario history, not provider delivery evidence.',
     },
     {
-      id: 'EVT-002',
-      timestamp: 'Aug 23, 06:05 AM',
-      actor: 'OncoReady Continuity Engine',
-      actorRole: 'SYSTEM',
-      action: 'Readiness Screening Window Opened',
-      description: 'T-24 hour pre-infusion barrier detection protocol active for Camila Lopez.',
+      id: 'EVT-HISTORY-SMS-01', timestamp: 'Sep 23, 2026 • 10:06 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Prepared SMS sent',
+      description: '“Is your transportation plan ready for your upcoming appointment?”',
+    },
+    {
+      id: 'EVT-HISTORY-REPLY-01', timestamp: 'Sep 23, 2026 • 10:18 AM CT', actor: 'Camila Lopez', actorRole: 'PATIENT', action: 'Prepared reply received',
+      description: '“I think my ride is set. I’ll confirm tomorrow.”',
+    },
+    {
+      id: 'EVT-HISTORY-FOLLOWUP-01', timestamp: 'Sep 23, 2026 • 10:19 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Follow-up scheduled',
+      description: 'Next prepared check-in scheduled for Sep 24 at 10:06 AM CT.',
+    },
+    {
+      id: 'EVT-HISTORY-SMS-02', timestamp: 'Sep 24, 2026 • 10:06 AM CT', actor: 'Prepared outreach history', actorRole: 'SYSTEM', action: 'Prepared follow-up SMS sent',
+      description: '“Please confirm your ride plan or let us know if you need help.”',
     }
   ],
 
@@ -260,321 +274,182 @@ export const INITIAL_STATE: WorkflowState = {
   ]
 };
 
+export const PREPARED_REPLY = "My ride was cancelled—and I’m not feeling well today.";
+const SOURCE_REPLY_ID = 'source-prepared-reply-2026-09-24T10:12:00-05:00';
+
 export type WorkflowAction =
-  | { type: 'SUBMIT_READINESS'; payload: { transportNotes: string; clinicalConcernText: string } }
-  | { type: 'ACKNOWLEDGE_CLINICAL_TASK'; payload?: { nurseNotes?: string } }
-  | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string } }
-  | { type: 'ACKNOWLEDGE_PATIENT_PLAN' }
+  | { type: 'SUBMIT_READINESS'; payload: { transportNotes: string; clinicalConcernText: string; sourceEventId?: string; commandId?: string } }
+  | { type: 'ACKNOWLEDGE_CLINICAL_TASK'; payload?: { commandId?: string; nurseNotes?: string } }
+  | { type: 'RECORD_CLINICAL_DISPOSITION'; payload: { disposition: string; followUpBlocking: boolean; commandId?: string } }
+  | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string; returnArrangement?: string; logisticsContact?: string; backupPlan?: string; commandId?: string } }
+  | { type: 'FAIL_TRANSPORTATION'; payload?: { commandId?: string } }
+  | { type: 'ACKNOWLEDGE_PATIENT_PLAN'; payload?: { commandId?: string } }
+  | { type: 'LOAD_CHECKPOINT'; payload: WorkflowState['currentCheckpoint'] }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
   | { type: 'RESET_WORKFLOW' }
-  | { type: 'SET_STAFF_ROUTE'; payload: any };
+  | { type: 'SET_STAFF_ROUTE'; payload: WorkflowState['staffRoute'] };
+
+const commandApplied = (state: WorkflowState, commandId: string) => state.appliedCommandIds.includes(commandId);
+const withCommand = (state: WorkflowState, commandId: string) => [...state.appliedCommandIds, commandId];
+
+export const isClinicalDispositionComplete = (state: WorkflowState) => {
+  const clinical = state.tasks.find((task) => task.type === 'CLINICAL_REVIEW');
+  return Boolean(
+    clinical?.clinicalDetails?.dispositionRecordedAt &&
+    clinical.clinicalDetails.followUpBlocking === false,
+  );
+};
+
+export const isCurrentTransportPlanComplete = (state: WorkflowState) => {
+  const transport = state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION');
+  const details = transport?.transportDetails;
+  return Boolean(
+    transport?.status === 'RESOLVED' && details && !details.planFailed &&
+    details.dispatchStatus === 'CONFIRMED' && details.confirmedPickupTime &&
+    details.returnArrangement && details.logisticsContact && details.backupPlan,
+  );
+};
+
+export const getCurrentPlanVersion = (state: WorkflowState) =>
+  state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION')?.transportDetails?.planVersion ?? 1;
+
+export const isContinuityPlanConfirmed = (state: WorkflowState) =>
+  isClinicalDispositionComplete(state) &&
+  isCurrentTransportPlanComplete(state) &&
+  state.patientAcknowledgedPlanVersion === getCurrentPlanVersion(state);
+
+const readinessFor = (state: WorkflowState): WorkflowState['overallReadiness'] => {
+  if (isContinuityPlanConfirmed(state)) return 'PLAN_CONFIRMED';
+  if (state.readinessCheckCompleted) return state.tasks.some((task) => task.status === 'ASSIGNED') ? 'AT_RISK' : 'IN_PROGRESS';
+  return 'ACTION_REQUIRED';
+};
+
+const addEvent = (state: WorkflowState, event: AuditEvent) =>
+  state.auditEvents.some((existing) => existing.id === event.id) ? state.auditEvents : [...state.auditEvents, event];
 
 export function workflowReducer(state: WorkflowState, action: WorkflowAction): WorkflowState {
   switch (action.type) {
     case 'SUBMIT_READINESS': {
-      const nowStr = 'Aug 23, 07:15 AM';
-      const { transportNotes, clinicalConcernText } = action.payload;
-
-      const hasTransport = Boolean(transportNotes && transportNotes.trim());
-      const hasClinical = Boolean(clinicalConcernText && clinicalConcernText.trim());
-
-      const newTasks: Task[] = [];
-      const newAuditEvents: AuditEvent[] = [...state.auditEvents];
-
-      // Event: Patient submitted screening
-      newAuditEvents.push({
-        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
-        timestamp: nowStr,
-        actor: state.patient.name,
-        actorRole: 'PATIENT',
-        action: 'Readiness Screening Submitted',
-        description: `Patient completed 2-minute pre-infusion screening with 2 actionable barrier items.`,
-        stateDiff: {
-          field: 'readinessCheckCompleted',
-          from: 'false',
-          to: 'true',
+      const sourceEventId = action.payload.sourceEventId ?? SOURCE_REPLY_ID;
+      const commandId = action.payload.commandId ?? 'cmd-open-split-work-v1';
+      if (state.processedSourceEventIds.includes(sourceEventId) || commandApplied(state, commandId)) return state;
+      const clinicalText = action.payload.clinicalConcernText.trim();
+      const transportText = action.payload.transportNotes.trim();
+      if (!clinicalText || !transportText) return state;
+      const now = 'Sep 24, 2026 • 10:12 AM CT';
+      const tasks: Task[] = [
+        {
+          id: 'TSK-CLN-CAMILA-01', type: 'CLINICAL_REVIEW', title: 'Clinical contact and human disposition', patientId: state.patient.id,
+          status: 'ASSIGNED', priority: 'HIGH', owner: { id: 'STAFF-RN-01', name: 'Sarah Jenkins, RN', role: 'Oncology Triage Nurse', department: 'Benson Cancer Center Triage', badge: 'RN-8841', avatarUrl: avatarData('SJ', '#0284c7') },
+          createdAt: now, dueTime: 'Sep 24, 10:42 AM CT', nextAction: 'Contact Camila and record a human disposition', waitingReason: 'Patient contact',
+          clinicalDetails: { verbatimReport: clinicalText, clearanceState: 'PENDING_REVIEW' },
         },
-      });
-
-      // 1. Clinical Review Task (Assigned to Sarah Jenkins, RN)
-      if (hasClinical) {
-        newTasks.push({
-          id: 'TSK-CLN-01',
-          type: 'CLINICAL_REVIEW',
-          title: 'Oncology Triage Review: Patient-Reported Symptoms',
-          patientId: state.patient.id,
-          status: 'ASSIGNED',
-          priority: 'HIGH',
-          owner: {
-            id: 'STAFF-RN-01',
-            name: 'Sarah Jenkins, BSN, RN, OCN',
-            role: 'Oncology Triage Nurse',
-            department: 'Benson Cancer Center Triage',
-            badge: 'RN-8841',
-            avatarUrl: avatarData('SJ', '#0284c7'),
-          },
-          createdAt: nowStr,
-          dueTime: 'Today • 10:00 AM (SLA: 2h)',
-          clinicalDetails: {
-            verbatimReport: clinicalConcernText,
-            clearanceState: 'PENDING_REVIEW',
-          },
-        });
-
-        newAuditEvents.push({
-          id: `EVT-${newAuditEvents.length + 1}`.padStart(7, '0'),
-          timestamp: nowStr,
-          actor: 'OncoReady Continuity Engine',
-          actorRole: 'SYSTEM',
-          action: 'Clinical Triage Task Created',
-          description: `Dispatched high-priority clinical review to Sarah Jenkins, RN. Verbatim record preserved: "${clinicalConcernText}".`,
-        });
-      }
-
-      // 2. Transportation Navigation Task (Assigned to Marcus Vance)
-      if (hasTransport) {
-        newTasks.push({
-          id: 'TSK-TRN-02',
-          type: 'TRANSPORTATION_NAVIGATION',
-          title: 'Transportation Navigation: Ride Cancellation Resolution',
-          patientId: state.patient.id,
-          status: 'ASSIGNED',
-          priority: 'HIGH',
-          owner: {
-            id: 'STAFF-NAV-02',
-            name: 'Marcus Vance, MSW, LCSW',
-            role: 'Oncology Patient Navigator',
-            department: 'Supportive Care Services',
-            badge: 'NAV-3312',
-            avatarUrl: avatarData('MV', '#0d9488'),
-          },
-          createdAt: nowStr,
-          dueTime: 'Today • 11:00 AM (SLA: 3h)',
-          transportDetails: {
-            pickupAddress: state.patient.address,
-            destination: state.appointment.location,
-            requestedTime: 'Tomorrow • 7:45 AM (for 8:30 AM arrival)',
-            dispatchStatus: 'UNASSIGNED',
-            vehicleType: 'Assisted Medical Transport (Med-Van)',
-          },
-        });
-
-        newAuditEvents.push({
-          id: `EVT-${newAuditEvents.length + 1}`.padStart(7, '0'),
-          timestamp: nowStr,
-          actor: 'OncoReady Continuity Engine',
-          actorRole: 'SYSTEM',
-          action: 'Transportation Task Created',
-          description: `Dispatched transit task to Marcus Vance, MSW for pickup at 1420 St. Charles Ave.`,
-        });
-      }
-
-      const nextReadiness = newTasks.length > 0 ? 'AT_RISK' : 'PLAN_CONFIRMED';
-
-      return {
-        ...state,
-        readinessCheckCompleted: true,
-        readinessSubmission: {
-          hasTransportIssue: hasTransport,
-          transportNotes,
-          hasClinicalConcern: hasClinical,
-          clinicalConcernText,
-          submittedAt: nowStr,
+        {
+          id: 'TSK-TRN-CAMILA-01', type: 'TRANSPORTATION_NAVIGATION', title: 'Transportation recovery', patientId: state.patient.id,
+          status: 'ASSIGNED', priority: 'HIGH', owner: { id: 'STAFF-NAV-02', name: 'Marcus Vance, MSW', role: 'Oncology Patient Navigator', department: 'Supportive Care Services', badge: 'NAV-3312', avatarUrl: avatarData('MV', '#0d9488') },
+          createdAt: now, dueTime: 'Sep 24, 11:12 AM CT', nextAction: 'Recover outbound and return plan with a backup', waitingReason: 'Current transport plan',
+          transportDetails: { pickupAddress: state.patient.address, destination: state.appointment.location, requestedTime: 'Sep 25, 8:15–8:30 AM CT pickup • 9:15 AM planned arrival', dispatchStatus: 'UNASSIGNED', vehicleType: 'Assisted medical transport', planVersion: 1, planFailed: false },
         },
-        tasks: newTasks,
-        auditEvents: newAuditEvents,
-        overallReadiness: nextReadiness,
+      ];
+      let next: WorkflowState = {
+        ...state, readinessCheckCompleted: true, tasks, currentCheckpoint: 'SPLIT_WORK',
+        processedSourceEventIds: [...state.processedSourceEventIds, sourceEventId], appliedCommandIds: withCommand(state, commandId),
+        readinessSubmission: { hasTransportIssue: true, transportNotes: transportText, hasClinicalConcern: true, clinicalConcernText: clinicalText, submittedAt: now },
       };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-REPLY', timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Prepared reply received', description: `Verbatim reply preserved for staff: “${clinicalText}”`, stateDiff: { field: 'splitWork', from: 'closed', to: 'opened' } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same prepared reply.' }) };
+      return { ...next, overallReadiness: readinessFor(next) };
     }
-
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
-      const existingClinicalTask = state.tasks.find((task) => task.type === 'CLINICAL_REVIEW');
-      if (!existingClinicalTask || existingClinicalTask.status !== 'ASSIGNED') return state;
-
-      const nowStr = 'Aug 23, 08:20 AM';
-      const defaultNotes = 
-        'Patient-reported symptoms reviewed by the assigned nurse. Follow-up instructions and a disposition were recorded for the treatment team.';
-      
-      const nurseNotes = action.payload?.nurseNotes || defaultNotes;
-
-      const updatedTasks = state.tasks.map((task) => {
-        if (task.type === 'CLINICAL_REVIEW') {
-          return {
-            ...task,
-            status: 'RESOLVED' as const,
-            clinicalDetails: {
-              ...task.clinicalDetails!,
-              nurseNotes,
-              clearanceState: 'REVIEWED_AND_ACKNOWLEDGED' as const,
-              adviceGiven: 'Oral hydration protocol + oxaliplatin cold avoidance + 8:00 AM pre-med labs authorized.',
-              acknowledgedAt: nowStr,
-              reviewedBy: 'Sarah Jenkins, BSN, RN, OCN',
-            },
-          };
-        }
-        return task;
-      });
-
-      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
-        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
-        timestamp: nowStr,
-        actor: 'Sarah Jenkins, BSN, RN, OCN',
-        actorRole: 'TRIAGE_NURSE',
-        action: 'Clinical Review Acknowledged',
-        description: `Nurse Jenkins reviewed the patient report and recorded a disposition for the treatment team.`,
-        stateDiff: {
-          field: 'tasks.CLINICAL_REVIEW.status',
-          from: 'ASSIGNED',
-          to: 'RESOLVED',
-        },
-      }];
-
-      const allResolved = updatedTasks.every((t) => t.status === 'RESOLVED');
-      const nextReadiness = allResolved ? 'IN_PROGRESS' : state.overallReadiness;
-
-      return {
-        ...state,
-        tasks: updatedTasks,
-        auditEvents: newAuditEvents,
-        overallReadiness: nextReadiness,
-      };
+      const commandId = action.payload?.commandId ?? 'cmd-ack-clinical-v1';
+      const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
+      if (!task || task.status !== 'ASSIGNED' || commandApplied(state, commandId)) return state;
+      const now = 'Sep 24, 2026 • 10:18 AM CT';
+      let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'CLINICAL_REVIEW' ? { ...item, status: 'ACKNOWLEDGED', nextAction: 'Contact Camila and record a human disposition', waitingReason: 'Patient contact', clinicalDetails: { ...item.clinicalDetails!, ownershipAcknowledgedAt: now, acknowledgedAt: now, reviewedBy: 'Sarah Jenkins, RN' } } : item) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-CLINICAL-OWNED', timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Clinical ownership accepted', description: 'Ownership was accepted. Human contact and disposition remain open.', stateDiff: { field: 'clinical.status', from: 'ASSIGNED', to: 'ACKNOWLEDGED' } }) };
+      return { ...next, overallReadiness: readinessFor(next) };
     }
-
+    case 'RECORD_CLINICAL_DISPOSITION': {
+      const commandId = action.payload.commandId ?? `cmd-disposition-${action.payload.followUpBlocking ? 'blocking' : 'nonblocking'}-v1`;
+      const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
+      if (!task || task.status !== 'ACKNOWLEDGED' || !action.payload.disposition.trim() || commandApplied(state, commandId)) return state;
+      const now = 'Sep 24, 2026 • 10:28 AM CT';
+      const status: Task['status'] = action.payload.followUpBlocking ? 'ACKNOWLEDGED' : 'RESOLVED';
+      let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'CLINICAL_REVIEW' ? { ...item, status, nextAction: action.payload.followUpBlocking ? 'Complete the recorded human follow-up' : 'No further clinical workflow action', waitingReason: action.payload.followUpBlocking ? 'Human clinical follow-up' : 'Nothing outstanding', clinicalDetails: { ...item.clinicalDetails!, clearanceState: 'REVIEWED_AND_ACKNOWLEDGED', disposition: action.payload.disposition.trim(), dispositionRecordedAt: now, followUpBlocking: action.payload.followUpBlocking, nurseNotes: action.payload.disposition.trim(), reviewedBy: 'Sarah Jenkins, RN' } } : item) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-DISPOSITION-${action.payload.followUpBlocking ? 'BLOCKING' : 'NONBLOCKING'}`, timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Human disposition recorded', description: action.payload.followUpBlocking ? 'Patient contact was recorded; human follow-up remains blocking.' : 'Patient contact was recorded with no blocking follow-up.', stateDiff: { field: 'clinical.followUpBlocking', from: 'unknown', to: String(action.payload.followUpBlocking) } }) };
+      return { ...next, overallReadiness: readinessFor(next) };
+    }
     case 'CONFIRM_TRANSPORTATION': {
-      const existingTransportTask = state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION');
-      if (!existingTransportTask || existingTransportTask.status !== 'ASSIGNED') return state;
-
-      const nowStr = 'Aug 23, 08:45 AM';
-      const vehicleId = action.payload?.vehicleId || 'CareLink Vehicle #402';
-      const driverName = action.payload?.driverName || 'Jerome Davis';
-      const pickupTime = action.payload?.pickupTime || 'Tomorrow, 7:45 AM';
-
-      const updatedTasks = state.tasks.map((task) => {
-        if (task.type === 'TRANSPORTATION_NAVIGATION') {
-          return {
-            ...task,
-            status: 'RESOLVED' as const,
-            transportDetails: {
-              ...task.transportDetails!,
-              dispatchStatus: 'CONFIRMED' as const,
-              vehicleId,
-              driverName,
-              confirmedPickupTime: pickupTime,
-              dispatchedBy: 'Marcus Vance, MSW, LCSW',
-            },
-          };
-        }
-        return task;
-      });
-
-      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
-        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
-        timestamp: nowStr,
-        actor: 'Marcus Vance, MSW, LCSW',
-        actorRole: 'NAVIGATOR',
-        action: 'Transportation Dispatched & Confirmed',
-        description: `Transportation coordination recorded for a 7:45 AM pickup to Benson Cancer Center.`,
-        stateDiff: {
-          field: 'tasks.TRANSPORTATION_NAVIGATION.status',
-          from: 'ASSIGNED',
-          to: 'RESOLVED',
-        },
-      }];
-
-      const allResolved = updatedTasks.every((t) => t.status === 'RESOLVED');
-      const nextReadiness = allResolved ? 'IN_PROGRESS' : state.overallReadiness;
-
-      return {
-        ...state,
-        tasks: updatedTasks,
-        auditEvents: newAuditEvents,
-        overallReadiness: nextReadiness,
-      };
+      const planVersion = getCurrentPlanVersion(state);
+      const commandId = action.payload?.commandId ?? `cmd-complete-transport-v${planVersion}`;
+      const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
+      if (!task || commandApplied(state, commandId)) return state;
+      const now = planVersion === 1 ? 'Sep 24, 2026 • 10:36 AM CT' : 'Sep 24, 2026 • 10:52 AM CT';
+      let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION' ? { ...item, status: 'RESOLVED', nextAction: 'Monitor the current plan', waitingReason: 'Nothing outstanding', transportDetails: { ...item.transportDetails!, dispatchStatus: 'CONFIRMED', planFailed: false, vehicleId: action.payload?.vehicleId ?? 'CareLink Vehicle #402', driverName: action.payload?.driverName ?? 'Jerome Davis', confirmedPickupTime: action.payload?.pickupTime ?? 'Sep 25, 8:15–8:30 AM CT pickup • 9:15 AM planned arrival', returnArrangement: action.payload?.returnArrangement ?? 'Return coordination 1:00–4:00 PM CT', logisticsContact: action.payload?.logisticsContact ?? 'CareLink Dispatch • (504) 555-0124', backupPlan: action.payload?.backupPlan ?? 'Ana Hernandez is the named backup owner', dispatchedBy: 'Marcus Vance, MSW' } } : item) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-TRANSPORT-V${planVersion}`, timestamp: now, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Current transport plan v${planVersion} completed`, description: 'Outbound, return, logistics contact, and backup arrangements are recorded.', stateDiff: { field: 'transport.status', from: 'ASSIGNED', to: 'RESOLVED' } }) };
+      return { ...next, overallReadiness: readinessFor(next), currentCheckpoint: planVersion > 1 ? 'RECOVERED_PLAN' : next.currentCheckpoint };
     }
-
+    case 'FAIL_TRANSPORTATION': {
+      const currentVersion = getCurrentPlanVersion(state);
+      const commandId = action.payload?.commandId ?? `cmd-fail-transport-v${currentVersion}`;
+      const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
+      if (!task || task.transportDetails?.planFailed || commandApplied(state, commandId)) return state;
+      const nextVersion = currentVersion + 1;
+      const now = 'Sep 24, 2026 • 10:46 AM CT';
+      let next: WorkflowState = { ...state, patientAcknowledged: false, patientAcknowledgedPlanVersion: null, currentCheckpoint: 'FAILED_RIDE', appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION' ? { ...item, status: 'ASSIGNED', nextAction: 'Recover outbound and return plan with a backup', waitingReason: `Current transport plan v${nextVersion}`, transportDetails: { ...item.transportDetails!, planVersion: nextVersion, planFailed: true, dispatchStatus: 'UNASSIGNED', vehicleId: undefined, driverName: undefined, confirmedPickupTime: undefined, returnArrangement: undefined, logisticsContact: undefined, backupPlan: undefined } } : item) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-TRANSPORT-FAILED-V${currentVersion}`, timestamp: now, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Transport plan v${currentVersion} failed`, description: `Plan v${nextVersion} is now current; the prior patient acknowledgment is expired.`, stateDiff: { field: 'transport.planVersion', from: String(currentVersion), to: String(nextVersion) } }) };
+      return { ...next, overallReadiness: readinessFor(next) };
+    }
     case 'ACKNOWLEDGE_PATIENT_PLAN': {
-      const requiredTasks = state.tasks.filter((task) =>
-        task.type === 'CLINICAL_REVIEW' || task.type === 'TRANSPORTATION_NAVIGATION'
-      );
-      if (
-        state.patientAcknowledged ||
-        requiredTasks.length !== 2 ||
-        requiredTasks.some((task) => task.status !== 'RESOLVED')
-      ) return state;
-
-      const nowStr = 'Aug 23, 09:10 AM';
-
-      const updatedTasks = state.tasks;
-
-      const newAuditEvents: AuditEvent[] = [...state.auditEvents, {
-        id: `EVT-${state.auditEvents.length + 1}`.padStart(7, '0'),
-        timestamp: nowStr,
-        actor: state.patient.name,
-        actorRole: 'PATIENT',
-        action: 'Treatment Plan Acknowledged by Patient',
-        description: `Camila Lopez reviewed confirmed transportation and pre-medication lab instructions, transitioning cycle status to PLAN_CONFIRMED.`,
-        stateDiff: {
-          field: 'overallReadiness',
-          from: state.overallReadiness,
-          to: 'PLAN_CONFIRMED',
-        },
-      }];
-
-      return {
-        ...state,
-        patientAcknowledged: true,
-        overallReadiness: 'PLAN_CONFIRMED',
-        tasks: updatedTasks,
-        auditEvents: newAuditEvents,
-      };
+      const version = getCurrentPlanVersion(state);
+      const commandId = action.payload?.commandId ?? `cmd-patient-ack-v${version}`;
+      if (!isClinicalDispositionComplete(state) || !isCurrentTransportPlanComplete(state) || state.patientAcknowledgedPlanVersion === version || commandApplied(state, commandId)) return state;
+      const now = 'Sep 24, 2026 • 11:02 AM CT';
+      let next: WorkflowState = { ...state, patientAcknowledged: true, patientAcknowledgedPlanVersion: version, currentCheckpoint: 'FINAL_CONFIRMATION', appliedCommandIds: withCommand(state, commandId) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-PATIENT-ACK-V${version}`, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: `Current transport plan v${version} acknowledged`, description: 'Camila acknowledged the current coordination plan. Treatment attendance remains unknown.', stateDiff: { field: 'continuityPlan', from: 'open', to: 'confirmed' } }) };
+      return { ...next, overallReadiness: readinessFor(next) };
     }
-
-    case 'SET_PERSPECTIVE': {
-      return {
-        ...state,
-        currentPerspective: action.payload as any,
-      };
-    }
-    case 'SET_STAFF_ROUTE': {
-      return {
-        ...state,
-        currentPerspective: 'STAFF',
-        staffRoute: action.payload as any,
-      };
-    }
-
-    case 'RESET_WORKFLOW': {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.removeItem(STORAGE_KEY);
-      }
+    case 'LOAD_CHECKPOINT':
+      return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
+    case 'SET_PERSPECTIVE':
+      return { ...state, currentPerspective: action.payload === 'SIGN_IN' ? 'LANDING' : action.payload };
+    case 'SET_STAFF_ROUTE':
+      return { ...state, currentPerspective: 'STAFF', staffRoute: action.payload };
+    case 'RESET_WORKFLOW':
+      if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
       return { ...INITIAL_STATE };
-    }
-
     default:
       return state;
   }
 }
 
-export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjection {
-  const trnTask = state.tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
-  const isConfirmed = trnTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
+export function buildCheckpoint(checkpoint: WorkflowState['currentCheckpoint'], perspective: Perspective = 'LANDING', staffRoute: WorkflowState['staffRoute'] = 'COMMAND_CENTER'): WorkflowState {
+  let state: WorkflowState = { ...INITIAL_STATE, currentPerspective: perspective, staffRoute, currentCheckpoint: checkpoint === 'CONTEXT_INSIGHTS' ? checkpoint : 'START' };
+  if (checkpoint === 'START' || checkpoint === 'CONTEXT_INSIGHTS') return state;
+  state = workflowReducer(state, { type: 'SUBMIT_READINESS', payload: { transportNotes: 'Ride cancelled; transportation recovery needed.', clinicalConcernText: PREPARED_REPLY } });
+  if (checkpoint === 'SPLIT_WORK') return { ...state, currentCheckpoint: checkpoint };
+  state = workflowReducer(state, { type: 'ACKNOWLEDGE_CLINICAL_TASK' });
+  state = workflowReducer(state, { type: 'RECORD_CLINICAL_DISPOSITION', payload: { disposition: 'Human contact completed; no blocking follow-up recorded.', followUpBlocking: false } });
+  state = workflowReducer(state, { type: 'CONFIRM_TRANSPORTATION' });
+  state = workflowReducer(state, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
+  state = workflowReducer(state, { type: 'FAIL_TRANSPORTATION' });
+  if (checkpoint === 'FAILED_RIDE') return { ...state, currentCheckpoint: checkpoint };
+  state = workflowReducer(state, { type: 'CONFIRM_TRANSPORTATION' });
+  if (checkpoint === 'RECOVERED_PLAN') return { ...state, currentCheckpoint: checkpoint };
+  state = workflowReducer(state, { type: 'ACKNOWLEDGE_PATIENT_PLAN' });
+  return { ...state, currentCheckpoint: 'FINAL_CONFIRMATION' };
+}
 
+export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjection {
+  const task = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION');
+  const details = task?.transportDetails;
+  const complete = isCurrentTransportPlanComplete(state);
   return {
-    patientName: state.patient.name,
-    appointmentTime: state.appointment.scheduledTime,
-    appointmentLocation: state.appointment.location,
-    treatmentName: state.appointment.treatmentName,
-    transportConfirmed: isConfirmed || false,
-    transportInfo: isConfirmed && trnTask?.transportDetails ? {
-      pickupTime: trnTask.transportDetails.confirmedPickupTime || 'Tomorrow, 7:45 AM',
-      pickupAddress: trnTask.transportDetails.pickupAddress,
-      destination: trnTask.transportDetails.destination,
-      vehicleId: trnTask.transportDetails.vehicleId || 'CareLink Vehicle #402',
-      driverName: trnTask.transportDetails.driverName || 'Jerome Davis',
-      status: 'Confirmed & Dispatched',
-    } : undefined,
-    overallReadiness: state.overallReadiness,
-    privacyBoundaryNotice: 'Clinical symptoms, medication dosing, and nurse triage notes are confidential between Camila and her oncology care team.',
+    patientName: state.patient.name, appointmentTime: state.appointment.scheduledTime, appointmentLocation: state.appointment.location,
+    treatmentName: state.appointment.treatmentName, transportConfirmed: complete,
+    transportInfo: complete && details ? { pickupTime: details.confirmedPickupTime!, pickupAddress: details.pickupAddress, destination: details.destination, vehicleId: details.vehicleId!, driverName: details.driverName!, status: `Current plan v${details.planVersion}` } : undefined,
+    overallReadiness: readinessFor(state),
+    privacyBoundaryNotice: 'This transportation-only view excludes Camila’s clinical concern, nurse notes, and human disposition.',
   };
 }
 
@@ -584,159 +459,54 @@ export function loadSavedWorkflowState(): WorkflowState {
       const raw = localStorage.getItem(STORAGE_KEY);
       if (!raw) return INITIAL_STATE;
       const parsed: unknown = JSON.parse(raw);
-      if (isSavedWorkflowState(parsed)) {
-        return {
-          ...parsed,
-          currentPerspective: parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : parsed.currentPerspective,
-        };
-      }
+      if (isSavedWorkflowState(parsed)) return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective: parsed.currentPerspective === 'SIGN_IN' ? 'LANDING' : parsed.currentPerspective };
     }
-  } catch {
-    // ignore malformed storage
-  }
+  } catch { /* fall through to canonical fixture */ }
   return INITIAL_STATE;
 }
 
-const savedPerspectives: Perspective[] = ['LANDING', 'TRUST', 'SIGN_IN', 'PATIENT', 'CAREGIVER', 'STAFF', 'SYSTEM'];
-const savedStaffRoutes: WorkflowState['staffRoute'][] = ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'];
-const savedReadinessStates: WorkflowState['overallReadiness'][] = ['ACTION_REQUIRED', 'AT_RISK', 'IN_PROGRESS', 'PLAN_CONFIRMED'];
-const taskTypes = ['CLINICAL_REVIEW', 'TRANSPORTATION_NAVIGATION'];
-const taskStatuses = ['DETECTED', 'ASSIGNED', 'ACKNOWLEDGED', 'ACTIONED', 'CONFIRMED', 'RESOLVED'];
-const taskPriorities = ['CRITICAL', 'HIGH', 'MEDIUM', 'ROUTINE'];
-const actorRoles = ['PATIENT', 'SYSTEM', 'TRIAGE_NURSE', 'NAVIGATOR', 'CAREGIVER'];
-
 type UnknownRecord = Record<string, unknown>;
+const isRecord = (value: unknown): value is UnknownRecord => Boolean(value) && typeof value === 'object' && !Array.isArray(value);
+const hasStrings = (value: UnknownRecord, keys: string[]) => keys.every((key) => typeof value[key] === 'string');
+const optionalString = (value: unknown) => value === undefined || typeof value === 'string';
+const uniqueStrings = (value: unknown) => Array.isArray(value) && value.every((item) => typeof item === 'string') && new Set(value).size === value.length;
+const uniqueIds = (value: unknown[]) => value.every(isRecord) && new Set(value.map((item) => item.id)).size === value.length;
 
-const isRecord = (value: unknown): value is UnknownRecord =>
-  Boolean(value) && typeof value === 'object' && !Array.isArray(value);
-
-const hasStrings = (value: UnknownRecord, keys: string[]) =>
-  keys.every((key) => typeof value[key] === 'string');
-
-const isOptionalString = (value: unknown) => value === undefined || typeof value === 'string';
-
-const isPatient = (value: unknown) =>
-  isRecord(value) &&
-  value.id === INITIAL_STATE.patient.id &&
-  value.name === INITIAL_STATE.patient.name &&
-  value.mrn === INITIAL_STATE.patient.mrn &&
-  hasStrings(value, ['gender', 'diagnosis', 'stage', 'oncologist', 'phone', 'address', 'avatarUrl', 'bodySurfaceArea']) &&
-  typeof value.age === 'number' &&
-  typeof value.ecogStatus === 'number';
-
-const isCaregiver = (value: unknown) =>
-  isRecord(value) &&
-  value.id === INITIAL_STATE.caregiver.id &&
-  value.name === INITIAL_STATE.caregiver.name &&
-  value.permissionScope === 'TRANSPORTATION_ONLY' &&
-  hasStrings(value, ['relationship', 'phone', 'authorizedBy', 'avatarUrl']);
-
-const isDrug = (value: unknown) =>
-  isRecord(value) && hasStrings(value, ['name', 'dosage', 'route', 'schedule', 'indication']);
-
-const isAppointment = (value: unknown) =>
-  isRecord(value) &&
-  value.id === INITIAL_STATE.appointment.id &&
-  hasStrings(value, [
-    'protocol', 'treatmentName', 'scheduledTime', 'location', 'room', 'infusionChair',
-    'infusionDuration', 'oncologist', 'oncologistAvatar', 'nurseTeam',
-  ]) &&
-  typeof value.cycleNumber === 'number' &&
-  typeof value.totalCycles === 'number' &&
-  Array.isArray(value.drugs) && value.drugs.every(isDrug) &&
-  Array.isArray(value.premeds) && value.premeds.every((item) => typeof item === 'string');
-
-const isLab = (value: unknown) =>
-  isRecord(value) &&
-  hasStrings(value, ['name', 'value', 'unit', 'referenceRange', 'collectedAt']) &&
-  ['NORMAL', 'EVALUATED', 'CRITICAL'].includes(String(value.status));
-
-const isVital = (value: unknown) =>
-  isRecord(value) &&
-  hasStrings(value, ['name', 'value', 'unit', 'collectedAt']) &&
-  ['NORMAL', 'ATTENTION'].includes(String(value.status));
-
-const isSubmission = (value: unknown) =>
-  isRecord(value) &&
-  typeof value.hasTransportIssue === 'boolean' &&
-  typeof value.transportNotes === 'string' &&
-  typeof value.hasClinicalConcern === 'boolean' &&
-  typeof value.clinicalConcernText === 'string' &&
-  (value.submittedAt === null || typeof value.submittedAt === 'string');
-
-const isOwner = (value: unknown) =>
-  isRecord(value) && hasStrings(value, ['id', 'name', 'role', 'department', 'badge', 'avatarUrl']);
-
-const isClinicalDetails = (value: unknown) =>
-  isRecord(value) &&
-  typeof value.verbatimReport === 'string' &&
-  ['PENDING_REVIEW', 'REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) &&
-  ['nurseNotes', 'adviceGiven', 'acknowledgedAt', 'reviewedBy'].every((key) => isOptionalString(value[key]));
-
-const isTransportDetails = (value: unknown) =>
-  isRecord(value) &&
-  hasStrings(value, ['pickupAddress', 'destination', 'requestedTime', 'vehicleType']) &&
-  ['UNASSIGNED', 'DISPATCH_IN_PROGRESS', 'CONFIRMED'].includes(String(value.dispatchStatus)) &&
-  ['vehicleId', 'driverName', 'confirmedPickupTime', 'dispatchedBy'].every((key) => isOptionalString(value[key]));
-
+const isPatient = (value: unknown) => isRecord(value) && value.id === INITIAL_STATE.patient.id && value.name === INITIAL_STATE.patient.name && value.mrn === INITIAL_STATE.patient.mrn &&
+  hasStrings(value, ['gender','diagnosis','stage','oncologist','phone','address','avatarUrl','bodySurfaceArea']) && typeof value.age === 'number' && typeof value.ecogStatus === 'number';
+const isCaregiver = (value: unknown) => isRecord(value) && value.id === INITIAL_STATE.caregiver.id && value.name === INITIAL_STATE.caregiver.name && value.permissionScope === 'TRANSPORTATION_ONLY' && hasStrings(value, ['relationship','phone','authorizedBy','avatarUrl']);
+const isDrug = (value: unknown) => isRecord(value) && hasStrings(value, ['name','dosage','route','schedule','indication']);
+const isAppointment = (value: unknown) => isRecord(value) && value.id === INITIAL_STATE.appointment.id && hasStrings(value, ['protocol','treatmentName','scheduledTime','location','room','infusionChair','infusionDuration','oncologist','oncologistAvatar','nurseTeam']) && typeof value.cycleNumber === 'number' && typeof value.totalCycles === 'number' && Array.isArray(value.drugs) && value.drugs.every(isDrug) && Array.isArray(value.premeds) && value.premeds.every((item) => typeof item === 'string');
+const isLab = (value: unknown) => isRecord(value) && hasStrings(value, ['name','value','unit','referenceRange','collectedAt']) && ['NORMAL','EVALUATED','CRITICAL'].includes(String(value.status));
+const isVital = (value: unknown) => isRecord(value) && hasStrings(value, ['name','value','unit','collectedAt']) && ['NORMAL','ATTENTION'].includes(String(value.status));
+const isSubmission = (value: unknown) => isRecord(value) && typeof value.hasTransportIssue === 'boolean' && typeof value.transportNotes === 'string' && typeof value.hasClinicalConcern === 'boolean' && typeof value.clinicalConcernText === 'string' && (value.submittedAt === null || typeof value.submittedAt === 'string');
+const isOwner = (value: unknown) => isRecord(value) && hasStrings(value, ['id','name','role','department','badge','avatarUrl']);
+const isClinicalDetails = (value: unknown) => isRecord(value) && typeof value.verbatimReport === 'string' && ['PENDING_REVIEW','REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) && ['nurseNotes','ownershipAcknowledgedAt','disposition','dispositionRecordedAt','acknowledgedAt','reviewedBy'].every((key) => optionalString(value[key])) && (value.followUpBlocking === undefined || typeof value.followUpBlocking === 'boolean');
+const isTransportDetails = (value: unknown) => isRecord(value) && hasStrings(value, ['pickupAddress','destination','requestedTime','vehicleType']) && ['UNASSIGNED','DISPATCH_IN_PROGRESS','CONFIRMED'].includes(String(value.dispatchStatus)) && typeof value.planVersion === 'number' && value.planVersion >= 1 && typeof value.planFailed === 'boolean' && ['vehicleId','driverName','confirmedPickupTime','dispatchedBy','returnArrangement','logisticsContact','backupPlan'].every((key) => optionalString(value[key]));
 const isTask = (value: unknown) => {
-  if (!isRecord(value) ||
-    !hasStrings(value, ['id', 'title', 'patientId', 'createdAt', 'dueTime']) ||
-    !taskTypes.includes(String(value.type)) ||
-    !taskStatuses.includes(String(value.status)) ||
-    !taskPriorities.includes(String(value.priority)) ||
-    !isOwner(value.owner)) return false;
-
-  return value.type === 'CLINICAL_REVIEW'
-    ? isClinicalDetails(value.clinicalDetails) && value.transportDetails === undefined
-    : isTransportDetails(value.transportDetails) && value.clinicalDetails === undefined;
+  if (!isRecord(value) || !hasStrings(value, ['id','title','patientId','createdAt','dueTime','nextAction','waitingReason']) || !['CLINICAL_REVIEW','TRANSPORTATION_NAVIGATION'].includes(String(value.type)) || !['DETECTED','ASSIGNED','ACKNOWLEDGED','ACTIONED','CONFIRMED','RESOLVED'].includes(String(value.status)) || !['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority)) || !isOwner(value.owner)) return false;
+  return value.type === 'CLINICAL_REVIEW' ? isClinicalDetails(value.clinicalDetails) && value.transportDetails === undefined : isTransportDetails(value.transportDetails) && value.clinicalDetails === undefined;
 };
-
-const isAuditEvent = (value: unknown) =>
-  isRecord(value) &&
-  hasStrings(value, ['id', 'timestamp', 'actor', 'action', 'description']) &&
-  actorRoles.includes(String(value.actorRole)) &&
-  (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field', 'from', 'to'])));
-
-const isContextualCase = (value: unknown) =>
-  isRecord(value) &&
-  hasStrings(value, ['id', 'patientName', 'mrn', 'diagnosis', 'protocol', 'appointmentTime', 'blockerType', 'ownerName', 'ownerRole', 'avatarUrl']) &&
-  ['PENDING', 'IN_REVIEW'].includes(String(value.status)) &&
-  taskPriorities.includes(String(value.priority));
+const isAuditEvent = (value: unknown) => isRecord(value) && hasStrings(value, ['id','timestamp','actor','action','description']) && ['PATIENT','SYSTEM','TRIAGE_NURSE','NAVIGATOR','CAREGIVER'].includes(String(value.actorRole)) && (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field','from','to'])));
+const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value, ['id','patientName','mrn','diagnosis','protocol','appointmentTime','blockerType','ownerName','ownerRole','avatarUrl']) && ['PENDING','IN_REVIEW'].includes(String(value.status)) && ['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority));
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
-  if (!isRecord(value)) return false;
-  const state = value;
-
-  return (
-    state.version === INITIAL_STATE.version &&
-    state.isSimulated === true &&
-    typeof state.currentPerspective === 'string' &&
-    savedPerspectives.includes(state.currentPerspective as Perspective) &&
-    typeof state.staffRoute === 'string' &&
-    savedStaffRoutes.includes(state.staffRoute as WorkflowState['staffRoute']) &&
-    typeof state.overallReadiness === 'string' &&
-    savedReadinessStates.includes(state.overallReadiness as WorkflowState['overallReadiness']) &&
-    typeof state.readinessCheckCompleted === 'boolean' &&
-    typeof state.patientAcknowledged === 'boolean' &&
-    isPatient(state.patient) &&
-    isCaregiver(state.caregiver) &&
-    isAppointment(state.appointment) &&
-    isSubmission(state.readinessSubmission) &&
-    Array.isArray(state.tasks) && state.tasks.every(isTask) &&
-    Array.isArray(state.auditEvents) && state.auditEvents.every(isAuditEvent) &&
-    Array.isArray(state.labs) && state.labs.every(isLab) &&
-    Array.isArray(state.vitals) && state.vitals.every(isVital) &&
-    Array.isArray(state.contextualCases) && state.contextualCases.every(isContextualCase)
-  );
+  if (!isRecord(value) || value.version !== 5 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
+  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
+  if (typeof value.readinessCheckCompleted !== 'boolean' || typeof value.patientAcknowledged !== 'boolean' || (value.patientAcknowledgedPlanVersion !== null && typeof value.patientAcknowledgedPlanVersion !== 'number')) return false;
+  if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission)) return false;
+  if (!Array.isArray(value.labs) || !value.labs.every(isLab) || !Array.isArray(value.vitals) || !value.vitals.every(isVital) || !Array.isArray(value.contextualCases) || !value.contextualCases.every(isContextualCase)) return false;
+  if (!Array.isArray(value.tasks) || !value.tasks.every(isTask) || !uniqueIds(value.tasks) || !Array.isArray(value.auditEvents) || !value.auditEvents.every(isAuditEvent) || !uniqueIds(value.auditEvents) || !uniqueStrings(value.appliedCommandIds) || !uniqueStrings(value.processedSourceEventIds)) return false;
+  const state = value as unknown as WorkflowState;
+  const version = getCurrentPlanVersion(state);
+  if (state.patientAcknowledged !== (state.patientAcknowledgedPlanVersion !== null) || (state.patientAcknowledgedPlanVersion !== null && state.patientAcknowledgedPlanVersion !== version)) return false;
+  const derived = isContinuityPlanConfirmed(state);
+  if ((state.overallReadiness === 'PLAN_CONFIRMED') !== derived || state.overallReadiness !== readinessFor(state)) return false;
+  return true;
 }
 
-export function saveWorkflowState(state: WorkflowState): void {
+export function saveWorkflowState(state: WorkflowState) {
   try {
-    if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    }
-  } catch {
-    // ignore storage quota errors
-  }
+    if (typeof localStorage !== 'undefined') localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch { /* local persistence is best effort */ }
 }

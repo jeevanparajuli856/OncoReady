@@ -55,8 +55,14 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
   const clinicalTask = tasks.find((t) => t.type === 'CLINICAL_REVIEW');
   const transportTask = tasks.find((t) => t.type === 'TRANSPORTATION_NAVIGATION');
 
-  const clinicalResolved = clinicalTask?.clinicalDetails?.clearanceState === 'REVIEWED_AND_ACKNOWLEDGED';
-  const transportResolved = transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED';
+  const clinicalResolved = Boolean(clinicalTask?.clinicalDetails?.dispositionRecordedAt && clinicalTask.clinicalDetails.followUpBlocking === false);
+  const transportResolved = Boolean(
+    transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED' &&
+    !transportTask.transportDetails.planFailed &&
+    transportTask.transportDetails.returnArrangement &&
+    transportTask.transportDetails.logisticsContact &&
+    transportTask.transportDetails.backupPlan
+  );
   const allStaffResolved = clinicalResolved && transportResolved;
   const progress = Math.round((appointment.cycleNumber / appointment.totalCycles) * 100);
 
@@ -151,7 +157,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
               23<span className="text-sm font-heading font-bold text-cream/70 ml-0.5 mr-2">h</span>
               45<span className="text-sm font-heading font-bold text-cream/70 ml-0.5">m</span>
             </div>
-            <div className="text-xs text-cream/70 mt-1">Until scheduled arrival (8:30 AM)</div>
+            <div className="text-xs text-cream/70 mt-1">Prepared scenario clock • arrival 9:30 AM</div>
           </div>
         </div>
       </div>
@@ -198,7 +204,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
                 Your Updated Treatment Plan is Ready for Review
               </h2>
               <p className="text-sm text-muted-fg leading-relaxed">
-                Sarah Jenkins, RN authorized your pre-medication labs and hydration plan, and Marcus Vance confirmed your 7:45 AM Med-Van pickup.
+                Sarah Jenkins, RN recorded your human contact and disposition. Marcus Vance completed the current outbound, return, contact, and backup plan.
               </p>
             </div>
           </div>
@@ -215,12 +221,12 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
             </span>
             <div className="space-y-1">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="chip chip-mint">Ready for Tomorrow</span>
-                <span className="text-xs text-muted-fg">Plan Confirmed</span>
+                <span className="chip chip-mint">Continuity plan confirmed</span>
+                <span className="text-xs text-muted-fg">Attendance remains unknown</span>
               </div>
-              <h2 className="font-heading font-bold text-lg">Treatment Plan Confirmed & Ready</h2>
+              <h2 className="font-heading font-bold text-lg">Current Coordination Plan Acknowledged</h2>
               <p className="text-sm text-muted-fg leading-relaxed">
-                Med-Van #402 scheduled for 7:45 AM pickup. Pre-medication labs scheduled at 8:00 AM at Benson Cancer Center Suite B.
+                Your current transportation and care-team coordination plan is recorded. This does not confirm treatment attendance.
               </p>
             </div>
           </div>

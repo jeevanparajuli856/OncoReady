@@ -28,13 +28,13 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
   const errorRef = useRef<HTMLDivElement>(null);
   const [hasTransportIssue, setHasTransportIssue] = useState<boolean>(true);
   const [transportNotes, setTransportNotes] = useState<string>(
-    'Ride cancelled by family member; needs assisted pickup at 7:45 AM'
+    'Ride cancelled; transportation recovery needed.'
   );
   const [pickupAddress, setPickupAddress] = useState<string>(defaultAddress);
   const [needsWheelchair, setNeedsWheelchair] = useState<boolean>(false);
   const [hasClinicalConcern, setHasClinicalConcern] = useState<boolean>(true);
   const [clinicalConcernText, setClinicalConcernText] = useState<string>(
-    'Mild fever 100.4°F and tingling in fingers since yesterday evening'
+    'My ride was cancelled—and I’m not feeling well today.'
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<'clinical' | 'pickup' | null>(null);
@@ -105,7 +105,7 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
             <h2 id="readiness-check-title" className="font-heading font-extrabold text-xl leading-snug">
               2-Minute Pre-Infusion Readiness Check
             </h2>
-            <p className="text-sm text-white/75">FOLFOX6 Cycle 4 • Scheduled Tomorrow at 8:30 AM</p>
+            <p className="text-sm text-white/75">FOLFOX6 Cycle 4 • Scheduled Sep 25 at 10:00 AM CT</p>
           </div>
           <button
             type="button"
@@ -147,7 +147,7 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
                   </p>
                 </div>
               </div>
-              <span className="chip shrink-0 hidden sm:inline-flex">Tomorrow • 8:30 AM Arrival</span>
+              <span className="chip shrink-0 hidden sm:inline-flex">Sep 25 • 9:30 AM arrival</span>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
