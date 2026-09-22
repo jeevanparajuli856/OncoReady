@@ -29,7 +29,7 @@ describe('RIDE-001 provider extensibility labels', () => {
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
     expect(screen.getByText('Synthetic scenario provider')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
-    expect(screen.getByRole('img', { name: 'Uber Health logo' })).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Uber Health wordmark' })).toBeDefined();
     expect(screen.getByText('Integration-ready preview · not connected')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Request synthetic ride' })).toBeDefined();
   });

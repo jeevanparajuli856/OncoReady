@@ -74,7 +74,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
           <article className="card-sticker p-4 space-y-2 border-black">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div role="img" aria-label="Uber Health logo" className="font-sans text-xs font-black tracking-[0.16em] text-black">UBER HEALTH</div>
+                <div role="img" aria-label="Uber Health wordmark" className="font-sans text-xs font-black tracking-[0.16em] text-black">UBER HEALTH</div>
                 <h3 className="font-heading font-bold mt-1">Uber Health</h3>
               </div>
               <PlugZap className="w-4 h-4 text-accent" aria-hidden="true" />

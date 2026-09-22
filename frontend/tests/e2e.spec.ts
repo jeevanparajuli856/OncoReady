@@ -201,7 +201,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
     await expect(page.getByText('Integration-ready preview · not connected')).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Uber Health logo' })).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Uber Health wordmark' })).toBeVisible();
 
     await page.getByRole('button', { name: /Request synthetic ride/i }).click();
     await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
