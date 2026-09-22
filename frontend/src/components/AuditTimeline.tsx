@@ -81,7 +81,7 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events, showFinalR
           const thread = PREPARED_OUTREACH_THREADS.find((item) => (item.eventIds as readonly string[]).includes(evt.id));
           const expanded = Boolean(thread && selectedEventId === evt.id);
           return (
-          <div key={evt.id} className="relative flex items-start gap-4 animate-fade-in">
+          <div key={evt.id} id={`timeline-${evt.id}`} className="relative flex items-start gap-4 animate-fade-in scroll-mt-24">
             <div className="absolute -left-6 bg-cream p-0.5 rounded-full z-10">
               {getActorBadge(evt.actorRole)}
             </div>
