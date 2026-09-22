@@ -1,65 +1,50 @@
-# EVIDENCE-001 — Operational metrics and validated FHIR evidence
+# EVIDENCE-001 — Coherent demo evidence recording and rehearsal
+
+**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
 
 ## User-visible outcome
 
-Judges and hospital stakeholders can inspect Epic source provenance, event-derived operational metrics, and a validator-gated OncoReady FHIR artifact instead of relying on fixture-only dashboard numbers.
+The closing scene, source evidence and presentation package make the completed journey inspectable and reliable.
 
-## Product/demo impact
+## Required scope
 
-This slice supplies the final technical proof: the journey's graph, timeline, metrics, source evidence, and interoperability artifact agree because they derive from the same persisted events while Epic provenance stays separate.
+Compute small scenario counts from the shared state, expose actual Epic capture provenance and ML notebook/output evidence, distinguish live delivery from scenario events, and assemble the final recording, local backup and operator runbook. Show only the metrics needed for the story. Add a compact closing receipt whose barrier, backup-plan and patient-acknowledgment items open their supporting timeline evidence.
 
-## In scope
+## Deferred
 
-- Event-derived lead-time, ownership/action/closure, unresolved-blocker, outreach, CareLink recovery, acknowledgment, and final-disposition metrics.
-- Distinction between controlled replay and verified external-provider evidence.
-- Protected Epic source-evidence view with live/fallback mode, synchronization time, mapped resource counts/types, and non-secret references.
-- OncoReady-generated FHIR R4 Bundle mapping and Provenance.
-- Pinned validator integration, persisted/inspectable report, and UI gating of the `Validated` label.
-- Protected metrics/evidence UI using the locked design system.
+Validated FHIR export, broad interoperability mapping, production analytics, ROI dashboards, clinical outcome claims and extensive backend reporting.
 
-## Out of scope
+## Architecture and contract guidance
 
-- Epic writeback, production Epic access, customer/Ochsner approval, clinical validation, or regulatory compliance claims.
-- Analytics unrelated to the Camila continuity journey or invented outcome/ROI figures.
-- Metrics sourced from independent frontend fixtures when an underlying workflow event exists.
+Frontend evidence views plus local recording/asset manifests. Preserve existing actual live evidence from OUTREACH without exposing recipient numbers or secrets. No new analytics database or FHIR validator service.
 
-## Architecture impact
+All frontend work preserves [the approved visual system](../design/DESIGN_SYSTEM.md). Design-required work is a compatibility/extension plan with the existing digest gate. The architect must record actual impacts, execution controls and scope before BUILD_READY; the guidance here is not a completed architecture report.
 
-- Adds deterministic metric projections and an evidence-access boundary over persisted events and source metadata.
-- Adds FHIR mapping and pinned validation output without changing Epic's read-only boundary.
-- `frontend_design_required=true`; evidence surfaces use existing system/graph/timeline primitives.
+## Verification and risk
 
-## Contract impact
-
-Required. Define metric formulas/version, evidence access, Epic source summary, FHIR artifact metadata/download, validator status/report, and replay-versus-verified provenance.
-
-## Test depth
-
-TARGETED. Independent tests cover metric recomputation, event consistency, authorization, mapping fixtures, malformed/invalid bundles, validator failure, provenance separation, and truthful claim language.
-
-## Security risk
-
-HIGH with dedicated review. Material concerns are export authorization, over-disclosure, clinical/Epic data provenance, download handling, validator execution/input bounds, and misleading validation claims.
+TARGETED; LOW risk for reviewed synthetic/captured evidence. Reassess risk if a new protected export boundary is added. Independent full-path checks and visual review; OUTREACH retains its dedicated HIGH-risk review.
 
 ## Dependencies
 
-- `EPIC-001`, `FLOW-001`, `OUTREACH-001`, and `RIDE-001` integrated event/source contracts.
-- Pinned FHIR validator/version and approved evidence visibility before `BUILD_READY`.
-
-## Evidence access and disposition
-
-Epic source details and clinical FHIR evidence belong to authorized center-scoped staff. The recording returns through staff access after patient acknowledgment; do not expand patient/caregiver permissions to shorten that sequence. The evidence contract must define any separately allowlisted nonclinical projections.
-
-`Continuity plan confirmed` is a planning outcome. Keep treatment attendance/disposition `unknown` until an actual authorized outcome event records it; ride assignment, acknowledgment, or a resolved graph cannot imply treatment was kept.
+- EPIC-001
+- FLOW-001
+- ML-001
+- RIDE-001
+- OUTREACH-001
 
 ## Acceptance criteria
 
-1. A metric changes only when its underlying persisted event or approved formula version changes.
-2. Metrics compute lead time, time to owner/acceptance/first action/closure, unresolved blockers at required checkpoints, outreach response/escalation, CareLink recovery, acknowledgment, and final disposition from the shared event spine.
-3. Controlled replay and verified provider events remain distinguishable in audit and technical evidence.
-4. The Epic source view shows mode, last successful synchronization, mapped resource types/counts, and non-secret references, clearly separating live resources, fallback snapshot, and OncoReady events.
-5. The FHIR R4 Bundle maps Patient, Appointment, QuestionnaireResponse, Task, Communication, RelatedPerson/consent representation, and Provenance as applicable to actual data.
-6. A recorded pinned-validator pass is required before the UI shows `Validated`; failure, timeout, stale report, or artifact mismatch suppresses the label.
-7. Authorized users can inspect the mapping and validator report without receiving secrets or fields outside their projection.
-8. UI copy states validation applies only to the OncoReady-generated artifact and does not imply Epic writeback, production access, Ochsner connection, customer approval, clinical validation, or compliance.
-9. The final graph, timeline, workspaces, metrics, and FHIR evidence reconcile to the same event revision while Epic context retains separate provenance.
+1. The closing graph, workspaces, timeline and scenario counts reconcile to the same current scenario. Reset changes those counts consistently without rewriting captured Epic or real provider evidence.
+2. The source/evidence view identifies actual Epic Sandbox capture time and source, notebook/dataset/model export identity and synthetic-data limitations; links open and show the matching artifacts.
+3. Real SMS/call evidence and synthetic workflow/CareLink events retain distinct provenance. Show only sanitized live evidence; no real phone number, secret or fabricated delivery outcome enters the recording or export.
+4. Continuity plan confirmed is never labeled medical clearance or proof of attendance. Scenario counts are not production KPIs, efficacy, customers or ROI; inspect product and presenter wording.
+5. The local main recording, backup call clip, required JSON/audio assets and version/checksum manifest exist and play on the presentation device. Missing files/audio fail readiness.
+6. Two uninterrupted rehearsals complete the selected click path from reset with external sends disabled. A separately armed bounded acceptance verifies actual SMS and call; preserve the exact build and evidence versions.
+7. Off-path controls cannot derail the selected journey and the recorded views pass visual-baseline, keyboard, readable-state and representative responsive checks without rebranding.
+8. An Epic-offline run uses the actual saved capture, and a failed live-call run follows the disclosed backup without changing failure into live success. Record both recovery checks.
+9. The recording includes the automated-message/reply history and previous-dispatch playback. Original event times, replay/source detail and separate real SMS/call evidence remain readable; historical completion never counts as current-trip success.
+
+10. The closing scene includes a compact receipt derived from the current scenario: barriers addressed, backup transportation arranged and patient acknowledgment. Each item opens its supporting timeline event/details; before completion, missing items remain pending. Verify incomplete, completed and reopened states without hard-coded success counts.
+11. The recording demonstrates the graph's at-risk-to-confirmed transformation, Why flagged? detail, named ownership/next action/deadline, patient finish, evidence-linked receipt and the isolated ML what-if comparison. All six use the locked existing surfaces and show matching source data; include them in the two rehearsals without adding separate dashboards.
+
+See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.

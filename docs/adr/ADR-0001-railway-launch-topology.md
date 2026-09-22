@@ -1,5 +1,7 @@
 # ADR-0001 — Railway Launch Topology
 
+> Current scope: Partially superseded by [ADR-0004](./ADR-0004-two-day-demo-scope.md): the completed Railway foundation remains; a full persisted workflow backend is not required for the two-day demo. Existing hosts are app.oncoready.me and api.oncoready.me (human-confirmed).
+
 ## Status
 
 Accepted — September 21, 2026

@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "ACCESS-001",
-  "title": "Public experience pricing and workspace access",
+  "title": "Polished demo entry and prepared workspaces",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "critical",
@@ -231,16 +231,12 @@
     "RAIL-001"
   ],
   "acceptance_criteria": [
-    "Workspace access replaces Explore workspace everywhere and every public CTA reaches /access.",
-    "The public DOM, metadata, accessibility tree, search text, and network activity expose no patient record, readiness graph, Camila content, protected endpoint, or session creation.",
-    "The three public story cards update a record-free inline panel accessibly. One central pricing configuration supplies exactly two cards: Pilot at $18,000/year plus $1,500/month billed annually, and Network at Talk to us without a numeric price; usage charges are separate and there is no self-serve checkout.",
-    "The center selector precedes all access methods and no provider button or helper text reveals its configured persona mapping.",
-    "Server configuration maps each controlled access method to one allowed workspace without trusting browser-provided role or destination data.",
-    "Refresh preserves the authorized destination, direct access to another workspace is denied safely, sign-out invalidates the session, and sign-up cannot self-assign privileged roles.",
-    "Authentication, session, CSRF, throttling, credential, center isolation, API authorization, and audit controls pass dedicated security review.",
-    "Keyboard, focus, mobile, screen-reader, password-manager, reduced-motion, and desktop/mobile visual-lock checks pass with no unapproved design drift.",
-    "Every externally sourced image or SVG has license/provenance evidence, safe local/optimized handling, and correct accessible treatment.",
-    "Account recovery and pending sign-up have an implemented controlled path; no unimplemented reset-email success, dead legal/support link, or self-granted privileged access is allowed."
+    "From the public page, Workspace access opens the implemented entry path and reaches the selected prepared persona without a dead end; verify the recorded click path.",
+    "Public product pages expose no patient record or clinical source content. Prepared workspace selection does not grant any privileged provider action; verify public routes and the live adapter boundary separately.",
+    "Exactly two existing approved pricing plans remain coherent: Pilot $18,000/year with $1,500/month billed annually, five staff seats and one site; Network Talk to us without a numeric price. No checkout or new pricing system is required.",
+    "Switching among the recorded personas and returning to staff preserves the active scenario; reset restores the documented start. Verify through one full browser journey.",
+    "Off-path sign-up, recovery and provider controls are hidden, disabled with an explanation or implemented as honest previews. No false authentication, save or email success; inspect every visible recording-path link.",
+    "Keyboard focus, readable states, selected desktop/mobile layouts and reduced-motion behavior preserve the approved design; compare before/after screenshots without changing global tokens."
   ],
   "created_by": "human"
 }

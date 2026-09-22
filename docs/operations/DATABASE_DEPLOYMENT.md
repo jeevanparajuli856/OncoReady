@@ -4,7 +4,9 @@
 
 OncoReady uses Railway PostgreSQL for the launch architecture. Schema history is represented by Git-tracked Alembic migrations under `backend/alembic/versions`.
 
-The database stores OncoReady events, projections, sessions, integration state, normalized Epic Sandbox snapshots, provider configuration, audit evidence, and model metadata. It must not contain real patient data or production Epic credentials in the finals environment.
+RAIL-001's completed database currently provides the foundation persistence proof. Under [ADR-0004](../adr/ADR-0004-two-day-demo-scope.md), the two-day demo reuses it only where the minimal live SMS/call adapter needs persistent attempt reservations/results. Prepared workflow, CareLink, Epic capture and ML outputs do not require new database-backed domains. Full events, sessions, integration state and model metadata remain future product work.
+
+Existing Railway hosts are `https://app.oncoready.me` (web) and `https://api.oncoready.me` (API), confirmed by the human. Reuse them; verify current service status and browser/callback behavior before live acceptance. No real patient data or production Epic credentials belong in this environment.
 
 ## Development and Test
 
@@ -69,7 +71,7 @@ run reset/reseed and the critical path
 - The API connects through Railway private networking.
 - `DATABASE_URL` and encryption keys remain Railway variables and never enter Git, screenshots, reports, or chat.
 - Reset/reseed is a non-public operation for the controlled environment.
-- Reset/reseed restores OncoReady fixtures and workflow state without deleting a valid Epic authorization or last-known-good Camila snapshot unless the operator explicitly requests a full integration reset.
+- Scenario reset restores frontend fixtures only. It must not delete actual Epic capture evidence or live SMS/call reservations, outcomes, consent, limits or activation protection. The existing foundation reset remains separately protected; it is not a live-delivery reset.
 - A deployment is not reported healthy when a required migration is missing or failed.
 
 ### RAIL-001 Railway release gate

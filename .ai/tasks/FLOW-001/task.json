@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "FLOW-001",
-  "title": "Durable early-warning and owned work",
+  "title": "Shared frontend continuity scenario",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "critical",
@@ -228,21 +228,20 @@
     "worker_agents_must_use_reports": true
   },
   "dependencies": [
-    "EPIC-001"
+    "ACCESS-001"
   ],
   "acceptance_criteria": [
-    "Every readiness signal records what was known, when it was known, its source, and the scenario or model version that used it.",
-    "Transportation cutoff uses the approved business-day calendar and recomputes when the appointment changes.",
-    "Explicit symptom or transportation text bypasses model priority and routes immediately without clinical interpretation.",
-    "Camila's exact immutable reply creates separate clinical-contact and transportation work with different owners, deadlines, projections, acknowledgments, and closure rules.",
-    "Invalid or out-of-order commands are rejected without partial mutation, and duplicate commands or events are idempotent.",
-    "SLA miss escalates, appointment change reopens affected work, and caregiver permission revocation removes future caregiver access without rewriting history.",
-    "Patient, caregiver, staff, transportation, graph, timeline, and preliminary metrics derive consistently from the same committed events.",
-    "Stale scheduler, source, or projection state remains visible and never appears as reassurance.",
-    "Reset/reseed restores the exact finals workflow state without deleting valid Epic authorization or the last-known-good Camila snapshot.",
-    "The API-backed critical journey preserves the locked visual, accessibility, responsive, and reduced-motion behavior.",
-    "Confirmation requires the approved human-owned clinical disposition, current complete transport plan, and patient acknowledgment; source Epic dates are unchanged and distinguishable from the OncoReady scenario clock.",
-    "Freeze readiness/engagement feature snapshots and candidate-action decision envelopes for ML and OUTREACH before their implementation; no circular dependency on the later scheduler implementation."
+    "From the risk checkpoint, submitting “My ride was cancelled—and I’m not feeling well today.” preserves that exact text for staff and creates distinct clinical-contact and transport tasks with named owners; verify the state and rendered workspaces.",
+    "Nurse acknowledgment and recorded human contact/disposition remain distinct. Software gives no diagnosis, urgency downgrade, clinical advice or medical clearance; inspect the supported actions.",
+    "Staff, patient, caregiver, transport, graph and timeline derive from one shared state; switching persona cannot lose or contradict the current scene. Verify the selected browser path.",
+    "Continuity plan confirmed requires the human clinical disposition, a complete current outbound/return/backup plan and patient acknowledgment of that plan version. Open clinical work, failed transport or missing acknowledgment prevents confirmation; test each boundary.",
+    "Changing or failing the acknowledged ride invalidates that acknowledgment and reopens its blocker; duplicate clicks do not add duplicate effective transitions. Verify focused state tests.",
+    "Private checkpoint/reset restores the documented scenario without changing actual Epic capture timestamps, provider evidence, consent, attempt limits or live activation state; verify reset with a reserved live attempt fixture.",
+    "Scenario dates, Epic clinical/capture dates and real delivery times retain separate meaning. Attendance remains unknown unless actual evidence exists; inspect the closing graph and timeline.",
+    "All selected controls have coherent loading, disabled, failure and success presentation inside the locked visual system; verify browser behavior and matching screenshots.",
+    "Historical scheduled/sent/reply events are checkpoint-aware and the final prepared reply opens the existing split-work transition once; replaying or re-opening history does not duplicate work. Verify the same event text/times in thread and timeline.",
+    "Starting at Treatment at risk, each recorded nurse, transportation and patient action updates its corresponding graph node and status; only the existing closure rules permit Continuity plan confirmed. The transition remains understandable with reduced motion and non-color labels. Verify the before/after scene and the open-blocker case without inventing a score improvement.",
+    "Every open work item in the selected journey shows its named owner, next action, due time and waiting/blocked status from shared scenario data. Completing or reopening it updates the graph and timeline consistently; verify the clinical and transportation paths. Deadlines are operational scenario settings, not clinical policy."
   ],
   "created_by": "human"
 }

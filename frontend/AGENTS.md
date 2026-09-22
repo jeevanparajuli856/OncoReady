@@ -47,6 +47,8 @@ Read the task state, feature spec, architecture report, applicable contracts, `d
 
 ## Design-first gate
 
+For the two-day shared-branch exception in root `AGENTS.md` section 12, perform the following design/implementation handoff sequentially in the shared checkout. Commit the design report on `feature/two-day-demo`, bind compatibility approval to that report's digest using its exact commit, and run `frontend design-gate` before implementation. References below to a frontend worker branch/worktree and `worktree sync` apply to the default per-task workflow only. Use the recorded pre-handoff commit with `scope check --base`; the design and visual gates remain mandatory.
+
 When `frontend_design_required=false`, implement with the established design system and patterns without redesigning unrelated surfaces.
 
 When `frontend_design_required=true`:

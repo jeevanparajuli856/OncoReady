@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "RIDE-001",
-  "title": "CareLink contracted-provider dispatch",
+  "title": "Playable CareLink recovery and plan acknowledgment",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "critical",
@@ -231,14 +231,17 @@
     "FLOW-001"
   ],
   "acceptance_criteria": [
-    "Deterministic checks cover cutoff, funding and eligibility, operating and arrival windows, outbound and return plans, mobility or escort needs, service area, and provider availability.",
-    "Only authorized staff or transportation sessions dispatch or mutate provider assignments; the patient may acknowledge the current plan through an allowlisted patient-owned command, and caregivers remain read-only. Request creation is idempotent through the server adapter.",
-    "Requested, offered, accepted, driver assigned, patient notified, patient acknowledged, arriving, completed, cancelled, declined, provider unavailable, return pending, and backup required remain distinct events.",
-    "Cancellation or failure reopens the blocker and permits controlled retry, backup, or escalation without losing the original audit history.",
-    "When no transportation option is available, treatment remains at risk. The current complete plan requires patient acknowledgment before closure; a changed or failed plan invalidates the earlier acknowledgment.",
-    "The product never autonomously cancels or reschedules treatment and supports a center's contracted provider rather than requiring an OncoReady-owned fleet.",
-    "Uber Health remains provider-ready and cannot claim a quote, request, driver, ETA, or completion without approved credentials and verified callbacks.",
-    "Caregiver and transportation visual, accessibility, search, export, API, and log projections exclude clinical concern text and Epic-only fields."
+    "Starting from open transportation work, request and assign the fictional primary provider; the transport workspace, staff timeline and graph update from the same state. Verify the click path.",
+    "Trigger primary failure, preserve the failed assignment in the timeline and reopen the blocker; selecting the backup records a new current plan without erasing history.",
+    "The recovered plan shows outbound pickup/arrival, return arrangement and backup owner. Missing required logistics prevents patient confirmation; test the incomplete-plan state.",
+    "Camila acknowledges the current plan version. A later change/failure invalidates that acknowledgment; no option available leaves the plan at risk instead of generating success.",
+    "Ana sees only permitted ride logistics and transportation sees no copied clinical concern or Epic-only context; inspect the rendered role views and accessibility output.",
+    "Provider/driver/map details are synthetic scenario assets. No action places a real ride or claims live GPS, real ETA, a provider contract or Uber success; verify no external dispatch network activity.",
+    "The selected controls, map fallback, status transitions and final graph look native to the approved interface; compare baseline screenshots and complete a keyboard walkthrough.",
+    "Playing the previous-trip dispatch advances requested, accepted, driver-assigned, arriving and pickup/completion events with original timestamps. Pause/restart/exit cleanly control local replay; no real dispatch or GPS is implied. Verify replay with networking disabled.",
+    "Historical replay has a distinct trip ID and cannot change the current ride, patient acknowledgment, graph confirmation or real communications ledger. Reset/exit cancels replay timers; verify isolation and repeat playback.",
+    "After current-trip recovery, the patient finish shows the current pickup/arrival, return arrangement, named logistics contact, caregiver seen/pending state and patient acknowledgment together using existing components. Every value comes from the current plan; no historical trip date or assignment appears. Verify the patient/caregiver round trip.",
+    "Ana can mark the permitted current logistics plan as seen through a bounded local scenario action. The shared view records the actor, plan version and scenario time; a changed plan returns this state to pending. This cannot change assignments, disclose clinical details, substitute for Camila's acknowledgment or become an additional clinical-clearance condition. Verify these boundaries."
   ],
   "created_by": "human"
 }

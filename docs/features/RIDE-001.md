@@ -1,59 +1,46 @@
-# RIDE-001 — CareLink contracted-provider dispatch
+# RIDE-001 — Playable CareLink recovery and plan acknowledgment
+
+**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
 
 ## User-visible outcome
 
-A navigator and transportation coordinator turn Camila's risk into an eligibility-aware outbound and return plan, recover from one contracted-provider failure, and keep the blocker open until Camila acknowledges the plan.
+CareLink visibly recovers Camila's transportation plan through working frontend actions and patient acknowledgment.
 
-## Product/demo impact
+## Required scope
 
-This slice supplies the active operational recovery in the final: CareLink coordinates a center's own local provider network while Uber Health remains a truthful provider-ready alternative.
+Use fictional provider/driver records for one request, assignment, primary failure, backup recovery, outbound pickup, return plan and current-plan acknowledgment. Update staff, transportation, caregiver, patient, graph and timeline together. Show minimum relevant logistics using existing components. Add a short timed replay of a previous scenario dispatch with acceptance, driver assignment and advancing status feed, using a separate historical trip identity. Finish with one clear patient plan summary, including current pickup, return, contact and a versioned caregiver-seen status.
 
-## In scope
+## Deferred
 
-- Center-specific providers, service areas, operating windows, minimum data disclosure, funding/eligibility, mobility/escort, arrival, outbound, return, backup, and acknowledgment rules.
-- Authorized request, offer, accept/decline, driver/vehicle assignment, arrival, completion, cancellation, failure, recovery, and return-trip events.
-- Server-side idempotent CareLink adapter and active finals configuration.
-- Data-minimized staff, transportation, patient, and caregiver projections.
-- Uber Health provider-ready request concepts and activation requirements without external execution.
+Real provider integration, ride booking, callbacks, GPS/ETA feeds, fleet management, broad eligibility engine, payments and Uber Health execution.
 
-## Out of scope
+## Architecture and contract guidance
 
-- Real Uber Health quote/request/driver/ETA/completion, production transportation credentials, or arbitrary destinations.
-- Automatic treatment cancellation/rescheduling or automatic closure without patient acknowledgment.
-- A fleet owned by OncoReady or a claim that a real health system uses OncoReady.
+Frontend-only scenario transitions integrated into FLOW's single store. No dispatch API, migration or vendor credential is needed. Data structures are internal typed interfaces, not a new external contract.
 
-## Architecture impact
+All frontend work preserves [the approved visual system](../design/DESIGN_SYSTEM.md). Design-required work is a compatibility/extension plan with the existing digest gate. The architect must record actual impacts, execution controls and scope before BUILD_READY; the guidance here is not a completed architecture report.
 
-- Extends the event/outbox spine with normalized provider commands/events and distinct active/provider-ready modes.
-- Enforces server-side authorization, service-area/eligibility policy, idempotency, allowlists, and minimum projections.
-- `frontend_design_required=true`; transport surfaces reuse the locked design system and existing map fallback rules.
+## Verification and risk
 
-## Contract impact
-
-Required. Define provider capability/configuration, trip request, offer, assignment, status, failure, return, backup, acknowledgment, callback/audit, and role projection contracts.
-
-## Test depth
-
-TARGETED. Independent tests cover authorization, eligibility/cutoffs, idempotency, all failure/recovery transitions, data minimization, permission revocation, provider modes, and no fabricated vendor state.
-
-## Security risk
-
-HIGH with dedicated review. Material concerns are consequential external actions, location/contact disclosure, role authorization, arbitrary destinations, callback spoofing/replay, and cross-role clinical leakage.
+TARGETED; LOW risk for synthetic-only actions. Independent tests cover failed-plan reopening, required logistics, acknowledgment invalidation and visible consistency.
 
 ## Dependencies
 
-- `FLOW-001` stable transportation work, events, cutoffs, permissions, and closure rules.
-- Delegated synthetic center/provider/service-area, coordinator/driver and funding/eligibility settings from [LAUNCH_SCENARIO_SETTINGS.md](../LAUNCH_SCENARIO_SETTINGS.md), reviewed and frozen in the task contract; no actual vendor contract or external action is implied.
+- FLOW-001
 
 ## Acceptance criteria
 
-1. Deterministic checks cover notice cutoff, funding/eligibility, operating and arrival windows, outbound and return plans, mobility/escort needs, service area, and provider availability.
-2. Only authorized staff or transportation sessions can dispatch or mutate provider assignments. Patient projections are allowlisted and expose the patient-owned acknowledgment command; caregiver projections remain read-only. Acknowledgment cannot assign a driver or alter a trip.
-3. Request creation is idempotent and goes through the server-side normalized adapter.
-4. Requested, offered, accepted, driver assigned, patient notified, patient acknowledged, arriving, completed, cancelled, declined, provider unavailable, return pending, and backup required remain distinct events.
-5. Cancellation or failure reopens the blocker and permits controlled retry, backup activation, or navigator escalation without losing the original audit trail.
-6. When no transportation option is available, the treatment event remains at risk. Patient acknowledgment of the current complete plan is required before transportation work can close; a changed or failed plan invalidates the earlier acknowledgment.
-7. The product never autonomously cancels or reschedules treatment.
-8. CareLink supports the center's contracted provider rather than requiring an OncoReady-owned fleet.
-9. Uber Health can show provider-ready concepts and activation requirements but cannot claim quote, request, driver, ETA, or completion without approved credentials and verified callbacks.
-10. Caregiver and transportation visual, accessibility, search, export, API, and log projections exclude clinical concern text and Epic-only clinical fields.
+1. Starting from open transportation work, request and assign the fictional primary provider; the transport workspace, staff timeline and graph update from the same state. Verify the click path.
+2. Trigger primary failure, preserve the failed assignment in the timeline and reopen the blocker; selecting the backup records a new current plan without erasing history.
+3. The recovered plan shows outbound pickup/arrival, return arrangement and backup owner. Missing required logistics prevents patient confirmation; test the incomplete-plan state.
+4. Camila acknowledges the current plan version. A later change/failure invalidates that acknowledgment; no option available leaves the plan at risk instead of generating success.
+5. Ana sees only permitted ride logistics and transportation sees no copied clinical concern or Epic-only context; inspect the rendered role views and accessibility output.
+6. Provider/driver/map details are synthetic scenario assets. No action places a real ride or claims live GPS, real ETA, a provider contract or Uber success; verify no external dispatch network activity.
+7. The selected controls, map fallback, status transitions and final graph look native to the approved interface; compare baseline screenshots and complete a keyboard walkthrough.
+8. Playing the previous-trip dispatch advances requested, accepted, driver-assigned, arriving and pickup/completion events with original timestamps. Pause/restart/exit cleanly control local replay; no real dispatch or GPS is implied. Verify replay with networking disabled.
+9. Historical replay has a distinct trip ID and cannot change the current ride, patient acknowledgment, graph confirmation or real communications ledger. Reset/exit cancels replay timers; verify isolation and repeat playback.
+
+10. After current-trip recovery, the patient finish shows the current pickup/arrival, return arrangement, named logistics contact, caregiver seen/pending state and patient acknowledgment together using existing components. Every value comes from the current plan; no historical trip date or assignment appears. Verify the patient/caregiver round trip.
+11. Ana can mark the permitted current logistics plan as seen through a bounded local scenario action. The shared view records the actor, plan version and scenario time; a changed plan returns this state to pending. This cannot change assignments, disclose clinical details, substitute for Camila's acknowledgment or become an additional clinical-clearance condition. Verify these boundaries.
+
+See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.

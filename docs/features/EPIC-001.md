@@ -1,61 +1,42 @@
-# EPIC-001 — Read-only Epic Sandbox clinical context
+# EPIC-001 — Captured Epic Sandbox JSON in the staff UI
+
+**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
 
 ## User-visible outcome
 
-An authorized nurse or oncology navigator opens Camila's case and sees only the relevant clinical context actually returned by enabled Epic Sandbox APIs, with truthful live, snapshot-fallback, or unavailable provenance.
+The staff record displays actual read-only Epic Sandbox data captured before the presentation, with inspectable source and capture time.
 
-## Product/demo impact
+## Required scope
 
-This slice supplies the launch's real clinical-context proof while preserving the product boundary: Epic knows the treatment context; OncoReady owns readiness, outreach, transportation, acknowledgment, and closure.
+Use authorized existing Sandbox access to retrieve only resources needed for the story. Save reviewed minimum JSON and a provenance/checksum manifest. Render available clinical context and a source drawer from that capture, without live network dependency during playback.
 
-## In scope
+## Deferred
 
-- Private presenter-only standalone SMART on FHIR authorization and callback handling.
-- Read-only Patient, Appointment, Encounter, Condition, Observation, MedicationRequest, CarePlan, RequestGroup, Location, Practitioner, DiagnosticReport, and approved Procedure reads/searches.
-- Authorized Camila resource inventory, typed normalization, per-item provenance, atomic snapshot publication, refresh, and labeled last-known-good fallback.
-- Compact staff-only clinical-context UI and technical source evidence needed by later work.
-- Explicit isolation from patient, caregiver, transportation, public, search, export, logs, and non-Camila fixtures.
+Production access, customer installation, embedded EHR launch, writeback, ongoing synchronization, comprehensive token refresh infrastructure and broad resource coverage.
 
-## Out of scope
+## Architecture and contract guidance
 
-- Epic writeback, embedded EHR launch, production Epic/customer connectivity, arbitrary patient browsing, or a general-purpose EHR viewer.
-- Clinical interpretation, diagnosis, urgency assessment, clearance, or treatment recommendation.
-- OncoReady workflow/outreach/transport state inside Epic.
-- Sharing tokens, credentials, raw authorization errors, or private presenter controls with ordinary users.
+Frontend mapping plus a small offline capture utility if needed; server-side handling for credentials. Formal contracts only for independently implemented capture/normalization boundaries. Do not create a runtime Epic service solely for this recording.
 
-## Architecture impact
+All frontend work preserves [the approved visual system](../design/DESIGN_SYSTEM.md). Design-required work is a compatibility/extension plan with the existing digest gate. The architect must record actual impacts, execution controls and scope before BUILD_READY; the guidance here is not a completed architecture report.
 
-- Adds encrypted server-side Epic authorization state separated from ordinary workspace sessions.
-- Adds one bounded read-only adapter and a versioned `ClinicalContextSnapshot` normalization boundary.
-- Publishes a complete new snapshot atomically or serves the prior complete snapshot as fallback; partial refreshes never masquerade as live.
-- `frontend_design_required=true`; the staff panel extends the locked design without creating a new product-wide visual pattern.
+## Verification and risk
 
-## Contract impact
-
-Required. Define private setup/preflight states, staff clinical-context projection, `Live`/`Snapshot fallback`/`Unavailable` states, source time, normalized facts/provenance, and safe errors. OAuth/token internals are never browser contract fields.
-
-## Test depth
-
-TARGETED. Independent tests cover OAuth transaction validation, token lifecycle/redaction, response validation/pagination, atomic snapshots, fallback, authorization, data minimization, and proof that non-Camila fixtures cause no Epic request.
-
-## Security risk
-
-HIGH with dedicated review. Material concerns are OAuth callback attacks, credential/token exposure, unsafe persistence, overbroad FHIR scope, cross-role data leakage, upstream payload validation, and misleading provenance.
+TARGETED; STANDARD risk with dedicated security review for the credential/capture/publication boundary. Check actual capture contents, source mapping, missing fields and token exclusion; do not simulate external access as successful capture.
 
 ## Dependencies
 
-- `ACCESS-001` secure staff session and center authorization.
-- Approved Epic Non-PRD client configuration, exact HTTPS redirect URI, enabled scopes, and private human authorization.
+- ACCESS-001
 
 ## Acceptance criteria
 
-1. Private preflight authorizes or refreshes the Epic Sandbox connection without committing or exposing credentials, codes, or tokens to Git, chat, browser bundles, normal logs, reports, or ordinary product UI.
-2. The recorded journey begins in OncoReady access and reaches an already-connected Camila staff record without displaying Epic authentication.
-3. OAuth state, nonce, issuer, redirect URI, transaction binding, granted scope, expiry, refresh rotation, revocation, encryption, and redaction controls pass targeted tests and security review.
-4. Camila's staff record displays only facts returned by enabled R4 Read/Search APIs or the versioned last-known-good snapshot and retains resource type/ID, non-secret source identity, retrieval time, and transformation version.
-5. A successful refresh atomically replaces the prior snapshot; a partial or failed refresh does not combine new and old fields under a `Live` label.
-6. Live failure serves the prior complete snapshot only as `Snapshot fallback — synchronized <time>`; no snapshot produces `Unavailable`.
-7. Loading, empty, partial-source, unauthorized, expired-session, rate/error, fallback, and unavailable states are complete and accessible.
-8. Public, patient, caregiver, and transportation responses, search, exports, logs, and accessible text contain no Epic-only clinical fields. Authorized staff UI/accessibility and explicitly authorized staff evidence exports may contain approved fields; normal logs remain redacted.
-9. Only Camila is Epic-backed; non-Camila fixtures never initiate an Epic call and cannot open as complete cases.
-10. No route or adapter performs FHIR create, update, patch, or delete, and the UI makes no Ochsner, Epic endorsement, production access, or writeback claim.
+1. Using authorized Epic Sandbox access, retrieve the selected real test resources read-only and save reviewed JSON plus resource types/IDs, actual capture time, source environment and checksum manifest. A synthetic fixture cannot satisfy this criterion; inspect capture evidence.
+2. Opening Camila's staff context renders only fields present in the saved resources. Missing appointment, lab or medication information stays absent; test representative missing fields.
+3. If the captured record does not establish Camila's name, preserve original source identity and document Camila as the presentation alias in evidence. Never fabricate a Sandbox patient or rewrite source dates; compare JSON with UI.
+4. The source drawer identifies captured Epic Sandbox data and its original capture time. A local reload cannot claim a fresh synchronization or change the capture timestamp; verify offline playback.
+5. Generated scenario appointments and workflow events remain separate from Epic clinical facts; no OncoReady action writes to Epic. Inspect mapping and capture request methods.
+6. Captured assets contain no credentials, tokens, unexpected sensitive records or content not permitted for distribution. Browser bundles are allowed only for reviewed publishable test data; verify asset review and scoped security evidence.
+7. The UI works with the reviewed local capture when Epic is offline; malformed/missing capture produces a truthful unavailable state. No synthetic replacement is labeled as Epic; verify both paths.
+8. Only the staff presentation shows clinical context; caregiver and transportation displays contain permitted logistics. UI filtering is not claimed as protection for publicly bundled assets; inspect role views and evidence wording.
+
+See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.

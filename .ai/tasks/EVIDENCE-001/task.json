@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "EVIDENCE-001",
-  "title": "Operational metrics and validated FHIR evidence",
+  "title": "Coherent demo evidence recording and rehearsal",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "high",
@@ -230,20 +230,22 @@
   "dependencies": [
     "EPIC-001",
     "FLOW-001",
-    "OUTREACH-001",
-    "RIDE-001"
+    "ML-001",
+    "RIDE-001",
+    "OUTREACH-001"
   ],
   "acceptance_criteria": [
-    "Every metric changes only when its underlying persisted event or approved formula version changes.",
-    "Lead time, ownership and action and closure durations, unresolved blockers, outreach, CareLink recovery, acknowledgment, and final disposition derive from the shared event spine.",
-    "Controlled replay and verified provider events remain distinguishable in audit and technical evidence.",
-    "Epic source evidence clearly separates live resources, snapshot fallback, and OncoReady-owned events while showing only non-secret provenance.",
-    "The generated FHIR R4 Bundle maps the approved resources and Provenance only where actual data supports them.",
-    "A current pinned-validator pass is required before the UI shows Validated; failure, timeout, stale report, or artifact mismatch suppresses the label.",
-    "Authorized users can inspect mapping and validation evidence without receiving secrets or fields outside their projection.",
-    "The UI states validation applies only to the OncoReady-generated artifact and makes no writeback, production access, customer approval, clinical validation, or compliance claim.",
-    "The final graph, timeline, workspaces, metrics, and FHIR evidence reconcile to the same event revision while Epic context retains separate provenance.",
-    "Epic/clinical evidence requires a staff session; plan confirmation never implies treatment attendance, which remains unknown until an authorized outcome event."
+    "The closing graph, workspaces, timeline and scenario counts reconcile to the same current scenario. Reset changes those counts consistently without rewriting captured Epic or real provider evidence.",
+    "The source/evidence view identifies actual Epic Sandbox capture time and source, notebook/dataset/model export identity and synthetic-data limitations; links open and show the matching artifacts.",
+    "Real SMS/call evidence and synthetic workflow/CareLink events retain distinct provenance. Show only sanitized live evidence; no real phone number, secret or fabricated delivery outcome enters the recording or export.",
+    "Continuity plan confirmed is never labeled medical clearance or proof of attendance. Scenario counts are not production KPIs, efficacy, customers or ROI; inspect product and presenter wording.",
+    "The local main recording, backup call clip, required JSON/audio assets and version/checksum manifest exist and play on the presentation device. Missing files/audio fail readiness.",
+    "Two uninterrupted rehearsals complete the selected click path from reset with external sends disabled. A separately armed bounded acceptance verifies actual SMS and call; preserve the exact build and evidence versions.",
+    "Off-path controls cannot derail the selected journey and the recorded views pass visual-baseline, keyboard, readable-state and representative responsive checks without rebranding.",
+    "An Epic-offline run uses the actual saved capture, and a failed live-call run follows the disclosed backup without changing failure into live success. Record both recovery checks.",
+    "The recording includes the automated-message/reply history and previous-dispatch playback. Original event times, replay/source detail and separate real SMS/call evidence remain readable; historical completion never counts as current-trip success.",
+    "The closing scene includes a compact receipt derived from the current scenario: barriers addressed, backup transportation arranged and patient acknowledgment. Each item opens its supporting timeline event/details; before completion, missing items remain pending. Verify incomplete, completed and reopened states without hard-coded success counts.",
+    "The recording demonstrates the graph's at-risk-to-confirmed transformation, Why flagged? detail, named ownership/next action/deadline, patient finish, evidence-linked receipt and the isolated ML what-if comparison. All six use the locked existing surfaces and show matching source data; include them in the two rehearsals without adding separate dashboards."
   ],
   "created_by": "human"
 }

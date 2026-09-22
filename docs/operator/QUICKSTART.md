@@ -2,6 +2,16 @@
 
 The repository carries the workflow; the human should not need a giant prompt for every phase.
 
+## Current OncoReady work — two-day demonstration
+
+Start with [PROJECT](../PROJECT.md), [the sprint](../LAUNCH_SPRINT_PLAN.md), [the handoff](../LAUNCH_REVIEW.md) and [the runbook](../operations/DEMO_RUNBOOK.md). The current scope supersedes the previous full-product launch backlog.
+
+RAIL-001 is already DONE. Existing hosts: `https://app.oncoready.me` and `https://api.oncoready.me` (human-confirmed). Start remaining work with ACCESS/FLOW planning and check Epic capture/provider access early. Do not restart the infrastructure task or require trained production models and automatic outreach before the demo.
+
+Prepared frontend state, actual captured Epic Sandbox JSON, synthetic-data notebook outputs, simulated CareLink and a minimal protected real SMS/call path are the required shape. This planning revision implements none of those future slices and advances no lifecycle state.
+
+The snippets below describe the general repository process. Apply it to the revised scope; completed task specs/reports remain historical.
+
 ## Brand-new product
 
 Tell Codex:
@@ -31,6 +41,8 @@ PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REV
 ```
 
 Architecture chooses whether contracts, independent testing, and dedicated security review are required.
+
+For this two-day demo, the human approved one shared `feature/two-day-demo` branch for all seven remaining tasks and both days. Follow root `AGENTS.md` section 12: preserve the planning baseline, use sequential scoped specialist handoffs and task-specific commits, pass explicit pre-handoff bases to scope checks, and keep per-task evidence current before the final human-approved merge. The branch/worktree instructions below describe the default workflow; shared-checkout handoffs replace them for this exception.
 
 ## Codex frontend work — design-required task
 

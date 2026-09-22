@@ -4,13 +4,18 @@ OncoReady is a treatment-readiness and continuity platform for oncology patients
 
 ## Current Direction
 
-The existing React/Vite product experience is complete enough to serve as the human-approved visual baseline. The approved launch plan adds:
+The current delivery target is a polished, frontend-led demonstration completed in two working days. The approved visual system and completed Railway foundation are reused. The remaining scope is:
 
-- a Railway-hosted FastAPI service and PostgreSQL database;
-- read-only Epic Sandbox clinical context for Camila Lopez through SMART on FHIR;
-- durable workflow events, projections, access boundaries, CareLink transportation coordination, metrics, and evidence;
-- calibrated readiness and engagement models that choose an allowed outreach channel/time from past activity, with automatic backend scheduling/execution and inspectable explanations;
-- deterministic prerecorded reliability with a clearly labeled Epic snapshot fallback.
+- one coherent, clickable patient/staff/caregiver/CareLink journey, including scheduled-message/reply history and a previous-trip dispatch replay;
+- actual Epic Sandbox data captured into JSON before playback, with source and capture time;
+- a lightweight synthetic-data ML notebook whose exported predictions power Why flagged? and a two-state transportation what-if;
+- a visible at-risk-to-confirmed graph, clear ownership/next actions, a patient plan finish and an evidence-linked closing receipt;
+- one real SMS and one short live call to a consenting test phone, using a minimal protected server adapter;
+- local recording assets, reset checkpoints and a rehearsed fallback.
+
+The seven remaining features are planned, not yet verified implementations. Full backend workflows, enterprise identity, ongoing Epic synchronization, online ML and automatic outreach are deferred. See [the two-day sprint](docs/LAUNCH_SPRINT_PLAN.md).
+
+Existing Railway hosts, confirmed by the human: **web https://app.oncoready.me**, **API https://api.oncoready.me**. Verify current health, origin rules and callbacks during implementation preflight; this documentation update does not establish their live status.
 
 OncoReady does not claim Ochsner connectivity, an Epic partnership, production Epic access, Epic writeback, clinical validation, HIPAA compliance, or real patient use.
 
@@ -56,8 +61,9 @@ npm run test:e2e
 ```
 
 The current API surface is intentionally limited to process/dependency health,
-build evidence, and a synthetic persistence proof. Workspace sessions, Epic,
-and treatment-continuity workflow endpoints arrive in their declared slices.
+build evidence, and a synthetic persistence proof. The revised demo uses prepared persona/scenario state; Epic data is captured
+before playback. Only the bounded live communications path needs additional
+protected endpoints, to be specified by OUTREACH-001.
 [`contracts/openapi.yaml`](contracts/openapi.yaml) is authoritative for the
 RAIL-001 boundary.
 
@@ -69,6 +75,7 @@ RAIL-001 boundary.
 - Dependency-ordered launch sprint and release gates: [`docs/LAUNCH_SPRINT_PLAN.md`](docs/LAUNCH_SPRINT_PLAN.md)
 - Planning audit and coding-agent handoff: [`docs/LAUNCH_REVIEW.md`](docs/LAUNCH_REVIEW.md)
 - Real SMS/call activation and acceptance: [`docs/operations/OUTREACH_TEST_DELIVERY.md`](docs/operations/OUTREACH_TEST_DELIVERY.md)
+- Recording and live presentation: [`docs/operations/DEMO_RUNBOOK.md`](docs/operations/DEMO_RUNBOOK.md)
 - Delegated synthetic scenario and model settings: [`docs/LAUNCH_SCENARIO_SETTINGS.md`](docs/LAUNCH_SCENARIO_SETTINGS.md)
 - Locked visual system: [`docs/design/DESIGN_SYSTEM.md`](docs/design/DESIGN_SYSTEM.md)
 - Deterministic project configuration: [`.ai/project.json`](.ai/project.json)
@@ -91,4 +98,4 @@ python3 scripts/agentctl.py bootstrap
 python3 scripts/agentctl.py project validate
 ```
 
-Feature work follows `PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE`. Production deployment and real external-provider activation remain deliberate human-approved operations.
+Feature work follows `PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE`. Production deployment remains deliberate. The human has selected bounded test-contact SMS/call delivery; implement its configured safety and review gates without asking again whether real delivery is wanted.

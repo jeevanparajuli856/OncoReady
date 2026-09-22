@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "EPIC-001",
-  "title": "Read-only Epic Sandbox clinical context",
+  "title": "Captured Epic Sandbox JSON in the staff UI",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "critical",
@@ -231,15 +231,14 @@
     "ACCESS-001"
   ],
   "acceptance_criteria": [
-    "A private preflight authorizes or refreshes Epic Sandbox access without exposing credentials, codes, or tokens in source control, chat, browser output, normal logs, reports, or ordinary UI.",
-    "The recorded journey reaches an already-connected Camila staff record without displaying Epic authentication.",
-    "OAuth state, nonce, issuer, redirect, transaction, scope, expiry, refresh rotation, encryption, revocation, and redaction controls pass targeted tests and security review.",
-    "Camila's staff record shows only facts returned by enabled R4 Read/Search APIs or the versioned last-known-good snapshot, with per-item provenance.",
-    "A successful refresh publishes a complete snapshot atomically; partial or failed refreshes never combine old and new fields under a Live label.",
-    "Live failure serves the prior complete snapshot only as Snapshot fallback with its original synchronization time; no snapshot produces Unavailable.",
-    "Public, patient, caregiver, and transportation responses, search, exports, logs, and accessible text exclude Epic-only clinical fields. Approved staff UI/accessibility and authorized staff evidence exports retain required context; normal logs remain redacted.",
-    "Only Camila is Epic-backed, non-Camila fixtures trigger no Epic request, and all Epic operations remain read-only.",
-    "The UI provides accessible loading, empty, partial-source, unauthorized, expiry, rate/error, fallback, and unavailable states without unsupported partnership, production, or writeback claims."
+    "Using authorized Epic Sandbox access, retrieve the selected real test resources read-only and save reviewed JSON plus resource types/IDs, actual capture time, source environment and checksum manifest. A synthetic fixture cannot satisfy this criterion; inspect capture evidence.",
+    "Opening Camila's staff context renders only fields present in the saved resources. Missing appointment, lab or medication information stays absent; test representative missing fields.",
+    "If the captured record does not establish Camila's name, preserve original source identity and document Camila as the presentation alias in evidence. Never fabricate a Sandbox patient or rewrite source dates; compare JSON with UI.",
+    "The source drawer identifies captured Epic Sandbox data and its original capture time. A local reload cannot claim a fresh synchronization or change the capture timestamp; verify offline playback.",
+    "Generated scenario appointments and workflow events remain separate from Epic clinical facts; no OncoReady action writes to Epic. Inspect mapping and capture request methods.",
+    "Captured assets contain no credentials, tokens, unexpected sensitive records or content not permitted for distribution. Browser bundles are allowed only for reviewed publishable test data; verify asset review and scoped security evidence.",
+    "The UI works with the reviewed local capture when Epic is offline; malformed/missing capture produces a truthful unavailable state. No synthetic replacement is labeled as Epic; verify both paths.",
+    "Only the staff presentation shows clinical context; caregiver and transportation displays contain permitted logistics. UI filtering is not claimed as protection for publicly bundled assets; inspect role views and evidence wording."
   ],
   "created_by": "human"
 }

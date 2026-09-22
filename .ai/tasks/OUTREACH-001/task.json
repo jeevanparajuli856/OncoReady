@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0",
   "task_id": "OUTREACH-001",
-  "title": "Adaptive SMS and voice orchestration",
+  "title": "One real SMS and one short live call",
   "type": "feature",
   "status": "PROPOSED",
   "priority": "high",
@@ -228,24 +228,20 @@
     "worker_agents_must_use_reports": true
   },
   "dependencies": [
-    "FLOW-001",
-    "ML-001"
+    "RAIL-001",
+    "FLOW-001"
   ],
   "acceptance_criteria": [
-    "The trained engagement model selects channel/time from dated activity within consent, preference, quiet-hour, contact-limit and deadline constraints; readiness priority is a separate model output.",
-    "Explicit ride, call, symptom, or scheduling responses supersede prediction immediately and create the appropriate human-owned work without clinical interpretation.",
-    "Nonresponse or failure triggers rescoring with updated activity; explicit response or opt-out cancels superseded actions. No eligible action or unavailable model produces visible human follow-up.",
-    "The system never sends clinical advice, interprets symptoms, or closes a clinical barrier autonomously.",
-    "Provider-ready mode makes no Twilio or ElevenLabs network call and may create only internal planned or clearly disclosed replay events.",
-    "The UI never shows Delivered or Completed without a verified provider callback or clearly disclosed controlled replay.",
-    "Bounded live-test activation is authorized in OUTREACH-001 and requires protected credentials, verified contact allowlist, consent/opt-out, signed callbacks, idempotency, rate/budget limits and HIGH-risk dedicated security review before live acceptance.",
-    "The accessible composer and timeline cover empty, queued, scheduled, attempted, responded, opted-out, failed, and human-follow-up states without exposing a secret or arbitrary destination.",
-    "The backend persists and automatically dispatches due model-selected actions through the configured adapter without a second Send/Call click, recording decision, model version, feature cutoff, due time, mode and actual outcome.",
-    "Execution revalidates consent, kill switch, current appointment/response/plan and expiry; restart, duplicate ticks and retries do not produce duplicate logical attempts.",
-    "ML and OUTREACH acceptance prove learned selection plus automatic real SMS and voice delivery to the verified test phone; neither recommendations, hard-coded actions nor replay alone satisfy the requirement.",
-    "Twilio sends a real SMS and places an answered call playing the reviewed ElevenLabs audio; verified provider states and explicit inbound/keypad responses are recorded separately.",
-    "Live dispatch uses real wall-clock windows; reset/reseed or accelerated scenario time cannot resend or clear live dispatch history, opt-out, rolling limits or budget reservations.",
-    "Paid account availability is human-confirmed; sender registration/capability, API access, protected credentials, verified test contact, callbacks and voice asset must pass documented preflight."
+    "One explicit protected SMS action sends the reviewed nonclinical text to the single configured consenting test recipient and the message is actually received; retain sanitized provider/recipient evidence. Provider acceptance alone is not delivery.",
+    "One explicit protected call action rings the configured phone and plays the prepared reviewed audio audibly, then ends within the configured 60-second cap. A short recorded voice message is sufficient; retain sanitized live evidence.",
+    "The browser cannot choose an arbitrary number or script, obtain secrets, or bypass operator protection, consent, arming, expiry and configured attempt/cost limits; verify negative API tests and dedicated security review.",
+    "Double-clicks, request retries, process restart, repeated callbacks and scenario reset cannot dispatch an uncontrolled duplicate. Reserve the live attempt before sending; ambiguous provider submission becomes outcome unknown with no blind retry.",
+    "Real status distinguishes submitted, delivered, ringing, answered/completed, failed/unknown and any explicit response. Success originates only from verified provider evidence; do not treat call completion as recipient acknowledgment.",
+    "One arm permits at most one SMS and one call in a finite wall-clock window with separate action keys, fixed content, allowed recipient, consent and cost cap. Ordinary replay/checkpoint/reset never arms or sends; verify network-denial and persistence checks.",
+    "Missing provider setup, invalid callbacks, opt-out or kill switch produce a visible unavailable/stopped state without a fake success. The live ledger, limits and consent survive reset.",
+    "A recorded backup call and SMS evidence can be played after explicit disclosure if live delivery fails. Keep live failure status intact; playback cannot satisfy the real-delivery acceptance.",
+    "The chosen communication control and timeline states preserve the locked UI. Full phone-to-workflow synchronization is not required: the presenter may advance the prepared patient story separately.",
+    "Opening an outreach-history row shows scheduled time, sent text/time, received reply/time and the follow-up change from the shared scenario fixture. Historical prepared events are distinguishable in source details from the genuine one-off SMS/call and make no provider requests; verify thread/timeline parity."
   ],
   "created_by": "human"
 }

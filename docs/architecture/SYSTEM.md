@@ -1,334 +1,93 @@
 # OncoReady System Architecture
 
-## Status and Scope
+## Active scope
 
-This document defines the approved launch architecture. The repository currently contains the established React/Vite interface; `RAIL-001` begins the transition to the target FastAPI/PostgreSQL platform. Later task architecture reports define only the contracts, migrations, tests, and security controls needed by their slice and must not contradict this document.
+[ADR-0004](../adr/ADR-0004-two-day-demo-scope.md) supersedes the earlier full-product launch architecture for the two-day demonstration. Retain the completed Railway foundation and approved visual system. Build a shared frontend scenario and the smallest protected server boundary for one real SMS and one short call.
 
-The target serves one polished, deterministic treatment-continuity journey centered on Camila Lopez, a non-production Epic Sandbox test patient. Epic supplies read-only clinical context to authorized staff. OncoReady owns readiness detection, outreach, work assignment, transportation coordination, caregiver permissions, metrics, and closure.
+This describes the target of the revised tasks, not a claim that they are implemented. Full workflow persistence, online model inference, automatic outreach scheduling and runtime Epic sync are deferred.
 
-## Architecture Principles
+## Existing deployment
 
-- Preserve the current OncoReady UI and [`DESIGN_SYSTEM.md`](../design/DESIGN_SYSTEM.md) exactly as the human-approved visual baseline.
-- Build vertical slices that produce a complete user outcome across UI, API, and persistence.
-- Keep Epic clinical context and OncoReady workflow state separate, provenance-preserving sources.
-- Make consequential workflow transitions deterministic, server-authorized, durable, idempotent, and auditable.
-- Keep clinical authority with humans; model output cannot interpret symptoms, assign clinical urgency, change treatment, or close clinical work.
-- Expose each role only to its minimum necessary projection.
-- Treat live, snapshot fallback, synthetic fixture, controlled replay, provider-ready, and verified external states as different states.
-- Keep the finals topology small: one web service, one API service, and one PostgreSQL service.
+The human confirms web at **https://app.oncoready.me** and API at **https://api.oncoready.me** on Railway. Reuse these origins. Review actual CORS/session behavior and exact callback URLs during OUTREACH implementation; this document does not certify current availability or invent callback endpoints.
 
-## Human-Approved Visual Constraint
+## Components and data flow
 
-The architecture treats the existing visual system as a compatibility contract.
-
-- Existing palette/token values, typography, spacing, geometry, shadows, borders, icons, logos, navigation, theme behavior, component character, motion, layout character, and responsive behavior are locked.
-- New Epic, access, staff, transportation, caregiver, patient, evidence, and failure-state UI must reuse existing runtime tokens and primitives.
-- `frontend_design_required=true` permits feature composition inside the current system; it does not permit a new aesthetic direction or a restyle of existing pages.
-- A frontend implementation is incompatible if matching before/after screenshots show unapproved visual drift, even when functional tests pass.
-- Any proposed global visual change requires explicit human approval before implementation and a new design digest/review.
-
-## Target Topology
-
-```text
-Browser
-  │
-  ├── HTTPS ──> Railway web
-  │                React + TypeScript + Vite
-  │                locked OncoReady visual system
-  │                │
-  │                └── HTTPS JSON API
-  │
-  └────────────> Railway API
-                   Python + FastAPI
-                   │
-                   ├── session and role authorization
-                   ├── workflow command/state services
-                   ├── Epic SMART/FHIR read adapter ── HTTPS ──> Epic Sandbox
-                   ├── clinical-context normalization and snapshot service
-                   ├── CareLink Partner Dispatch adapter (active)
-                   ├── SMS/voice adapters (bounded live-test + replay fallback)
-                   ├── Uber Health adapter boundary (provider-ready)
-                   ├── metrics + OncoReady FHIR export
-                   ├── readiness + engagement inference, constrained action selection
-                   ├── durable due-action scheduler + SHAP evidence
-                   └── private Railway network
-                               │
-                               ▼
-                        Railway PostgreSQL
-```
-
-No Redis, Kafka, queue service, separate scheduler service, container orchestration layer, or microservice split is approved for the finals build. The API service may run the bounded T−7/T−2/T−1 scheduling policy until measured behavior justifies a separate worker.
-
-## Components
-
-### Web application
-
-**Technology:** React + TypeScript + Vite
-
-Responsibilities:
-
-- public continuity story, pricing, and workspace access;
-- patient, caregiver, staff, and transportation workspaces;
-- Treatment Readiness Graph, queue, case workspace, metrics, source provenance, and audit timeline;
-- complete loading, empty, error, disabled, success, live, fallback, and unavailable presentation;
-- typed consumption of approved backend contracts;
-- responsive, keyboard-complete, accessible, reduced-motion-aware behavior;
-- preservation of the approved design system without global restyling.
-
-The browser never receives Epic access tokens, refresh tokens, confidential-client material, database credentials, provider secrets, or a user-selectable role/destination grant.
-
-### API service
-
-**Technology:** Python 3 + FastAPI
-
-Responsibilities:
-
-- create and validate server-managed OncoReady sessions;
-- resolve center, identity, role, and authorized workspace server-side;
-- validate commands and enforce workflow transitions;
-- persist append-only events and update current-state projections transactionally;
-- authorize Epic connection setup, refresh expiring access, fetch enabled R4 resources, normalize them, and publish atomic snapshots;
-- route exact patient text into separately owned clinical and practical work without model interpretation;
-- orchestrate provider modes, outbox/idempotency, callback normalization, and kill switches;
-- compute metrics and generate the validated OncoReady FHIR evidence artifact;
-- load versioned readiness/engagement artifacts, produce calibrated priority and candidate response probabilities, select the highest-scoring eligible channel/time, and schedule execution through the durable outbox;
-- revalidate pending actions at dispatch, cancel superseded attempts, record replay versus verified-provider outcomes, and preserve per-attempt idempotency;
-- provide process health and dependency readiness evidence.
-
-Route names and payload schemas become authoritative only through task-declared contracts. Frontend and backend workers must not invent endpoints independently.
-
-### PostgreSQL
-
-**Technology:** Railway PostgreSQL with Alembic migrations under `backend/alembic/versions`
-
-Responsibilities:
-
-- server sessions and center membership;
-- encrypted Epic authorization material or protected credential references;
-- normalized, versioned Epic clinical-context snapshots and provenance;
-- append-only workflow events, command idempotency, and outbox records;
-- current-state projections for treatment, work, transport, caregiver, metrics, and audit views;
-- provider configuration/activation state;
-- model artifact metadata and evaluation manifests;
-- pending/non-privileged access requests when email sign-up is implemented.
-
-Database changes require Git-tracked Alembic migrations, constraints for domain integrity, reviewable rollback/forward handling, and development-environment verification before release.
-
-### External systems
-
-| System | Mode | Architectural boundary |
+| Component | Responsibility | Data/source |
 |---|---|---|
-| Epic Sandbox | Active read-only target | Staff-only clinical context for Camila through enabled R4 Read/Search APIs; no writeback |
-| CareLink Partner Dispatch | Active controlled provider | Persisted local-provider dispatch and recovery through normalized events |
-| SMS / voice | Bounded live-test target | Twilio SMS/phone transport and reviewed ElevenLabs audio to one verified test contact; signed outcomes, persistent limits, disclosed replay fallback |
-| Uber Health | Provider-ready | No quote, request, assignment, driver, ETA, or completion claim without verified provider interaction |
-| Google / Microsoft / Apple | Seeded access presentation | Server resolves controlled identity/workspace; external OAuth deferred |
-| Ochsner | Not connected | No access, configuration, endorsement, partnership, or production claim |
+| Existing React frontend | Polished role views, graph, timeline and chosen interactions | One versioned scenario state |
+| Scenario assets | Initial state, checkpoints, prepared insights, synthetic CareLink records | Reviewed repository assets; never secrets |
+| Epic capture | Retrieve selected authorized Sandbox resources before recording; normalize for display | Actual read-only responses plus capture manifest |
+| Offline ML evidence | Dataset, data dictionary, lightweight training/evaluation notebook and exported outputs | Synthetic data; no model required |
+| Minimal FastAPI adapter | Validate operator action; send one fixed SMS/call; normalize verified outcome | Server-side credentials and one allowed test recipient |
+| Existing PostgreSQL | Persist live-attempt reservation/result and limits across resets/restarts if needed by adapter | Small delivery ledger; reuse existing infrastructure |
+| Recording package | Main walkthrough, call fallback, checkpoint/asset manifest | Local video/audio available without network |
 
-## Domain and Ownership Model
+Prepared outreach events include planned-at/due-at, original sent text, reply text/time, follow-up changes and scenario provenance. A scheduled-history row is not evidence that a backend scheduler executed.
 
-```text
-EpicClinicalContextSnapshot (read-only, provenance preserved)
-  ├── Patient
-  ├── Appointment / Encounter
-  ├── Condition / Observation / DiagnosticReport
-  ├── MedicationRequest
-  ├── CarePlan / RequestGroup
-  ├── Procedure
-  └── Practitioner / Location
+A separate historical CareLink trip supports timed local replay: requested → accepted → driver assigned → arriving → pickup confirmed/completed. Preserve original event timestamps alongside playback progress. Pause/resume/restart affect only that replay state; cancel timers on exit/reset. Keep historical trip identity, driver/map fixtures, current trip, current acknowledgment and live ledger isolated. No GPS or provider connection is implied.
 
-OncoReadyTreatmentCase
-  ├── TreatmentEvent
-  ├── ReadinessSignalSnapshot[]
-  ├── CaregiverPermission
-  ├── OutreachAttempt[]
-  ├── PatientResponse (verbatim)
-  ├── ClinicalWorkItem
-  └── TransportationWorkItem
-       └── TransportRequest / Assignment / ReturnPlan / Recovery
+Prepared UI transitions never call a provider. Only an explicitly armed and protected live command crosses the external boundary. No API methods are invented here: OUTREACH defines and validates its small contract during PLANNING before implementation.
 
-WorkflowEvent[]
-  ├── StaffQueueProjection
-  ├── StaffCaseProjection
-  ├── TransportProjection
-  ├── PatientProjection
-  ├── CaregiverAllowlistedProjection
-  ├── ReadinessGraphProjection
-  ├── MetricsProjection
-  └── AuditTimelineProjection
-```
+## Frontend scenario boundary
 
-The deterministic scenario clock and OncoReady treatment date remain distinct from actual Epic source dates and retrieval timestamps. An inventory-verified link may associate an Epic appointment; no generated future date may be attributed to Epic.
+Reuse existing state machinery before introducing a new abstraction. One store drives patient, caregiver, staff, CareLink, graph, timeline and scenario counts. Commands perform concrete visible transitions; read-only context and prepared insight assets are separate.
 
-Epic resources are not OncoReady workflow events. A normalized snapshot can inform the staff view and identify the treatment context, but OncoReady owns outreach, barrier, ownership, transportation, permission, acknowledgment, and closure events.
+Required states: initial risk → exact reply → distinct clinical/transport tasks → human clinical disposition → primary ride failure → backup plan → current-plan acknowledgment → confirmed continuity. A changed/failed plan invalidates the previous acknowledgment. Open clinical work or absent outbound/return logistics prevents confirmation.
 
-## Workflow State
+Keep private presenter checkpoints/reset separate from patient-facing actions. In-memory state or small local persistence is sufficient; deterministic reset restores scenario state. Browser refresh behavior and persona switches must be documented and rehearsed. Prefer one browser context for the recording; cross-device collaboration is deferred.
 
-```text
-detected → outreach_planned → response_received → department_received
-         → owner_assigned → needs_information / accepted
-         → action_recorded → patient_informed
-         → patient_acknowledged → closed
+Local persona selection is a presentation mechanism, not authentication. It cannot grant access to live delivery controls, provider credentials, a capture tool, or any protected backend data.
 
-SLA_missed → escalated
-appointment_changed → cutoff and dependent work recomputed or reopened
-provider_failed → backup_required → reassigned or escalated
-```
+## Approved impact behavior
 
-Clinical and transportation work have different owners, deadlines, projections, and closure rules. `Continuity plan confirmed` requires the approved human-owned clinical disposition, a complete current transportation plan, and patient acknowledgment; it does not prove medical clearance or attendance. Patient acknowledgment is a distinct authorized command and does not grant dispatch permissions. Invalid or out-of-order transitions are rejected. Duplicate commands/events are idempotent. A provider request, acceptance, assignment, patient notification, patient acknowledgment, arrival, completion, cancellation, decline, and backup requirement remain distinct events.
+The graph, owner/next-action/due-time treatment and closing receipt are projections of the shared current scenario. A graph animation or receipt cannot advance state on its own. Use existing motion and equivalent readable reduced-motion states.
 
-## Primary Data Flow
+RIDE adds a narrow caregiver-seen event for permitted logistics, recording actor, current plan version and scenario time. It cannot assign a driver, expose clinical data, substitute for patient acknowledgment or change the existing confirmation rule. A plan change invalidates both acknowledgments as applicable. The patient finish uses the current plan for pickup, return and contact, never historical replay data.
 
-```text
-Private presenter setup
-  → standalone Epic Sandbox authorization
-  → server stores protected refresh/authorization state when available
-  → API fetches Camila's enabled R4 resources
-  → validation + normalization + atomic snapshot publication
+ML's Why flagged? detail reads exported factors/values. The supportive next action is a documented workflow suggestion unless separately proven model-derived. The what-if toggles two exported rows from the same model, changing transportation availability only; it is isolated local view state. Exiting/resetting the comparison returns to the actual scenario without altering graph, tasks or provider activity.
 
-Recorded user journey
-  → OncoReady controlled access creates a server session
-  → staff opens Camila and receives authorized clinical context + source state
-  → readiness engine shows T−7/T−2/T−1 signals and outreach priority
-  → Camila's verbatim reply creates separate clinical and transport work
-  → nurse acknowledges the clinical thread
-  → navigation/CareLink assigns outbound, return, and backup transport
-  → Ana receives the allowlisted transportation projection only
-  → Camila acknowledges the recovered plan
-  → graph, timeline, metrics, and FHIR evidence resolve from workflow events
-```
+EVIDENCE derives receipt items from current barrier/plan/acknowledgment state and resolves each item to its supporting event IDs. Reopening a blocker invalidates the corresponding success item. No duplicate metric store or reporting backend is needed.
 
-If an Epic refresh fails, the API must not blend partial new data with old fields under a live label. It either atomically publishes a complete successful snapshot or serves the last complete snapshot as `Snapshot fallback` with its original synchronization time. If no snapshot exists, the state is `Unavailable`.
+## Epic capture boundary
 
-## Epic SMART/FHIR Boundary
+The human selected **real Epic Sandbox JSON**, not invented Epic records. Inspect available authorized access and actual resource contents. Capture only what the story displays: patient context and available treatment/appointment, medication or lab details. Do not require all previously listed FHIR resource families.
 
-### Launch and credential lifecycle
+Preserve actual resource IDs/types, original clinical dates, capture time, source environment and non-secret request metadata. Save a reviewed minimum snapshot and checksum manifest; no OAuth tokens, secrets or unexpected real-person content. The UI must indicate missing fields rather than generate replacements attributed to Epic.
 
-- Use the registered Non-PRD client ID and exact HTTPS redirect URI.
-- Use standalone SMART on FHIR for Sandbox testing; a customer-configured embedded EHR launch is deferred.
-- Keep Epic authorization separate from ordinary OncoReady workspace access.
-- Complete the Epic login/consent step through a non-public presenter setup before recording.
-- Use a server-backed confidential client and refresh tokens when the Epic app registration and Sandbox authorization support them.
-- Treat access and refresh tokens as expiring credentials; if refresh is unavailable or expired, require private reauthorization during preflight.
-- Validate OAuth state and nonce, issuer, redirect URI, granted scopes, expiry, and callback transaction binding.
-- Encrypt persisted authorization material with a server-held key or approved secret facility; redact credentials from logs, errors, reports, browser output, and audit payloads.
+Camila is a presentation alias unless the actual retrieved record establishes that name. If the selected Sandbox record differs, record the alias mapping in evidence and do not rewrite source facts. Generated scenario treatment dates remain visibly separate from captured source dates.
 
-### Enabled read surface
+The recording loads captured data locally and labels its connection state as captured Sandbox data. “Live” requires an actual current successful request. No writeback, production record, partnership or customer connection is implied.
 
-- Patient demographics
-- Appointment
-- Encounter patient chart
-- Condition problems
-- Observation labs
-- MedicationRequest signed medication orders
-- CarePlan oncology
-- RequestGroup oncology plan day
-- Location organizational directory
-- Practitioner organizational directory
-- DiagnosticReport results
-- Procedure patient-reported surgical history
-- Procedure surgeries
+Only synthetic and reviewed publishable Sandbox assets may be browser-served; UI role filtering is not confidentiality protection. If terms or data review do not permit distribution, serve the capture through an authorized server boundary or use a restricted recording environment. Do not silently bundle restricted content.
 
-Only the enabled R4 `.Read` and `.Search` interactions are in scope. No create/update/patch/delete capability is approved.
+## Prepared ML boundary
 
-### Normalization and provenance
+A small documented synthetic dataset and executable notebook demonstrate offline training and held-out evaluation of a lightweight model. Export actual scenario predictions and honest explanatory factors into versioned JSON consumed by the UI. Do not hand-edit scores to force the story. Show model capability and limits on synthetic data, not clinical validation; do not label ordinary feature contributions as SHAP.
 
-Each mapped item retains resource type, resource ID, non-secret source identity, retrieval time, transformation version, and live/fallback snapshot identity. Unsupported extensions can be ignored safely but must not cause one resource type to be mistaken for another. The compact UI shows only actual returned data and does not infer diagnosis, urgency, medical clearance, or treatment recommendations.
+Record dataset/split seed, feature schema, model identity and export time. Patient-separated evaluation, a simple baseline and leakage checks keep the demonstration credible without a large training platform. No runtime ML inference or training is required for the site to load, for the phone call, or for closure. Explicit patient concerns route through human-owned work regardless of prepared scores.
 
-## Interface and Contract Boundaries
+## Live communication boundary
 
-Formal task contracts are required where independently implemented components meet:
+One consenting test recipient, fixed reviewed message/audio, private operator activation, server-only credentials, bounded attempt/duration/cost limits, duplicate protection and verified provider outcomes are required. Reuse existing server protection where suitable; do not add a full identity platform.
 
-- web ↔ API sessions and workspace access;
-- web ↔ API Epic clinical-context projection and source states;
-- web ↔ API workflow commands and role-specific projections;
-- API ↔ CareLink/provider normalized transport commands/events;
-- API ↔ generated FHIR evidence artifact;
-- API ↔ separate readiness and action-conditioned engagement schemas/results, candidate decisions, dispatch expiry, and outcome feedback.
+The frontend cannot submit arbitrary recipients or scripts, override limits, or supply trusted success states. A backend reservation/ledger survives scenario reset and server restart. Validate callbacks against current official provider documentation and correlate them to the intended attempt/account. Unknown outcome is not success and does not trigger blind retry.
 
-`contracts/openapi.yaml` becomes authoritative only for endpoints declared by the relevant task. Internal module types remain implementation details. Contract changes require orchestrator-controlled task scope and validation before `BUILD_READY`.
+The live action is manually triggered; no trained model, four-hour cadence, automatic scheduler or outbox campaign is needed. Ordinary tests/replay must make zero paid calls. Live smoke checks are separate and bounded. See [OUTREACH_TEST_DELIVERY](../operations/OUTREACH_TEST_DELIVERY.md).
 
-## Trust Boundaries and Security Architecture
+## CareLink and clinical boundaries
 
-- **Browser → API:** validate all inputs; enforce session, role, center, object access, command permissions, CSRF protection where cookie sessions mutate state, bounded request sizes, and rate limits.
-- **Epic OAuth callback → API:** reject state/nonce, issuer, redirect, or transaction mismatch; never log authorization codes or tokens.
-- **Epic FHIR → API:** validate response status, content type, resource type, pagination, and mapping; contain upstream failures without partial live publication.
-- **Protected credentials → storage:** encrypt sensitive credential material, keep encryption keys outside the database, support rotation/revocation, and never expose secrets to the web service.
-- **Patient text → UI/workflow:** render as text only and preserve exact wording for human review.
-- **Staff → caregiver/transport:** server-built allowlists prevent clinical or Epic fields from entering lower-privilege projections, search, export, logs, or accessible text.
-- **Provider actions → external systems:** require server-side allowlists, idempotency, verified callbacks, kill switches, and explicit activation modes.
-- **Model → operations:** deterministic explicit-barrier rules override prediction; malformed/stale models produce `Score unavailable`, never reassurance.
-- **Sandbox → production interpretation:** visible provenance and technical documentation prevent Sandbox data or seeded identities from being described as production access.
+CareLink transitions are synthetic local coordination events. Staff and transportation actions produce consistent views; caregiver receives only allowed logistics. No actual ride, funding authorization, GPS feed or Uber call occurs.
 
-Epic/access/transport implementation tasks require a focused security review on the exact verified commit. No production or real-patient system is an authorized test target.
+Preserve the patient's original words for staff review. Transportation/caregiver displays omit the clinical concern. Patient may see their own submission. No autonomous diagnosis, triage, clinical clearance or treatment change. The final state means the coordination plan is acknowledged, not that treatment occurred.
 
-## Learned outreach boundary
+## Contracts, tests and review
 
-ML-001 produces readiness priority and response probability for each eligible channel/time; OUTREACH-001 schedules and automatically executes the chosen action. Consent, explicit preference, quiet hours, contact limits, deadlines and provider mode constrain the candidate set. They do not force a fixed SMS-first result. FLOW freezes the action/feature envelope before either implementation; ML tests its consumer contract independently, and OUTREACH supplies the end-to-end execution proof.
+Use a formal contract for the real frontend/backend delivery boundary and any necessary capture service. Local component props and scenario files need typed schemas, not a new server API. Architecture reports must select actual impacts and controls; proposed task specs are not approval.
 
-The API scheduler rechecks current permissions/consent, response state, plan version, expiry and kill switch before adapter invocation. Persist the decision, idempotent dispatch attempt and truthful outcome. Model scores cannot represent actual delivery, a completed call, or patient response. The controlled adapter may execute without network access; a private operator starts/advances a run rather than choosing the model's action. Real test-phone execution is confirmed; both accounts are purchased. OUTREACH-001 owns bounded activation after configuration and HIGH-risk dedicated security review. Live scheduling uses wall time, not accelerated replay time; dispatch history, opt-out and rolling limits survive reset. Follow docs/operations/OUTREACH_TEST_DELIVERY.md. No clinical dialogue or live online model exploration is added.
+Use smoke checks for prepared assets and simple navigation, targeted state tests for closure/recovery, outreach history and dispatch replay isolation, and independent targeted/security review for live side effects. Required repository verification is retained; this scope cut does not disable existing configured checks or alter completed RAIL evidence.
 
-## Reliability-Critical Path
+Frontend design work is compatibility/extension inside the locked system. Before/after screenshots, keyboard behavior, readable states, responsive layout and reduced-motion support protect the visible result.
 
-```text
-private preflight
- → Railway health + migration revision
- → Epic authorize/refresh + Camila inventory + atomic snapshot
- → model artifact + seeded sessions + CareLink reset
+## Deferred architecture
 
-recorded path
- → public story → workspace access → staff Camila case
- → Epic context + readiness trajectory → exact reply
- → split work → nurse acknowledgment → CareLink recovery
- → caregiver projection → patient acknowledgment
- → Continuity plan confirmed + provenance + evidence
-```
-
-Reliability controls:
-
-- health distinguishes process liveness from database/migration readiness; model status is a separate degraded capability so `Score unavailable` does not take deterministic workflow offline, while release preflight still requires the accepted model artifact;
-- deterministic scenario clock and reset/reseed;
-- snapshot fallback with explicit timestamp and source state;
-- valid transition guards and disabled states;
-- outbox/idempotency for consequential provider work;
-- network-disabled replay for provider-ready steps;
-- complete loading/error/empty/fallback/unavailable UI;
-- rehearsed primary and recovery paths;
-- recorded backup run for presentation failure.
-
-## Accessibility, Performance, and Visual Compatibility
-
-- Preserve semantic structure, keyboard operation, visible focus, sufficient contrast, 44px patient/public targets, icons plus text, and non-color state meaning.
-- Effective reduced motion is the union of the operating-system preference and product control.
-- Avoid load waterfalls: render the workspace shell and OncoReady state promptly, then resolve Epic context asynchronously with a bounded source state.
-- Limit initial Epic calls to the clinical context required for Camila; cache only through the versioned snapshot boundary.
-- Preserve existing scroll-performance, responsive, canvas/map fallback, and layout-stability rules in the design system.
-- Matching pre/post screenshots are required for affected desktop and mobile surfaces. An unapproved difference in locked global styling fails review.
-
-## Observability and Audit
-
-- Structured server logs use correlation IDs and redact credentials, tokens, clinical payloads, and patient free text unless a narrowly approved audit requirement says otherwise.
-- Audit events record access, workflow mutations, outreach decisions, provider actions, snapshot publication/fallback, model artifact version, and reset/reseed without storing secrets.
-- Metrics derive from underlying workflow events and distinguish controlled replay from verified external-provider events.
-- Epic source evidence shows mode, last successful synchronization, mapped resource counts/types, and non-secret source references.
-- Health/readiness, migration revision, model version, provider modes, and Epic connection state are inspectable during private preflight.
-
-## Deployment and Migration Model
-
-- One Railway project contains `web`, `api`, and PostgreSQL services.
-- The web and API use explicit root directories and watch paths.
-- PostgreSQL is reached over Railway private networking.
-- The API binds to Railway's provided port and restricts CORS to configured web/local origins.
-- Secrets remain in Railway variables or an approved server-side credential store, never Git.
-- Alembic migrations are reviewed and applied deliberately before readiness passes.
-- A submitted deployment is not considered live until it reaches success and the post-deploy critical path passes.
-- Production deployment, production Epic configuration and broader external-provider activation remain separate human-approved operations. Bounded test-contact Twilio/ElevenLabs delivery is already authorized through OUTREACH-001; configuration and security/live acceptance still apply.
-
-## Deferred Production Architecture
-
-- Customer-specific Epic Non-PRD/production installation and embedded EHR launch.
-- Real enterprise identity, center membership, provisioning, and account recovery.
-- Production PHI governance, retention, consent, audit policy, incident response, and clinical protocol ownership.
-- General live-patient Twilio/ElevenLabs communication and Uber Health/other vendor execution beyond the approved bounded test-contact scope.
-- Queue/worker infrastructure, high availability, disaster recovery, and scale hardening based on measured requirements.
-- Any EHR writeback or broader clinical workflow requires a new approved architecture, formal contract, risk review, and customer participation.
+Durable clinical workflow engine, multiuser authorization, full SMART token lifecycle, broad clinical normalization, automatic scheduling, production models, live transport adapters, FHIR validation and enterprise observability remain future tasks. Do not build them merely because earlier launch documents required them.

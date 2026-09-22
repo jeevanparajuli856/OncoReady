@@ -1,67 +1,46 @@
-# FLOW-001 — Durable early-warning and owned work
+# FLOW-001 — Shared frontend continuity scenario
+
+**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
 
 ## User-visible outcome
 
-Camila is surfaced before the transportation cutoff, and her exact reply creates separately owned clinical-contact and transportation work with deadlines, acknowledgments, actions, and closure evidence.
+One patient reply creates two owned work items and every recorded view follows the same playable recovery story.
 
-## Product/demo impact
+## Required scope
 
-This is the core operational slice. It replaces frontend-scripted state changes with durable, auditable events and keeps patient, caregiver, staff, transportation, graph, timeline, and metric projections consistent.
+Reuse frontend workflow state for one versioned Camila scenario. Implement exact patient reply, nurse ownership/contact/disposition, transportation work, graph/timeline updates, private checkpoints and reset. Use scenario-time dates and prepared history; no durable workflow backend is required. Make the existing graph's at-risk-to-confirmed transformation a required story beat, and show owner, next action, due time and waiting state on every selected work item.
 
-## In scope
+## Deferred
 
-- Treatment event, deterministic scenario clock, business-day cutoffs, T−7/T−2/T−1 snapshots, barriers, and immutable patient verbatim text.
-- Append-only events, outbox, correlation/idempotency, current projections, optimistic concurrency, owners, SLAs, escalation, and audit evidence.
-- Distinct clinical-contact and transportation threads with separate permissions, deadlines, transitions, projections, and closure rules.
-- Appointment-change recomputation, permission revocation, stale-source/scheduler states, and deterministic reset/reseed.
-- API commands/projections integrated into the existing role workspaces, Treatment Readiness Graph, and timeline.
-- Stable readiness and engagement feature snapshots plus candidate-action/decision-time envelope required by ML-001 and OUTREACH-001. Define it here to avoid a circular implementation dependency between model inference and scheduling.
+Event-sourced backend, multiuser synchronization, full scheduler/outbox, generalized SLAs, concurrency framework and comprehensive appointment-change handling.
 
-## Out of scope
+## Architecture and contract guidance
 
-- Autonomous clinical interpretation/advice, treatment cancellation/rescheduling, or model-controlled clinical routing.
-- Live SMS/voice vendor calls, CareLink dispatch details, model training, final metrics, or FHIR export owned by later tasks.
-- Multiple fully functional patient cases.
+Frontend impact. One shared typed store/reducer drives every scenario projection. Keep captured Epic context, offline ML outputs and live provider outcomes separate from synthetic transitions. Local typed interfaces suffice unless a real server boundary is added.
 
-## Architecture impact
+All frontend work preserves [the approved visual system](../design/DESIGN_SYSTEM.md). Design-required work is a compatibility/extension plan with the existing digest gate. The architect must record actual impacts, execution controls and scope before BUILD_READY; the guidance here is not a completed architecture report.
 
-- Adds the append-only workflow event spine, transition policy, current-state projections, and outbox/idempotency records.
-- Keeps bounded T−7/T−2/T−1 scheduling in the API service; no queue service is added.
-- Uses server-built allowlisted role projections; the browser cannot select fields or authorize commands.
-- `frontend_design_required=true`; frontend work adapts existing workspace primitives without global design changes.
+## Verification and risk
 
-## Contract impact
-
-Required. Define command envelopes, transition errors, event metadata, role-specific projections, graph/timeline views, clock/reset operations, caregiver permission, and the versioned ML feature snapshot.
-
-## Test depth
-
-TARGETED. Independent integration tests cover valid/invalid transitions, idempotency, ordering/concurrency, business-day deadlines, appointment changes, stale data, role projections, exact-text preservation, and deterministic replay.
-
-## Security risk
-
-STANDARD with dedicated review. Material concerns are authorization of mutations, cross-role projection leakage, stored patient text, audit/redaction, replay/reset access, and consequential outbox actions.
+TARGETED; LOW risk for synthetic-only local state. Independent tests focus on state consistency, confirmation rules, acknowledgment invalidation and reset.
 
 ## Dependencies
 
-- `EPIC-001` clinical-context/provenance boundary and `ACCESS-001` authorized sessions.
-- Agent-planned synthetic owner/SLA matrix, clock, calendar and cutoff in [LAUNCH_SCENARIO_SETTINGS.md](../LAUNCH_SCENARIO_SETTINGS.md), frozen by the architect before `BUILD_READY` under the human's delegated planning authority. These are not clinical policy.
-
-## Final state and time boundary
-
-Freeze explicit confirmation rules before BUILD_READY: required human-owned clinical disposition/acknowledgment, a complete current transport plan, and patient acknowledgment must all be satisfied. A transport success alone cannot close pending clinical work; `Continuity plan confirmed` is not medical clearance or proof of attendance.
-
-The deterministic scenario clock and OncoReady treatment appointment are distinct from Epic retrieval timestamps and any actual Sandbox appointment date. Preserve Epic source dates unchanged. Inventory establishes whether an Epic appointment can be linked; never relabel a generated future treatment date as Epic-sourced. Missing optional Epic resources are recorded as absent; failed required reads cannot become a partial live snapshot.
+- ACCESS-001
 
 ## Acceptance criteria
 
-1. Every readiness signal records what was known, when it was known, its source, and the scenario/model version that used it.
-2. Transportation notice cutoff uses the approved business-day calendar and recomputes when the appointment changes.
-3. Explicit symptom or transportation text bypasses model priority and routes immediately without clinical interpretation.
-4. Camila's exact reply remains immutable and creates separate clinical-contact and transportation work with different owners, deadlines, projections, acknowledgments, and closure rules.
-5. Invalid or out-of-order commands are rejected without partial mutation; duplicate commands/events return the same effective result.
-6. SLA miss escalates; appointment change reopens or recomputes affected work; caregiver permission revocation removes future caregiver access without rewriting history.
-7. Patient, caregiver, staff, transportation, graph, timeline, and preliminary metrics remain consistent because they derive from the same committed events.
-8. Stale scheduler, source, or projection state is visible and never appears as reassurance or confirmed readiness.
-9. Reset/reseed restores the exact finals workflow state without deleting valid Epic authorization or the last-known-good Camila snapshot.
-10. The current visual hierarchy, accessibility, responsiveness, and reduced-motion behavior remain within the locked baseline while the critical journey moves from local state to API-backed state.
+1. From the risk checkpoint, submitting “My ride was cancelled—and I’m not feeling well today.” preserves that exact text for staff and creates distinct clinical-contact and transport tasks with named owners; verify the state and rendered workspaces.
+2. Nurse acknowledgment and recorded human contact/disposition remain distinct. Software gives no diagnosis, urgency downgrade, clinical advice or medical clearance; inspect the supported actions.
+3. Staff, patient, caregiver, transport, graph and timeline derive from one shared state; switching persona cannot lose or contradict the current scene. Verify the selected browser path.
+4. Continuity plan confirmed requires the human clinical disposition, a complete current outbound/return/backup plan and patient acknowledgment of that plan version. Open clinical work, failed transport or missing acknowledgment prevents confirmation; test each boundary.
+5. Changing or failing the acknowledged ride invalidates that acknowledgment and reopens its blocker; duplicate clicks do not add duplicate effective transitions. Verify focused state tests.
+6. Private checkpoint/reset restores the documented scenario without changing actual Epic capture timestamps, provider evidence, consent, attempt limits or live activation state; verify reset with a reserved live attempt fixture.
+7. Scenario dates, Epic clinical/capture dates and real delivery times retain separate meaning. Attendance remains unknown unless actual evidence exists; inspect the closing graph and timeline.
+8. All selected controls have coherent loading, disabled, failure and success presentation inside the locked visual system; verify browser behavior and matching screenshots.
+9. Historical scheduled/sent/reply events are checkpoint-aware and the final prepared reply opens the existing split-work transition once; replaying or re-opening history does not duplicate work. Verify the same event text/times in thread and timeline.
+
+10. Starting at Treatment at risk, each recorded nurse, transportation and patient action updates its corresponding graph node and status; only the existing closure rules permit Continuity plan confirmed. The transition remains understandable with reduced motion and non-color labels. Verify the before/after scene and the open-blocker case without inventing a score improvement.
+11. Every open work item in the selected journey shows its named owner, next action, due time and waiting/blocked status from shared scenario data. Completing or reopening it updates the graph and timeline consistently; verify the clinical and transportation paths. Deadlines are operational scenario settings, not clinical policy.
+
+See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.

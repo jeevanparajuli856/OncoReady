@@ -208,7 +208,7 @@ For design-required frontend work, the design digest gate remains mandatory.
 
 ### Integration
 
-Integrate worker branches deliberately. Do not silently change contracts, architecture, or the approved frontend visual direction.
+Integrate worker branches deliberately, or integrate scoped commits on the shared sprint branch allowed by section 12. Do not silently change contracts, architecture, or the approved frontend visual direction.
 
 Run independent tester only for TARGETED/FULL.
 
@@ -301,15 +301,33 @@ python scripts/agentctl.py scope check <TASK-ID> <ROLE>
 
 Out-of-scope work becomes a structured blocker rather than a silent edit.
 
+For shared-branch work, use the explicit pre-handoff commit as the scope-check base as described in section 12; automatic task-branch inference does not apply.
+
 ## 12. Git/worktrees
 
 - never implement directly on `main`/`master`
-- one feature branch per task: `feature/<TASK-ID>-<slug>`
+- by default, one feature branch per task: `feature/<TASK-ID>-<slug>`; the approved two-day demo exception below takes precedence
 - optional parallel branches: `agent/<TASK-ID>-backend`, `agent/<TASK-ID>-frontend`
 - workers branch from the task feature branch, never from another worker branch
 - create implementation worktrees only after committed state reaches `IMPLEMENTATION`
 - use worktrees only when parallelism actually saves time
 - do not rewrite shared history without explicit approval
+
+### Approved exception: one branch for the two-day demo
+
+The human approved using **one shared branch, `feature/two-day-demo`, for both sprint days and all seven remaining demo tasks**: ACCESS-001, FLOW-001, EPIC-001, ML-001, OUTREACH-001, RIDE-001 and EVIDENCE-001. This replaces the per-task branch requirement only for the scope in `docs/LAUNCH_SPRINT_PLAN.md`.
+
+- Carry the reviewed planning work into this branch when implementation begins; do not discard the current planning changes or restart from an older baseline. Keep both sprint days on this branch instead of opening a branch per task/day.
+- Keep separate task records, acceptance criteria, permissions, reports and lifecycle gates. Commit small, reviewable changes with the task ID in the commit scope, for example `feat(FLOW-001): connect readiness transitions`.
+- Use sequential specialist handoffs in the shared checkout, with one active writer at a time. The orchestrator owns staging/commits and task state; workers retain their assigned file ownership. Do not switch branches underneath another agent or include another role's unfinished changes in a handoff.
+- Before each worker handoff, commit the relevant planning/state changes, ensure the checkout is clean, and record the pre-handoff commit. Run `python scripts/agentctl.py scope check <TASK-ID> <ROLE> --base <PRE-HANDOFF-COMMIT>` so earlier tasks' commits are not treated as that worker's changes. Do not use the moving branch tip as the baseline after committing the worker's work.
+- Do not run `git prepare` per task or use the task-branch-inferencing worktree create/sync helpers for this exception. They assume separate `feature/<TASK-ID>-*` branches. Shared-checkout handoffs replace branch/worktree handoffs; no implementation is allowed before that task's committed state reaches `IMPLEMENTATION`.
+- Frontend design approval is still required when selected. Commit the design report on the shared branch, calculate its digest with `frontend design-digest <TASK-ID> --ref <DESIGN-COMMIT>`, record the orchestrator's compatibility approval and run `frontend design-gate <TASK-ID>` before frontend implementation. No worker-branch sync is required in the shared checkout.
+- A downstream task may consume a verified, reviewed upstream checkpoint on this branch before the final merge. Record that dependency commit; do not mark the upstream task DONE merely to unblock dependent work.
+- Keep verification, required security review and final review bound to the relevant integrated revision. Later changes still invalidate affected evidence. Before the final sprint merge, freeze the combined revision and refresh affected verification/reviews; one branch does not waive any gate.
+- Merge the shared sprint branch only after final review and human merge approval. Close each task with `task advance <TASK-ID> --merged` only after its approved work is actually merged. Production deployment remains deliberate.
+
+Outside this approved two-day scope, the default per-task branch rule still applies.
 
 Human/CI production deployment remains deliberate after review/merge.
 

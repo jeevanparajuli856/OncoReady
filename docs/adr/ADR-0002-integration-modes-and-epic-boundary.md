@@ -1,5 +1,7 @@
 # ADR-0002 — Integration Modes and Epic Boundary
 
+> Current scope: Partially superseded by [ADR-0004](./ADR-0004-two-day-demo-scope.md): use actual captured Epic Sandbox JSON, offline synthetic-model outputs and manually triggered one-off real SMS/call. Live Epic lifecycle, learned scheduling and automatic delivery are deferred. The historical decision below retains context; truthful provenance and read-only/no-writeback boundaries still apply.
+
 ## Status
 
 Accepted — September 21, 2026

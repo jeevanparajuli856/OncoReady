@@ -6,6 +6,10 @@ Persistent human-readable frontend design source of truth.
 
 `ESTABLISHED · HUMAN-APPROVED · VISUALLY LOCKED` — Clinical Glass system for an all-ages, business-centric product.
 
+### Two-day delivery application
+
+The human's September 21 scope reset reduces backend breadth, not UI quality. The selected recording path and live communication controls must look like native, finished product surfaces. Reuse this system for captured Epic context, exported synthetic-model insights and playable CareLink recovery. Source/provenance details belong in the established evidence treatment; no broad demo-badge layer or redesign is authorized. Off-path actions may be hidden, explained disabled states or honest previews; selected controls must work. The human also approved graph transformation, Why flagged?, task ownership/next-action/deadline detail, a patient plan finish, an event-linked receipt and a two-state ML what-if. Compose these within existing surfaces and motion patterns; this authorizes content/interactions, not new global styles or a redesign. See [the active sprint](../LAUNCH_SPRINT_PLAN.md).
+
 ### Visual lock
 
 This document and the current runtime UI define the approved OncoReady appearance. Future product work must preserve, not reinterpret, the system.
