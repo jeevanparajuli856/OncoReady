@@ -22,6 +22,9 @@ TOKEN_ENVIRONMENT_VARIABLE = "EPIC_SANDBOX_ACCESS_TOKEN"
 SEARCH_RESOURCE_TYPES = frozenset(
     {"Appointment", "MedicationRequest", "Observation"}
 )
+# Observation searches stay category-scoped so a capture can never sweep the
+# whole chart. Each configured category is issued as its own bounded search.
+OBSERVATION_CATEGORIES = frozenset({"laboratory", "vital-signs"})
 # Epic Sandbox emits some opaque ids that are 66 characters long even though
 # the nominal FHIR R4 id limit is 64. Keep the character allowlist and a tight
 # upper bound while accepting the source system's observed representation.
@@ -76,6 +79,24 @@ class CaptureReview:
 
 
 @dataclass(frozen=True)
+class ScenarioBinding:
+    """Binds a capture to a prepared OncoReady scenario alias.
+
+    Roster captures leave this unset: they present the Sandbox identity as it
+    was recorded, with no scenario alias attached.
+    """
+
+    scenario_id: str
+    presentation_alias: str
+
+    def __post_init__(self) -> None:
+        if not 1 <= len(self.scenario_id.strip()) <= 64:
+            raise ValueError("scenario_id must be a non-empty identifier")
+        if not 1 <= len(self.presentation_alias.strip()) <= 120:
+            raise ValueError("presentation_alias must be a non-empty name")
+
+
+@dataclass(frozen=True)
 class CaptureConfig:
     base_url: str
     patient_id: str
@@ -87,6 +108,7 @@ class CaptureConfig:
     )
     max_pages: int = 4
     max_resources: int = 20
+    observation_categories: tuple[str, ...] = ("laboratory",)
 
     def __post_init__(self) -> None:
         if self.base_url != EPIC_SANDBOX_FHIR_BASE_URL:
@@ -102,10 +124,37 @@ class CaptureConfig:
         unsupported = set(self.resource_types) - SEARCH_RESOURCE_TYPES
         if unsupported:
             raise ValueError("resource_types contains a non-allowlisted search type")
-        if 1 + self.max_pages * len(self.resource_types) > 20:
+        if len(set(self.observation_categories)) != len(self.observation_categories):
+            raise ValueError("observation_categories must not contain duplicates")
+        if not self.observation_categories:
+            raise ValueError("observation_categories must select at least one category")
+        if set(self.observation_categories) - OBSERVATION_CATEGORIES:
+            raise ValueError(
+                "observation_categories contains a non-allowlisted category"
+            )
+        if 1 + self.max_pages * self.search_plan_count > 20:
             raise ValueError("configured page ceiling exceeds the manifest request limit")
         object.__setattr__(self, "output_directory", Path(self.output_directory))
         object.__setattr__(self, "resource_types", tuple(sorted(self.resource_types)))
+        object.__setattr__(
+            self, "observation_categories", tuple(sorted(self.observation_categories))
+        )
+
+    @property
+    def search_plan_count(self) -> int:
+        """Number of bounded searches this capture will issue.
+
+        Observation is searched once per configured category so each request
+        stays category-scoped; every other type is a single search.
+        """
+
+        plans = 0
+        for resource_type in self.resource_types:
+            if resource_type == "Observation":
+                plans += len(set(self.observation_categories))
+            else:
+                plans += 1
+        return plans
 
 
 class StdlibJsonTransport:

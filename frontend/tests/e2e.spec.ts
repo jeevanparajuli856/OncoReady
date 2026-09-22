@@ -269,14 +269,14 @@ test.describe('OncoReady UI-001 product experience', () => {
     const epicTab = page.getByRole('tab', { name: /Epic/i });
     await epicTab.click();
     const epicPanel = page.getByRole('tabpanel', { name: /Epic/i });
-    await expect(epicPanel.getByRole('heading', { name: 'Epic Sandbox · Read-only captured data' })).toBeVisible();
+    await expect(epicPanel.getByRole('heading', { name: 'Read-only captured data' })).toBeVisible();
     await expect(epicPanel.getByAltText('Epic')).toBeVisible();
     await expect(epicPanel).toContainText('Camila Maria Lopez');
     await expect(epicPanel).toContainText('drospirenone-ethinyl estradiol');
-    await expect(epicPanel).toContainText('Captured once · no live sync');
+    await expect(epicPanel).toContainText('Captured from Epic');
     await expect(epicPanel).not.toContainText('mFOLFOX6');
     const originalCapturedAt = await epicPanel.locator('time').first().getAttribute('datetime');
-    expect(originalCapturedAt).toBe('2026-09-22T07:01:25Z');
+    expect(originalCapturedAt).toBe('2026-09-25T07:01:25Z');
 
     const sourceButton = epicPanel.getByRole('button', { name: 'View source details' });
     await sourceButton.click();

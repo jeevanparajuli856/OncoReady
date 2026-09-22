@@ -147,7 +147,7 @@ describe('EPIC-001 independent acceptance evidence', () => {
       },
     }} />);
 
-    await screen.findByRole('heading', { name: 'Epic Sandbox · Read-only captured data' });
+    await screen.findByRole('heading', { name: 'Read-only captured data' });
     expect(screen.getAllByText('Not present in captured record').length).toBeGreaterThanOrEqual(8);
     expect(document.body.textContent).not.toContain('mFOLFOX6');
   });
