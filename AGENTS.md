@@ -66,6 +66,20 @@ This repository currently uses local prepared personas, so these guards protect 
 - A successful Epic login shows a secure redirect/loading state before routing to the selected workspace. Unknown Epic credentials must show the exact invalid-credential error already defined by the UI.
 - The Epic page must render without the OncoReady header/footer, use the local Epic logo and forest artwork, and must not display internal callback URLs or simulated-auth explanatory copy inside the provider-style surface.
 
+### Demo login matrix
+
+These are synthetic local demo fixtures only. They are intentionally documented here so agents do not invent credentials or route a persona to the wrong workspace. Never reuse them for production authentication, real Epic access, or backend authorization.
+
+| Login | Demo password | Workspace |
+|---|---|---|
+| `abcp@oncoready.me` | `1234` | Patient |
+| `abcc@oncoready.me` | `1234` | Caregiver |
+| `abcs@oncoready.me` | `1234` | Care Team (Readiness Team) |
+| `abcn@oncoready.me` | `1234` | Care Navigator |
+| `abct@oncoready.me` | `1234` | Transportation (CareLink, currently empty) |
+
+Epic sign-in accepts only the Care Team, Care Navigator, and Transportation demo identities. The simulated provider route is `/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready`; the standard login route is `/login`.
+
 ## 4. Agent ownership
 
 ### Codex orchestrator

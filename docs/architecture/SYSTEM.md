@@ -38,6 +38,8 @@ The frontend enforces these local role boundaries in route selection and reducer
 
 Authentication is a local prepared-persona flow with explicit browser routes: `/login` is the standard entry route, and Epic handoff uses `/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready`. The Epic page is a standalone provider-style surface with a visible pre-handoff and post-login redirect state. It is a visual integration demonstration only: no Epic OAuth exchange, token, callback, or provider session is real, and no credentials may be added to source or product copy.
 
+The synthetic demo login matrix is fixed and must not be changed by implementation agents: `abcp@oncoready.me` → Patient, `abcc@oncoready.me` → Caregiver, `abcs@oncoready.me` → Care Team, `abcn@oncoready.me` → Care Navigator, and `abct@oncoready.me` → Transportation. The shared demo password is `1234`. These values are local fixtures only, not secrets or production identity credentials. Epic sign-in is permitted only for Care Team, Care Navigator, and Transportation.
+
 Required states: initial risk → exact reply → distinct clinical/transport tasks → human clinical disposition → primary ride failure → backup plan → current-plan acknowledgment → confirmed continuity. A changed/failed plan invalidates the previous acknowledgment. Open clinical work or absent outbound/return logistics prevents confirmation.
 
 Keep private presenter checkpoints/reset separate from patient-facing actions. In-memory state or small local persistence is sufficient; deterministic reset restores scenario state. Browser refresh behavior and persona switches must be documented and rehearsed. Prefer one browser context for the recording; cross-device collaboration is deferred.
