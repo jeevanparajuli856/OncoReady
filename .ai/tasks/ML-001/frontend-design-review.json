@@ -2,19 +2,24 @@
   "schema_version": "1.0",
   "task_id": "ML-001",
   "agent": "codex-orchestrator",
-  "status": "PENDING",
-  "summary": "",
+  "status": "APPROVED",
+  "summary": "Approved as a compatibility-only extension of the locked OncoReady staff case workspace: one Insights tab presents validated offline synthetic-model outputs, honest evidence and limitations, checkpoint-specific factors, and an isolated transportation sensitivity comparison without mutating workflow state or implying clinical inference.",
   "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
-  "reviewed_design_sha256": "",
+  "reviewed_design_sha256": "ccff08107a6b5ffd446526e60f363fa415bb73e7fe3b2a3e8937ddef46e7855b",
   "checks": {
-    "requirements": "PENDING",
-    "architecture_and_contracts": "PENDING",
-    "security_and_authorization": "PENDING",
-    "accessibility": "PENDING",
-    "performance": "PENDING",
-    "scope": "PENDING",
-    "human_brand_design_system_constraints": "PENDING"
+    "requirements": "PASS",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "PASS",
+    "performance": "PASS",
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_frontend": []
+  "notes_for_frontend": [
+    "Implement the exact design report committed at 68f1778ac47d7d49a47a7a7f31c6573deeca3680 and preserve every existing global token, component style, shell behavior, theme, and non-ML case tab.",
+    "Treat ml/artifacts/demo-insights.json as canonical and fail closed at the typed frontend boundary. No runtime inference, arbitrary input, workflow dispatch, score-driven clinical action, or fabricated fallback value is allowed.",
+    "Keep checkpoint, disclosure, and what-if selection local to the Insights component. Verify semantic tab/disclosure/comparison keyboard behavior, readable factor labels, evidence links, reduced motion, invalid/missing artifact states, and byte-for-byte workflow-state isolation.",
+    "Capture matched 1440x900 and 390x844 result screenshots against the committed baselines; unapproved visual drift is a blocker."
+  ]
 }
