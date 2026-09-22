@@ -3,7 +3,7 @@
   "task_id": "RIDE-001",
   "title": "Playable CareLink recovery and plan acknowledgment",
   "type": "feature",
-  "status": "IMPLEMENTATION",
+  "status": "REVIEW",
   "priority": "critical",
   "owners": {
     "orchestrator": "codex",

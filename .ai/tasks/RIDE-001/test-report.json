@@ -2,16 +2,28 @@
   "schema_version": "1.0",
   "task_id": "RIDE-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
-  "contracts_used": [
-    "contracts/openapi.yaml"
+  "status": "COMPLETE",
+  "summary": "TARGETED verification passed for the staged current-trip recovery, failure history, required logistics, no-option state, version invalidation, caregiver privacy/seen boundary, patient acknowledgment, replay isolation and controls, direct Transportation login, responsive layout, and truthful provider labeling with zero Uber network activity.",
+  "files_changed": [
+    "frontend/tests/ride.test.ts",
+    "frontend/tests/ride-ui.test.tsx",
+    "frontend/tests/access.test.tsx",
+    "frontend/tests/component.test.tsx",
+    "frontend/tests/smoke.test.ts",
+    "frontend/tests/e2e.spec.ts",
+    ".ai/tasks/RIDE-001/test-report.json"
   ],
+  "contracts_used": [],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "npm run test:smoke: 90/90 passed across 18 files",
+      "npm run build: passed",
+      "npx --no-install tsc --noEmit: passed",
+      "npm run test:e2e: 9/9 Chromium journeys passed",
+      "git diff --check: passed"
+    ],
+    "notes": "The selected browser journey signs into abct@oncoready.me, confirms the operational dashboard and both provider labels, completes the synthetic A-fails/B-recovers path, validates v2 logistics and privacy, asserts no Uber request and no console error, checks 375px overflow, and saves desktop/mobile evidence."
   },
   "blockers": [],
   "notes_for_next_agent": []
