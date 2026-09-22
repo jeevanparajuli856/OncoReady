@@ -547,7 +547,10 @@ def _build_manifest(
             "scenarioId": "camila-demo-v2",
             "presentationAlias": "Camila Lopez",
             "sourceIdentity": source_identity,
-            "identityMatch": source_identity.casefold() == "camila lopez".casefold(),
+            "identityMatch": _source_identity_matches_alias(
+                source_identity,
+                "Camila Lopez",
+            ),
         },
         "requests": list(requests),
         "resources": list(resource_entries),
@@ -583,6 +586,19 @@ def _patient_source_identity(patient: Mapping[str, Any], patient_id: str) -> str
             if formatted:
                 return formatted
     return f"Patient/{patient_id}"
+
+
+def _source_identity_matches_alias(source_identity: str, alias: str) -> bool:
+    source_parts = re.findall(r"[^\W_]+", source_identity.casefold())
+    alias_parts = re.findall(r"[^\W_]+", alias.casefold())
+    if source_parts == alias_parts:
+        return True
+    return (
+        len(source_parts) >= 2
+        and len(alias_parts) == 2
+        and source_parts[0] == alias_parts[0]
+        and source_parts[-1] == alias_parts[-1]
+    )
 
 
 def _utc_timestamp(value: datetime) -> str:

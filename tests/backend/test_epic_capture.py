@@ -310,6 +310,30 @@ def test_capture_accepts_epic_sandbox_resource_ids_longer_than_fhir_nominal_limi
     )
 
 
+def test_scenario_binding_matches_source_identity_with_a_middle_name(
+    tmp_path: Path,
+) -> None:
+    camila = copy.deepcopy(PATIENT)
+    camila["name"] = [
+        {
+            "use": "official",
+            "family": "Lopez",
+            "given": ["Camila", "Maria"],
+        }
+    ]
+
+    capture(
+        tmp_path,
+        SequencedTransport(camila),
+        resource_types=(),
+    )
+
+    binding = manifest_at(tmp_path)["scenarioBinding"]
+    assert binding["sourceIdentity"] == "Camila Maria Lopez"
+    assert binding["presentationAlias"] == "Camila Lopez"
+    assert binding["identityMatch"] is True
+
+
 def test_capture_output_is_deterministic_when_bundle_entry_order_changes(
     tmp_path: Path,
 ) -> None:
