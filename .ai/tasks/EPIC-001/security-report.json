@@ -2,8 +2,27 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "reviewer": "codex-security",
-  "reviewed_commit": "",
-  "status": "CHANGES_REQUIRED",
-  "summary": "",
-  "findings": []
+  "reviewed_commit": "a37e7cb13704c785aab60b7afc76c97f00588fbb",
+  "status": "APPROVED",
+  "summary": "Dedicated EPIC-001 security review approves verification-evidence revision a37e7cb13704c785aab60b7afc76c97f00588fbb with no blocking finding; it differs from the exact verified production commit b32a740b2468eaa3ca1ecf221e92f9bd287f5602 only by the commit-bound PASSED verification report. The private capture utility is constrained to the exact HTTPS Epic Non-Production Sandbox FHIR R4 base, GET-only Patient/Appointment/MedicationRequest/laboratory Observation reads, one selected patient, same-origin and same-resource pagination, redacted request evidence, bounded pages/resources/response bytes, disabled redirects, and fail-closed resource, patient-reference, laboratory-category, duplicate, and malformed-Bundle validation. Tokens enter through the operator environment/in-memory call boundary, not command arguments; safe errors and outputs exclude tokens, headers, and response bodies; staging is outside the repository with 0700 directories and 0600 files and partial-write cleanup. The committed capture is contract-valid reviewed Epic Sandbox test data: all 20 raw resources (Patient 1, Appointment 13, MedicationRequest 1, laboratory Observation 5) match Camila's selected Patient, their SHA-256 checksums and exact inventory pass, and capture-focused secret/history scans found no access or refresh token, authorization material, client secret, private key, or tracked environment file. The frontend validates the approved source/mode/review/identity/resource boundary, maps only present fields outside WorkflowState, uses React text rendering without raw HTML, fails closed to an unavailable state, makes no runtime Epic/OAuth request, and labels the experience captured once, read-only, offline, Sandbox, and no live sync/writeback. Source IDs and provenance remain confined to the staff presentation path, while the code and copy correctly avoid claiming that UI filtering protects the publicly bundled assets or that OncoReady has a production Epic connection or partnership. The official static Epic SVG is checksum-pinned and contains no script or external reference. The user-supplied api.oncoready.me SMART callback is registered external capture configuration only; no callback route, runtime OAuth lifecycle, token persistence, live synchronization, or Epic writeback was added in this slice. Independent evidence rerun during review: 29/29 capture tests passed, manifest schema/checksum/patient/lab/secret audit passed, the package validator passed for 20 resources, npm production audit reported 0 vulnerabilities, tracked/high-signal secret scans were clean, and diff/status checks were clean.",
+  "findings": [
+    {
+      "severity": "low",
+      "category": "public test-data minimization",
+      "file": "frontend/src/data/epic-capture/resources/patient-erXuFYUfucBZaryVksYEcMg3.json",
+      "description": "The reviewed browser package intentionally preserves complete raw allowlisted Epic Sandbox resources. Although the primary panel maps a narrower subset, the bundled synthetic Patient and related resources remain retrievable and include Sandbox contact/address, identifiers, practitioner/location references, and appointment history beyond the fields visibly rendered.",
+      "impact": "There is no real-patient confidentiality finding for this approved public Sandbox test identity, but copying this publication pattern to a production or distribution-restricted record would expose clinical and identifying data; staff-only rendering is presentation behavior, not access control.",
+      "remediation": "Keep this exact capture test-only and checksum-bound. Require a new content/distribution review for every replacement capture, never promote production or restricted records to browser assets, and use an authenticated server boundary or a reviewed field-minimized derivative if future data is not explicitly public Sandbox test data.",
+      "blocking": false
+    },
+    {
+      "severity": "info",
+      "category": "operator staging lifecycle",
+      "file": "backend/scripts/capture_epic_sandbox.py",
+      "description": "The command requires explicit approval metadata and securely stages outside the repository, but approval is supplied at invocation and a successful private stage persists for manual review/promotion; only failed partial writes are automatically cleaned up.",
+      "impact": "An operator could attest approval without completing the intended post-capture inspection or leave an unnecessary private copy on disk. The current reviewed Sandbox package was separately inspected before promotion, and restrictive permissions limit this residual risk.",
+      "remediation": "For repeated or broader capture operations, split capture from approval/promotion, record the reviewed package digest in a separate promotion step, and document deletion of the private staging directory after a verified promotion or abandoned attempt.",
+      "blocking": false
+    }
+  ]
 }
