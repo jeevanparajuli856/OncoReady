@@ -2,17 +2,38 @@
   "schema_version": "1.0",
   "task_id": "EPIC-001",
   "agent": "codex-tester",
-  "status": "PARTIAL",
-  "summary": "",
-  "files_changed": [],
+  "status": "COMPLETE",
+  "summary": "Independent TARGETED testing passes for integrated production revision 43cfe57b4d8bc6ec7d12eba2917a33182518bb42. The reviewed Epic Sandbox capture is contract-valid and checksum-bound; its 20 raw FHIR resources map exactly into the staff-only Epic view without scenario substitution, retain the original capture timestamp through offline reload, expose accessible provenance, fail closed for invalid packages, and perform no live Epic request or writeback during playback.",
+  "files_changed": [
+    "frontend/tests/epic-independent.test.tsx",
+    "frontend/tests/e2e.spec.ts",
+    ".ai/tasks/EPIC-001/test-report.json"
+  ],
   "contracts_used": [
-    "contracts/openapi.yaml"
+    "contracts/schemas/epic-capture-manifest.v1.schema.json"
   ],
   "tests": {
-    "passed": false,
-    "commands": [],
-    "notes": ""
+    "passed": true,
+    "commands": [
+      "backend/.venv/bin/python -c '<validate frontend/src/data/epic-capture/manifest.json with Draft202012Validator and FormatChecker against contracts/schemas/epic-capture-manifest.v1.schema.json>' plus capture-only secret-pattern and GET/identity jq checks",
+      "node frontend/scripts/validate-epic-capture.mjs",
+      "node /tmp/oncoready-epic-checksum-audit.yZboO7/scripts/validate-epic-capture.mjs (safe copied package with one Patient payload altered; expected exit 1 with checksum mismatch)",
+      "backend/.venv/bin/pytest -c backend/pyproject.toml tests/backend/test_epic_capture.py -q",
+      "backend/.venv/bin/pytest -c backend/pyproject.toml -m 'not integration' tests/backend -q",
+      "npm --prefix frontend run test:smoke -- tests/epic-capture.test.tsx tests/epic-adapter.test.ts tests/epic-independent.test.tsx --reporter=verbose",
+      "npm --prefix frontend run test:smoke -- --reporter=dot",
+      "npm --prefix frontend run build",
+      "PLAYWRIGHT_PORT=5199 npx playwright test tests/e2e.spec.ts --project=chromium --grep 'reviewed Epic capture stays source-separated' (cwd frontend)",
+      "PLAYWRIGHT_PORT=5200 npm run test:e2e (cwd frontend)",
+      "git diff --check",
+      "python scripts/agentctl.py scope check EPIC-001 tester --base 43cfe57b4d8bc6ec7d12eba2917a33182518bb42"
+    ],
+    "notes": "Acceptance evidence: (1) The committed manifest is JSON-Schema valid with capture epic-sandbox-20260922T070125Z-0dac7d6b, capturedAt 2026-09-22T07:01:25Z, approved reviewed distribution metadata, four GET-only redacted requests, and exactly 20 checksum-referenced raw resources: Patient 1, Appointment 13, MedicationRequest 1, laboratory Observation 5. All resource hashes and the exact directory inventory passed the production validator; a separately copied and altered Patient payload was rejected specifically for checksum mismatch. A first negative-test copy used sed -i.bak, and the validator correctly rejected the extra backup file as an inventory mismatch before checksums; rerunning without the backup artifact produced the intended checksum-mismatch rejection. (2-3) New independent adapter assertions compare Patient identity/demographics, medication status/text/instruction/authored date, all lab names/values/units/effective and issued dates, and every appointment status/service/start/end directly against the committed raw JSON. Camila Maria Lopez and Patient/erXuFYUfucBZaryVksYEcMg3 match the source, while mFOLFOX6, Cycle 4 of 12, and the scenario appointment remain absent from EpicClinicalContext and visibly scenario-labeled elsewhere. Explicit absent-field and empty medication/lab/appointment states render 'Not present in captured record'. (4,7) The production-browser Epic path survived reload with the same immutable 2026-09-22T07:01:25Z timestamp and recorded zero requests to fhir.epic.com; missing files, unsupported mode, resource-reference mismatch, malformed capture, and the build-time checksum mismatch all fail closed without an Epic-labeled substitute. (5-6) Backend capture tests prove exact Sandbox-host HTTPS GET-only reads, patient-scoped allowlisted searches, laboratory filtering, redacted evidence, token-from-environment handling, token exclusion, same-origin pagination, ceilings, and fail-closed behavior. Capture-only secret-pattern scanning was clean; no access/refresh token, authorization material, client secret, or private key marker was present. Browser publication is explicitly the reviewed Sandbox test-data package, not UI authorization or a production record. (8) New view assertions confirm capture ID, Patient ID, source identity, and medication are absent from landing, patient, caregiver, and system/graph presentation. The Transportation gateway intentionally enters the existing staff logistics case (as its visible copy states), not a distinct third-party transportation projection; the caregiver projection remains logistics-only. Source-drawer component/E2E evidence verifies dialog semantics, keyboard tab activation, initial focus, Escape close/focus return, original capture time, FHIR/source environment, GET-only evidence, resource IDs, hashes, and displayed-field provenance. Results: backend focused 29 passed; backend fast regression 70 passed with 4 integration tests intentionally deselected by the marker split; focused Epic Vitest 12 passed; complete Vitest 44 passed across 10 files; production build passed; final Chromium suite 8 passed. No executed test was skipped or flaky. Backend emitted two existing dependency deprecation warnings, Vitest emitted existing asynchronous FoundationStatus act warnings, and Playwright emitted the existing NO_COLOR/FORCE_COLOR warning. During tester test development, the new independent suite initially failed 2/3 and then 1/3 on tester expectation/navigation mistakes; only test code was corrected and the final focused/full results above are green. An initial npm-prefix Playwright invocation from the repository root reported no configured project; the exact command was rerun from frontend and passed. The requested .agents/skills/testing/SKILL.md is absent, so testing followed AGENTS.md and docs/standards/TESTING.md."
   },
   "blockers": [],
-  "notes_for_next_agent": []
+  "notes_for_next_agent": [
+    "EPIC-001 independent TARGETED acceptance is complete for production base 43cfe57b4d8bc6ec7d12eba2917a33182518bb42 plus the tester-owned assertions; no tester blocker remains.",
+    "Run the required dedicated security review on the exact next committed revision, with particular attention to reviewed public Sandbox publication, token exclusion, capture allowlists, same-origin pagination, and the distinction between staff-only presentation and publicly bundleable test assets.",
+    "Commit the three tester-owned files, then run commit-bound repository verification; refresh testing only if production Epic behavior, the capture package, contract, or relevant task evidence changes."
+  ]
 }

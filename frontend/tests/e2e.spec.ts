@@ -252,6 +252,11 @@ test.describe('OncoReady UI-001 product experience', () => {
   });
 
   test('reviewed Epic capture stays source-separated and keyboard accessible on desktop and mobile', async ({ page }) => {
+    const liveEpicRequests: string[] = [];
+    page.on('request', (request) => {
+      if (new URL(request.url()).hostname === 'fhir.epic.com') liveEpicRequests.push(request.url());
+    });
+
     await page.getByRole('button', { name: /Access workspace/i }).first().click();
     await page.getByTestId('auth-transport-card').click();
 
@@ -264,6 +269,8 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(epicPanel).toContainText('drospirenone-ethinyl estradiol');
     await expect(epicPanel).toContainText('Captured once · no live sync');
     await expect(epicPanel).not.toContainText('mFOLFOX6');
+    const originalCapturedAt = await epicPanel.locator('time').first().getAttribute('datetime');
+    expect(originalCapturedAt).toBe('2026-09-22T07:01:25Z');
 
     const sourceButton = epicPanel.getByRole('button', { name: 'View source details' });
     await sourceButton.click();
@@ -274,6 +281,11 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.keyboard.press('Escape');
     await expect(drawer).toBeHidden();
     await expect(sourceButton).toBeFocused();
+
+    await page.reload();
+    await page.getByRole('tab', { name: /Epic/i }).click();
+    await expect(page.getByRole('tabpanel', { name: /Epic/i }).locator('time').first()).toHaveAttribute('datetime', originalCapturedAt!);
+    expect(liveEpicRequests).toEqual([]);
 
     await page.setViewportSize({ width: 390, height: 844 });
     await expect(page.locator('body')).not.toContainText('Epic capture unavailable');
