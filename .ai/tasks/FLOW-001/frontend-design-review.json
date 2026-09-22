@@ -2,19 +2,23 @@
   "schema_version": "1.0",
   "task_id": "FLOW-001",
   "agent": "codex-orchestrator",
-  "status": "PENDING",
-  "summary": "",
+  "status": "APPROVED",
+  "summary": "Approved as a compatibility-only extension of the locked OncoReady workflow: existing task cards, graph, timeline, plan review, and private controls gain the FLOW-001 states without new tokens, page families, dependencies, or provider claims.",
   "review_scope": "Compatibility only. Do not substitute orchestrator aesthetic preferences for frontend specialist design authority.",
-  "reviewed_design_sha256": "",
+  "reviewed_design_sha256": "263ae51385f7f767bc8c3af9b4d050678938a31bc2406a3d88aa8c836dcef0af",
   "checks": {
-    "requirements": "PENDING",
-    "architecture_and_contracts": "PENDING",
-    "security_and_authorization": "PENDING",
-    "accessibility": "PENDING",
-    "performance": "PENDING",
-    "scope": "PENDING",
-    "human_brand_design_system_constraints": "PENDING"
+    "requirements": "PASS",
+    "architecture_and_contracts": "PASS",
+    "security_and_authorization": "PASS",
+    "accessibility": "PASS",
+    "performance": "PASS",
+    "scope": "PASS",
+    "human_brand_design_system_constraints": "PASS"
   },
   "required_changes": [],
-  "notes_for_frontend": []
+  "notes_for_frontend": [
+    "Implement the exact report committed at 791f4e8370176f1f230e2e07c7fc3bf8d3016cd5 and preserve all global tokens, workspace shells, component styling, and existing responsive character.",
+    "Keep reducer commands and selectors authoritative for task metadata, plan version, closure, graph, timeline, and persona projections; component-local state may represent only transient form presentation.",
+    "Limit validation to the architecture-selected focused reducer boundaries, one cross-persona browser journey, affected screenshots, and the repository gate once at the integrated revision."
+  ]
 }
