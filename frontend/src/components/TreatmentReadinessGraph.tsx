@@ -18,6 +18,7 @@ interface TreatmentReadinessGraphProps {
   overallReadiness: ReadinessStatus;
   patientAcknowledged: boolean;
   readinessCheckCompleted: boolean;
+  currentRideProvider?: string;
   onNavigateToStaff?: () => void;
   onNavigateToPatient?: () => void;
 }
@@ -28,6 +29,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
   overallReadiness,
   patientAcknowledged,
   readinessCheckCompleted,
+  currentRideProvider,
   onNavigateToPatient,
 }) => {
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
@@ -236,7 +238,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   </p>
                   {transportResolved && (
                     <div className="mt-1.5 pt-1.5 border-t border-slate-200/60 text-[11px] text-emerald-800 font-medium">
-                      ✓ Med-Van #402 confirmed (Driver: Jerome Davis)
+                      ✓ {[currentRideProvider, transportTask?.transportDetails?.vehicleId].filter(Boolean).join(' · ') || 'Ride'} confirmed{transportTask?.transportDetails?.driverName ? ` (Driver: ${transportTask.transportDetails.driverName})` : ''}
                     </div>
                   )}
                 </div>

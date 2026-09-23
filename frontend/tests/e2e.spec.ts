@@ -298,6 +298,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('tab', { name: /Graph/i }).click();
     await expect(page.getByRole('heading', { name: 'Treatment Readiness Graph' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Upcoming Infusion Target Node' }).getByText('CONTINUITY PLAN CONFIRMED')).toBeVisible();
+    await expect(page.getByText('✓ Magnolia Wayfare Transport · CareLink Vehicle #402 confirmed (Driver: Jerome Davis)')).toBeVisible();
     const receipt = page.getByRole('region', { name: 'Continuity plan receipt' });
     await expect(receipt.getByText('3 of 3 recorded')).toBeVisible();
     await receipt.getByRole('button', { name: 'Open timeline evidence' }).nth(1).click();
