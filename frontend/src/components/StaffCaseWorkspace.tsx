@@ -39,6 +39,8 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, workspaceRole, onBa
     ? ['ACTIONS', 'OUTREACH', 'GRAPH']
     : ['ACTIONS', 'OUTREACH', 'REGIMEN', 'LABS', 'EPIC', 'INSIGHTS', 'GRAPH'];
   const [activeTab, setActiveTab] = useState<CaseTab>('ACTIONS');
+  const clinicalReport = state.tasks.find((task) => task.type === 'CLINICAL_REVIEW')?.clinicalDetails;
+  const rideUpdate = state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION')?.transportDetails;
   const tabRefs = useRef<Partial<Record<CaseTab, HTMLButtonElement | null>>>({});
   const [disposition, setDisposition] = useState('Human contact completed; no blocking follow-up recorded.');
   const [followUpBlocking, setFollowUpBlocking] = useState(false);
@@ -113,7 +115,10 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, workspaceRole, onBa
           <button {...tabProps('GRAPH')} className={`filter-pill ${activeTab === 'GRAPH' ? 'filter-pill-active' : ''}`}><Network className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Graph</button>
         </div>
       </div>
-      {workspaceRole === 'CARE_TEAM' && state.readinessCheckCompleted && <blockquote className="metric-tile text-sm italic">“{state.readinessSubmission.clinicalConcernText}”<footer className="not-italic label-caps text-muted-fg mt-2">Patient reply, verbatim • Sep 24, 10:12 AM CT</footer></blockquote>}
+      {workspaceRole === 'CARE_TEAM' && state.readinessCheckCompleted && (clinicalReport?.reportedAt
+        ? <blockquote className="metric-tile text-sm italic">“{clinicalReport.verbatimReport}”<footer className="not-italic label-caps text-muted-fg mt-2">New patient report, verbatim • {clinicalReport.reportedAt}</footer></blockquote>
+        : <blockquote className="metric-tile text-sm italic">“{state.readinessSubmission.clinicalConcernText}”<footer className="not-italic label-caps text-muted-fg mt-2">Patient reply, verbatim • Sep 24, 10:12 AM CT</footer></blockquote>)}
+      {workspaceRole === 'CARE_NAVIGATOR' && rideUpdate?.patientUpdate && <blockquote className="metric-tile text-sm italic">“{rideUpdate.patientUpdate}”<footer className="not-italic label-caps text-muted-fg mt-2">Ride update from the patient, verbatim • {rideUpdate.patientUpdateAt}</footer></blockquote>}
     </section>
 
     <div role="tabpanel" id={`case-panel-${activeTab.toLowerCase()}`} aria-labelledby={`case-tab-${activeTab.toLowerCase()}`}>

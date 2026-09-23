@@ -115,7 +115,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
           <div className="p-3.5 rounded-xl bg-cream text-sm space-y-2">
             <p>
               <span className="font-heading font-bold">Your Reported Symptoms: </span>
-              <span className="italic">"{state.readinessSubmission.clinicalConcernText}"</span>
+              <span className="italic">"{state.tasks.find((task) => task.type === 'CLINICAL_REVIEW')?.clinicalDetails?.verbatimReport ?? state.readinessSubmission.clinicalConcernText}"</span>
             </p>
             <div className="p-3 bg-white rounded-xl border-2 border-ink/10">
               <div className="font-heading font-bold flex items-center gap-1 text-sm">

@@ -15,6 +15,7 @@ import {
   ChevronUp,
   Pill,
   ShieldCheck,
+  MessageSquareWarning,
 } from 'lucide-react';
 import {
   AppointmentDetails,
@@ -36,6 +37,8 @@ interface PatientTreatmentHomeProps {
   labs: LabResult[];
   vitals: VitalSign[];
   onStartReadinessCheck: () => void;
+  /** Opens a follow-up report once the readiness check is done. */
+  onReportProblem: () => void;
   onOpenResolutionView: () => void;
   onSwitchPerspective: (p: 'CARE_TEAM' | 'CAREGIVER') => void;
 }
@@ -48,6 +51,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
   patientAcknowledged,
   tasks,
   onStartReadinessCheck,
+  onReportProblem,
   onOpenResolutionView,
   onSwitchPerspective,
 }) => {
@@ -257,6 +261,25 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
           <button onClick={() => onSwitchPerspective('CARE_TEAM')} className="btn-candy shrink-0">
             <span>View Care Team Workbench</span>
             <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
+          </button>
+        </div>
+      )}
+
+      {readinessCheckCompleted && (
+        <div className="card-sticker p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3" data-testid="report-problem-card">
+          <div className="flex items-start gap-3">
+            <span className="icon-bubble w-10 h-10 bg-sun/60 text-ink">
+              <MessageSquareWarning className="w-5 h-5" strokeWidth={2.5} />
+            </span>
+            <div className="space-y-0.5">
+              <h2 className="font-heading font-bold">Something changed?</h2>
+              <p className="text-sm text-muted-fg leading-relaxed">
+                Tell your care team about a new symptom or a ride problem. Sarah Jenkins, RN reviews symptoms and Marcus Vance, MSW handles rides.
+              </p>
+            </div>
+          </div>
+          <button onClick={onReportProblem} className="btn-ghost shrink-0">
+            <span>Report a problem</span>
           </button>
         </div>
       )}

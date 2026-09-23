@@ -48,6 +48,7 @@ Detailed orchestration:
 - CareLink vendor portal and provider adapters: docs/features/RIDE-002.md
 - CareLink sub-brand page and logo: docs/features/RIDE-003.md
 - Landing transport partners: docs/features/LAND-002.md
+- Patient follow-up reports: docs/features/PATIENT-001.md
 - Design system: docs/design/DESIGN_SYSTEM.md
 - Closed demo sprint and open gates: docs/SPRINT_CLOSEOUT.md
 - Presenter script: docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md

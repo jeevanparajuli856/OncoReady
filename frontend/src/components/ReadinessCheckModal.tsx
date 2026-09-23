@@ -16,6 +16,8 @@ interface ReadinessCheckModalProps {
   onClose: () => void;
   onSubmit: (data: { transportNotes: string; clinicalConcernText: string }) => void;
   defaultAddress: string;
+  /** CHECK is the pre-infusion readiness check; REPORT is a later "something changed" report. */
+  mode?: 'CHECK' | 'REPORT';
 }
 
 export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
@@ -23,21 +25,24 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
   onClose,
   onSubmit,
   defaultAddress,
+  mode = 'CHECK',
 }) => {
+  const isReport = mode === 'REPORT';
   const dialogRef = useRef<HTMLFormElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
-  const [hasTransportIssue, setHasTransportIssue] = useState<boolean>(true);
+  // A later report starts blank: Camila says what changed in her own words.
+  const [hasTransportIssue, setHasTransportIssue] = useState<boolean>(!isReport);
   const [transportNotes, setTransportNotes] = useState<string>(
-    'Ride cancelled; transportation recovery needed.'
+    isReport ? '' : 'Ride cancelled; transportation recovery needed.'
   );
   const [pickupAddress, setPickupAddress] = useState<string>(defaultAddress);
   const [needsWheelchair, setNeedsWheelchair] = useState<boolean>(false);
-  const [hasClinicalConcern, setHasClinicalConcern] = useState<boolean>(true);
+  const [hasClinicalConcern, setHasClinicalConcern] = useState<boolean>(!isReport);
   const [clinicalConcernText, setClinicalConcernText] = useState<string>(
-    'My ride was cancelled, and I’m not feeling well today.'
+    isReport ? '' : 'My ride was cancelled, and I’m not feeling well today.'
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [errorField, setErrorField] = useState<'clinical' | 'pickup' | null>(null);
+  const [errorField, setErrorField] = useState<'clinical' | 'pickup' | 'transport' | 'choice' | null>(null);
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useDialogFocus(isOpen, dialogRef, onClose);
@@ -53,6 +58,12 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
     setErrorMsg(null);
     setErrorField(null);
 
+    if (isReport && !hasTransportIssue && !hasClinicalConcern) {
+      setErrorMsg('Choose a ride problem, a symptom, or both, so we know who should help.');
+      setErrorField('choice');
+      return;
+    }
+
     if (hasClinicalConcern && !clinicalConcernText.trim()) {
       setErrorMsg('Please enter your symptoms or concerns so the oncology triage nurse can assist you.');
       setErrorField('clinical');
@@ -62,6 +73,12 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
     if (hasTransportIssue && !pickupAddress.trim()) {
       setErrorMsg('Please confirm your pickup address for medical transport.');
       setErrorField('pickup');
+      return;
+    }
+
+    if (isReport && hasTransportIssue && !transportNotes.trim()) {
+      setErrorMsg('Please tell your navigator what changed with your ride.');
+      setErrorField('transport');
       return;
     }
 
@@ -100,10 +117,10 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
         <div className="bg-ink text-white px-5 sm:px-7 py-5 flex items-start justify-between gap-3 shrink-0">
           <div className="min-w-0 space-y-1">
             <p className="text-[11px] font-heading font-bold uppercase tracking-widest text-white/60">
-              T-24h check-in
+              {isReport ? 'Something changed' : 'T-24h check-in'}
             </p>
             <h2 id="readiness-check-title" className="font-heading font-extrabold text-xl leading-snug">
-              2-Minute Pre-Infusion Readiness Check
+              {isReport ? 'Report a Problem' : '2-Minute Pre-Infusion Readiness Check'}
             </h2>
             <p className="text-sm text-white/75">FOLFOX6 Cycle 4 • Scheduled Sep 25 at 10:00 AM CT</p>
           </div>
@@ -143,7 +160,9 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
                     1. Transportation to Benson Cancer Center
                   </h3>
                   <p className="text-sm text-muted-fg mt-1 leading-relaxed">
-                    Do you have confirmed, reliable transportation to the Benson Cancer Center tomorrow?
+                    {isReport
+                      ? 'Has anything changed with your ride to the Benson Cancer Center?'
+                      : 'Do you have confirmed, reliable transportation to the Benson Cancer Center tomorrow?'}
                   </p>
                 </div>
               </div>
@@ -153,11 +172,11 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <button type="button" onClick={() => setHasTransportIssue(false)} className={choiceClass(!hasTransportIssue, 'ok')}>
                 <CheckCircle2 className={`w-5 h-5 shrink-0 ${!hasTransportIssue ? 'text-mint' : 'text-muted-fg'}`} strokeWidth={2.5} />
-                Yes, I have a confirmed ride
+                {isReport ? 'My ride is still fine' : 'Yes, I have a confirmed ride'}
               </button>
               <button type="button" onClick={() => setHasTransportIssue(true)} className={choiceClass(hasTransportIssue, 'warn')}>
                 <AlertTriangle className={`w-5 h-5 shrink-0 ${hasTransportIssue ? 'text-ink' : 'text-muted-fg'}`} strokeWidth={2.5} />
-                No, my ride was cancelled / I need assistance
+                {isReport ? 'Something changed with my ride' : 'No, my ride was cancelled / I need assistance'}
               </button>
             </div>
 
@@ -187,6 +206,8 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
                     type="text"
                     value={transportNotes}
                     onChange={(e) => setTransportNotes(e.target.value)}
+                    aria-invalid={errorField === 'transport'}
+                    aria-describedby={errorField === 'transport' ? 'readiness-error-summary' : undefined}
                     className="input-pop text-sm border-2 border-ink"
                     placeholder="Details about vehicle needs, timing, or accessibility"
                   />
@@ -267,7 +288,7 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
             Cancel
           </button>
           <button type="submit" disabled={isSubmitting} className="btn-candy">
-            <span>{isSubmitting ? 'Routing Tasks...' : 'Submit Readiness Report'}</span>
+            <span>{isSubmitting ? 'Routing Tasks...' : isReport ? 'Send to Care Team' : 'Submit Readiness Report'}</span>
             <ArrowRight className="w-4 h-4" strokeWidth={2.5} />
           </button>
         </div>

@@ -35,6 +35,8 @@ export interface ClinicalReviewDetails {
   followUpBlocking?: boolean;
   acknowledgedAt?: string;
   reviewedBy?: string;
+  /** Set when the symptom came from a later "Report a problem" instead of the readiness check. */
+  reportedAt?: string;
 }
 
 export interface TransportDetails {
@@ -54,6 +56,9 @@ export interface TransportDetails {
   backupPlan?: string;
   backupOwner?: string;
   planFailed: boolean;
+  /** Camila's latest ride update from "Report a problem", verbatim. */
+  patientUpdate?: string;
+  patientUpdateAt?: string;
 }
 
 export type RideAssignmentStatus = 'CURRENT' | 'FAILED';
