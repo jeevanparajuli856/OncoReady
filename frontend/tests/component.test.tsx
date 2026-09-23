@@ -58,13 +58,23 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     });
   });
 
-  it('keeps the continuity story available when motion is turned off', () => {
+  it('keeps the continuity story available when the system reduces motion', () => {
+    const originalMatchMedia = window.matchMedia;
+    window.matchMedia = ((query: string) => ({
+      matches: query === '(prefers-reduced-motion: reduce)',
+      media: query,
+      onchange: null,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+      addListener: () => {},
+      removeListener: () => {},
+      dispatchEvent: () => false,
+    })) as typeof window.matchMedia;
     render(<App />);
-
-    fireEvent.click(screen.getByRole('button', { name: /Reduce motion/i }));
+    window.matchMedia = originalMatchMedia;
 
     expect(document.querySelector('.motion-reduce')).not.toBeNull();
-    expect(screen.getByRole('button', { name: /Motion off/i })).toBeDefined();
+    expect(screen.queryByRole('button', { name: /Reduce motion|Motion off/i })).toBeNull();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
     expect(screen.getAllByRole('button', { name: /Access workspace/i }).length).toBeGreaterThan(0);
     expect(document.querySelectorAll('[data-reveal-state="pending"]')).toHaveLength(0);

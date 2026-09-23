@@ -126,7 +126,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       expect(targetSizes.every(({ width, height }) => width >= 44 && height >= 44)).toBe(true);
       expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width);
 
-      const motionControl = page.locator('footer').getByRole('button', { name: 'Reduce motion' });
+      const motionControl = page.locator('footer').getByRole('link', { name: 'Privacy Policy' });
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       await motionControl.focus();
 
