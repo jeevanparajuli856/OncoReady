@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
 import {
   AlertTriangle,
   CalendarDays,
-  CheckCircle2,
   CloudDownload,
   FileQuestion,
   FlaskConical,
@@ -335,43 +334,4 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
 
     <EpicSourceDrawer context={context} isOpen={drawerOpen} onClose={closeDrawer} />
   </div>;
-};
-
-export const EpicCaptureSummary: React.FC<{ captureState?: EpicCaptureState }> = ({ captureState = EPIC_CAPTURE_STATE }) => {
-  if (captureState.status === 'unavailable') {
-    return <CaptureUnavailable reason={captureState.reason} onRetry={() => undefined} loading={false} />;
-  }
-  const { context } = captureState;
-  const counts = (['Patient', 'MedicationRequest', 'Observation', 'Appointment'] as const)
-    .map((type) => `${type} ${context.resources.filter((resource) => resource.resourceType === type).length}`)
-    .join(' · ');
-  return <section className="card-sticker p-5 sm:p-6 space-y-5" aria-labelledby="epic-integration-title">
-    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-      <div className="flex items-start gap-3">
-        <div className="w-20 h-12 rounded-xl border border-line bg-white flex items-center justify-center shrink-0">
-          <img src="/epic-logo.svg" alt="Epic" width="64" height="32" className="w-16 h-8 object-contain" />
-        </div>
-        <div>
-          <p className="label-caps">Clinical integration</p>
-          <h2 id="epic-integration-title" className="font-display text-2xl font-extrabold mt-1">Connected to Hospital Epic Sandbox</h2>
-          <p className="text-sm text-muted-fg mt-1"><time dateTime={context.capturedAt}>Retrieved {formatEpicCaptureTime(context.capturedAt)}</time></p>
-        </div>
-      </div>
-      <span className="chip chip-mint"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />Read-only</span>
-    </div>
-    <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center text-center">
-      {['Hospital Epic Sandbox', 'FHIR R4', 'OncoReady staff context'].map((step, index) => <React.Fragment key={step}>
-        <div className="metric-tile font-heading font-bold text-sm">{step}</div>
-        {index < 2 && <span className="hidden sm:block text-muted-fg" aria-hidden="true">→</span>}
-      </React.Fragment>)}
-    </div>
-    <dl className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-      <FactTile label="Capture ID" value={<span className="font-mono text-xs break-all">{context.captureId}</span>} />
-      <FactTile label="Resource inventory" value={<span className="text-xs">{counts}</span>} />
-    </dl>
-    <div className="metric-tile flex items-start gap-2 text-sm">
-      <LockKeyhole className="w-4 h-4 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-      <p><strong>Read-only.</strong> OncoReady never writes back to Epic, and each record keeps its original retrieval time.</p>
-    </div>
-  </section>;
 };

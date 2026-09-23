@@ -103,7 +103,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       await expect(dock).toBeVisible();
 
       const targets = dock.getByRole('button');
-      await expect(targets).toHaveCount(5);
+      await expect(targets).toHaveCount(4);
       const targetSizes = await targets.evaluateAll((buttons) =>
         buttons.map((button) => {
           const bounds = button.getBoundingClientRect();
@@ -240,8 +240,6 @@ test.describe('OncoReady UI-001 product experience', () => {
       ['Exceptions', /Pre-Treatment Exception Queue/i],
       ['Patients', /Patient Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Epic context', /Connected to Hospital Epic Sandbox/i],
-      ['Admin', /Local Configuration/i],
     ] as const;
 
     for (const [route, heading] of routeChecks) {
@@ -301,6 +299,40 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
+  });
+
+  test('staff roles keep shared sections and reset unavailable sections to Command Center', async ({ page }) => {
+    await page.setViewportSize({ width: 1470, height: 800 });
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abcn@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+
+    const nav = page.locator('.staff-sidebar');
+    await expect(nav.getByRole('button', { name: 'Appointments' })).toHaveCount(0);
+    await nav.getByRole('button', { name: 'Transportation' }).click();
+    await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
+    await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
+    await page.getByText(/Care Team \(Readiness Team\)/i).click();
+    await expect(page).toHaveURL(/\/care-team$/);
+    await expect(page.getByRole('heading', { name: 'Command Center' }).first()).toBeVisible();
+    await expect(nav.getByRole('button', { name: 'Command Center' })).toHaveCSS('background-color', 'rgb(79, 70, 229)');
+    expect(await page.evaluate(() => window.scrollY)).toBe(0);
+    await expect(nav.getByRole('button', { name: 'Epic context' })).toHaveCount(0);
+    await expect(nav.getByRole('button', { name: 'Admin' })).toHaveCount(0);
+    await page.screenshot({ path: 'artifacts/NAV-001-care-team-after.png' });
+
+    await nav.getByRole('button', { name: 'Insights' }).click();
+    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
+    await expect(page).toHaveURL(/\/care-navigator$/);
+    await expect(page.getByRole('heading', { name: 'Command Center' }).first()).toBeVisible();
+    await page.screenshot({ path: 'artifacts/NAV-001-care-navigator-after.png' });
+
+    await nav.getByRole('button', { name: 'Exceptions' }).click();
+    await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
+    await page.getByText(/Care Team \(Readiness Team\)/i).click();
+    await expect(page.getByRole('heading', { name: 'Exceptions' }).first()).toBeVisible();
   });
 
   test('reviewed Epic capture stays source-separated and keyboard accessible on desktop and mobile', async ({ page }) => {

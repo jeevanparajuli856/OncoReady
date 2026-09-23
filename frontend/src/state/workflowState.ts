@@ -349,9 +349,17 @@ const normalizePerspective = (perspective: Perspective): Perspective =>
   perspective === 'STAFF' || perspective === 'SYSTEM' ? 'CARE_TEAM' : perspective;
 
 const canOpenRoute = (perspective: Perspective, route: WorkflowState['staffRoute']) => {
-  if (perspective === 'CARE_NAVIGATOR') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES', 'INTEGRATIONS'].includes(route);
-  if (perspective === 'CARE_TEAM') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'INSIGHTS', 'INTEGRATIONS', 'ADMIN'].includes(route);
+  if (perspective === 'CARE_NAVIGATOR') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'RESOURCES'].includes(route);
+  if (perspective === 'CARE_TEAM') return ['COMMAND_CENTER', 'EXCEPTIONS', 'PATIENTS', 'CASE_WORKSPACE', 'INSIGHTS'].includes(route);
   return false;
+};
+
+const availableStaffRoute = (perspective: Perspective, route: WorkflowState['staffRoute']): WorkflowState['staffRoute'] => {
+  if (route === 'INTEGRATIONS' || route === 'ADMIN') return 'COMMAND_CENTER';
+  if ((perspective === 'CARE_NAVIGATOR' || perspective === 'CARE_TEAM') && !canOpenRoute(perspective, route)) {
+    return 'COMMAND_CENTER';
+  }
+  return route;
 };
 
 const failCurrentRidePlan = (
@@ -644,7 +652,11 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       if (state.currentPerspective !== 'CARE_TEAM' && state.currentPerspective !== 'TRANSPORTATION' && state.currentPerspective !== 'LANDING') return state;
       return buildCheckpoint(action.payload, state.currentPerspective, state.staffRoute);
     case 'SET_PERSPECTIVE':
-      return { ...state, currentPerspective: normalizePerspective(action.payload) };
+      return {
+        ...state,
+        currentPerspective: normalizePerspective(action.payload),
+        staffRoute: availableStaffRoute(normalizePerspective(action.payload), state.staffRoute),
+      };
     case 'SET_STAFF_ROUTE':
       if (!canOpenRoute(state.currentPerspective, action.payload)) return state;
       return { ...state, staffRoute: action.payload };
@@ -713,7 +725,7 @@ export function loadSavedWorkflowState(): WorkflowState {
       const parsed: unknown = JSON.parse(raw);
       if (isSavedWorkflowState(parsed)) {
         const currentPerspective = normalizePerspective(parsed.currentPerspective);
-        return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective };
+        return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective, staffRoute: availableStaffRoute(currentPerspective, parsed.staffRoute) };
       }
     }
   } catch { /* fall through to canonical fixture */ }

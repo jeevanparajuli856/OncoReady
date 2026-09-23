@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { WorkflowState } from '../../types';
-import { EpicCaptureSummary } from '../EpicClinicalContext';
 import { formatEpicCaptureTime, formatEpicSourceDate } from '../../data/epicCapture';
 import { EPIC_RECORD_STATUS, type DirectoryRecord } from '../../data/rosterDirectory';
 
@@ -216,72 +215,3 @@ export const StaffInsights: React.FC = () => {
     </div>
   );
 };
-
-export const StaffIntegrations: React.FC = () => (
-  <div className="space-y-5">
-    <EpicCaptureSummary />
-    <section className="card-sticker p-5 sm:p-6 space-y-3" aria-labelledby="integration-boundary-title">
-      <h2 id="integration-boundary-title" className="font-heading font-bold">Integration boundary</h2>
-      <p className="text-sm text-muted-fg">
-        The staff workspace reads read-only FHIR R4 records from the hospital Epic Sandbox. OncoReady workflow, task ownership, outreach, transportation, and acknowledgments remain separate product data.
-      </p>
-      <div className="grid sm:grid-cols-3 gap-3">
-        {[
-          ['Epic clinical context', 'Patient, appointments, medication, and laboratory Observations'],
-          ['OncoReady workflow', 'Care actions stay in the existing case sections'],
-          ['Deferred', 'Runtime SMART lifecycle, continuous sync, production access, and writeback'],
-        ].map(([title, detail]) => (
-          <div key={title} className="metric-tile">
-            <h3 className="text-sm font-heading font-bold">{title}</h3>
-            <p className="text-xs text-muted-fg mt-1">{detail}</p>
-          </div>
-        ))}
-      </div>
-    </section>
-  </div>
-);
-
-export const StaffAdmin: React.FC<{
-  onOpenCase: () => void;
-  onSetPerspective: (p: 'LANDING' | 'PATIENT' | 'CAREGIVER') => void;
-}> = ({ onOpenCase, onSetPerspective }) => (
-  <div className="page-shell space-y-5">
-    <div className="card-sticker p-5 sm:p-6 space-y-4">
-      <div>
-        <h2 className="font-display text-2xl font-extrabold">Local Configuration</h2>
-        <p className="text-sm text-muted-fg mt-1">
-          These workspace rules split Camila's report to Sarah and Marcus and keep clinical text out of Ana's transportation-only view.
-        </p>
-      </div>
-      <div className="space-y-3">
-        {[
-          ['Clinical Triage Routing', 'Route GI symptoms to: Sarah Jenkins, RN', 'Shown on Task 1 in the case workspace.'],
-          ['Caregiver permissions', 'Transportation-only projection', 'This is why Ana never sees fever or nurse notes.'],
-          ['Escalation window', '30 minutes before ownership review', 'Keeps an exception from sitting unowned.'],
-          ['Communication channels', 'Patient portal and care workspaces', 'The same state updates patient, navigator, care team, and embedded graph/audit views.'],
-          ['Navigator Assignment', 'Route SDOH/Transport to: Marcus Vance, MSW', 'Shown on Task 2 and the caregiver ride card.'],
-        ].map(([title, detail, why]) => (
-          <div key={title} className="p-3.5 border-2 border-ink rounded-xl bg-cream">
-            <div className="font-heading font-bold">{title}</div>
-            <div className="text-sm text-muted-fg mt-0.5">{detail}</div>
-            <div className="text-xs text-ink mt-1.5">{why}</div>
-          </div>
-        ))}
-      </div>
-    </div>
-
-    <div className="card-sticker p-5 sm:p-6 space-y-3">
-      <h3 className="font-heading font-bold">See these rules in the product</h3>
-      <p className="text-sm text-muted-fg">
-        Admin is not a separate site. It describes the loop you can walk right now.
-      </p>
-      <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2">
-        <button onClick={onOpenCase} className="btn-candy btn-compact">Open Camila's case</button>
-        <button onClick={() => onSetPerspective('PATIENT')} className="btn-ghost btn-compact">Patient portal</button>
-        <button onClick={() => onSetPerspective('CAREGIVER')} className="btn-ghost btn-compact">Caregiver view</button>
-        <button onClick={onOpenCase} className="btn-ghost btn-compact">Open graph + audit</button>
-        <button onClick={() => onSetPerspective('LANDING')} className="btn-ghost btn-compact">Home</button>
-      </div>
-    </div>
-  </div>
-);

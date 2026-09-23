@@ -98,19 +98,15 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     expect(document.activeElement).toBe(sourceButton);
   });
 
-  it('uses Integrations only as secondary capture evidence without a false live connection claim', () => {
+  it('keeps Epic evidence in the patient case without a separate staff navigation page', () => {
     render(<App />);
     openStaffCase();
-    fireEvent.click(screen.getByRole('button', { name: 'Epic context' }));
-
-    expect(screen.getByRole('heading', { name: /Connected to Hospital Epic Sandbox/i })).toBeDefined();
-    const integrationCopy = document.body.textContent || '';
-    expect(integrationCopy).toContain('Epic Sandbox');
-    expect(integrationCopy).toContain('FHIR R4');
-    expect(integrationCopy).toContain('OncoReady staff context');
-    expect(integrationCopy).toContain(CAPTURE_ID);
-    expect(integrationCopy).toMatch(/never writes back to Epic/i);
-    expect(integrationCopy).not.toMatch(/\bLive connection\b/i);
+    expect(screen.queryByRole('button', { name: 'Epic context' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'Admin' })).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: /Epic/i }));
+    expect(screen.getByRole('tabpanel', { name: /Epic/i }).textContent).toContain('Connected to Hospital Epic Sandbox');
+    fireEvent.click(screen.getByRole('button', { name: 'View source details' }));
+    expect(screen.getByRole('dialog', { name: /Epic source details/i }).textContent).toContain(CAPTURE_ID);
   });
 
   it('does not expose Epic clinical capture content in public or patient presentation', () => {

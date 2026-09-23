@@ -64,4 +64,25 @@ describe('FLOW-001 shared Camila scenario', () => {
     localStorage.setItem('oncoready_workflow_state_v4', JSON.stringify(corrupt));
     expect(loadSavedWorkflowState()).toEqual(INITIAL_STATE);
   });
+
+  it('opens Command Center when a staff section is unavailable in the destination role', () => {
+    let state = workflowReducer(fresh(), { type: 'SET_PERSPECTIVE', payload: 'CARE_NAVIGATOR' });
+    state = workflowReducer(state, { type: 'SET_STAFF_ROUTE', payload: 'RESOURCES' });
+    state = workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'CARE_TEAM' });
+    expect(state.staffRoute).toBe('COMMAND_CENTER');
+
+    state = workflowReducer(state, { type: 'SET_STAFF_ROUTE', payload: 'INSIGHTS' });
+    state = workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'CARE_NAVIGATOR' });
+    expect(state.staffRoute).toBe('COMMAND_CENTER');
+
+    state = workflowReducer(state, { type: 'SET_STAFF_ROUTE', payload: 'EXCEPTIONS' });
+    state = workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'CARE_TEAM' });
+    expect(state.staffRoute).toBe('EXCEPTIONS');
+  });
+
+  it('migrates a saved removed staff section to Command Center', () => {
+    const saved = { ...fresh(), currentPerspective: 'CARE_NAVIGATOR' as const, staffRoute: 'INTEGRATIONS' as const };
+    localStorage.setItem('oncoready_workflow_state_v4', JSON.stringify(saved));
+    expect(loadSavedWorkflowState().staffRoute).toBe('COMMAND_CENTER');
+  });
 });

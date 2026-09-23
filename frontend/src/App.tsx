@@ -16,10 +16,8 @@ import { StaffCaseWorkspace } from './components/StaffCaseWorkspace';
 import { CaregiverView } from './components/CaregiverView';
 import { PatientResolutionView } from './components/PatientResolutionView';
 import {
-  StaffAdmin,
   StaffCommandCenter,
   StaffInsights,
-  StaffIntegrations,
   StaffPatientDirectory,
 } from './components/staff/StaffPages';
 import { Logo } from './components/Logo';
@@ -29,6 +27,14 @@ import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 import { TransportationWorkspace } from './components/TransportationWorkspace';
 import { LiveOutreachControl } from './components/LiveOutreachControl';
+
+const WORKSPACE_PATHS: Partial<Record<Perspective, string>> = {
+  PATIENT: '/patient',
+  CAREGIVER: '/caregiver',
+  CARE_TEAM: '/care-team',
+  CARE_NAVIGATOR: '/care-navigator',
+  TRANSPORTATION: '/transportation',
+};
 
 export const App: React.FC = () => {
   const legalPath = typeof window !== 'undefined' ? window.location.pathname.replace(/\/$/, '') : '';
@@ -78,6 +84,11 @@ export const App: React.FC = () => {
     saveWorkflowState(state);
   }, [state]);
 
+  useEffect(() => {
+    document.documentElement.scrollTop = 0;
+    document.body.scrollTop = 0;
+  }, [state.currentPerspective]);
+
   const handleSetPerspective = (p: Perspective) => {
     const normalizedPerspective = p === 'STAFF' || p === 'SYSTEM' ? 'CARE_TEAM' : p;
     if (normalizedPerspective === 'SIGN_IN') {
@@ -85,6 +96,10 @@ export const App: React.FC = () => {
       setIsEpicLoginOpen(false);
     } else if (normalizedPerspective === 'LANDING') {
       window.history.pushState({}, '', '/');
+      setIsEpicLoginOpen(false);
+    } else {
+      const path = WORKSPACE_PATHS[normalizedPerspective];
+      if (path) window.history.replaceState({}, '', path);
       setIsEpicLoginOpen(false);
     }
     dispatch({ type: 'SET_PERSPECTIVE', payload: normalizedPerspective });
@@ -100,14 +115,7 @@ export const App: React.FC = () => {
   };
 
   const handleLogin = (perspective: Perspective) => {
-    const routeByPerspective: Partial<Record<Perspective, string>> = {
-      PATIENT: '/patient',
-      CAREGIVER: '/caregiver',
-      CARE_TEAM: '/care-team',
-      CARE_NAVIGATOR: '/care-navigator',
-      TRANSPORTATION: '/transportation',
-    };
-    window.history.replaceState({}, '', routeByPerspective[perspective] ?? '/');
+    window.history.replaceState({}, '', WORKSPACE_PATHS[perspective] ?? '/');
     setIsEpicLoginOpen(false);
     dispatch({ type: 'SET_PERSPECTIVE', payload: perspective });
     if (perspective === 'CARE_NAVIGATOR' || perspective === 'CARE_TEAM') {
@@ -286,13 +294,6 @@ export const App: React.FC = () => {
                 <TransportationWorkspace embedded state={state} reducedMotion={reducedMotion} onRideAction={dispatch} />
               )}
               {state.staffRoute === 'INSIGHTS' && <StaffInsights />}
-              {state.staffRoute === 'INTEGRATIONS' && <StaffIntegrations />}
-              {state.staffRoute === 'ADMIN' && (
-                <StaffAdmin
-                  onOpenCase={() => dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' })}
-                  onSetPerspective={handleSetPerspective}
-                />
-              )}
               
             </StaffAppShell>
         )}
