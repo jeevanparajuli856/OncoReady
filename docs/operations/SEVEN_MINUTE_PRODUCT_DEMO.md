@@ -1,79 +1,111 @@
 # OncoReady — seven-minute product demonstration
 
-**Use:** This product demonstration starts immediately after another presenter has spent approximately three minutes on the problem and OncoReady's proposed solution. This document covers only the following **7:00**. It is a presenter script and stage cue sheet, not proof that missing media or a second live call is ready.
+**Use:** This segment starts right after another presenter has spent about three minutes on the problem and OncoReady's approach. It covers the following **7:00**. It is a presenter script and stage cue sheet, not proof that the media or a live call is ready. Check the go / no-go list first.
 
-**Story:** Camila Lopez has an upcoming infusion. A transportation problem and a concern she reports in her own words threaten the plan. OncoReady makes the work visible, assigns it to people, coordinates a recovered ride plan, and records Camila's acknowledgment. It does not determine medical clearance or whether she attended treatment.
+**Story in one line:** Camila Lopez has chemotherapy tomorrow. Her ride falls through and she doesn't feel well. In seven minutes the audience watches OncoReady turn one message into owned work, a recovered ride and a plan Camila confirms herself.
+
+**The three things that make this demo land.** Say them up front and deliver each one:
+
+1. **Real hospital data.** Camila's clinical context comes from the Epic FHIR Sandbox, read-only, and the source drawer proves it.
+2. **A real phone call.** The outreach agent calls a real phone on stage.
+3. **A real vendor handoff, live.** A transport vendor taps a button in CareLink, and the navigator's screen changes in front of the audience.
+
+The vendor, drivers and prepared history are fictional. The software, the Epic Sandbox data and the call are real. Say that plainly; it builds trust instead of costing it.
 
 ## Roles and stage setup
 
 | Role | Responsibility |
 | --- | --- |
-| Product presenter | Speaks the script and advances Part 1 and Part 2. |
-| Demo operator | Prepares the private `/operator/live` control off screen, places **one** authorized call only when the new event window is ready, and watches actual provider status. This may be the product presenter if the switch is rehearsed. |
+| Product presenter | Speaks the script, advances the videos and runs the live CareLink moment (or hands it to the demo operator). |
+| Demo operator | Prepares the private `/operator/live` control off screen, places **one** authorized call only when the new event window is ready, and watches actual provider status. Pre-stages the two CareLink windows. |
 | Phone participant | Holds the consenting test phone on speaker, answers once, says one short sentence, then lets the agent finish. |
-| AV operator | Starts and pauses the local videos, confirms speaker audio, and keeps the private token out of the projected image. |
+| AV operator | Plays and pauses the local videos, switches the projector between video and the live browser, confirms speaker audio and keeps the operator token off the projected image. |
 
-Use the actual app at `https://app.oncoready.me` for the product views and `https://app.oncoready.me/operator/live` for the private call control. Videos should be local files on the presentation laptop with a second local copy. Show the actual call status; never edit a provider status into the live feed.
+Use the deployed app at `https://app.oncoready.me` and the private call control at `https://app.oncoready.me/operator/live`. Keep the videos as local files on the presentation laptop, plus a second local copy. Show actual call status only; never edit a provider status into the live feed.
+
+### Pre-stage the live CareLink windows (before doors open)
+
+Both windows must be in the **same browser profile**, not incognito, because they share the scenario through local storage.
+
+1. **Window L (left half of the screen):** sign in as Camila (`abcp@oncoready.me`), tap **Start Readiness Check** and **Submit Readiness Report**. Switch Workspace → **Care Navigator (Marcus Vance, MSW)** → sidebar **Transportation**. Tap **Request ride**, then **Assign Crescent Lantern Medical Rides · via CareLink**. The panel reads "Waiting for Crescent Lantern Medical Rides to accept in CareLink". Scroll so the ride panel and assignment history are in view.
+2. **Window R (right half):** open `https://app.oncoready.me/carelink`, sign in as the vendor (`abct@oncoready.me`). The **CareLink by OncoReady** trip board shows **New trip offer** for Camila L. with the street route.
+3. Zoom both windows so the status chips are readable from the back row. Don't touch either window again until the cue.
 
 ## Seven-minute cue sheet
 
-The times are wall-clock targets. Part 1 is an edited recording of real product interactions; Part 2 continues the same scenario after the live-call interlude. Keep a visible timer for the presenter. The quoted lines are ready to say, but speak naturally and leave the indicated pauses for the screen.
+Times are wall-clock targets. ★ marks a moment to slow down and let the room see it. **Part 1** and **Part 2** are edited recordings of real product interactions. The call and the CareLink moment are live.
 
 | Clock | Screen and action | Presenter words / cue |
 | --- | --- | --- |
-| **0:00–0:20** | Other presenter hands over. Open the public story, then start **Video Part 1**. | “You have heard the problem and our approach. Let me show what happens to one treatment plan when the barriers become visible.” |
-| **0:20–0:55** | Public entry → staff workspace → Camila's **Treatment Readiness Graph**, initially **Treatment at risk**. | “This is Camila's controlled scenario. Her infusion is on the calendar, but the graph shows that the practical plan is still at risk. We start with the treatment event and the work that must be owned around it.” |
-| **0:55–1:35** | Open the Epic tab and **View source details**. Hold on source, capture time and read-only fields. | “The clinical context here comes from the hospital Epic Sandbox over FHIR R4. It is read-only—OncoReady never writes back—and the source drawer preserves the original resource identifiers and retrieval time.” |
-| **1:35–2:15** | Insights: T−7, T−2, T−1; open **Why flagged?**; toggle the transportation what-if and return to baseline. | “These readiness scores come from a small model demonstrated on synthetic data. We can inspect the factors behind a saved score and compare the transportation input. The comparison changes only the displayed model output; it does not change Camila's actual plan or make a clinical decision.” |
-| **2:15–2:55** | Graph timeline: open the first prepared scheduled message and reply thread. Then switch to Camila's patient check-in, where her later prepared reply is ready to submit: “My ride was cancelled—and I’m not feeling well today.” | “The earlier check-ins and replies are prepared scenario history. You can see when a message was scheduled, its text, Camila's reply, and the follow-up change. Now Camila reports a cancelled ride and that she is not feeling well. Her exact words are preserved when she submits them.” |
-| **2:55–3:35** | Submit the prepared reply; show separate nurse and transportation tasks. Accept clinical ownership and record the human disposition. **Pause Part 1**. | “One reply opens two different responsibilities. Sarah, the nurse, owns contact and a human disposition; Marcus, the navigator, owns transportation. Each has a next action, target time and waiting state. The software does not interpret Camila's symptoms or grant medical clearance.” |
-| **3:35–4:45** | Switch briefly to the real private control. Operator checks the new arm and allowance, then presses **Place live call once**. Show `initiating → ringing`. Phone participant answers on speaker, speaks one sentence, and pauses. Wait for actual `completed`. | Presenter: **“Let's see our core feature: live call now.”** Agent gives its configured transportation check-in opener. Participant: **“My ride fell through, and I need help getting to my appointment.”** Pause for the agent's short reply. Presenter, only after the call ends and the participant confirms it was audible: **“That was a real call. Twilio reports it completed; the care-plan story continues separately.”** |
-| **4:45–5:40** | Start **Video Part 2**. Show previous CareLink trip replay with advancing event feed; exit. Show current request → primary assignment → failure → backup selection and saved outbound, return, contact and backup details. | “The previous-trip sequence is a scenario replay, clearly separate from today's plan. In the current plan, the first fictional provider becomes unavailable. The blocker reopens. Marcus selects the backup and records the pickup, return, logistics contact and backup owner. No real ride is dispatched from this screen.” |
-| **5:40–6:25** | Ana sees the current logistics plan; Camila opens **Review & Confirm Plan**, sees the same pickup, return and contact, then acknowledges the current version. | “Ana receives only the logistics view she is permitted to see. Camila sees the complete current plan and acknowledges that version herself. Caregiver visibility does not substitute for patient acknowledgment.” |
-| **6:25–6:50** | Return to staff Graph: **Continuity plan confirmed**. Open the three receipt items and their supporting timeline events. End Part 2 on the graph. | “The graph now moves from treatment at risk to continuity plan confirmed. The receipt links the human disposition, backup arrangement and Camila's acknowledgment to the exact scenario events. Attendance is still unknown.” |
-| **6:50–7:00** | Hold the closing graph or logo. Hand back to the main presenter. | “That is the continuity loop: context, owned action, and a plan the patient can see. We are ready for your questions.” |
+| **0:00–0:20** | Hand-over. Start **Video Part 1** on the public story. | “Tomorrow at ten, Camila Lopez has her fourth chemotherapy infusion. Today her ride falls through, and she doesn't feel well. Watch what happens next. Three things you'll see are real: hospital data, a phone call and a vendor handoff.” |
+| **0:20–0:50** | Staff workspace → Camila's **Treatment Readiness Graph**, reading **Treatment at risk**. | “The infusion is booked. But the graph says what the calendar doesn't: the plan around it is at risk, and until now nobody owned the gap.” |
+| **0:50–1:20** ★ | Epic tab → **View source details**. Hold on the source, the retrieval time and "read-only". | “This is real data from the Epic FHIR Sandbox, retrieved over FHIR R4. It's read-only; we never write back. Every value carries its original resource ID and retrieval time. Nothing here was typed in for the demo.” |
+| **1:20–1:50** | Insights: T−7 → T−2 → T−1. Open **Why flagged?**, toggle the transportation what-if, return to baseline. | “From a week out to the day before, her score climbs, and **Why flagged?** shows the factors behind it, including an unresolved barrier. The what-if shows how much transportation alone moves the model's output. These are saved outputs from a model trained on synthetic data. They explain a signal. They don't make a clinical decision.” |
+| **1:50–2:30** | Timeline: open one prepared scheduled message and its reply. Switch to Camila's check-in. Her reply is ready: “My ride was cancelled—and I’m not feeling well today.” | “OncoReady has been checking in with Camila; this history is prepared. Now her real problem arrives, in her own words, and we keep those words exactly.” |
+| **2:30–3:00** ★ | Submit the reply. Two separate tasks appear, nurse and transportation. Sarah accepts ownership and records a human disposition. **Pause Part 1.** | “One message, two jobs, two owners. Sarah, the nurse, owns the symptom and records a human decision. Marcus, the navigator, owns the ride. Each task has a next step and a deadline. The software never reads her symptoms or grants clearance. People do.” |
+| **3:00–4:05** ★ | **LIVE CALL.** Switch to the private control. Operator checks the armed window, then presses **Place live call once**. Show `initiating → ringing`. Participant answers on speaker, says one sentence, pauses. Wait for the actual `completed`. | Presenter: **“Now the part we can't fake. Live call.”** The agent gives its transportation check-in opener. Participant: **“My ride fell through, and I need help getting to my appointment.”** Let the agent reply. After the call ends and the participant confirms it was heard: **“That was a real call, and Twilio just reported it completed. Now watch the ride get fixed.”** |
+| **4:05–5:10** ★ | **LIVE CARELINK.** Switch the projector to the two pre-staged windows. **R:** tap **Accept trip**. **L:** point to **Accepted in CareLink**. **R:** **Report unavailable** → reason *Vehicle out of service* → **Report unavailable**. **L:** the status flips to **Primary unavailable**, recovery reopens. **L:** **Select Magnolia Wayfare Transport · via CareLink** → **Save recovered logistics**. | “On the right is CareLink, our portal for local transport vendors, many of whom run on phone calls, not software. The vendor accepts the trip, and Marcus sees it instantly on the left. *(Tap.)* Now their van breaks down. *(Tap.)* Marcus doesn't find out tomorrow morning when Camila is waiting at the curb. He knows now. He reassigns the backup and records the pickup, return and contact. *(Save.)* The vendor and drivers are fictional; nothing here books a real ride. The same adapter layer is built for API partners like Uber Health, which plugs in once a contract and credentials are in place.” |
+| **5:10–6:30** | Start **Video Part 2**. Ana (caregiver) sees only the logistics plan and marks it seen. Camila opens **Review & Confirm Plan** and acknowledges the current version. Back to the staff Graph: **Continuity plan confirmed**. Open the three receipt items and their timeline events. | “Ana, her daughter, sees the ride plan and nothing clinical. Camila sees the same plan and confirms it herself; a caregiver can't do that for her. *(Graph turns.)* Treatment at risk is now continuity plan confirmed. Every step links to the exact event behind it: the nurse's decision, the backup ride, Camila's acknowledgment.” |
+| **6:30–7:00** ★ | Hold the confirmed graph. Hand back to the main presenter. | “One message. Two owners. A vendor handoff in real time. And a plan Camila confirmed herself, the day before her chemo. We don't know yet that she made it to the chair. We made sure nothing stood in her way. Thank you. We're ready for your questions.” |
 
-**Call timing:** The live segment has a 70-second budget. The agent is configured for a short nonclinical exchange and a 60-second conversation cap; the previous confirmed test lasted 23 seconds. Do not fill extra time by making a second call. If the call runs long, shorten the Part 2 narration while keeping the recovery, acknowledgment and closing receipt visible.
+**Timing budget:**
+- **Live call:** 65 seconds. The agent is capped at a 60-second nonclinical exchange; the previous confirmed test lasted 23 seconds. Never make a second call to fill time.
+- **CareLink moment:** 65 seconds and six taps. If either live segment runs long, trim the Part 2 narration to its first and last sentences, but keep the confirmed graph and receipt on screen.
 
 ## Truthful presentation rules
 
-The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md)). Disclose the controlled story verbally before the walkthrough, and keep the rules below in what you say.
+The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md)). The disclosure is spoken: the opening line names what is real, and the CareLink line names what is fictional.
 
-- At the first source view, identify the Epic information as **read-only data from the hospital Epic Sandbox**. Do not say it is synchronizing live during the talk or connected to a production hospital.
-- Describe the ML view as saved outputs from a model demonstrated on **synthetic data**. Do not call the score a clinical risk probability or claim measured patient outcomes.
-- Describe the scheduled-message history and CareLink replay as **prepared scenario activity**. The current CareLink actions use fictional providers and do not order a real ride.
-- The September 22 SMS test was **undelivered**. Do not show a received-SMS shot or say “the SMS arrived” unless a later separately authorized test is actually delivered and its evidence is reviewed. If that happens, show the redacted phone receipt separately from the prepared timeline. Do not send an SMS on stage merely to fill time.
-- The phone call is the only planned live provider action in this seven-minute segment. Its completion proves a completed call, not that the phone participant acknowledged a care plan or that the prepared workflow automatically changed.
-- “Continuity plan confirmed” is a coordination outcome. Do not imply medical clearance, treatment attendance, customers, deployment at a hospital or clinical effectiveness.
+- **Epic:** call it **read-only data from the Epic FHIR Sandbox**. Don't say it syncs live during the talk or is connected to a production hospital.
+- **Insights:** describe them as saved outputs from a model trained on **synthetic data**. Don't call the score a clinical risk probability or claim patient outcomes.
+- **Prepared history:** the scheduled messages and the previous-trip replay are **prepared scenario activity**.
+- **CareLink:** the vendor, the drivers and the backup provider are fictional. The CareLink portal and the live sync are real software. No real ride is booked, and there is no live GPS or ETA.
+- **Uber Health:** say "the adapter is built and awaiting connection" or "plugs in once a contract and credentials are in place". **Never** say Uber Health is connected, integrated, a partner or a customer. The logo is on screen; if asked about a partnership, answer honestly that there isn't one yet.
+- **SMS:** the September 22 SMS test was **undelivered**. Don't show a received-SMS shot or send an SMS on stage.
+- **The call:** it's the only live provider action. Its completion proves a completed call, not a care-plan acknowledgment or an automatic workflow change.
+- **The outcome:** "Continuity plan confirmed" is a coordination outcome. Don't imply medical clearance, treatment attendance, customers, hospital deployment or clinical effectiveness. The closing line deliberately says we don't know yet that she made it to the chair.
 
-## Live-call go / no-go and fallback
+## Go / no-go and fallbacks
 
-**Before opening the doors**, verify all of the following on the exact presentation laptop and audio path:
+**Before opening the doors**, check all of the following on the exact presentation laptop and audio path:
 
-1. Video Part 1, Video Part 2 and their local backups exist, play with readable text and audible sound, and match the current UI. The closing receipt and original source time must be legible at the projector resolution.
-2. The consenting participant and phone are present; speaker volume and microphone pickup are tested. Keep the operator token off the projected surface until it is masked in the private field.
-3. The deployed sequential-call control permits a **new, separately authorized, bounded presentation window** after the last call has a final provider status. The September 23 test rang but was rejected by the recipient; no presentation window is currently armed. Confirm fresh participant consent and availability, select **Live presentation**, open one window, and verify the private screen says the call can be placed before promising a live exchange. Resetting the prepared story never arms it.
-4. `https://app.oncoready.me` and the API health endpoint respond, and the private control can read status. Do not press a live action during ordinary rehearsal.
-5. Two human-paced rehearsals complete the full seven-minute sequence, including a timed switch into and out of the private control, without a provider send. The automated browser passes verify the product click path, not the stage's video and audio timing.
+1. **Videos:** Part 1, Part 2 and their local backups exist, play with readable text and audible sound, and match the current UI, including the named providers. The receipt and source retrieval time are legible at projector resolution.
+2. **Phone participant:** the consenting participant and phone are present. Speaker volume and microphone pickup are tested. The operator token stays off the projected surface until it's masked.
+3. **Call window:** the deployed sequential-call control allows a **new, separately authorized, bounded presentation window** after the last call's final status. No presentation window is currently armed; the September 23 test rang but the recipient rejected it. Confirm fresh consent and availability, select **Live presentation**, open one window, and check that the private screen says the call can be placed.
+4. **CareLink windows:** both are pre-staged in the same browser profile, and a test tap in an earlier rehearsal proved the sync on this laptop and network. Re-stage after that rehearsal: **Reset Workspace** and repeat the pre-stage steps.
+5. **Health:** `https://app.oncoready.me` and the API health endpoint respond. The street map tiles load on the venue network; if they don't, the map shows its built-in route drawing, which is acceptable.
+6. **Rehearsals:** two human-paced rehearsals complete the full seven minutes, including both switches to and from the live browser, without a provider send.
 
-**If no new call window is ready:** Do not press the disabled call action. Say: “Our earlier real test call completed, but this presentation window is not armed. Here is the verified product workflow.” Advance Part 2 and use the remaining time to inspect source and receipt evidence or take a question. This is an honest product demonstration; it does not count as a stage call.
+**If no call window is ready:** don't press the disabled call action. Say: “Our earlier real test call completed, but this presentation window isn't armed, so let me show you what happens next.” Go straight to the CareLink moment and give it the extra time.
 
-**If a newly authorized call fails or stays unknown:** Leave the actual status visible briefly. Say: “The live call did not complete on stage. Here is the recorded rehearsal call.” Play a **real, locally available call recording only if one has been captured and reviewed**. If no such recording exists, show the sanitized September 22 test evidence and continue Part 2. Do not claim the backup was live and do not retry repeatedly.
+**If an authorized call fails or stays unknown:** leave the actual status visible briefly. Say: “The live call didn't complete on stage.” Play a **real, reviewed recording** if one exists; otherwise show the sanitized September 22 evidence and move on to CareLink. Don't claim the backup was live, and don't retry.
 
+**If the CareLink sync doesn't update:** don't reload on stage. On the left, tap **Record primary unavailable** yourself and say: “Marcus can also record the vendor's report directly.” Continue with the backup selection. If the live browser fails entirely, go straight to Part 2.
 
-**Optional CareLink vendor moment (RIDE-002/003), live or in a re-recorded Part 2:** CareLink opens as its own "CareLink by OncoReady" page. In one window, launch it from the Switch Workspace menu and return through **Dispatch desk · Switch workspace**. Open two browser windows side by side. In the left one, sign in as the Care Navigator (`abcn@oncoready.me`) and open **Transportation**. Camila's readiness report must already be submitted so the ride task exists. In the right one, sign in as the CareLink vendor (`abct@oncoready.me`, which opens `/carelink`). Request the ride and assign Crescent Lantern Medical Rides on the left. The trip offer appears on the right. Accept it, and **Accepted in CareLink** appears on the left. Then report unavailable with a reason on the right, and the left reopens recovery. Suggested line: “Many local transport vendors have no software. We give them CareLink, and what they tap shows up in the navigator's workspace right away.” For Uber Health, say: “Our adapter layer is built. CareLink runs on it today, and Uber Health plugs in once the contract and credentials are in place.” Do not say that Uber Health is connected. The current Part 2 video still shows the previous provider labels until it is re-recorded.
-
-**If Part 2 playback fails:** Continue through the deployed app using the prepared scenario checkpoint and the same sequence: CareLink replay → current recovery → Ana → Camila → Graph receipt. The browser path passed twice in automated rehearsal, but this fallback still needs a timed human rehearsal.
+**If Part 2 playback fails:** stay in Window L and use the Switch Workspace menu: **Caregiver Portal** → mark the plan seen → **Patient Portal** → **Review & Confirm Plan** → acknowledge → **Care Navigator** → Graph receipt. If the live state is lost, switch to **Care Team**; its **Private checkpoint** control can load `RECOVERED_PLAN`.
 
 ## Recording split and operator marks
 
-- **Part 1 in-point:** public OncoReady story. **Out-point:** clinical and transportation responsibilities visible after the prepared reply and nurse action. Export target approximately **3:15**, leaving live commentary to cover the transitions.
-- **Part 2 in-point:** previous CareLink replay. **Out-point:** confirmed graph and evidence-linked receipt. Export target approximately **2:05**. Keep the same scenario state, plan version and visible dates across both parts.
-- Add an AV slate outside the audience video with exact filenames, duration, frame size, audio route and checksum. No filenames or checksum are assumed in this document because the media is not yet in the repository.
-- On the presenter cue sheet, mark **PAUSE PART 1 → OPEN PRIVATE CONTROL → WAIT FOR `completed` AND AUDIBLE CONFIRMATION → PLAY PART 2**. The operator must not treat a historical `completed` result from the September 22 test as this event's completion.
+- **Part 1:** in-point is the public OncoReady story; out-point is both responsibilities visible after the nurse's disposition. Target about **2:40**, leaving live commentary to cover transitions.
+- **Part 2:** in-point is Ana's logistics view **after** recovery: Crescent Lantern Medical Rides failed and Magnolia Wayfare Transport is the backup, the same state the live CareLink moment produces. Out-point is the confirmed graph and evidence-linked receipt. Target about **1:15**. Keep the plan version (**v2**) and visible dates consistent with the live windows.
+- **Previous-trip replay:** it's not in the main flow. Keep it for Q&A: **Play previous trip** shows the vehicle moving along the real street route.
+- **AV slate:** add one outside the audience video with exact filenames, duration, frame size, audio route and checksum.
+- **Cue sheet marks:** mark the presenter's sheet **PAUSE PART 1 → PRIVATE CONTROL → WAIT FOR `completed` + AUDIBLE CONFIRMATION → LIVE CARELINK (6 TAPS) → PLAY PART 2**. The operator must not treat the historical September 22 `completed` as this event's result.
+
+## Q&A quick answers
+
+| Likely question | Honest answer |
+| --- | --- |
+| Is Uber Health integrated? | “Not yet. Our adapter for it is built; it needs a contract and API credentials. CareLink runs on the same adapter layer today.” |
+| Is this connected to a real hospital's Epic? | “It's real data from Epic's FHIR Sandbox, read-only. A production connection would go through a hospital's own Epic onboarding.” |
+| Are these real patients or vendors? | “No. Camila's record is Epic sandbox test data, and the vendors and drivers are fictional. The software and the call are real.” |
+| How accurate is the model? | “It was trained on synthetic data for this demonstration. We show it for explainability, not as a validated clinical prediction.” |
+| Is it HIPAA compliant? | “We aren't making a compliance claim today. The demo uses only sandbox and synthetic data.” |
+| What does a vendor need to use CareLink? | “A browser. That's the point: local vendors without dispatch software get trips, accept them and report problems in one place.” |
 
 ## Sources for the presenter
 
 - [Product scope](../PROJECT.md)
 - [Sprint closeout and open presentation prerequisites](../SPRINT_CLOSEOUT.md)
 - [Sanitized live-call and SMS test evidence](./OUTREACH-001-LIVE-EVIDENCE.md)
+- [CareLink vendor portal and adapters](../features/RIDE-002.md) · [CareLink sub-brand](../features/RIDE-003.md)
