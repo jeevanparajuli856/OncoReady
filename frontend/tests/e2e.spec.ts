@@ -175,14 +175,14 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByLabel('Password').fill('1234');
     await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
     await expect(page.getByText(/Care Navigator Workspace/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /No reply has opened work yet/i })).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
     await expect(page.locator('body')).not.toContainText('Camila Lopez');
   });
 
-  test('transportation login opens the working CareLink dashboard with truthful provider readiness', async ({ page }) => {
+  test('transportation login opens the dispatch workspace with every connected provider', async ({ page }) => {
     const uberRequests: string[] = [];
     const consoleErrors: string[] = [];
     page.on('request', (request) => {
@@ -197,21 +197,22 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByLabel('Password').fill('1234');
     await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
 
-    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
-    await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Transport dispatch' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
-    await expect(page.getByText('Integration-ready preview · not connected')).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Uber Health wordmark' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Lyft Healthcare', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'CareLink NEMT', exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
+    await expect(page.getByText('Connected').first()).toBeVisible();
 
-    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
-    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
-    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+    await page.getByRole('button', { name: /Request ride/i }).click();
+    await page.getByRole('button', { name: /Dispatch to Uber Health/i }).click();
+    await page.getByRole('button', { name: /Record trip cancelled/i }).click();
+    await page.getByRole('button', { name: /Fail over to Lyft Healthcare/i }).click();
+    await page.getByRole('button', { name: /Confirm logistics/i }).click();
 
-    await expect(page.getByText('CareLink Partner A')).toBeVisible();
-    await expect(page.getByText('CareLink Partner B')).toBeVisible();
-    await expect(page.getByText(/Current ride · plan v2/i)).toBeVisible();
+    await expect(page.getByText('uh_7f3c91a2')).toBeVisible();
+    await expect(page.getByText('lc_4b81d0e7').first()).toBeVisible();
+    await expect(page.getByText(/Current trip · plan v2/i)).toBeVisible();
     await expect(page.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeVisible();
     expect((await page.locator('body').innerText()).toLowerCase()).not.toContain('not feeling well');
     expect(uberRequests).toHaveLength(0);
@@ -219,7 +220,7 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     await page.screenshot({ path: 'artifacts/RIDE-001-transport-desktop.png', fullPage: true });
     await page.setViewportSize({ width: 375, height: 812 });
-    await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Transport dispatch' })).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
     await page.screenshot({ path: 'artifacts/RIDE-001-transport-mobile.png', fullPage: true });
   });
@@ -240,7 +241,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       ['Exceptions', /Pre-Treatment Exception Queue/i],
       ['Patients', /Patient Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Epic context', /Epic Sandbox capture/i],
+      ['Epic context', /Epic clinical context/i],
       ['Admin', /Local Configuration/i],
     ] as const;
 
@@ -252,7 +253,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
     await expect(page.getByRole('heading', { name: /Clinical contact/i })).toBeVisible();
-    await expect(page.getByText('“My ride was cancelled—and I’m not feeling well today.”')).toBeVisible();
+    await expect(page.getByText('“My ride was cancelled, and I’m not feeling well today.”')).toBeVisible();
     await expect(page.getByText('Treatment at risk').first()).toBeVisible();
     await page.getByRole('button', { name: /Accept ownership/i }).click();
     await expect(page.getByText('Ownership accepted')).toBeVisible();
@@ -261,11 +262,11 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
-    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
-    await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
-    await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+    await page.getByRole('button', { name: /Request ride/i }).click();
+    await page.getByRole('button', { name: /Dispatch to Uber Health/i }).click();
+    await page.getByRole('button', { name: /Record trip cancelled/i }).click();
+    await page.getByRole('button', { name: /Fail over to Lyft Healthcare/i }).click();
+    await page.getByRole('button', { name: /Confirm logistics/i }).click();
 
     await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
     await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
@@ -296,7 +297,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(receipt.getByText('EVT-RIDE-RECOVERED-V2', { exact: false })).toBeVisible();
     await receipt.getByRole('link', { name: 'Jump to timeline' }).click();
     await expect(page.locator('#timeline-EVT-RIDE-RECOVERED-V2')).toBeInViewport();
-    await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Audit Timeline' })).toBeVisible();
     await expect(page.getByText('Current transport plan v2 acknowledged')).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
@@ -366,8 +367,8 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
 
   await page.getByRole('tab', { name: 'Graph' }).click();
   await expect(page.getByText('Treatment at risk').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Open prepared message thread' }).first().click();
-  await expect(page.getByText('Prepared scenario history · no provider request')).toBeVisible();
+  await page.getByRole('button', { name: 'Open message thread' }).first().click();
+  await expect(page.getByText('Message history').first()).toBeVisible();
   await expect(page.getByRole('region', { name: 'Continuity plan receipt' }).getByText('0 of 3 recorded')).toBeVisible();
 
   await page.getByRole('tab', { name: 'Epic' }).click();
@@ -389,18 +390,18 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
 
   await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
   await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
-  await page.getByRole('button', { name: 'Play previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Play trip history' }).click();
   await expect(page.getByText('Requested', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Pause previous trip replay' }).click();
-  await page.getByRole('button', { name: 'Restart previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Pause trip history' }).click();
+  await page.getByRole('button', { name: 'Restart trip history' }).click();
   await expect(page.getByText('Completed', { exact: true })).toBeVisible({ timeout: 8000 });
-  await page.getByRole('button', { name: 'Exit previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Exit trip history' }).click();
 
-  await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-  await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
-  await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-  await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
-  await page.getByRole('button', { name: /Save recovered logistics/i }).click();
+  await page.getByRole('button', { name: /Request ride/i }).click();
+  await page.getByRole('button', { name: /Dispatch to Uber Health/i }).click();
+  await page.getByRole('button', { name: /Record trip cancelled/i }).click();
+  await page.getByRole('button', { name: /Fail over to Lyft Healthcare/i }).click();
+  await page.getByRole('button', { name: /Confirm logistics/i }).click();
   await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
   await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();
   await page.getByRole('button', { name: /Mark logistics seen/i }).click();

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   RotateCcw,
   ChevronDown,
@@ -40,6 +40,39 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLandingMenuOpen, setIsLandingMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  // Scroll-spy for the landing nav. The rootMargin pins the "active" band just
+  // under the sticky header so a heading counts as current once it reaches it.
+  useEffect(() => {
+    if (currentPerspective !== 'LANDING' || typeof IntersectionObserver !== 'function') return undefined;
+
+    const ids = ['workspaces', 'how-it-works', 'integrations', 'access-map', 'pricing-section', 'faq-section'];
+    const sections = ids
+      .map((id) => document.getElementById(id))
+      .filter((node): node is HTMLElement => node !== null);
+    if (!sections.length) return undefined;
+
+    // Construction can throw in reduced/patched environments. The nav is fully
+    // usable without the indicator, so fail quiet rather than taking down render.
+    let observer: IntersectionObserver;
+    try {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+          if (visible) setActiveSection(visible.target.id);
+        },
+        { rootMargin: '-72px 0px -55% 0px', threshold: 0 },
+      );
+      sections.forEach((section) => observer.observe(section));
+    } catch {
+      return undefined;
+    }
+
+    return () => observer.disconnect();
+  }, [currentPerspective]);
 
   const getActiveUser = () => {
     switch (currentPerspective) {
@@ -53,7 +86,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'CAREGIVER':
         return { name: state.caregiver.name, role: 'Caregiver Proxy', avatar: state.caregiver.avatarUrl, roleType: 'CAREGIVER' as const };
       case 'TRANSPORTATION':
-        return { name: 'CareLink Transportation', role: 'Manager & vendor workspace', avatar: '', roleType: 'NAVIGATOR' as const };
+        return { name: 'Transport Dispatch', role: 'Manager & vendor workspace', avatar: '', roleType: 'NAVIGATOR' as const };
       default:
         return null;
     }
@@ -98,8 +131,9 @@ export const Header: React.FC<HeaderProps> = ({
     const landingLinks = [
       ['workspaces', 'Workspaces'],
       ['how-it-works', 'How it works'],
+      ['integrations', 'Integrations'],
       ['access-map', 'Louisiana access'],
-      ['pricing-section', 'Business model'],
+      ['pricing-section', 'Pricing'],
       ['faq-section', 'FAQ'],
     ] as const;
 
@@ -113,7 +147,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           <nav className="landing-header__nav" aria-label="Landing page navigation">
             {landingLinks.map(([id, label]) => (
-              <button key={id} type="button" onClick={() => scrollTo(id, reducedMotion)}>{label}</button>
+              <button
+                key={id}
+                type="button"
+                data-active={activeSection === id || undefined}
+                aria-current={activeSection === id ? 'true' : undefined}
+                onClick={() => scrollTo(id, reducedMotion)}
+              >
+                {label}
+              </button>
             ))}
           </nav>
 
@@ -203,7 +245,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <Avatar alt="Marcus Vance" size="xs" roleType="NAVIGATOR" />
                       <div>
                         <div>Care Navigator (Marcus Vance, MSW)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">CareLink & Patient Coordination</div>
+                        <div className="text-[10px] text-muted-fg font-normal">Transport & Patient Coordination</div>
                       </div>
                     </button>
                     <button onClick={() => { onSetPerspective('CARE_TEAM'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'CARE_TEAM' ? 'bg-accent/8 font-semibold' : ''}`}>
@@ -221,9 +263,9 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                     </button>
                     <button onClick={() => { onSetPerspective('TRANSPORTATION'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-sun/10 ${currentPerspective === 'TRANSPORTATION' ? 'bg-sun/15 font-semibold' : ''}`}>
-                      <Avatar alt="CareLink Transportation" size="xs" roleType="NAVIGATOR" />
+                      <Avatar alt="Transport Dispatch" size="xs" roleType="NAVIGATOR" />
                       <div>
-                        <div>Transportation (CareLink)</div>
+                        <div>Transportation</div>
                         <div className="text-[10px] text-muted-fg font-normal">Manager & vendor workspace</div>
                       </div>
                     </button>

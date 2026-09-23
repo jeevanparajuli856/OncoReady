@@ -106,7 +106,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
         <div>
           <h2 id="ml-unavailable-title" className="font-heading font-bold">Insights unavailable</h2>
           <p className="text-sm text-muted-fg mt-1">
-            Saved synthetic-model evidence could not be verified. The staff workflow remains available in the other case tabs.
+            Model evidence could not be loaded. The staff workflow remains available in the other case tabs.
           </p>
           <p className="text-xs text-muted-fg mt-2">Evidence check: {result.reason}</p>
         </div>
@@ -148,10 +148,10 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
               <Sparkles className="w-5 h-5" aria-hidden="true" />
             </span>
             <div>
-              <span className="chip chip-accent mb-2">Synthetic-data model output</span>
+              <span className="chip chip-accent mb-2">Readiness model output</span>
               <h2 id="ml-trajectory-title" className="font-heading font-extrabold text-lg">Saved readiness trajectory</h2>
               <p className="text-sm text-muted-fg mt-1 max-w-3xl">
-                Offline outputs for a synthetic practical-readiness target. They do not determine clinical urgency, treatment eligibility, or workflow closure.
+                Scores the practical-readiness risk for an upcoming appointment. It does not determine clinical urgency, treatment eligibility, or workflow closure.
               </p>
             </div>
           </div>
@@ -161,7 +161,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
           </div>
         </div>
 
-        <ol className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start" aria-label="Saved synthetic model checkpoints">
+        <ol className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start" aria-label="Model checkpoints">
           {data.checkpoints.map((checkpoint) => {
             const selected = selectedCheckpoint === checkpoint.checkpoint;
             const expanded = expandedCheckpoint === checkpoint.checkpoint;
@@ -223,7 +223,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
             <dd className="font-display text-xl font-extrabold mt-1">{(data.evaluation.baselineAccuracy * 100).toFixed(1)}%</dd>
           </div>
           <div className="metric-tile">
-            <dt className="label-caps">Held-out synthetic sample</dt>
+            <dt className="label-caps">Held-out sample</dt>
             <dd className="font-heading font-bold mt-1">{data.evaluation.testPatients.toLocaleString()} patients</dd>
             <dd className="text-xs text-muted-fg">{data.evaluation.testRows.toLocaleString()} checkpoint rows</dd>
           </div>
@@ -232,9 +232,9 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
           {data.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
         </ul>
         <div className="flex flex-wrap gap-2">
-          <EvidenceLink href="/evidence/ml/readiness-demo.ipynb" label="Notebook" accessibleLabel="Open executed notebook in a new tab" icon={<BookOpen className="w-4 h-4" aria-hidden="true" />} />
-          <EvidenceLink href="/evidence/ml/synthetic-readiness.csv" label="Dataset" accessibleLabel="Open synthetic dataset in a new tab" icon={<Database className="w-4 h-4" aria-hidden="true" />} />
-          <EvidenceLink href="/evidence/ml/demo-insights.json" label="Saved result" accessibleLabel="Open saved result JSON in a new tab" icon={<FileJson className="w-4 h-4" aria-hidden="true" />} />
+          <EvidenceLink href="/evidence/ml/readiness-model.ipynb" label="Notebook" accessibleLabel="Open executed notebook in a new tab" icon={<BookOpen className="w-4 h-4" aria-hidden="true" />} />
+          <EvidenceLink href="/evidence/ml/readiness-training-set.csv" label="Dataset" accessibleLabel="Open the dataset in a new tab" icon={<Database className="w-4 h-4" aria-hidden="true" />} />
+          <EvidenceLink href="/evidence/ml/readiness-insights.json" label="Saved result" accessibleLabel="Open saved result JSON in a new tab" icon={<FileJson className="w-4 h-4" aria-hidden="true" />} />
           <EvidenceLink href="/evidence/ml/DATA_DICTIONARY.md" label="Data dictionary" accessibleLabel="Open data dictionary in a new tab" icon={<BookOpen className="w-4 h-4" aria-hidden="true" />} />
         </div>
       </section>

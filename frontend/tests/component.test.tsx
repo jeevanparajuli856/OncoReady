@@ -43,7 +43,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
     expect(screen.getByText(/Treatment readiness before the chair/i)).toBeDefined();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
-    expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText(/OncoReady: Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: /Access workspace/i }).length).toBeGreaterThan(0);
     expect(screen.getByText(/SaaS business model/i)).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Pilot' })).toBeDefined();
@@ -125,12 +125,12 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     // 8. Switch to Marcus's workspace for transportation dispatch
     fireEvent.click(screen.getByRole('button', { name: /Sarah Jenkins, RN/i }));
     fireEvent.click(screen.getByText(/Care Navigator \(Marcus Vance, MSW\)/i));
-    fireEvent.click(screen.getByRole('button', { name: /Request synthetic ride/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Assign fictional CareLink Partner A/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Record primary unavailable/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Select fictional CareLink Partner B/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Save recovered logistics/i }));
-    expect(screen.getAllByText(/Current plan complete/i).length).toBeGreaterThan(0);
+    fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Dispatch to Uber Health/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Record trip cancelled/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Fail over to Lyft Healthcare/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Confirm logistics/i }));
+    expect(screen.getAllByText(/Plan confirmed/i).length).toBeGreaterThan(0);
 
     // 9. Caregiver Perspective & Strict Privacy Assertion via Header dropdown
     const switcherBtn = screen.getByRole('button', { name: /Marcus Vance, MSW/i });
@@ -142,7 +142,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByText(/Caregiver Portal • Ana Hernandez/i)).toBeDefined();
     expect(screen.getByText(/Current plan v2/i)).toBeDefined();
     expect(screen.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeDefined();
-    expect(screen.getByText(/CareLink Dispatch/i)).toBeDefined();
+    expect(screen.getByText(/Transport desk/i)).toBeDefined();
     expect(screen.getByText(/Patient Privacy Boundary Enforced/i)).toBeDefined();
 
     fireEvent.click(screen.getByRole('button', { name: /Mark logistics seen/i }));

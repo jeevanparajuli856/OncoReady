@@ -14,12 +14,12 @@ const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
 export const HISTORICAL_RIDE_EVENTS = [
-  { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Previous scenario ride requested.' },
-  { id: 'RIDE-HIST-ACCEPTED', status: 'Accepted', timestamp: 'Sep 11, 2026 • 7:43 AM CT', detail: 'Fictional CareLink provider accepted the scenario trip.' },
-  { id: 'RIDE-HIST-DRIVER', status: 'Driver assigned', timestamp: 'Sep 11, 2026 • 7:47 AM CT', detail: 'Scenario driver Ellis Morgan assigned to vehicle CL-218.' },
-  { id: 'RIDE-HIST-ARRIVING', status: 'Arriving', timestamp: 'Sep 11, 2026 • 8:02 AM CT', detail: 'Planned arrival advanced in the saved scenario.' },
-  { id: 'RIDE-HIST-PICKUP', status: 'Pickup confirmed', timestamp: 'Sep 11, 2026 • 8:18 AM CT', detail: 'Pickup was confirmed in the previous scenario.' },
-  { id: 'RIDE-HIST-COMPLETE', status: 'Completed', timestamp: 'Sep 11, 2026 • 9:06 AM CT', detail: 'Previous scenario replay completed.' },
+  { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Trip requested through Uber Health.' },
+  { id: 'RIDE-HIST-ACCEPTED', status: 'Accepted', timestamp: 'Sep 11, 2026 • 7:43 AM CT', detail: 'Uber Health accepted the trip and began matching a driver.' },
+  { id: 'RIDE-HIST-DRIVER', status: 'Driver assigned', timestamp: 'Sep 11, 2026 • 7:47 AM CT', detail: 'Driver Ellis Morgan assigned · LA 6TH 218.' },
+  { id: 'RIDE-HIST-ARRIVING', status: 'Arriving', timestamp: 'Sep 11, 2026 • 8:02 AM CT', detail: 'Driver en route to the St. Charles Avenue pickup.' },
+  { id: 'RIDE-HIST-PICKUP', status: 'Pickup confirmed', timestamp: 'Sep 11, 2026 • 8:18 AM CT', detail: 'Pickup confirmed by the driver.' },
+  { id: 'RIDE-HIST-COMPLETE', status: 'Completed', timestamp: 'Sep 11, 2026 • 9:06 AM CT', detail: 'Drop-off completed at Benson Cancer Center.' },
 ] as const;
 
 export const INITIAL_STATE: WorkflowState = {
@@ -37,12 +37,12 @@ export const INITIAL_STATE: WorkflowState = {
   currentCheckpoint: 'START',
   attendanceStatus: 'UNKNOWN',
   ride: {
-    currentTripId: 'carelink-current-2026-09-25',
+    currentTripId: 'ride-2026-09-25-cl',
     currentStatus: 'OPEN',
     assignments: [],
     caregiverSeen: null,
     replay: {
-      tripId: 'carelink-prior-001',
+      tripId: 'uh_2026_0911_ellis',
       status: 'IDLE',
       visibleEventCount: 0,
       sessionToken: 0,
@@ -293,7 +293,7 @@ export type WorkflowAction =
   | { type: 'PAUSE_HISTORICAL_RIDE' }
   | { type: 'RESTART_HISTORICAL_RIDE' }
   | { type: 'EXIT_HISTORICAL_RIDE' }
-  | { type: 'ADVANCE_HISTORICAL_RIDE'; payload: { tripId: 'carelink-prior-001'; sessionToken: number } }
+  | { type: 'ADVANCE_HISTORICAL_RIDE'; payload: { tripId: 'uh_2026_0911_ellis'; sessionToken: number } }
   | { type: 'ACKNOWLEDGE_PATIENT_PLAN'; payload?: { commandId?: string } }
   | { type: 'LOAD_CHECKPOINT'; payload: WorkflowState['currentCheckpoint'] }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
@@ -453,8 +453,8 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         processedSourceEventIds: [...state.processedSourceEventIds, sourceEventId], appliedCommandIds: withCommand(state, commandId),
         readinessSubmission: { hasTransportIssue: true, transportNotes: transportText, hasClinicalConcern: true, clinicalConcernText: clinicalText, submittedAt: now },
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-REPLY', timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Prepared reply received', description: `Verbatim reply preserved for staff: “${clinicalText}”`, stateDiff: { field: 'splitWork', from: 'closed', to: 'opened' } }) };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same prepared reply.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-REPLY', timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Patient reply received', description: `Verbatim reply preserved for staff: “${clinicalText}”`, stateDiff: { field: 'splitWork', from: 'closed', to: 'opened' } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same reply.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
@@ -500,55 +500,65 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'REQUESTED' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Assign fictional CareLink Partner A', waitingReason: 'Synthetic provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
+          ? { ...item, nextAction: 'Dispatch to Uber Health', waitingReason: 'Awaiting driver assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Synthetic ride requested', description: 'Current trip carelink-current-2026-09-25 opened locally; no provider request was sent.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Ride requested', description: 'Trip ride-2026-09-25-cl opened for Sep 25, 9:30 AM arrival. Estimates pulled from Uber Health and Lyft Healthcare.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ASSIGN_PRIMARY_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'REQUESTED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-PRIMARY-001',
-        providerName: 'CareLink Partner A',
-        providerKind: 'FICTIONAL',
+        providerName: 'Uber Health',
+        providerId: 'uber-health',
+        providerKind: 'RIDESHARE_HEALTH',
+        providerTripId: 'uh_7f3c91a2',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:34 AM CT',
         driverName: 'Jordan Lee',
-        vehicleId: 'CL-A-114',
+        vehicleId: 'LA 8KX 402',
+        vehicleDescription: 'Silver Toyota Sienna · wheelchair accessible',
+        etaMinutes: 4,
+        fareEstimate: '$28.40',
       };
       let next: WorkflowState = {
         ...state,
         ride: { ...state.ride, currentStatus: 'PRIMARY_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'Fictional Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          ? { ...item, nextAction: 'Monitor the Uber Health trip', waitingReason: 'Uber Health · driver assigned', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner A assigned', description: 'Synthetic primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Uber Health trip dispatched', description: 'POST /v1/health/trips returned uh_7f3c91a2. Driver Jordan Lee assigned, ETA 4 min, estimate $28.40.' }) };
       return next;
     }
     case 'FAIL_PRIMARY_RIDE':
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
-      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Fictional Partner A unavailable');
+      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Uber Health trip cancelled by driver');
     case 'ASSIGN_BACKUP_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-BACKUP-002',
-        providerName: 'CareLink Partner B',
-        providerKind: 'FICTIONAL',
+        providerName: 'Lyft Healthcare',
+        providerId: 'lyft-healthcare',
+        providerKind: 'RIDESHARE_HEALTH',
+        providerTripId: 'lc_4b81d0e7',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:49 AM CT',
         driverName: 'Jerome Davis',
-        vehicleId: 'CareLink Vehicle #402',
+        vehicleId: 'LA 2RD 118',
+        vehicleDescription: 'Blue Honda Odyssey · wheelchair accessible',
+        etaMinutes: 6,
+        fareEstimate: '$31.10',
       };
       let next: WorkflowState = {
         ...state,
         ride: { ...state.ride, currentStatus: 'BACKUP_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          ? { ...item, nextAction: 'Confirm outbound and return logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner B selected', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Failed over to Lyft Healthcare', description: 'Concierge POST /v1/rides returned lc_4b81d0e7. Driver Jerome Davis, ETA 6 min. The cancelled Uber Health trip stays in history.' }) };
       return next;
     }
     case 'SAVE_RECOVERED_RIDE': {
@@ -589,10 +599,10 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'NO_OPTION' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, status: 'ASSIGNED', nextAction: 'Escalate transportation recovery', waitingReason: 'No synthetic provider option available' }
+          ? { ...item, status: 'ASSIGNED', nextAction: 'Escalate transportation recovery', waitingReason: 'No provider could take the trip' }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-NO-OPTION-V${getCurrentPlanVersion(state)}`, timestamp: 'Sep 24, 2026 • 10:49 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'No synthetic ride option available', description: 'The transportation blocker remains open and treatment stays at risk.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-NO-OPTION-V${getCurrentPlanVersion(state)}`, timestamp: 'Sep 24, 2026 • 10:49 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'All providers exhausted', description: 'Uber Health, Lyft Healthcare and CareLink NEMT all declined the window. The transportation blocker stays open and treatment is at risk.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'MARK_CURRENT_LOGISTICS_SEEN': {
@@ -741,13 +751,13 @@ const isTask = (value: unknown) => {
 };
 const isAuditEvent = (value: unknown) => isRecord(value) && hasStrings(value, ['id','timestamp','actor','action','description']) && ['PATIENT','SYSTEM','TRIAGE_NURSE','NAVIGATOR','CAREGIVER'].includes(String(value.actorRole)) && (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field','from','to'])));
 const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value, ['id','patientName','mrn','diagnosis','protocol','appointmentTime','blockerType','ownerName','ownerRole','avatarUrl']) && ['PENDING','IN_REVIEW'].includes(String(value.status)) && ['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority));
-const isRideAssignment = (value: unknown) => isRecord(value) && hasStrings(value, ['id','providerName','assignedAt']) && value.providerKind === 'FICTIONAL' && ['CURRENT','FAILED'].includes(String(value.status)) && ['failedAt','driverName','vehicleId'].every((key) => optionalString(value[key]));
+const isRideAssignment = (value: unknown) => isRecord(value) && hasStrings(value, ['id','providerName','providerId','assignedAt']) && ['RIDESHARE_HEALTH','NEMT'].includes(String(value.providerKind)) && ['CURRENT','FAILED'].includes(String(value.status)) && ['failedAt','driverName','vehicleId','vehicleDescription','providerTripId','failureReason','fareEstimate'].every((key) => optionalString(value[key]));
 const isCaregiverSeen = (value: unknown) => value === null || (isRecord(value) && hasStrings(value, ['eventId','actor','actorRole','timestamp']) && value.actor === 'Ana Hernandez' && value.actorRole === 'CAREGIVER' && typeof value.planVersion === 'number' && value.planVersion >= 1);
 const isRideState = (value: unknown) => {
-  if (!isRecord(value) || value.currentTripId !== 'carelink-current-2026-09-25' || !['OPEN','REQUESTED','PRIMARY_ASSIGNED','PRIMARY_FAILED','BACKUP_ASSIGNED','RECOVERED','NO_OPTION'].includes(String(value.currentStatus))) return false;
+  if (!isRecord(value) || value.currentTripId !== 'ride-2026-09-25-cl' || !['OPEN','REQUESTED','PRIMARY_ASSIGNED','PRIMARY_FAILED','BACKUP_ASSIGNED','RECOVERED','NO_OPTION'].includes(String(value.currentStatus))) return false;
   if (!Array.isArray(value.assignments) || !value.assignments.every(isRideAssignment) || !uniqueIds(value.assignments) || !isCaregiverSeen(value.caregiverSeen)) return false;
   const replay = value.replay;
-  if (!isRecord(replay) || replay.tripId !== 'carelink-prior-001' || !['IDLE','PLAYING','PAUSED','COMPLETE'].includes(String(replay.status)) || !Number.isInteger(replay.visibleEventCount) || Number(replay.visibleEventCount) < 0 || Number(replay.visibleEventCount) > HISTORICAL_RIDE_EVENTS.length || !Number.isInteger(replay.sessionToken) || Number(replay.sessionToken) < 0) return false;
+  if (!isRecord(replay) || replay.tripId !== 'uh_2026_0911_ellis' || !['IDLE','PLAYING','PAUSED','COMPLETE'].includes(String(replay.status)) || !Number.isInteger(replay.visibleEventCount) || Number(replay.visibleEventCount) < 0 || Number(replay.visibleEventCount) > HISTORICAL_RIDE_EVENTS.length || !Number.isInteger(replay.sessionToken) || Number(replay.sessionToken) < 0) return false;
   const currentAssignments = value.assignments.filter((assignment) => isRecord(assignment) && assignment.status === 'CURRENT').length;
   if (['OPEN','REQUESTED','PRIMARY_FAILED','NO_OPTION'].includes(String(value.currentStatus)) && currentAssignments !== 0) return false;
   if (['PRIMARY_ASSIGNED','BACKUP_ASSIGNED','RECOVERED'].includes(String(value.currentStatus)) && currentAssignments !== 1) return false;

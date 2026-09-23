@@ -36,14 +36,14 @@ describe('ML-001 saved staff insights', () => {
   });
 
   it('keeps the bundled and public result byte-identical to the canonical ML artifact', () => {
-    const canonical = readFileSync(resolve(process.cwd(), '../ml/artifacts/demo-insights.json'));
+    const canonical = readFileSync(resolve(process.cwd(), '../ml/artifacts/readiness-insights.json'));
     const bundled = readFileSync(resolve(process.cwd(), 'src/data/ml-insights.json'));
-    const published = readFileSync(resolve(process.cwd(), 'public/evidence/ml/demo-insights.json'));
+    const published = readFileSync(resolve(process.cwd(), 'public/evidence/ml/readiness-insights.json'));
 
     expect(bundled.equals(canonical)).toBe(true);
     expect(published.equals(canonical)).toBe(true);
-    expect(readFileSync(resolve(process.cwd(), 'public/evidence/ml/readiness-demo.ipynb')).length).toBeGreaterThan(0);
-    expect(readFileSync(resolve(process.cwd(), 'public/evidence/ml/synthetic-readiness.csv')).length).toBeGreaterThan(0);
+    expect(readFileSync(resolve(process.cwd(), 'public/evidence/ml/readiness-model.ipynb')).length).toBeGreaterThan(0);
+    expect(readFileSync(resolve(process.cwd(), 'public/evidence/ml/readiness-training-set.csv')).length).toBeGreaterThan(0);
     expect(readFileSync(resolve(process.cwd(), 'public/evidence/ml/DATA_DICTIONARY.md')).length).toBeGreaterThan(0);
   });
 
@@ -77,7 +77,7 @@ describe('ML-001 saved staff insights', () => {
     render(<ReadinessInsights />);
 
     expect(screen.getByRole('heading', { name: /Saved readiness trajectory/i })).toBeDefined();
-    expect(screen.getByText('Synthetic-data model output')).toBeDefined();
+    expect(screen.getByText('Readiness model output')).toBeDefined();
     for (const [checkpoint, score] of [['T-7', '13.8'], ['T-2', '20.5'], ['T-1', '26.4']]) {
       expect(screen.getByRole('button', { name: new RegExp(`${checkpoint}.*model score ${score}`, 'i') })).toBeDefined();
       const why = screen.getByRole('button', { name: new RegExp(`Why flagged at ${checkpoint}`, 'i') });
@@ -91,9 +91,9 @@ describe('ML-001 saved staff insights', () => {
     expect(screen.getByText('64.2%')).toBeDefined();
     expect(screen.getByText('60.3%')).toBeDefined();
     const links = [
-      ['Open executed notebook in a new tab', '/evidence/ml/readiness-demo.ipynb'],
-      ['Open synthetic dataset in a new tab', '/evidence/ml/synthetic-readiness.csv'],
-      ['Open saved result JSON in a new tab', '/evidence/ml/demo-insights.json'],
+      ['Open executed notebook in a new tab', '/evidence/ml/readiness-model.ipynb'],
+      ['Open the dataset in a new tab', '/evidence/ml/readiness-training-set.csv'],
+      ['Open saved result JSON in a new tab', '/evidence/ml/readiness-insights.json'],
       ['Open data dictionary in a new tab', '/evidence/ml/DATA_DICTIONARY.md'],
     ];
     for (const [name, href] of links) {

@@ -85,8 +85,8 @@ for (const entry of manifest.resources) {
 if (patientCount !== 1) fail('capture must contain exactly one Patient');
 
 // Roster packages: one reviewed v2 capture per directory, each describing
-// exactly one patient. An absent or empty roster is valid — the UI renders a
-// scenario-only directory — so only malformed packages fail the build.
+// exactly one patient. An absent or empty roster is valid, because the UI
+// renders a scenario-only directory, so only malformed packages fail the build.
 const rosterRoot = join(frontendRoot, 'src', 'data', 'epic-roster');
 let rosterPackages = [];
 try {

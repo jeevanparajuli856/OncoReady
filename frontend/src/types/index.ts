@@ -1,3 +1,5 @@
+import type { ProviderKind, TransportProviderId } from '../data/transportProviders';
+
 export type ReadinessStatus = 
   | 'ACTION_REQUIRED' 
   | 'AT_RISK' 
@@ -61,12 +63,21 @@ export type RideAssignmentStatus = 'CURRENT' | 'FAILED';
 export interface RideAssignment {
   id: string;
   providerName: string;
-  providerKind: 'FICTIONAL';
+  /** Which contracted adapter carried this attempt. */
+  providerId: TransportProviderId;
+  providerKind: ProviderKind;
+  /** The trip id returned by the provider, quoted back in support calls. */
+  providerTripId?: string;
   status: RideAssignmentStatus;
   assignedAt: string;
   failedAt?: string;
+  /** Provider-reported reason the attempt failed, verbatim. */
+  failureReason?: string;
   driverName?: string;
   vehicleId?: string;
+  vehicleDescription?: string;
+  etaMinutes?: number;
+  fareEstimate?: string;
 }
 
 export interface CaregiverSeenRecord {
@@ -89,14 +100,14 @@ export type CurrentRideStatus =
 export type HistoricalReplayStatus = 'IDLE' | 'PLAYING' | 'PAUSED' | 'COMPLETE';
 
 export interface HistoricalRideReplay {
-  tripId: 'carelink-prior-001';
+  tripId: 'uh_2026_0911_ellis';
   status: HistoricalReplayStatus;
   visibleEventCount: number;
   sessionToken: number;
 }
 
 export interface RideState {
-  currentTripId: 'carelink-current-2026-09-25';
+  currentTripId: 'ride-2026-09-25-cl';
   currentStatus: CurrentRideStatus;
   assignments: RideAssignment[];
   caregiverSeen: CaregiverSeenRecord | null;

@@ -13,7 +13,7 @@ const openStaffCase = () => {
   fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
 };
 
-describe('EPIC-001 reviewed Epic Sandbox capture', () => {
+describe('EPIC-001 Epic clinical context', () => {
   beforeAll(() => {
     HTMLCanvasElement.prototype.getContext = () => null;
   });
@@ -30,7 +30,7 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     const regimenTab = within(tabs).getByRole('tab', { name: /Regimen/i });
     fireEvent.click(regimenTab);
 
-    expect(screen.getByText('OncoReady scenario')).toBeDefined();
+    expect(screen.getByText('Pre-treatment')).toBeDefined();
     expect(screen.getByText(/mFOLFOX6 \+ Bevacizumab/i)).toBeDefined();
 
     const epicTab = within(tabs).getByRole('tab', { name: /Epic/i });
@@ -104,13 +104,13 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     openStaffCase();
     fireEvent.click(screen.getByRole('button', { name: 'Epic context' }));
 
-    expect(screen.getByRole('heading', { name: /Epic Sandbox capture/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Epic clinical context/i })).toBeDefined();
     const integrationCopy = document.body.textContent || '';
-    expect(integrationCopy).toContain('Epic Sandbox');
-    expect(integrationCopy).toContain('Reviewed FHIR R4 JSON');
+    expect(integrationCopy).toContain('Epic');
+    expect(integrationCopy).toContain('FHIR R4');
     expect(integrationCopy).toContain('OncoReady staff context');
     expect(integrationCopy).toContain(CAPTURE_ID);
-    expect(integrationCopy).toMatch(/No live sync or writeback/i);
+    expect(integrationCopy).toMatch(/Read-only/i);
     expect(integrationCopy).not.toMatch(/\bConnected\b/i);
     expect(integrationCopy).not.toMatch(/\bLive connection\b/i);
   });

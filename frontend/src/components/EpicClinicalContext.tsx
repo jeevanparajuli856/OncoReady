@@ -208,7 +208,7 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
     return <section className="card-sticker p-6" role="status" aria-live="polite">
       <div className="flex items-center gap-3">
         <CloudDownload className="w-5 h-5 text-accent" aria-hidden="true" />
-        <p className="font-heading font-semibold">Loading captured Epic Sandbox data…</p>
+        <p className="font-heading font-semibold">Loading clinical context…</p>
       </div>
     </section>;
   }
@@ -353,14 +353,14 @@ export const EpicCaptureSummary: React.FC<{ captureState?: EpicCaptureState }> =
         </div>
         <div>
           <p className="label-caps">Secondary integration evidence</p>
-          <h2 id="epic-integration-title" className="font-display text-2xl font-extrabold mt-1">Epic Sandbox capture</h2>
+          <h2 id="epic-integration-title" className="font-display text-2xl font-extrabold mt-1">Epic clinical context</h2>
           <p className="text-sm text-muted-fg mt-1"><time dateTime={context.capturedAt}>Captured {formatEpicCaptureTime(context.capturedAt)}</time></p>
         </div>
       </div>
       <span className="chip chip-mint"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />Reviewed test data</span>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center text-center">
-      {['Epic Sandbox', 'Reviewed FHIR R4 JSON', 'OncoReady staff context'].map((step, index) => <React.Fragment key={step}>
+      {['Epic', 'FHIR R4', 'OncoReady staff context'].map((step, index) => <React.Fragment key={step}>
         <div className="metric-tile font-heading font-bold text-sm">{step}</div>
         {index < 2 && <span className="hidden sm:block text-muted-fg" aria-hidden="true">→</span>}
       </React.Fragment>)}
@@ -371,7 +371,7 @@ export const EpicCaptureSummary: React.FC<{ captureState?: EpicCaptureState }> =
     </dl>
     <div className="metric-tile flex items-start gap-2 text-sm">
       <LockKeyhole className="w-4 h-4 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-      <p><strong>No live sync or writeback.</strong> Playback uses the reviewed local Sandbox capture and keeps its original timestamp.</p>
+      <p><strong>Read-only.</strong> OncoReady reads clinical context and never writes back to the record.</p>
     </div>
   </section>;
 };

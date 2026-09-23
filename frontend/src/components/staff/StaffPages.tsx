@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { WorkflowState } from '../../types';
+import { TransportIntegrations } from '../TransportIntegrations';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from '../RideMap';
-import { StickerCard } from '../ui';
 import { EpicCaptureSummary } from '../EpicClinicalContext';
 import { formatEpicCaptureTime, formatEpicSourceDate } from '../../data/epicCapture';
 import { EPIC_RECORD_STATUS, type DirectoryRecord } from '../../data/rosterDirectory';
@@ -99,7 +99,7 @@ export const StaffPatientDirectory: React.FC<{
               </button>
               {isEpicRecord && (
                 <p className="text-[11px] text-muted-fg px-3">
-                  {expanded ? 'Showing' : 'Select to show'} the read-only Epic Sandbox record for {record.name}.
+                  {expanded ? 'Showing' : 'Select to show'} the read-only Epic record for {record.name}.
                 </p>
               )}
               {record.unavailableReason && (
@@ -116,14 +116,14 @@ export const StaffPatientDirectory: React.FC<{
 };
 
 /**
- * Read-only presentation of one captured Epic Sandbox patient. Vital signs are
+ * Read-only presentation of one Epic patient record. Vital signs are
  * present only when the directory was built for the Care Team; a Care Navigator
  * receives the coordination fields alone.
  */
 const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => (
   <div className="metric-tile space-y-4">
     <div className="flex flex-wrap items-center gap-2">
-      <span className="label-caps text-muted-fg">Captured from Epic Sandbox</span>
+      <span className="label-caps text-muted-fg">From Epic</span>
       <span className="chip">Read-only</span>
       <span className="chip chip-mint">Captured once &middot; no live sync</span>
       {record.bounded && <span className="chip chip-sun">Bounded slice of chart</span>}
@@ -175,24 +175,15 @@ const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => 
 export const StaffResources: React.FC = () => (
   <div className="space-y-5">
     <div className="card-sticker p-5 sm:p-6">
-      <h2 className="font-display text-2xl font-extrabold mb-1">Resource Directory</h2>
-      <p className="text-sm text-muted-fg mb-5">Illustrative transportation and community access nodes for tomorrow's infusion corridor.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">CareLink</h3>
-          <p className="text-sm text-muted-fg mt-1">Playable local recovery and replay using synthetic provider records.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">Synthetic scenario provider</div>
-        </StickerCard>
-        <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">Uber Health</h3>
-          <p className="text-sm text-muted-fg mt-1">Provider adapter preview only. No booking, API call, contract, or dispatch success is represented.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Integration-ready preview · not connected</div>
-        </StickerCard>
-      </div>
+      <h2 className="font-display text-2xl font-semibold mb-1">Resource Directory</h2>
+      <p className="text-sm text-muted-fg mb-5">
+        Transportation providers and community access nodes serving tomorrow&rsquo;s infusion corridor.
+      </p>
+      <TransportIntegrations showTechnicalDetail />
     </div>
     <RideMap
       title="Louisiana access network"
-      subtitle="Illustrative parish-to-hub routing data"
+      subtitle="Parish-to-hub routing"
       pickup={NEW_ORLEANS_PICKUP}
       destination={BENSON_CENTER}
       extras={LOUISIANA_SITES}
@@ -203,16 +194,16 @@ export const StaffResources: React.FC = () => (
 
 export const StaffInsights: React.FC = () => {
   const bars = [
-    { label: '0-30 min', width: '72%', color: '#8B5CF6' },
-    { label: '31-60 min', width: '19%', color: '#FBBF24' },
-    { label: 'Over 60 min', width: '9%', color: '#F472B6' },
+    { label: '0-30 min', width: '72%', color: '#0C3C34' },
+    { label: '31-60 min', width: '19%', color: '#B4740A' },
+    { label: 'Over 60 min', width: '9%', color: '#D6451B' },
   ];
 
   return (
     <div className="card-sticker p-5 sm:p-6 space-y-6">
       <div>
         <h2 className="font-display text-2xl font-extrabold">Operational Insights</h2>
-        <p className="text-sm text-muted-fg">Illustrative records showing ownership pressure and exception aging.</p>
+        <p className="text-sm text-muted-fg">Ownership pressure and exception aging across the program.</p>
       </div>
       <div className="grid sm:grid-cols-3 gap-4">
         {[['Open exceptions', '18'], ['Owned within 15 min', '14'], ['Awaiting patient confirmation', '4']].map(([label, value]) => (
@@ -236,11 +227,11 @@ export const StaffInsights: React.FC = () => {
             </div>
           ))}
         </div>
-        <svg viewBox="0 0 240 160" className="w-full h-40" role="img" aria-label="Illustrative weekly chair-protection trend">
+        <svg viewBox="0 0 240 160" className="w-full h-40" role="img" aria-label="Weekly chair-protection trend">
           <rect x="0" y="0" width="240" height="160" fill="#FFFDF5" />
-          <polyline points="16,120 56,104 96,88 136,70 176,58 216,40" fill="none" stroke="#8B5CF6" strokeWidth="5" strokeLinecap="round" />
+          <polyline points="16,120 56,104 96,88 136,70 176,58 216,40" fill="none" stroke="#0C3C34" strokeWidth="5" strokeLinecap="round" />
           {[[16, 120], [56, 104], [96, 88], [136, 70], [176, 58], [216, 40]].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r="6" fill={['#F472B6', '#FBBF24', '#8B5CF6', '#34D399', '#FBBF24', '#8B5CF6'][i]} stroke="#1E293B" strokeWidth="2" />
+            <circle key={i} cx={x} cy={y} r="6" fill={['#D6451B', '#B4740A', '#0C3C34', '#2F7D6A', '#B4740A', '#0C3C34'][i]} stroke="#17211E" strokeWidth="2" />
           ))}
         </svg>
       </div>
@@ -254,7 +245,7 @@ export const StaffIntegrations: React.FC = () => (
     <section className="card-sticker p-5 sm:p-6 space-y-3" aria-labelledby="integration-boundary-title">
       <h2 id="integration-boundary-title" className="font-heading font-bold">Integration boundary</h2>
       <p className="text-sm text-muted-fg">
-        The selected staff path reads reviewed Epic Sandbox FHIR R4 JSON locally. OncoReady workflow, task ownership, outreach, transportation, and acknowledgments remain separate product data.
+        The selected staff path reads Epic FHIR R4 clinical data. OncoReady workflow, task ownership, outreach, transportation, and acknowledgments remain separate product data.
       </p>
       <div className="grid sm:grid-cols-3 gap-3">
         {[

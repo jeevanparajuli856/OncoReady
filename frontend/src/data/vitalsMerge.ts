@@ -8,7 +8,7 @@
  * real captured data alongside the prepared story, each row labelled with
  * where it came from.
  *
- * Scenario vitals carry no code system at all — only a display name — so the
+ * Scenario vitals carry no code system at all, only a display name, so the
  * two sides are reconciled through a small canonical-measurement key derived
  * from LOINC where Epic supplies it, and from normalised display text where it
  * does not.
@@ -108,7 +108,7 @@ const epicTime = (vital: EpicVitalFact): number =>
 
 /**
  * Scenario vitals first, in their prepared order, then the Epic vitals that
- * add something new — most recent first.
+ * add something new, most recent first.
  */
 export const mergeVitals = (
   scenarioVitals: VitalSign[],

@@ -74,7 +74,7 @@ export const buildDirectoryRecords = (
       if (entry.status === 'unavailable') {
         return {
           key: `epic:${entry.patientId}`,
-          name: 'Epic Sandbox record',
+          name: 'Epic record',
           identifierLabel: 'Epic ID',
           identifier: entry.patientId,
           detail: 'Captured record could not be read',

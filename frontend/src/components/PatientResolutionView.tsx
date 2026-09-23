@@ -50,7 +50,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             particleCount: 75,
             spread: 60,
             origin: { y: 0.7 },
-            colors: ['#34D399', '#8B5CF6', '#F472B6', '#FBBF24'],
+            colors: ['#2F7D6A', '#0C3C34', '#D6451B', '#B4740A'],
           });
         }
       }
@@ -143,7 +143,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             </div>
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-heading font-bold border-2 border-ink ${canAcknowledge ? 'bg-mint/30' : 'bg-sun/30'}`}>
               <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-              {canAcknowledge ? 'Synthetic plan complete' : 'Plan incomplete'}
+              {canAcknowledge ? 'Plan complete' : 'Plan incomplete'}
             </span>
           </div>
           {canAcknowledge && transportDetails ? (

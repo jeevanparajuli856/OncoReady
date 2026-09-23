@@ -203,7 +203,7 @@ def run_pipeline(output_dir: Path) -> PipelineResult:
     data_dir.mkdir(parents=True, exist_ok=True)
     artifacts_dir.mkdir(parents=True, exist_ok=True)
     rows = generate_dataset()
-    dataset_path = data_dir / "synthetic-readiness.csv"
+    dataset_path = data_dir / "readiness-training-set.csv"
     _write_csv(dataset_path, rows)
     train_rows, test_rows = patient_split(rows)
     model = _fit(train_rows)
@@ -252,7 +252,7 @@ def run_pipeline(output_dir: Path) -> PipelineResult:
         "limitations": ["Synthetic data only.", "Scores are model outputs, not clinical risk, causal effects, or calibrated probabilities.", "Workflow rules and human review remain authoritative."],
     }
     artifact["integrity_hash"] = _sha(artifact)
-    artifact_path = artifacts_dir / "demo-insights.json"
+    artifact_path = artifacts_dir / "readiness-insights.json"
     artifact_path.write_bytes(_canonical(artifact))
     return PipelineResult(dataset_path, artifact_path, artifact, model)
 

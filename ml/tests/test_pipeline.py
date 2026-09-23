@@ -102,10 +102,10 @@ class SyntheticReadinessPipelineTests(unittest.TestCase):
                 validate_artifact(tampered)
 
     def test_notebook_executes_cleanly_and_saves_required_evidence(self) -> None:
-        notebook_source = Path(__file__).parents[1] / "notebooks" / "readiness-demo.ipynb"
+        notebook_source = Path(__file__).parents[1] / "notebooks" / "readiness-model.ipynb"
         with tempfile.TemporaryDirectory() as output_dir:
             output_root = Path(output_dir)
-            notebook_copy = output_root / "readiness-demo.ipynb"
+            notebook_copy = output_root / "readiness-model.ipynb"
             notebook_copy.write_bytes(notebook_source.read_bytes())
 
             executed = execute_notebook(notebook_copy, pipeline_root=output_root)
@@ -141,7 +141,7 @@ class SyntheticReadinessPipelineTests(unittest.TestCase):
                     for output in cell.get("outputs", [])
                 )
             )
-            self.assertTrue((output_root / "artifacts" / "demo-insights.json").is_file())
+            self.assertTrue((output_root / "artifacts" / "readiness-insights.json").is_file())
 
 
 if __name__ == "__main__":

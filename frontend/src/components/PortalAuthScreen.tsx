@@ -33,7 +33,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onB
     event.preventDefault();
     const account = TEST_ACCOUNTS.find((candidate) => candidate.email === email.trim().toLowerCase() && candidate.password === password);
     if (!account) {
-      setError('Invalid email or password. Use one of the prepared demo accounts.');
+      setError('Invalid email or password.');
       return;
     }
     setError('');

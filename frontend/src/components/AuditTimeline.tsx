@@ -56,11 +56,11 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events, showFinalR
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <History className="w-5 h-5 text-accent" strokeWidth={2.5} />
-            <h2 className="font-display text-lg font-extrabold">Prepared Scenario Timeline</h2>
+            <h2 className="font-display text-lg font-extrabold">Audit Timeline</h2>
             <span className="chip">Stable event IDs</span>
           </div>
           <p className="text-sm text-muted-fg mt-1">
-            Fixed CT scenario times show the transition from the prepared reply to continuity-plan closure. They are separate from actual delivery time.
+            Central time throughout, from the patient's reply to continuity-plan closure.
           </p>
         </div>
         <div className="filter-bar">
@@ -102,11 +102,11 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events, showFinalR
                   type="button"
                   className="mt-1 rounded-lg text-sm font-semibold text-accent underline underline-offset-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
                   aria-expanded={expanded}
-                  aria-controls={`prepared-thread-${evt.id}`}
+                  aria-controls={`message-thread-${evt.id}`}
                   onClick={() => setSelectedEventId(expanded ? null : evt.id)}
-                >{expanded ? 'Close prepared message thread' : 'Open prepared message thread'}</button>
-                {expanded && <div id={`prepared-thread-${evt.id}`} className="mt-3 rounded-xl border border-line bg-white p-4 text-sm space-y-3">
-                  <p className="label-caps text-muted-fg">Prepared scenario history · no provider request</p>
+                >{expanded ? 'Close message thread' : 'Open message thread'}</button>
+                {expanded && <div id={`message-thread-${evt.id}`} className="mt-3 rounded-xl border border-line bg-white p-4 text-sm space-y-3">
+                  <p className="label-caps text-muted-fg">Message history</p>
                   <dl className="space-y-2">
                     <div><dt className="font-semibold">Scheduled</dt><dd>{thread.scheduledAt}</dd></div>
                     <div><dt className="font-semibold">Sent · {thread.sentAt}</dt><dd>“{thread.message}”</dd></div>
@@ -115,7 +115,7 @@ export const AuditTimeline: React.FC<AuditTimelineProps> = ({ events, showFinalR
                       <div><dt className="font-semibold">Follow-up · {thread.followUpAt}</dt><dd>{thread.followUp}</dd></div>
                     </>}
                   </dl>
-                  {thread.id === 'check-in-2' && !showFinalReply && <p className="text-muted-fg">The later reply and follow-up appear after the prepared reply is submitted.</p>}
+                  {thread.id === 'check-in-2' && !showFinalReply && <p className="text-muted-fg">The later reply and follow-up appear once the patient responds.</p>}
                 </div>}
               </>}
               <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-ink/10 text-xs">

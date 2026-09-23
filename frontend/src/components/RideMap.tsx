@@ -22,10 +22,10 @@ interface RideMapProps {
 }
 
 const TONE_COLOR: Record<NonNullable<MapStop['tone']>, string> = {
-  pickup: '#F472B6',
-  clinic: '#8B5CF6',
-  rural: '#FBBF24',
-  hub: '#34D399',
+  pickup: '#D6451B',
+  clinic: '#0C3C34',
+  rural: '#B4740A',
+  hub: '#2F7D6A',
 };
 
 const isTestEnv =
@@ -140,7 +140,7 @@ const LiveLeafletMap: React.FC<RideMapProps & { api: typeof import('react-leafle
             <Polyline
               positions={[[pickup.lat, pickup.lng], [destination.lat, destination.lng]]}
               pathOptions={{
-                color: confirmed ? '#34D399' : '#FBBF24',
+                color: confirmed ? '#2F7D6A' : '#B4740A',
                 weight: 5,
                 dashArray: confirmed ? undefined : '8 8',
               }}
@@ -152,7 +152,7 @@ const LiveLeafletMap: React.FC<RideMapProps & { api: typeof import('react-leafle
               center={[stop.lat, stop.lng]}
               radius={10}
               pathOptions={{
-                color: '#1E293B',
+                color: '#17211E',
                 weight: 3,
                 fillColor: TONE_COLOR[stop.tone || 'hub'],
                 fillOpacity: 1,
@@ -200,15 +200,15 @@ const MapFallback: React.FC<RideMapProps> = ({
             <path
               d="M160 210 C 240 160, 320 150, 470 120"
               fill="none"
-              stroke={confirmed ? '#34D399' : '#FBBF24'}
+              stroke={confirmed ? '#2F7D6A' : '#B4740A'}
               strokeWidth="6"
               strokeDasharray={confirmed ? '0' : '10 8'}
               strokeLinecap="round"
             />
           )}
-          <circle cx="160" cy="210" r="14" fill="#F472B6" stroke="#1E293B" strokeWidth="3" />
-          <circle cx="470" cy="120" r="14" fill="#8B5CF6" stroke="#1E293B" strokeWidth="3" />
-          <circle cx="280" cy="250" r="10" fill="#FBBF24" stroke="#1E293B" strokeWidth="3" />
+          <circle cx="160" cy="210" r="14" fill="#D6451B" stroke="#17211E" strokeWidth="3" />
+          <circle cx="470" cy="120" r="14" fill="#0C3C34" stroke="#17211E" strokeWidth="3" />
+          <circle cx="280" cy="250" r="10" fill="#B4740A" stroke="#17211E" strokeWidth="3" />
         </svg>
         <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">
           {stops.slice(0, 4).map((stop) => (

@@ -47,12 +47,12 @@ describe('ACCESS-001 prepared workspace entry', () => {
 
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
     signIn('abct@oncoready.me');
-    expect(screen.getByRole('heading', { name: /CareLink Transportation Workspace/i })).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Transport dispatch/i })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
-    expect(screen.getByText('Integration-ready preview · not connected')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: /Request synthetic ride/i }));
-    expect(screen.getByRole('button', { name: /Assign fictional CareLink Partner A/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
+    expect(screen.getAllByText('Connected').length).toBe(3);
+    fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
+    expect(screen.getByRole('button', { name: /Dispatch to Uber Health/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {

@@ -44,6 +44,11 @@ class Settings(BaseSettings):
     elevenlabs_api_key: SecretStr | None = None
     elevenlabs_agent_id: str | None = None
     elevenlabs_phone_number_id: str | None = None
+    # Transport provider credentials. Absent means that adapter reports
+    # `configured = False` and is skipped in the fallback chain.
+    uber_health_access_token: SecretStr | None = None
+    lyft_concierge_access_token: SecretStr | None = None
+    carelink_nemt_client_cert_path: str | None = None
 
     @field_validator("database_url", "operator_token", mode="before")
     @classmethod

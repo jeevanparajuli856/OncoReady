@@ -48,11 +48,11 @@ describe('RIDE-001 current recovery and acknowledgment', () => {
   it('requests, fails the primary, and recovers with append-only provider history', () => {
     const state = recovered();
 
-    expect(state.ride.currentTripId).toBe('carelink-current-2026-09-25');
+    expect(state.ride.currentTripId).toBe('ride-2026-09-25-cl');
     expect(state.ride.currentStatus).toBe('RECOVERED');
     expect(state.ride.assignments.map(({ providerName, status }) => [providerName, status])).toEqual([
-      ['CareLink Partner A', 'FAILED'],
-      ['CareLink Partner B', 'CURRENT'],
+      ['Uber Health', 'FAILED'],
+      ['Lyft Healthcare', 'CURRENT'],
     ]);
     expect(getCurrentPlanVersion(state)).toBe(2);
     expect(isCurrentTransportPlanComplete(state)).toBe(true);
@@ -124,18 +124,18 @@ describe('RIDE-001 isolated historical replay', () => {
 
     let replaying = workflowReducer(state, { type: 'PLAY_HISTORICAL_RIDE' });
     const session = replaying.ride.replay.sessionToken;
-    expect(replaying.ride.replay.tripId).toBe('carelink-prior-001');
+    expect(replaying.ride.replay.tripId).toBe('uh_2026_0911_ellis');
     expect(replaying.ride.replay.visibleEventCount).toBe(1);
 
     replaying = workflowReducer(replaying, {
       type: 'ADVANCE_HISTORICAL_RIDE',
-      payload: { tripId: 'carelink-prior-001', sessionToken: session },
+      payload: { tripId: 'uh_2026_0911_ellis', sessionToken: session },
     });
     const paused = workflowReducer(replaying, { type: 'PAUSE_HISTORICAL_RIDE' });
     expect(paused.ride.replay.status).toBe('PAUSED');
     expect(workflowReducer(paused, {
       type: 'ADVANCE_HISTORICAL_RIDE',
-      payload: { tripId: 'carelink-prior-001', sessionToken: session },
+      payload: { tripId: 'uh_2026_0911_ellis', sessionToken: session },
     })).toBe(paused);
 
     let completed = workflowReducer(paused, { type: 'PLAY_HISTORICAL_RIDE' });
@@ -143,7 +143,7 @@ describe('RIDE-001 isolated historical replay', () => {
     for (let index = completed.ride.replay.visibleEventCount; index < HISTORICAL_RIDE_EVENTS.length; index += 1) {
       completed = workflowReducer(completed, {
         type: 'ADVANCE_HISTORICAL_RIDE',
-        payload: { tripId: 'carelink-prior-001', sessionToken: resumedSession },
+        payload: { tripId: 'uh_2026_0911_ellis', sessionToken: resumedSession },
       });
     }
 

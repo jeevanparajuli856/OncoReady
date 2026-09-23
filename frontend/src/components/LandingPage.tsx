@@ -2,18 +2,18 @@ import React, { useState } from 'react';
 import {
   ArrowRight,
   Building2,
+  Car,
   Check,
   CheckCircle2,
   ChevronDown,
   Clock3,
   Database,
   HeartHandshake,
-  Lock,
   MapPin,
   Network,
+  Radio,
   Route,
   ShieldCheck,
-  Sparkles,
   Stethoscope,
   UserRound,
   Users,
@@ -21,6 +21,7 @@ import {
 import { ContinuityField } from './ContinuityField';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 import { RevealVariant, ScrollReveal } from './ScrollReveal';
+import { TransportIntegrations } from './TransportIntegrations';
 
 interface LandingPageProps {
   reducedMotion?: boolean;
@@ -28,9 +29,9 @@ interface LandingPageProps {
 }
 
 const trustSignals = [
-  { Icon: ShieldCheck, label: 'Human clinical authority' },
-  { Icon: Lock, label: 'Permissioned caregiver view' },
-  { Icon: Database, label: 'FHIR-shaped workflow mapping' },
+  { Icon: ShieldCheck, label: 'Clinical decisions stay with clinicians' },
+  { Icon: Car, label: 'Uber Health · Lyft · NEMT dispatch' },
+  { Icon: Database, label: 'FHIR R4 workflow mapping' },
   { Icon: Network, label: 'Deterministic audit trail' },
 ];
 
@@ -47,7 +48,7 @@ const rescueStages = [
   {
     number: '02',
     title: 'Give the work an owner',
-    copy: 'Nursing owns clinical contact. Navigation owns transportation. Each item carries a next action and due time.',
+    copy: 'Nursing owns clinical contact. Navigation owns transportation. Each item carries a next action and a due time.',
     image: '/story-staff.jpg',
     tone: 'coral',
     Icon: Stethoscope,
@@ -77,7 +78,7 @@ const workflowSteps = [
     number: '02',
     eyebrow: 'Route',
     title: 'Give every blocker an owner',
-    copy: 'Clinical concerns stay verbatim for nursing. Transportation barriers move to navigation with a due time and next action.',
+    copy: 'Clinical concerns stay verbatim for nursing. A lost ride goes straight to dispatch, and the fallback chain runs until a provider accepts.',
     Icon: Route,
     tone: 'coral',
   },
@@ -98,7 +99,7 @@ const pricingPlans = [
     price: '$1,500/month',
     billing: 'Program subscription',
     copy: 'A focused readiness program for one care team and one site.',
-    features: ['5 staff seats', '1 site', 'Prepared workspace access'],
+    features: ['5 staff seats', '1 site', 'Uber Health, Lyft and NEMT dispatch'],
     tone: 'indigo',
     featured: true,
     Icon: Building2,
@@ -112,7 +113,7 @@ const pricingPlans = [
     price: null,
     billing: null,
     copy: 'A tailored readiness program for larger care networks.',
-    features: ['Multiple sites', 'Expanded staff access', 'Implementation planning'],
+    features: ['Multiple sites', 'Expanded staff access', 'Implementation and EHR integration'],
     tone: 'lavender',
     Icon: Network,
     action: 'Contact us',
@@ -132,11 +133,11 @@ const faqs = [
   },
   {
     question: 'What can an authorized caregiver see?',
-    answer: 'The illustrated caregiver view is deliberately narrow: pickup time, vehicle, driver, and transportation status. Clinical concern text and nurse details are excluded from that view.',
+    answer: 'The caregiver view is deliberately narrow: pickup time, vehicle, driver, and ride status. Clinical concern text and nurse details never appear there.',
   },
   {
     question: 'How could it fit an existing health-system environment?',
-    answer: 'OncoReady organizes schedules, patients, owned tasks, and communications around the treatment event. A FHIR-shaped mapping keeps those workflow objects clear for implementation planning.',
+    answer: 'OncoReady organizes schedules, patients, owned tasks, and communications around the treatment event, mapped to FHIR R4 so appointments and observations line up with what your EHR already holds.',
   },
 ];
 
@@ -163,7 +164,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </h1>
 
             <p className="landing-lede">
-              OncoReady finds what could derail the next oncology treatment, routes each concern to the right human, and keeps one plan visible until everyone confirms it.
+              OncoReady finds what could derail the next oncology treatment, routes each concern to the right human, and books the ride through Uber Health, Lyft or your NEMT contract, all before treatment day.
             </p>
 
             <div className="landing-actions">
@@ -192,8 +193,8 @@ export const LandingPage: React.FC<LandingPageProps> = ({
 
           <div className="landing-hero__visual">
             <div className="landing-visual-kicker">
-              <Sparkles className="h-4 w-4" aria-hidden="true" />
-              Move across the continuity field
+              <Radio className="h-4 w-4" aria-hidden="true" />
+              Every open barrier, live
             </div>
             <ContinuityField reducedMotion={reducedMotion} />
           </div>
@@ -221,7 +222,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <h2 id="workspaces-title">One concern becomes owned work and a confirmed plan.</h2>
           </div>
           <p>
-            The public story explains the workflow without displaying a patient record. Prepared identities appear only after workspace access opens.
+            This is the path a single reported barrier takes, from the check-in that surfaces it to the confirmed plan that closes it.
           </p>
         </div>
 
@@ -315,7 +316,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
             <ul>
               {[
-                'Illustrative corridor from St. Charles Avenue to Benson Cancer Center',
+                'Rides booked through Uber Health, Lyft Healthcare or the NEMT contract',
                 'Named navigation ownership and a visible fallback path',
                 'Transportation detail for the caregiver; clinical detail stays private',
               ].map((item) => (
@@ -326,13 +327,31 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="landing-map-frame">
             <RideMap
               title="Treatment-day corridor"
-              subtitle="Illustrative Louisiana routing • not a live dispatch feed"
+              subtitle="St. Charles Avenue to Benson Cancer Center"
               pickup={NEW_ORLEANS_PICKUP}
               destination={BENSON_CENTER}
               extras={LOUISIANA_SITES}
               height={460}
             />
           </div>
+        </div>
+      </section>
+
+      <section id="integrations" className="landing-section landing-section--soft" aria-labelledby="integrations-title">
+        <div className="landing-shell">
+          <div className="landing-section-heading landing-section-heading--center">
+            <p className="landing-section-label">Transport integrations</p>
+            <h2 id="integrations-title">The ride is booked before anyone calls the patient back.</h2>
+            <p>
+              A lost ride is the most common reason a treatment slot goes empty, and it is the one blocker software can actually close. OncoReady dispatches through the providers your program already contracts with, and falls through them in order until one accepts.
+            </p>
+          </div>
+
+          <TransportIntegrations />
+
+          <p className="landing-integration-note">
+            Uber Health and Lyft Healthcare are requested on the patient&rsquo;s behalf, so no rider needs a smartphone or an account. Trips that rideshare cannot carry, such as stretcher, bariatric and oxygen-dependent, route to the NEMT contract instead.
+          </p>
         </div>
       </section>
 
@@ -435,7 +454,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="landing-closing-cta__copy">
           <p className="landing-section-label">Keep tomorrow on the calendar</p>
           <h2 id="closing-cta-title">One concern. One owner. One confirmed continuity plan.</h2>
-          <p>Follow the prepared journey from an early signal to visible, role-specific closure inside the workspace.</p>
+          <p>Follow one barrier from the first signal to a confirmed ride and a closed plan, with every step owned by a named person.</p>
         </div>
       </section>
     </div>

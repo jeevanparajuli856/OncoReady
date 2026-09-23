@@ -167,7 +167,7 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ projection, onMark
       )}
 
       <p className="text-center text-xs text-muted-fg">
-        Caregiver view prepared under Camila Lopez's transportation-only permissions.
+        Caregiver view scoped to Camila Lopez's transportation-only permissions.
       </p>
     </div>
   );

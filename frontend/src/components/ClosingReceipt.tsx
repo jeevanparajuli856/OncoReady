@@ -36,7 +36,7 @@ export function ClosingReceipt({ state }: { state: WorkflowState }) {
         <div>
           <p className="label-caps text-muted-fg">Current scenario evidence</p>
           <h2 id="closing-receipt-title" className="font-display text-lg font-extrabold">Continuity plan receipt</h2>
-          <p className="mt-1 text-sm text-muted-fg">Each completed item links to its event in the prepared scenario timeline. This is coordination status, not medical clearance or treatment attendance.</p>
+          <p className="mt-1 text-sm text-muted-fg">Each completed item links to its event in the audit timeline. This is coordination status, not medical clearance or treatment attendance.</p>
         </div>
         <span className={`chip ${completeCount === items.length ? 'chip-mint' : 'chip-sun'}`}>{completeCount} of {items.length} recorded</span>
       </div>

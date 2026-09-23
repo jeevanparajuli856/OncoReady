@@ -153,7 +153,7 @@ export const App: React.FC = () => {
     dispatch({ type: 'ACKNOWLEDGE_PATIENT_PLAN' });
   };
 
-  // The prepared scenario case plus the reviewed Epic Sandbox roster captures,
+  // The active case plus the Epic roster records,
   // scoped to whichever workspace is signed in. Clinical measurements reach the
   // Care Team only; the Care Navigator directory stays coordination-only.
   const directoryRole: WorkspaceRole =

@@ -48,7 +48,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
             <span className="chip chip-accent">Shared Scenario State</span>
           </div>
           <p className="text-sm text-muted-fg mt-1">
-            Deterministic dependencies from the prepared September 2026 scenario. Attendance remains unknown.
+            Deterministic dependencies for the September 25 appointment. Attendance is not yet known.
           </p>
         </div>
 
@@ -78,7 +78,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   ? '#CBD5E1'
                   : clinicalResolved
                   ? '#10B981'
-                  : '#F59E0B'
+                  : '#B4740A'
               }
               strokeWidth={clinicalResolved ? 3.5 : 2.5}
               className={readinessCheckCompleted && !clinicalResolved ? 'animate-svg-dash' : ''}
@@ -94,7 +94,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                   ? '#CBD5E1'
                   : transportResolved
                   ? '#10B981'
-                  : '#F59E0B'
+                  : '#B4740A'
               }
               strokeWidth={transportResolved ? 3.5 : 2.5}
               className={readinessCheckCompleted && !transportResolved ? 'animate-svg-dash' : ''}
@@ -109,7 +109,7 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
                 patientAcknowledged
                   ? '#10B981'
                   : allStaffResolved
-                  ? '#F59E0B'
+                  ? '#B4740A'
                   : '#CBD5E1'
               }
               strokeWidth={patientAcknowledged ? 3.5 : 2.5}
