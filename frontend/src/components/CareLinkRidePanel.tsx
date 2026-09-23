@@ -60,7 +60,7 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
     <section className="space-y-4" aria-labelledby="carelink-recovery-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="label-caps text-muted-fg">CareLink coordination</p>
+          <p className="label-caps text-muted-fg">Ride coordination</p>
           <h2 id="carelink-recovery-title" className="font-heading font-bold text-lg">Current-ride recovery</h2>
           <p className="text-xs text-muted-fg font-mono mt-1">{state.ride.currentTripId}</p>
         </div>
@@ -88,11 +88,11 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           </div>
 
           {current === 'OPEN' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'REQUEST_CURRENT_RIDE' })}>Request ride</button>}
-          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign CareLink Partner A</button>}
+          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign Partner A · via CareLink</button>}
           {current === 'PRIMARY_ASSIGNED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'FAIL_PRIMARY_RIDE' })}>Record primary unavailable</button>}
           {current === 'PRIMARY_FAILED' && (
             <div className="grid sm:grid-cols-2 gap-2">
-              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select CareLink Partner B</button>
+              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select Partner B · via CareLink</button>
               <button type="button" className="btn-ghost" onClick={() => onAction({ type: 'MARK_NO_RIDE_OPTION' })}>No option available</button>
             </div>
           )}
@@ -146,7 +146,10 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
                 {state.ride.assignments.map((assignment) => (
                   <li key={assignment.id} className="metric-tile text-sm flex flex-wrap items-start justify-between gap-2">
                     <div><div className="font-semibold">{assignment.providerName}</div><div className="font-mono text-xs text-muted-fg">{assignment.id}</div></div>
-                    <span className={`chip ${assignment.status === 'CURRENT' ? 'chip-accent' : 'chip-sun'}`}>{assignment.status === 'CURRENT' ? 'Current' : 'Failed'}</span>
+                    <div className="flex flex-wrap gap-1.5">
+                      <span className="chip">via CareLink portal</span>
+                      <span className={`chip ${assignment.status === 'CURRENT' ? 'chip-accent' : 'chip-sun'}`}>{assignment.status === 'CURRENT' ? 'Current' : 'Failed'}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -171,7 +174,7 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           <div className="flex items-start gap-3">
             <span className="icon-bubble w-10 h-10 bg-accent/15 text-accent shrink-0"><History className="w-4 h-4" aria-hidden="true" /></span>
             <div>
-              <h3 id="historical-replay-title" className="font-heading font-bold">Previous CareLink trip</h3>
+              <h3 id="historical-replay-title" className="font-heading font-bold">Previous trip</h3>
               <p className="font-mono text-xs text-muted-fg"><span>carelink-prior-001</span><span aria-hidden="true"> · </span><span>Sep 11, 2026</span></p>
             </div>
           </div>

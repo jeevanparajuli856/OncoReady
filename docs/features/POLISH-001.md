@@ -12,8 +12,9 @@ Every workspace reads as a finished product. Demo-framing labels no longer under
 2. Epic surfaces read **Connected to Hospital Epic Sandbox** with `Epic FHIR R4 record · read-only`; captured times read "Retrieved"; missing values read "Not recorded".
 3. Remove the notebook, dataset, saved-result and data-dictionary links from Insights. The file names and contents describe demo/synthetic data; the files stay in the repository. The UI hides the artifact's "Synthetic data only." limitation and the `synthetic-` model-version prefix without editing the hash-bound artifact.
 4. Transportation positioning: CareLink is OncoReady's vendor portal for local transport partners without their own software (`OncoReady vendor portal · Active`); Uber Health is `API integration · Planned` and not yet connected. Vendor-originated ride events read as reported via CareLink (for example `Partner A reported unavailable via CareLink`).
-5. The Care Navigator reaches the CareLink Transportation workspace from the **Transportation** sidebar item, which replaces the static CareLink resources page. The separate Transportation entry is removed from the Switch Workspace dropdown; the direct Transportation sign-in still opens the standalone workspace.
-6. The staff shell no longer shows the internal note "Graph and audit context are embedded in the case workspace for this role."
+5. The Care Navigator reaches the Transportation Workspace from the **Transportation** sidebar item, which replaces the static CareLink resources page. The separate Transportation entry is removed from the Switch Workspace dropdown; the direct Transportation sign-in still opens the standalone workspace.
+6. The Transportation Workspace is vendor-neutral: it is the navigator's hub for ride updates from every source. CareLink appears only as the channel (`Assign Partner A · via CareLink`, a `via CareLink portal` tag on each assignment, `Update sources` cards); generic labels read `Ride coordination`, `Transportation coordination workflow` and `Previous trip`. Trip IDs and the CareLink Dispatch contact are unchanged because those trips do go through CareLink.
+7. The staff shell no longer shows the internal note "Graph and audit context are embedded in the case workspace for this role."
 
 ## Boundaries kept
 

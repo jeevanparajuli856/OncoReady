@@ -45,17 +45,17 @@ describe('ACCESS-001 prepared workspace entry', () => {
     signIn('abcn@oncoready.me');
     expect(screen.getByText(/Care Navigator Workspace/i)).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: 'Transportation' }));
-    expect(screen.getByRole('heading', { name: /CareLink Transportation Workspace/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Transportation Workspace/i })).toBeDefined();
     expect(screen.getByText('OncoReady vendor portal · Active')).toBeDefined();
 
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
     signIn('abct@oncoready.me');
-    expect(screen.getByRole('heading', { name: /CareLink Transportation Workspace/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Transportation Workspace/i })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
     expect(screen.getByText('API integration · Planned')).toBeDefined();
     fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
-    expect(screen.getByRole('button', { name: /Assign CareLink Partner A/i })).toBeDefined();
+    expect(screen.getByRole('button', { name: /Assign Partner A · via CareLink/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {

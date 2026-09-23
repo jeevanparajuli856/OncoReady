@@ -53,7 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
       case 'CAREGIVER':
         return { name: state.caregiver.name, role: 'Caregiver Proxy', avatar: state.caregiver.avatarUrl, roleType: 'CAREGIVER' as const };
       case 'TRANSPORTATION':
-        return { name: 'CareLink Transportation', role: 'Manager & vendor workspace', avatar: '', roleType: 'NAVIGATOR' as const };
+        return { name: 'Transportation', role: 'Transportation coordination', avatar: '', roleType: 'NAVIGATOR' as const };
       default:
         return null;
     }
@@ -203,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
                       <Avatar alt="Marcus Vance" size="xs" roleType="NAVIGATOR" />
                       <div>
                         <div>Care Navigator (Marcus Vance, MSW)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">CareLink & Patient Coordination</div>
+                        <div className="text-[10px] text-muted-fg font-normal">Transportation & Patient Coordination</div>
                       </div>
                     </button>
                     <button onClick={() => { onSetPerspective('CARE_TEAM'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'CARE_TEAM' ? 'bg-accent/8 font-semibold' : ''}`}>

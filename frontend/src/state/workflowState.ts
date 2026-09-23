@@ -503,7 +503,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'REQUESTED' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Assign CareLink Partner A', waitingReason: 'Provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
+          ? { ...item, nextAction: 'Assign Partner A via CareLink', waitingReason: 'Provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
           : item),
       };
       next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Ride requested', description: 'Current trip carelink-current-2026-09-25 opened.' }) };
@@ -513,7 +513,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'REQUESTED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-PRIMARY-001',
-        providerName: 'CareLink Partner A',
+        providerName: 'Partner A',
         providerKind: 'FICTIONAL',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:34 AM CT',
@@ -524,7 +524,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'PRIMARY_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'CareLink Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'Partner A via CareLink', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
       next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Trip sent to Partner A via CareLink', description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
@@ -537,7 +537,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-BACKUP-002',
-        providerName: 'CareLink Partner B',
+        providerName: 'Partner B',
         providerKind: 'FICTIONAL',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:49 AM CT',

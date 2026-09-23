@@ -51,8 +51,8 @@ describe('RIDE-001 current recovery and acknowledgment', () => {
     expect(state.ride.currentTripId).toBe('carelink-current-2026-09-25');
     expect(state.ride.currentStatus).toBe('RECOVERED');
     expect(state.ride.assignments.map(({ providerName, status }) => [providerName, status])).toEqual([
-      ['CareLink Partner A', 'FAILED'],
-      ['CareLink Partner B', 'CURRENT'],
+      ['Partner A', 'FAILED'],
+      ['Partner B', 'CURRENT'],
     ]);
     expect(getCurrentPlanVersion(state)).toBe(2);
     expect(isCurrentTransportPlanComplete(state)).toBe(true);
@@ -108,7 +108,7 @@ describe('RIDE-001 current recovery and acknowledgment', () => {
     expect(projection.seen?.actor).toBe('Ana Hernandez');
     expect(serialized).not.toContain(PREPARED_REPLY);
     expect(serialized).not.toContain(state.appointment.treatmentName);
-    expect(serialized).not.toContain('CareLink Partner A');
+    expect(serialized).not.toContain('Partner A');
   });
 });
 

@@ -40,9 +40,9 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               </span>
               <div>
                 <p className="label-caps text-muted-fg">Transportation operations</p>
-                <Title id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">CareLink Transportation Workspace</Title>
+                <Title id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">Transportation Workspace</Title>
                 <p className="text-sm text-muted-fg mt-2 max-w-2xl">
-                  Coordinate Camila Lopez's ride recovery, preserve assignment history, and verify the current logistics plan before treatment day.
+                  Every ride update, whether from local partners via CareLink or from Uber Health, lands here so you can recover rides and confirm the plan before treatment day.
                 </p>
               </div>
             </div>
@@ -61,7 +61,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
             <p className="label-caps text-muted-fg">Provider network</p>
-            <h2 id="provider-readiness-title" className="font-heading font-bold text-lg">How partners connect</h2>
+            <h2 id="provider-readiness-title" className="font-heading font-bold text-lg">Update sources</h2>
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
