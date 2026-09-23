@@ -50,7 +50,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             particleCount: 75,
             spread: 60,
             origin: { y: 0.7 },
-            colors: ['#34D399', '#8B5CF6', '#F472B6', '#FBBF24'],
+            colors: ['#2F7D6A', '#0C3C34', '#D6451B', '#B4740A'],
           });
         }
       }

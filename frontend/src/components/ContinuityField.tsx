@@ -192,8 +192,8 @@ export const ContinuityField: React.FC<ContinuityFieldProps> = ({
         const shimmer = Math.sin(time * 0.0008 + particle.seed) * 0.08;
         const isMint = index % 13 === 0;
         context.globalAlpha = withinPointer ? 0.96 : 0.62 + shimmer;
-        context.fillStyle = withinPointer ? '#F26B63' : isMint ? '#059669' : '#4F46E5';
-        context.font = `${particle.size}px "JetBrains Mono", monospace`;
+        context.fillStyle = withinPointer ? '#D6451B' : isMint ? '#2F7D6A' : '#0C3C34';
+        context.font = `${particle.size}px "IBM Plex Mono", monospace`;
         context.fillText(particle.glyph, particle.x, particle.y);
       });
       context.globalAlpha = 1;

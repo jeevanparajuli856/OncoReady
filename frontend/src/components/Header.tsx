@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   RotateCcw,
   ChevronDown,
@@ -41,6 +41,39 @@ export const Header: React.FC<HeaderProps> = ({
 }) => {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLandingMenuOpen, setIsLandingMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState<string>('');
+
+  // Scroll-spy for the landing nav. The rootMargin pins the "active" band just
+  // under the sticky header so a section counts as current once it reaches it.
+  useEffect(() => {
+    if (currentPerspective !== 'LANDING' || typeof IntersectionObserver !== 'function') return undefined;
+
+    const ids = ['workspaces', 'how-it-works', 'access-map', 'pricing-section', 'faq-section'];
+    const sections = ids
+      .map((id) => document.getElementById(id))
+      .filter((node): node is HTMLElement => node !== null);
+    if (!sections.length) return undefined;
+
+    // Construction can throw in reduced/patched environments. The nav is fully
+    // usable without the indicator, so fail quiet rather than taking down render.
+    let observer: IntersectionObserver;
+    try {
+      observer = new IntersectionObserver(
+        (entries) => {
+          const visible = entries
+            .filter((entry) => entry.isIntersecting)
+            .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)[0];
+          if (visible) setActiveSection(visible.target.id);
+        },
+        { rootMargin: '-72px 0px -55% 0px', threshold: 0 },
+      );
+      sections.forEach((section) => observer.observe(section));
+    } catch {
+      return undefined;
+    }
+
+    return () => observer.disconnect();
+  }, [currentPerspective]);
 
   const getActiveUser = () => {
     switch (currentPerspective) {
@@ -116,7 +149,15 @@ export const Header: React.FC<HeaderProps> = ({
 
           <nav className="landing-header__nav" aria-label="Landing page navigation">
             {landingLinks.map(([id, label]) => (
-              <button key={id} type="button" onClick={() => scrollTo(id, reducedMotion)}>{label}</button>
+              <button
+                key={id}
+                type="button"
+                data-active={activeSection === id || undefined}
+                aria-current={activeSection === id ? 'true' : undefined}
+                onClick={() => scrollTo(id, reducedMotion)}
+              >
+                {label}
+              </button>
             ))}
           </nav>
 

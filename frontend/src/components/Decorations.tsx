@@ -23,7 +23,7 @@ export const ConfettiField: React.FC<{ className?: string; dense?: boolean }> = 
 
 export const Squiggle: React.FC<{ className?: string; color?: string }> = ({
   className,
-  color = '#8B5CF6',
+  color = '#0C3C34',
 }) => (
   <svg viewBox="0 0 220 18" className={cn('w-40 h-4', className)} aria-hidden="true">
     <path

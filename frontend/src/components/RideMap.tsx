@@ -30,10 +30,10 @@ interface RideMapProps {
 }
 
 const TONE_COLOR: Record<NonNullable<MapStop['tone']>, string> = {
-  pickup: '#F472B6',
-  clinic: '#8B5CF6',
-  rural: '#FBBF24',
-  hub: '#34D399',
+  pickup: '#D6451B',
+  clinic: '#0C3C34',
+  rural: '#B4740A',
+  hub: '#2F7D6A',
 };
 
 const isTestEnv =
@@ -107,8 +107,8 @@ type LatLng = readonly [number, number];
 
 const TILE_URL = 'https://tile.openstreetmap.org/{z}/{x}/{y}.png';
 const MAP_ATTRIBUTION = '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const ROUTE_COLOR = '#4F46E5';
-const CONFIRMED_ROUTE_COLOR = '#059669';
+const ROUTE_COLOR = '#0C3C34';
+const CONFIRMED_ROUTE_COLOR = '#2F7D6A';
 
 const routePath = ({ route, pickup, destination }: RideMapProps): LatLng[] => {
   if (route && route.length > 1) return route.map(([lat, lng]) => [lat, lng] as const);
@@ -178,7 +178,7 @@ const LiveLeafletMap: React.FC<RideMapProps & { api: typeof import('react-leafle
             </CircleMarker>
           ))}
           {vehicle && (
-            <CircleMarker center={[vehicle[0], vehicle[1]]} radius={8} pathOptions={{ color: '#FFFFFF', weight: 3, fillColor: '#0F172A', fillOpacity: 1 }}>
+            <CircleMarker center={[vehicle[0], vehicle[1]]} radius={8} pathOptions={{ color: '#FFFFFF', weight: 3, fillColor: '#17211E', fillOpacity: 1 }}>
               <Tooltip permanent direction="right" offset={[10, 0]} className="ride-map-label">{vehicleLabel ?? 'Vehicle'}</Tooltip>
             </CircleMarker>
           )}
@@ -242,7 +242,7 @@ const MapFallback: React.FC<RideMapProps> = (props) => {
           })}
           {vehicle && (() => {
             const [x, y] = project(vehicle);
-            return <circle cx={x} cy={y} r="9" fill="#0F172A" stroke="#FFFFFF" strokeWidth="3" data-testid="ride-map-vehicle" />;
+            return <circle cx={x} cy={y} r="9" fill="#17211E" stroke="#FFFFFF" strokeWidth="3" data-testid="ride-map-vehicle" />;
           })()}
         </svg>
         <div className="absolute bottom-3 left-3 right-3 flex flex-wrap gap-2">

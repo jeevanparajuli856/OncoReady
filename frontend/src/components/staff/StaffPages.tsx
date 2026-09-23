@@ -171,9 +171,9 @@ const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => 
 
 export const StaffInsights: React.FC = () => {
   const bars = [
-    { label: '0-30 min', width: '72%', color: '#8B5CF6' },
-    { label: '31-60 min', width: '19%', color: '#FBBF24' },
-    { label: 'Over 60 min', width: '9%', color: '#F472B6' },
+    { label: '0-30 min', width: '72%', color: '#0C3C34' },
+    { label: '31-60 min', width: '19%', color: '#B4740A' },
+    { label: 'Over 60 min', width: '9%', color: '#D6451B' },
   ];
 
   return (
@@ -206,9 +206,9 @@ export const StaffInsights: React.FC = () => {
         </div>
         <svg viewBox="0 0 240 160" className="w-full h-40" role="img" aria-label="Weekly chair-protection trend">
           <rect x="0" y="0" width="240" height="160" fill="#FFFDF5" />
-          <polyline points="16,120 56,104 96,88 136,70 176,58 216,40" fill="none" stroke="#8B5CF6" strokeWidth="5" strokeLinecap="round" />
+          <polyline points="16,120 56,104 96,88 136,70 176,58 216,40" fill="none" stroke="#0C3C34" strokeWidth="5" strokeLinecap="round" />
           {[[16, 120], [56, 104], [96, 88], [136, 70], [176, 58], [216, 40]].map(([x, y], i) => (
-            <circle key={i} cx={x} cy={y} r="6" fill={['#F472B6', '#FBBF24', '#8B5CF6', '#34D399', '#FBBF24', '#8B5CF6'][i]} stroke="#1E293B" strokeWidth="2" />
+            <circle key={i} cx={x} cy={y} r="6" fill={['#D6451B', '#B4740A', '#0C3C34', '#2F7D6A', '#B4740A', '#0C3C34'][i]} stroke="#17211E" strokeWidth="2" />
           ))}
         </svg>
       </div>
