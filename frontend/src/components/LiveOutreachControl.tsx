@@ -87,7 +87,7 @@ export function LiveOutreachControl() {
               <p className="label-caps text-muted-fg">Live call</p>
               <p className="mt-2 font-semibold" role="status" aria-live="polite">{state?.call.replace(/_/g, ' ') ?? 'Check status to begin'}</p>
               {state?.call_purpose && <p className="mt-1 text-xs text-muted-fg">Latest call purpose: {state.call_purpose}</p>}
-              <p className="mt-2 text-xs text-muted-fg">Calls today: {state?.call_attempts_today ?? '—'} / {state?.call_daily_limit ?? '—'}</p>
+              <p className="mt-2 text-xs text-muted-fg">Calls today: {state?.call_attempts_today ?? '-'} / {state?.call_daily_limit ?? '-'}</p>
               <label htmlFor="call-purpose" className="mt-4 block text-sm font-semibold">Call purpose</label>
               <select id="call-purpose" value={callPurpose} onChange={(event) => setCallPurpose(event.target.value as 'test' | 'demo')} className="mt-2 min-h-11 rounded-xl border border-line bg-white px-3 py-2">
                 <option value="test">Test</option><option value="demo">Live presentation</option>

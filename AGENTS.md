@@ -26,6 +26,7 @@ Read only the documents relevant to the current task.
 - Authorization must be enforced in logic, not only UI.
 - Keep changes scoped to the current task.
 - Prefer the smallest implementation that delivers the requested user outcome.
+- Never use em dashes (—) in any web text: UI copy, alt text, titles, messages or web source. Use a comma, colon, period, parentheses or a middle dot (·) instead. `frontend/tests/no-em-dash.test.ts` enforces this; checksum-locked captured Epic data is exempt and never rendered.
 
 ## Task workflow
 

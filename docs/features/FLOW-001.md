@@ -30,7 +30,7 @@ TARGETED; LOW risk for synthetic-only local state. Independent tests focus on st
 
 ## Acceptance criteria
 
-1. From the risk checkpoint, submitting “My ride was cancelled—and I’m not feeling well today.” preserves that exact text for staff and creates distinct clinical-contact and transport tasks with named owners; verify the state and rendered workspaces.
+1. From the risk checkpoint, submitting “My ride was cancelled, and I’m not feeling well today.” preserves that exact text for staff and creates distinct clinical-contact and transport tasks with named owners; verify the state and rendered workspaces.
 2. Nurse acknowledgment and recorded human contact/disposition remain distinct. Software gives no diagnosis, urgency downgrade, clinical advice or medical clearance; inspect the supported actions.
 3. Staff, patient, caregiver, transport, graph and timeline derive from one shared state; switching persona cannot lose or contradict the current scene. Verify the selected browser path.
 4. Continuity plan confirmed requires the human clinical disposition, a complete current outbound/return/backup plan and patient acknowledgment of that plan version. Open clinical work, failed transport or missing acknowledgment prevents confirmation; test each boundary.

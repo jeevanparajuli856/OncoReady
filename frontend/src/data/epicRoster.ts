@@ -3,7 +3,7 @@
  *
  * EPIC-001's scenario capture (`epicCapture.ts`) is deliberately fail-closed:
  * one bad field makes the whole Camila context unavailable. A roster cannot
- * work that way — one unreadable package must cost one row, not the list — so
+ * work that way: one unreadable package must cost one row, not the list, so
  * every package here is validated independently and degrades on its own.
  *
  * Each package is a v2 manifest describing exactly one patient, with no

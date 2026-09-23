@@ -27,6 +27,8 @@ The existing OncoReady UI and `docs/design/DESIGN_SYSTEM.md` are human-approved.
 
 The rapid-delivery workflow is internal. Do not label user-facing surfaces as prototypes, portfolio work, toys, practice apps, or cheap demos. Present real capabilities confidently without inventing customers, scale, compliance, security guarantees, integrations, or behavior.
 
+Never use em dashes (—) in web copy or web source; use a comma, colon, period, parentheses or a middle dot (·). The `no-em-dash` test fails the suite if one appears.
+
 Avoid unfinished placeholder copy, starter-template branding, default framework imagery, and generic dashboard composition in intended product surfaces.
 
 ## Writable scope

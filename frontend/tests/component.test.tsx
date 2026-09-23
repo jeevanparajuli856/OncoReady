@@ -43,7 +43,7 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     expect(screen.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeDefined();
     expect(screen.getByText(/Treatment readiness before the chair/i)).toBeDefined();
     expect(screen.getByRole('img', { name: /continuity ribbon connects patient signals/i })).toBeDefined();
-    expect(screen.getAllByAltText(/OncoReady — Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByAltText(/OncoReady: Keep tomorrow on the calendar/i).length).toBeGreaterThan(0);
     expect(screen.getAllByRole('button', { name: /Access workspace/i }).length).toBeGreaterThan(0);
     expect(screen.getByText(/SaaS business model/i)).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Pilot' })).toBeDefined();

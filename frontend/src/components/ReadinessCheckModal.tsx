@@ -34,7 +34,7 @@ export const ReadinessCheckModal: React.FC<ReadinessCheckModalProps> = ({
   const [needsWheelchair, setNeedsWheelchair] = useState<boolean>(false);
   const [hasClinicalConcern, setHasClinicalConcern] = useState<boolean>(true);
   const [clinicalConcernText, setClinicalConcernText] = useState<string>(
-    'My ride was cancelled—and I’m not feeling well today.'
+    'My ride was cancelled, and I’m not feeling well today.'
   );
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [errorField, setErrorField] = useState<'clinical' | 'pickup' | null>(null);

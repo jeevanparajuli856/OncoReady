@@ -146,3 +146,7 @@ Never rely on color alone. Pair status with icon + label.
 Leaflet maps are illustrative training-environment routing (Louisiana corridor). Pickup-to-Benson maps draw the stored street route from `src/data/routes.ts` over OpenStreetMap tiles (attribution kept, tiles softened with `.ride-map-tiles`). A white-cased route line uses accent, or mint once confirmed, and the replay vehicle is an ink dot. The fallback SVG projects the same route and renders in test and offline environments. Caregiver maps never include clinical text.
 
 The CareLink vendor portal (RIDE-002, RIDE-003) is the one approved brand exception: **CareLink by OncoReady**, an endorsed sub-brand. Its mark (`public/carelink-mark.svg`) reuses the OncoReady continuity loop with a dotted route to an indigo node. Its full-page shell (dark teal top bar, CareLink footer, no OncoReady header or footer) and `carelink-btn` styles apply only inside `/carelink`. Always show the endorsement (`CareLinkMark endorsed`) where CareLink appears beside OncoReady.
+
+## Copy punctuation
+
+No em dashes (—) anywhere in the web app, including UI copy, alt text, titles and messages. Use a comma, colon, period, parentheses or a middle dot (·). `frontend/tests/no-em-dash.test.ts` enforces the rule. Checksum-locked Epic capture data is exempt because it is never rendered as text.

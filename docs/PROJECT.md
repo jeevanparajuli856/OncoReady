@@ -14,7 +14,7 @@ One September 22 test call completed with an audible ElevenLabs agent exchange. 
 
 1. Open the public story and enter the prepared staff workspace. Public pages contain no patient record. Two existing pricing plans remain a buyer-facing illustration; checkout is disabled.
 2. Open Camila Lopez. Show the at-risk graph, captured Epic source drawer and original capture time. Inspect saved T−7/T−2/T−1 insights, Why flagged? factors and the read-only transportation what-if.
-3. Open prepared message history with scheduled/sent text, patient replies and follow-up changes. Camila submits: “My ride was cancelled—and I’m not feeling well today.” Her words are preserved verbatim.
+3. Open prepared message history with scheduled/sent text, patient replies and follow-up changes. Camila submits: “My ride was cancelled, and I’m not feeling well today.” Her words are preserved verbatim.
 4. The shared scenario creates separate nurse and transportation work. Sarah Jenkins records contact and a human disposition. Marcus Vance handles the ride plan with named next action, target time and waiting state.
 5. Show the previous CareLink dispatch replay, then the current fictional primary failure and backup recovery. Record pickup, arrival, return, logistics contact and backup owner. Ana sees only permitted logistics and marks the current plan seen.
 6. Camila reviews the same current plan and acknowledges its version. The graph reaches **Continuity plan confirmed** only when the human clinical disposition, complete current transportation plan and current patient acknowledgment exist. The closing receipt opens the supporting scenario events. Treatment attendance remains unknown.

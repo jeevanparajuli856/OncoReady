@@ -40,7 +40,7 @@ export const Logo: React.FC<LogoProps> = ({
   return (
     <img
       src={TITLE_LOGO_SRC}
-      alt="OncoReady — Keep tomorrow on the calendar"
+      alt="OncoReady: Keep tomorrow on the calendar"
       width={width}
       height={size}
       className={cn('block shrink-0 select-none object-contain object-left', className)}

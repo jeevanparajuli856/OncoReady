@@ -1,6 +1,6 @@
 import type { AuditEvent } from '../types';
 
-export const PREPARED_REPLY = 'My ride was cancelled—and I’m not feeling well today.';
+export const PREPARED_REPLY = 'My ride was cancelled, and I’m not feeling well today.';
 
 export const PREPARED_OUTREACH_THREADS = [
   {

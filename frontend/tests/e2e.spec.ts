@@ -260,7 +260,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
     await expect(page.getByRole('heading', { name: /Clinical contact/i })).toBeVisible();
-    await expect(page.getByText('“My ride was cancelled—and I’m not feeling well today.”')).toBeVisible();
+    await expect(page.getByText('“My ride was cancelled, and I’m not feeling well today.”')).toBeVisible();
     await expect(page.getByText('Treatment at risk').first()).toBeVisible();
     await page.getByRole('button', { name: /Accept ownership/i }).click();
     await expect(page.getByText('Ownership accepted')).toBeVisible();
