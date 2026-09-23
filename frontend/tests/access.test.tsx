@@ -43,7 +43,7 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect(partners.getByRole('img', { name: 'Uber' })).toBeDefined();
     expect(partners.getByRole('img', { name: 'Lyft' })).toBeDefined();
     expect(partners.getAllByText('Coming soon')).toHaveLength(2);
-    expect(partners.getAllByText(/^Awaiting connection/)).toHaveLength(2);
+    expect(partners.queryByText(/Awaiting connection/)).toBeNull();
 
     const copy = screen.getByTestId('transport-partners').textContent || '';
     expect(copy).not.toMatch(/Connected/);

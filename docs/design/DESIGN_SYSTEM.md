@@ -147,7 +147,7 @@ Leaflet maps are illustrative training-environment routing (Louisiana corridor).
 
 The CareLink vendor portal (RIDE-002, RIDE-003) is the one approved brand exception: **CareLink by OncoReady**, an endorsed sub-brand. Its mark (`public/carelink-mark.svg`) reuses the OncoReady continuity loop with a dotted route to an indigo node. Its full-page shell (dark teal top bar, CareLink footer, no OncoReady header or footer) and `carelink-btn` styles apply only inside `/carelink`. Always show the endorsement (`CareLinkMark endorsed`) where CareLink appears beside OncoReady.
 
-The landing **Transport partners** section ([LAND-002](../features/LAND-002.md)) reuses the business-card grid: CareLink carries a mint **Active** chip, while Uber Health and Lyft Healthcare carry sun **Coming soon** chips and an "Awaiting connection" footer. Partner logos (`public/brands/uber-logo.svg`, `public/brands/lyft-logo.svg`) appear only in their own cards and never recolor OncoReady surfaces.
+The landing **Transport partners** section ([LAND-002](../features/LAND-002.md)) reuses the business-card grid: CareLink carries a mint **Active** chip, while Uber Health and Lyft Healthcare carry sun **Coming soon** chips. Partner logos (`public/brands/uber-logo.svg`, `public/brands/lyft-logo.svg`) appear only in their own cards and never recolor OncoReady surfaces.
 
 ## Copy punctuation
 

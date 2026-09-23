@@ -125,7 +125,7 @@ const pricingPlans = [
 type PartnerStatus = 'ACTIVE' | 'COMING_SOON';
 
 // Uber Health and Lyft Healthcare are not connected yet: their cards say so and nothing here calls either service.
-const transportPartners: { name: string; status: PartnerStatus; copy: string; note: string }[] = [
+const transportPartners: { name: string; status: PartnerStatus; copy: string; note?: string }[] = [
   {
     name: 'CareLink by OncoReady',
     status: 'ACTIVE',
@@ -136,13 +136,11 @@ const transportPartners: { name: string; status: PartnerStatus; copy: string; no
     name: 'Uber Health',
     status: 'COMING_SOON',
     copy: 'Scheduled and on-demand rides requested on the patient\u2019s behalf, with trip status flowing back into the ride plan.',
-    note: 'Awaiting connection: requires an Uber Health contract and API credentials',
   },
   {
     name: 'Lyft Healthcare',
     status: 'COMING_SOON',
     copy: 'Rides booked for the patient through Lyft Healthcare, so no rider needs a smartphone or an account.',
-    note: 'Awaiting connection: requires a Lyft Healthcare agreement and API credentials',
   },
 ];
 
@@ -401,7 +399,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               </div>
               <h3 className="sr-only">{partner.name}</h3>
               <p>{partner.copy}</p>
-              <div className="mt-auto pt-4 text-xs font-semibold text-muted-fg">{partner.note}</div>
+              {partner.note && <div className="mt-auto pt-4 text-xs font-semibold text-muted-fg">{partner.note}</div>}
             </article>
           ))}
         </div>
