@@ -24,6 +24,7 @@ import {
   LabResult,
   VitalSign,
 } from '../types';
+import { NURSE_AVATAR } from '../state/workflowState';
 
 interface PatientTreatmentHomeProps {
   patient: PatientProfile;
@@ -367,7 +368,11 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
             </div>
             <div className="flex items-center justify-between gap-3 p-3 rounded-xl bg-cream border-2 border-ink/10">
               <div className="flex items-center gap-2.5 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-accent border-2 border-ink" aria-hidden />
+                <img
+                  src={NURSE_AVATAR}
+                  alt="Sarah Jenkins, BSN, RN, OCN"
+                  className="w-10 h-10 rounded-lg object-cover border-2 border-ink"
+                />
                 <div className="min-w-0">
                   <div className="font-heading font-bold text-sm">Sarah Jenkins, BSN, RN, OCN</div>
                   <div className="text-xs text-muted-fg">Oncology Triage Nurse</div>

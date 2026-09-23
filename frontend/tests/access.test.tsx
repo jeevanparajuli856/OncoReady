@@ -1,7 +1,7 @@
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { App } from '../src/App';
-import { INITIAL_STATE } from '../src/state/workflowState';
+import { INITIAL_STATE, NURSE_AVATAR } from '../src/state/workflowState';
 
 describe('ACCESS-001 prepared workspace entry', () => {
   beforeAll(() => {
@@ -73,6 +73,15 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect(screen.getByRole('heading', { name: "Today's trips" })).toBeDefined();
     expect(screen.getAllByRole('img', { name: 'CareLink by OncoReady' }).length).toBeGreaterThan(0);
     expect(screen.queryByRole('heading', { name: /Transportation Workspace/i })).toBeNull();
+  });
+
+  it('UI-002 shows the triage nurse with her SJ avatar in the patient care team', () => {
+    render(<App />);
+    signIn('abcp@oncoready.me');
+
+    const nurse = screen.getByRole('img', { name: 'Sarah Jenkins, BSN, RN, OCN' }) as HTMLImageElement;
+    expect(nurse.src).toBe(NURSE_AVATAR);
+    expect(decodeURIComponent(nurse.src)).toContain('>SJ<');
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {
