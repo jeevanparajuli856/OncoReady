@@ -161,7 +161,8 @@ export const Header: React.FC<HeaderProps> = ({
     <header className="workspace-header sticky top-0 z-40 w-full bg-white/95 border-b border-line">
       <div className="w-full px-3 sm:px-8 lg:px-12 h-[4.25rem] flex items-center justify-between gap-2">
         <button onClick={() => onSetPerspective('LANDING')} aria-label="Go to OncoReady home" title="Home" className="shrink-0">
-          <Logo size={30} compact />
+          <span className="hidden sm:block"><Logo size={38} /></span>
+          <span className="sm:hidden"><Logo size={42} showWordmark={false} /></span>
         </button>
 
         {currentPerspective !== 'SIGN_IN' && currentPerspective !== 'CARELINK_VENDOR' && <div className="hidden lg:flex items-center gap-2">

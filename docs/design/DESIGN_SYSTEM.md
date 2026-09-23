@@ -90,6 +90,7 @@ Never rely on color alone. Pair status with icon + label.
 
 - Use `oncoready-title-logo.svg` for the public header, public footer, and spacious brand moments.
 - Use the compact continuity-loop mark where the full title lockup would be unreadable.
+- The landing and workspace headers render the logo at the same size: the title lockup at `size={38}` from `sm` up, and the 42px continuity-loop mark alone on phones ([LAND-003](../features/LAND-003.md)).
 - Preserve the source aspect ratio and intrinsic dimensions. Do not reconstruct the wordmark with live HTML text or recolor the official asset.
 
 ### Public landing extension
