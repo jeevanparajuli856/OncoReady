@@ -33,6 +33,22 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect((plans.getByRole('link', { name: 'Contact us' }) as HTMLAnchorElement).href).toBe('mailto:support@oncoready.me');
   });
 
+  it('LAND-002 shows CareLink active and Uber Health and Lyft Healthcare as coming soon', () => {
+    render(<App />);
+
+    const partners = within(screen.getByTestId('transport-partners'));
+    const cards = partners.getAllByRole('article');
+    expect(cards).toHaveLength(3);
+    expect(cards.map((card) => card.getAttribute('data-partner-status'))).toEqual(['ACTIVE', 'COMING_SOON', 'COMING_SOON']);
+    expect(partners.getByRole('img', { name: 'Uber' })).toBeDefined();
+    expect(partners.getByRole('img', { name: 'Lyft' })).toBeDefined();
+    expect(partners.getAllByText('Coming soon')).toHaveLength(2);
+    expect(partners.queryByText(/Awaiting connection/)).toBeNull();
+
+    const copy = screen.getByTestId('transport-partners').textContent || '';
+    expect(copy).not.toMatch(/Connected/);
+  });
+
   const signIn = (email: string) => {
     fireEvent.click(screen.getAllByRole('button', { name: /Access workspace/i })[0]);
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: email } });
