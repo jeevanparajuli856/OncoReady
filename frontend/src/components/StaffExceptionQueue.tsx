@@ -155,7 +155,7 @@ export const StaffExceptionQueue: React.FC<StaffExceptionQueueProps> = ({
                       <span className={`chip ${transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED' ? 'chip-mint' : 'chip-sun'}`}>
                         <Car className="w-3 h-3" strokeWidth={2.5} />
                         {transportTask?.transportDetails?.dispatchStatus === 'CONFIRMED'
-                          ? 'Med-Van Dispatched'
+                          ? 'Ride Dispatched'
                           : 'Transport Coordination Needed'}
                       </span>
                     </>
