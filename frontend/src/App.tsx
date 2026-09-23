@@ -57,13 +57,12 @@ export const App: React.FC = () => {
   const [patientSearch, setPatientSearch] = useState('');
   const [patientStatus, setPatientStatus] = useState('ALL');
   
-  const [userReducedMotion, setUserReducedMotion] = useState<boolean>(false);
   const [systemReducedMotion, setSystemReducedMotion] = useState<boolean>(() =>
     typeof window !== 'undefined' &&
     typeof window.matchMedia === 'function' &&
     window.matchMedia('(prefers-reduced-motion: reduce)').matches,
   );
-  const reducedMotion = userReducedMotion || systemReducedMotion;
+  const reducedMotion = systemReducedMotion;
   const isStandaloneEpicLogin = state.currentPerspective === 'SIGN_IN' && isEpicLoginOpen;
   // CareLink is an OncoReady sub-brand with its own full-page shell: no OncoReady header or footer.
   const isStandaloneCareLink = state.currentPerspective === 'CARELINK_VENDOR';
@@ -213,7 +212,6 @@ export const App: React.FC = () => {
         overallReadiness={state.overallReadiness}
         onReset={handleReset}
         reducedMotion={reducedMotion}
-        onToggleReducedMotion={() => setUserReducedMotion(!userReducedMotion)}
         state={state}
         onOpenAuthModal={() => handleSetPerspective('SIGN_IN')}
       />}
@@ -368,13 +366,6 @@ export const App: React.FC = () => {
               aria-label="Go to OncoReady home"
             >
               <Logo size={36} />
-              <span className="rounded-full border border-line bg-white px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.12em]">Treatment readiness platform</span>
-            </button>
-            <button
-              onClick={() => setUserReducedMotion(!userReducedMotion)}
-              className={`px-3 py-1.5 rounded-lg border border-line font-heading font-semibold ${reducedMotion ? 'bg-accent text-white' : 'bg-white/70 hover:bg-white'}`}
-            >
-              {reducedMotion ? 'Motion off' : 'Reduce motion'}
             </button>
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-[11px]">
               <a href="/privacy" className="hover:text-accent hover:underline">Privacy Policy</a>

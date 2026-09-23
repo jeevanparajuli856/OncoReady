@@ -21,7 +21,6 @@ interface HeaderProps {
   overallReadiness: ReadinessStatus;
   onReset: () => void;
   reducedMotion: boolean;
-  onToggleReducedMotion: () => void;
   state: WorkflowState;
   onOpenAuthModal: () => void;
 }

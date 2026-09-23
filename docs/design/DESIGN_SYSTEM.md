@@ -105,7 +105,7 @@ Never rely on color alone. Pair status with icon + label.
 ## 6. Motion & Accessibility
 
 - Entrance: fade + slight rise unless `prefers-reduced-motion`
-- Respect the header reduced-motion toggle
+- Respect the operating-system reduced-motion preference (the in-app toggle was removed in [LAND-005](../features/LAND-005.md))
 - 44px minimum tap targets on patient/public CTAs
 - High-contrast focus: 2px accent outline + offset
 
@@ -115,7 +115,7 @@ Never rely on color alone. Pair status with icon + label.
 - Historical baseline: the landing role cards use three related variants (retain their motion language when composing the approved record-free replacement; do not retain public workspace entry behavior): patient **guided lift** (`-18px x / 22px y`, 540ms), staff **center resolve** (`28px y / 0.975 scale`, 620ms), and caregiver **supported arrival** (`18px x / 22px y`, 560ms), staggered by 80ms with `cubic-bezier(0.22, 1, 0.36, 1)`.
 - Workflow and SaaS-model cards may use smaller 12–14px grouped rises. Do not apply entrances to every section or any operational workspace card.
 - Animate only opacity and transform. Use no raw scroll handler, reveal animation-frame loop, pinned scrolling, parallax, or layout-changing property.
-- Effective reduced motion is the union of the live operating-system preference and the product motion-off control. It renders all reveal content immediately and also disables smooth scrolling, pulses/dashes, confetti, modal movement, dock transforms, and decorative hover movement.
+- Effective reduced motion follows the live operating-system preference. It renders all reveal content immediately and also disables smooth scrolling, pulses/dashes, confetti, modal movement, dock transforms, and decorative hover movement.
 
 ### Scroll-performance rules
 

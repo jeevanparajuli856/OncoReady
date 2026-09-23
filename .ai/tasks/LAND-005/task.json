@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAND-005",
+  "title": "Simpler footer",
+  "type": "fix",
+  "status": "DONE",
+  "priority": "low",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/LAND-005.md",
+  "branch": "fix/LAND-005-simplify-footer",
+  "base_branch": "main",
+  "dependencies": [
+    "LAND-004"
+  ],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/App.tsx",
+      "frontend/src/components/Header.tsx",
+      "frontend/tests/component.test.tsx",
+      "frontend/tests/e2e.spec.ts",
+      "frontend/artifacts/LAND-005-*"
+    ],
+    "other": [
+      "docs/features/LAND-005.md",
+      "docs/design/DESIGN_SYSTEM.md"
+    ]
+  },
+  "human_decisions": [
+    "Remove the Treatment readiness platform label and the Reduce motion button from the footer."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "113 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": []
+}
