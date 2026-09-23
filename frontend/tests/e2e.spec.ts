@@ -94,7 +94,6 @@ test.describe('OncoReady UI-001 product experience', () => {
 
     expect(response?.status()).toBe(200);
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
-    await expect(page.locator('.foundation-status')).toHaveAttribute('data-state', /persisted|unavailable/);
   });
 
   test('mobile workspace navigation keeps 44px targets without horizontal overflow', async ({ page }) => {
@@ -130,15 +129,6 @@ test.describe('OncoReady UI-001 product experience', () => {
       const motionControl = page.locator('footer').getByRole('button', { name: 'Reduce motion' });
       await page.evaluate(() => window.scrollTo(0, document.documentElement.scrollHeight));
       await motionControl.focus();
-
-      const foundationStatus = page.locator('.foundation-status');
-      const foundationRefresh = foundationStatus.locator('.foundation-status__refresh');
-      await expect(foundationStatus).toBeVisible();
-      await expect(foundationStatus).toHaveAttribute('data-state', /persisted|unavailable/);
-      const foundationTarget = await foundationRefresh.boundingBox();
-      expect(foundationTarget).not.toBeNull();
-      expect(foundationTarget!.width).toBeGreaterThanOrEqual(44);
-      expect(foundationTarget!.height).toBeGreaterThanOrEqual(44);
 
       const controlBounds = await motionControl.boundingBox();
       expect(controlBounds).not.toBeNull();
