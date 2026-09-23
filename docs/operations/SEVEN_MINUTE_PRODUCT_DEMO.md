@@ -10,7 +10,7 @@
 2. **A real phone call.** The outreach agent calls a real phone on stage.
 3. **A real vendor handoff, live.** A transport vendor taps a button in CareLink, and the navigator's screen changes in front of the audience.
 
-The vendor, drivers and prepared history are fictional. The software, the Epic Sandbox data and the call are real. Say that plainly; it builds trust instead of costing it.
+Open the whole segment by telling the audience this is a product demo and the full product ships later. The vendor, drivers and prepared history are fictional. The software, the Epic Sandbox data, the ReadySignal model and the call are real.
 
 ## Roles and stage setup
 
@@ -40,7 +40,7 @@ Times are wall-clock targets. ★ marks a moment to slow down and let the room s
 | **0:00–0:20** | Hand-over. Start **Video Part 1** on the public story. | “Tomorrow at ten, Camila Lopez has her fourth chemotherapy infusion. Today her ride falls through, and she doesn't feel well. Watch what happens next. Three things you'll see are real: hospital data, a phone call and a vendor handoff.” |
 | **0:20–0:50** | Staff workspace → Camila's **Treatment Readiness Graph**, reading **Treatment at risk**. | “The infusion is booked. But the graph says what the calendar doesn't: the plan around it is at risk, and until now nobody owned the gap.” |
 | **0:50–1:20** ★ | Epic tab → **View source details**. Hold on the source, the retrieval time and "read-only". | “This is real data from the Epic FHIR Sandbox, retrieved over FHIR R4. It's read-only; we never write back. Every value carries its original resource ID and retrieval time. Nothing here was typed in for the demo.” |
-| **1:20–1:50** | Insights: T−7 → T−2 → T−1. Open **Why flagged?**, toggle the transportation what-if, return to baseline. | “From a week out to the day before, her score climbs, and **Why flagged?** shows the factors behind it, including an unresolved barrier. The what-if shows how much transportation alone moves the model's output. These are saved outputs from a model trained on synthetic data. They explain a signal. They don't make a clinical decision.” |
+| **1:20–1:50** | Insights: T−7 → T−2 → T−1. Open **Why flagged?**, toggle the transportation what-if, return to baseline. | “This is ReadySignal, our readiness model. From a week out to the day before, Camila's signal climbs, and **Why flagged?** shows exactly why, including an unresolved barrier. Flip transportation in the what-if and you see how much that one fix moves her signal. ReadySignal explains the risk; people still make the call.” |
 | **1:50–2:30** | Timeline: open one prepared scheduled message and its reply. Switch to Camila's check-in. Her reply is ready: “My ride was cancelled—and I’m not feeling well today.” | “OncoReady has been checking in with Camila; this history is prepared. Now her real problem arrives, in her own words, and we keep those words exactly.” |
 | **2:30–3:00** ★ | Submit the reply. Two separate tasks appear, nurse and transportation. Sarah accepts ownership and records a human disposition. **Pause Part 1.** | “One message, two jobs, two owners. Sarah, the nurse, owns the symptom and records a human decision. Marcus, the navigator, owns the ride. Each task has a next step and a deadline. The software never reads her symptoms or grants clearance. People do.” |
 | **3:00–4:05** ★ | **LIVE CALL.** Switch to the private control. Operator checks the armed window, then presses **Place live call once**. Show `initiating → ringing`. Participant answers on speaker, says one sentence, pauses. Wait for the actual `completed`. | Presenter: **“Now the part we can't fake. Live call.”** The agent gives its transportation check-in opener. Participant: **“My ride fell through, and I need help getting to my appointment.”** Let the agent reply. After the call ends and the participant confirms it was heard: **“That was a real call, and Twilio just reported it completed. Now watch the ride get fixed.”** |
@@ -57,7 +57,7 @@ Times are wall-clock targets. ★ marks a moment to slow down and let the room s
 The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md)). The disclosure is spoken: the opening line names what is real, and the CareLink line names what is fictional.
 
 - **Epic:** call it **read-only data from the Epic FHIR Sandbox**. Don't say it syncs live during the talk or is connected to a production hospital.
-- **Insights:** describe them as saved outputs from a model trained on **synthetic data**. Don't call the score a clinical risk probability or claim patient outcomes.
+- **ReadySignal:** present it as OncoReady's working readiness model. The demo disclosure at the start covers its training data, so there's no need to mention it on stage. Don't call the score a clinical risk probability, and don't claim measured patient outcomes or clinical validation.
 - **Prepared history:** the scheduled messages and the previous-trip replay are **prepared scenario activity**.
 - **CareLink:** the vendor, the drivers and the backup provider are fictional. The CareLink portal and the live sync are real software. No real ride is booked, and there is no live GPS or ETA.
 - **Uber Health:** say "the adapter is built and awaiting connection" or "plugs in once a contract and credentials are in place". **Never** say Uber Health is connected, integrated, a partner or a customer. The logo is on screen; if asked about a partnership, answer honestly that there isn't one yet.
@@ -99,7 +99,7 @@ The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md
 | Is Uber Health integrated? | “Not yet. Our adapter for it is built; it needs a contract and API credentials. CareLink runs on the same adapter layer today.” |
 | Is this connected to a real hospital's Epic? | “It's real data from Epic's FHIR Sandbox, read-only. A production connection would go through a hospital's own Epic onboarding.” |
 | Are these real patients or vendors? | “No. Camila's record is Epic sandbox test data, and the vendors and drivers are fictional. The software and the call are real.” |
-| How accurate is the model? | “It was trained on synthetic data for this demonstration. We show it for explainability, not as a validated clinical prediction.” |
+| How accurate is ReadySignal? | “In this demo it runs on simulated patient data; it's built for explainability. Training and validating it on a hospital's real history comes with the real rollout.” |
 | Is it HIPAA compliant? | “We aren't making a compliance claim today. The demo uses only sandbox and synthetic data.” |
 | What does a vendor need to use CareLink? | “A browser. That's the point: local vendors without dispatch software get trips, accept them and report problems in one place.” |
 

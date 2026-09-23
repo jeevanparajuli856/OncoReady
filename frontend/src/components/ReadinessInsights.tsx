@@ -67,7 +67,9 @@ const FactorList: React.FC<{
   </div>
 );
 
-const displayModelVersion = (version: string) => version.replace(/^synthetic-/, '');
+export const MODEL_NAME = 'ReadySignal';
+/** Shows the saved version under the product name, e.g. `synthetic-logistic-1.0` → `ReadySignal 1.0`. */
+const displayModelVersion = (version: string) => `${MODEL_NAME} ${version.replace(/^synthetic-/, '').replace(/^logistic-/, '')}`;
 
 export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
   artifact = savedMlInsightsArtifact,
@@ -85,7 +87,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
         <div>
           <h2 id="ml-unavailable-title" className="font-heading font-bold">Insights unavailable</h2>
           <p className="text-sm text-muted-fg mt-1">
-            Readiness model output could not be verified. The staff workflow remains available in the other case tabs.
+            ReadySignal output could not be verified. The staff workflow remains available in the other case tabs.
           </p>
           <p className="text-xs text-muted-fg mt-2">Evidence check: {result.reason}</p>
         </div>
@@ -127,7 +129,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
               <Sparkles className="w-5 h-5" aria-hidden="true" />
             </span>
             <div>
-              <span className="chip chip-accent mb-2">Readiness model</span>
+              <span className="chip chip-accent mb-2">{MODEL_NAME}</span>
               <h2 id="ml-trajectory-title" className="font-heading font-extrabold text-lg">Saved readiness trajectory</h2>
               <p className="text-sm text-muted-fg mt-1 max-w-3xl">
                 Supports staff review; does not determine clinical urgency, treatment eligibility, or workflow closure.

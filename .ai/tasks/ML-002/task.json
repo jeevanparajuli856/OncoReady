@@ -1,0 +1,23 @@
+{
+  "schema_version": "1.0",
+  "task_id": "ML-002",
+  "title": "Name the readiness model ReadySignal",
+  "type": "feature",
+  "status": "DONE",
+  "priority": "medium",
+  "owners": { "frontend": "claude", "tester": "claude", "review": "human" },
+  "spec": "docs/features/ML-002.md",
+  "branch": "feature/ML-002-readysignal-name",
+  "dependencies": ["ML-001", "POLISH-001"],
+  "contracts": [],
+  "scope": {
+    "frontend": ["frontend/src/components/ReadinessInsights.tsx", "frontend/tests/ml-insights.test.tsx"],
+    "other": ["docs/features/ML-002.md", "docs/features/ML-001.md", "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md"]
+  },
+  "human_decisions": [
+    "Model name: ReadySignal.",
+    "No design change; copy only.",
+    "No synthetic wording on screen or in the stage script; the presenter discloses the demo nature up front."
+  ],
+  "verification": { "build": "pass", "component_tests": "107 passed", "e2e_tests": "13 passed" }
+}

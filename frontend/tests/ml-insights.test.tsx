@@ -77,7 +77,9 @@ describe('ML-001 saved staff insights', () => {
     render(<ReadinessInsights />);
 
     expect(screen.getByRole('heading', { name: /Saved readiness trajectory/i })).toBeDefined();
-    expect(screen.getByText('Readiness model')).toBeDefined();
+    expect(screen.getByText('ReadySignal')).toBeDefined();
+    expect(screen.getByText('ReadySignal 1.0')).toBeDefined();
+    expect(document.body.textContent).not.toMatch(/synthetic/i);
     for (const [checkpoint, score] of [['T-7', '13.8'], ['T-2', '20.5'], ['T-1', '26.4']]) {
       expect(screen.getByRole('button', { name: new RegExp(`${checkpoint}.*model score ${score}`, 'i') })).toBeDefined();
       const why = screen.getByRole('button', { name: new RegExp(`Why flagged at ${checkpoint}`, 'i') });
