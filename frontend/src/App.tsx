@@ -50,6 +50,8 @@ export const App: React.FC = () => {
 
   const [state, dispatch] = useReducer(workflowReducer, null, loadSavedWorkflowState);
   const [isReadinessModalOpen, setIsReadinessModalOpen] = useState<boolean>(false);
+  // Bumped on every open so each follow-up report starts from a blank form.
+  const [problemReportKey, setProblemReportKey] = useState<number | null>(null);
   const [isEpicLoginOpen, setIsEpicLoginOpen] = useState<boolean>(() =>
     typeof window !== 'undefined' && window.location.pathname === '/epic/login',
   );
@@ -177,6 +179,10 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleReportProblem = (data: { transportNotes: string; clinicalConcernText: string }) => {
+    dispatch({ type: 'REPORT_NEW_PROBLEM', payload: data });
+  };
+
   const handleAcknowledgeClinical = () => {
     dispatch({
       type: 'ACKNOWLEDGE_CLINICAL_TASK',
@@ -265,6 +271,7 @@ export const App: React.FC = () => {
                 labs={state.labs}
                 vitals={state.vitals}
                 onStartReadinessCheck={() => setIsReadinessModalOpen(true)}
+                onReportProblem={() => setProblemReportKey(Date.now())}
                 onOpenResolutionView={() => setIsPatientResolutionOpen(true)}
                 onSwitchPerspective={(p) => handleSetPerspective(p)}
               />
@@ -382,6 +389,16 @@ export const App: React.FC = () => {
         onSubmit={handleReadinessSubmit}
         defaultAddress={state.patient.address}
       />
+      {problemReportKey !== null && (
+        <ReadinessCheckModal
+          key={problemReportKey}
+          mode="REPORT"
+          isOpen
+          onClose={() => setProblemReportKey(null)}
+          onSubmit={handleReportProblem}
+          defaultAddress={state.patient.address}
+        />
+      )}
 
     </div>
   );

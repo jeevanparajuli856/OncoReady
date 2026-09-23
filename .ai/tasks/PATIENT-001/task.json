@@ -1,0 +1,50 @@
+{
+  "schema_version": "1.0",
+  "task_id": "PATIENT-001",
+  "title": "Report a new problem after the readiness check",
+  "type": "feature",
+  "status": "DONE",
+  "priority": "medium",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/PATIENT-001.md",
+  "branch": "feature/PATIENT-001-report-new-problem",
+  "base_branch": "main",
+  "dependencies": [
+    "FLOW-001",
+    "RIDE-001"
+  ],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/state/workflowState.ts",
+      "frontend/src/types/index.ts",
+      "frontend/src/App.tsx",
+      "frontend/src/components/ReadinessCheckModal.tsx",
+      "frontend/src/components/PatientTreatmentHome.tsx",
+      "frontend/src/components/StaffCaseWorkspace.tsx",
+      "frontend/src/components/PatientResolutionView.tsx",
+      "frontend/tests/patient-report.test.ts",
+      "frontend/tests/patient-report-ui.test.tsx",
+      "frontend/artifacts/PATIENT-001-*"
+    ],
+    "other": [
+      "docs/features/PATIENT-001.md",
+      "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md",
+      "AGENTS.md"
+    ]
+  },
+  "human_decisions": [
+    "Add an always-available Report a problem button after the readiness check.",
+    "The button is not clicked during the seven-minute demo."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "120 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": []
+}

@@ -287,6 +287,7 @@ const SOURCE_REPLY_ID = 'source-prepared-reply-2026-09-24T10:12:00-05:00';
 
 export type WorkflowAction =
   | { type: 'SUBMIT_READINESS'; payload: { transportNotes: string; clinicalConcernText: string; sourceEventId?: string; commandId?: string } }
+  | { type: 'REPORT_NEW_PROBLEM'; payload: { transportNotes: string; clinicalConcernText: string } }
   | { type: 'ACKNOWLEDGE_CLINICAL_TASK'; payload?: { commandId?: string; nurseNotes?: string } }
   | { type: 'RECORD_CLINICAL_DISPOSITION'; payload: { disposition: string; followUpBlocking: boolean; commandId?: string } }
   | { type: 'CONFIRM_TRANSPORTATION'; payload?: { vehicleId?: string; driverName?: string; pickupTime?: string; returnArrangement?: string; logisticsContact?: string; backupPlan?: string; commandId?: string } }
@@ -441,6 +442,16 @@ const failCurrentRidePlan = (
   return { ...next, overallReadiness: readinessFor(next) };
 };
 
+// Each follow-up report from the patient portal leaves one marker event, plus one per part it opened.
+// Counting them gives later staff and patient steps fresh command and event ids, so a reopened task
+// can be acknowledged, dispositioned and confirmed again without colliding with the first round.
+const PATIENT_REPORT_TIME = 'Sep 24, 2026 • 11:20 AM CT';
+const PATIENT_REPORT_LABEL_TIME = 'Sep 24, 11:20 AM CT';
+const countEvents = (state: WorkflowState, pattern: RegExp) => state.auditEvents.filter((event) => pattern.test(event.id)).length;
+const patientReportRound = (state: WorkflowState) => 1 + countEvents(state, /^EVT-PATIENT-REPORT-\d+$/);
+const clinicalRound = (state: WorkflowState) => 1 + countEvents(state, /^EVT-PATIENT-REPORT-\d+-CLINICAL$/);
+const roundSuffix = (round: number, prefix: string) => (round > 1 ? `${prefix}${round}` : '');
+
 const hasCompleteLogistics = (payload: {
   pickupTime: string;
   plannedArrival: string;
@@ -482,25 +493,62 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same patient reply.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
+    case 'REPORT_NEW_PROBLEM': {
+      // Only Camila files her own follow-up, and only after the readiness check opened her work.
+      if (state.currentPerspective !== 'PATIENT' || !state.readinessCheckCompleted) return state;
+      const clinicalText = action.payload.clinicalConcernText.trim();
+      const transportText = action.payload.transportNotes.trim();
+      if (!clinicalText && !transportText) return state;
+      const round = patientReportRound(state) + 1;
+      const reportId = `EVT-PATIENT-REPORT-${round}`;
+      const now = PATIENT_REPORT_TIME;
+      let next: WorkflowState = { ...state, patientAcknowledged: false, patientAcknowledgedPlanVersion: null };
+      next = { ...next, auditEvents: addEvent(next, { id: reportId, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'New problem reported', description: 'Follow-up report from the patient portal. Symptoms go to nursing and ride changes go to navigation; the plan needs Camila\u2019s confirmation again.', stateDiff: { field: 'continuityPlan', from: isContinuityPlanConfirmed(state) ? 'confirmed' : 'open', to: 'open' } }) };
+      if (clinicalText) {
+        next = {
+          ...next,
+          tasks: next.tasks.map((item) => item.type === 'CLINICAL_REVIEW'
+            ? { ...item, status: 'ASSIGNED', nextAction: 'Contact Camila and record a human disposition', waitingReason: 'Patient contact', clinicalDetails: { verbatimReport: clinicalText, clearanceState: 'PENDING_REVIEW', reportedAt: PATIENT_REPORT_LABEL_TIME } }
+            : item),
+        };
+        next = { ...next, auditEvents: addEvent(next, { id: `${reportId}-CLINICAL`, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'New symptom report sent to nursing', description: `Verbatim report preserved for Sarah Jenkins, RN: \u201c${clinicalText}\u201d`, stateDiff: { field: 'clinical.status', from: state.tasks.find((item) => item.type === 'CLINICAL_REVIEW')?.status ?? 'none', to: 'ASSIGNED' } }) };
+      }
+      if (transportText) {
+        next = {
+          ...next,
+          tasks: next.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+            ? { ...item, transportDetails: { ...item.transportDetails!, patientUpdate: transportText, patientUpdateAt: PATIENT_REPORT_LABEL_TIME } }
+            : item),
+        };
+        if (next.ride.currentStatus === 'RECOVERED') {
+          next = failCurrentRidePlan(next, `${reportId}-RIDE`, now, 'Camila reported a problem with the current ride', state.patient.name, 'PATIENT', `\u201c${transportText}\u201d`);
+        } else {
+          next = { ...next, auditEvents: addEvent(next, { id: `${reportId}-RIDE`, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Ride update sent to navigation', description: `Marcus Vance, MSW already owns the open ride work. Camila\u2019s words: \u201c${transportText}\u201d` }) };
+        }
+      }
+      return { ...next, overallReadiness: readinessFor(next) };
+    }
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
       if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
-      const commandId = action.payload?.commandId ?? 'cmd-ack-clinical-v1';
+      const round = clinicalRound(state);
+      const commandId = action.payload?.commandId ?? `cmd-ack-clinical-v1${roundSuffix(round, '-r')}`;
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ASSIGNED' || commandApplied(state, commandId)) return state;
       const now = 'Sep 24, 2026 • 10:18 AM CT';
       let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'CLINICAL_REVIEW' ? { ...item, status: 'ACKNOWLEDGED', nextAction: 'Contact Camila and record a human disposition', waitingReason: 'Patient contact', clinicalDetails: { ...item.clinicalDetails!, ownershipAcknowledgedAt: now, acknowledgedAt: now, reviewedBy: 'Sarah Jenkins, RN' } } : item) };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-CLINICAL-OWNED', timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Clinical ownership accepted', description: 'Ownership was accepted. Human contact and disposition remain open.', stateDiff: { field: 'clinical.status', from: 'ASSIGNED', to: 'ACKNOWLEDGED' } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-CLINICAL-OWNED${roundSuffix(round, '-R')}`, timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Clinical ownership accepted', description: 'Ownership was accepted. Human contact and disposition remain open.', stateDiff: { field: 'clinical.status', from: 'ASSIGNED', to: 'ACKNOWLEDGED' } }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'RECORD_CLINICAL_DISPOSITION': {
       if (!isRoleMutationAllowed(state, 'CARE_TEAM')) return state;
-      const commandId = action.payload.commandId ?? `cmd-disposition-${action.payload.followUpBlocking ? 'blocking' : 'nonblocking'}-v1`;
+      const round = clinicalRound(state);
+      const commandId = action.payload.commandId ?? `cmd-disposition-${action.payload.followUpBlocking ? 'blocking' : 'nonblocking'}-v1${roundSuffix(round, '-r')}`;
       const task = state.tasks.find((item) => item.type === 'CLINICAL_REVIEW');
       if (!task || task.status !== 'ACKNOWLEDGED' || !action.payload.disposition.trim() || commandApplied(state, commandId)) return state;
       const now = 'Sep 24, 2026 • 10:28 AM CT';
       const status: Task['status'] = action.payload.followUpBlocking ? 'ACKNOWLEDGED' : 'RESOLVED';
       let next: WorkflowState = { ...state, appliedCommandIds: withCommand(state, commandId), tasks: state.tasks.map((item) => item.type === 'CLINICAL_REVIEW' ? { ...item, status, nextAction: action.payload.followUpBlocking ? 'Complete the recorded human follow-up' : 'No further clinical workflow action', waitingReason: action.payload.followUpBlocking ? 'Human clinical follow-up' : 'Nothing outstanding', clinicalDetails: { ...item.clinicalDetails!, clearanceState: 'REVIEWED_AND_ACKNOWLEDGED', disposition: action.payload.disposition.trim(), dispositionRecordedAt: now, followUpBlocking: action.payload.followUpBlocking, nurseNotes: action.payload.disposition.trim(), reviewedBy: 'Sarah Jenkins, RN' } } : item) };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-DISPOSITION-${action.payload.followUpBlocking ? 'BLOCKING' : 'NONBLOCKING'}`, timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Human disposition recorded', description: action.payload.followUpBlocking ? 'Patient contact was recorded; human follow-up remains blocking.' : 'Patient contact was recorded with no blocking follow-up.', stateDiff: { field: 'clinical.followUpBlocking', from: 'unknown', to: String(action.payload.followUpBlocking) } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-DISPOSITION-${action.payload.followUpBlocking ? 'BLOCKING' : 'NONBLOCKING'}${roundSuffix(round, '-R')}`, timestamp: now, actor: 'Sarah Jenkins, RN', actorRole: 'TRIAGE_NURSE', action: 'Human disposition recorded', description: action.payload.followUpBlocking ? 'Patient contact was recorded; human follow-up remains blocking.' : 'Patient contact was recorded with no blocking follow-up.', stateDiff: { field: 'clinical.followUpBlocking', from: 'unknown', to: String(action.payload.followUpBlocking) } }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'CONFIRM_TRANSPORTATION': {
@@ -585,8 +633,11 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     }
     case 'ASSIGN_BACKUP_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
+      // A later failure needs a new backup record: ids must stay unique for history and saved state.
+      const firstBackup = !state.ride.assignments.some((item) => item.id === 'RIDE-ASG-BACKUP-002');
+      const backupVersion = getCurrentPlanVersion(state);
       const assignment: RideAssignment = {
-        id: 'RIDE-ASG-BACKUP-002',
+        id: firstBackup ? 'RIDE-ASG-BACKUP-002' : `RIDE-ASG-BACKUP-V${backupVersion}`,
         providerName: BACKUP_PROVIDER,
         providerKind: 'FICTIONAL',
         status: 'CURRENT',
@@ -601,7 +652,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
           ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Trip sent to backup ${BACKUP_PROVIDER} via CareLink`, description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: firstBackup ? 'EVT-RIDE-BACKUP-ASSIGNED' : `EVT-RIDE-BACKUP-ASSIGNED-V${backupVersion}`, timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Trip sent to backup ${BACKUP_PROVIDER} via CareLink`, description: `Backup assignment ${assignment.id} is current; earlier assignments remain in history.` }) };
       return next;
     }
     case 'SAVE_RECOVERED_RIDE': {
@@ -683,11 +734,12 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     }
     case 'ACKNOWLEDGE_PATIENT_PLAN': {
       const version = getCurrentPlanVersion(state);
-      const commandId = action.payload?.commandId ?? `cmd-patient-ack-v${version}`;
+      const reportRound = patientReportRound(state);
+      const commandId = action.payload?.commandId ?? `cmd-patient-ack-v${version}${roundSuffix(reportRound, '-r')}`;
       if (!isClinicalDispositionComplete(state) || !isCurrentTransportPlanComplete(state) || state.patientAcknowledgedPlanVersion === version || commandApplied(state, commandId)) return state;
       const now = 'Sep 24, 2026 • 11:02 AM CT';
       let next: WorkflowState = { ...state, patientAcknowledged: true, patientAcknowledgedPlanVersion: version, currentCheckpoint: 'FINAL_CONFIRMATION', appliedCommandIds: withCommand(state, commandId) };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-PATIENT-ACK-V${version}`, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: `Current transport plan v${version} acknowledged`, description: 'Camila acknowledged the current coordination plan. Treatment attendance remains unknown.', stateDiff: { field: 'continuityPlan', from: 'open', to: 'confirmed' } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-FLOW-PATIENT-ACK-V${version}${roundSuffix(reportRound, '-R')}`, timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: `Current transport plan v${version} acknowledged`, description: 'Camila acknowledged the current coordination plan. Treatment attendance remains unknown.', stateDiff: { field: 'continuityPlan', from: 'open', to: 'confirmed' } }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'LOAD_CHECKPOINT':
@@ -833,8 +885,8 @@ const isLab = (value: unknown) => isRecord(value) && hasStrings(value, ['name','
 const isVital = (value: unknown) => isRecord(value) && hasStrings(value, ['name','value','unit','collectedAt']) && ['NORMAL','ATTENTION'].includes(String(value.status));
 const isSubmission = (value: unknown) => isRecord(value) && typeof value.hasTransportIssue === 'boolean' && typeof value.transportNotes === 'string' && typeof value.hasClinicalConcern === 'boolean' && typeof value.clinicalConcernText === 'string' && (value.submittedAt === null || typeof value.submittedAt === 'string');
 const isOwner = (value: unknown) => isRecord(value) && hasStrings(value, ['id','name','role','department','badge','avatarUrl']);
-const isClinicalDetails = (value: unknown) => isRecord(value) && typeof value.verbatimReport === 'string' && ['PENDING_REVIEW','REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) && ['nurseNotes','ownershipAcknowledgedAt','disposition','dispositionRecordedAt','acknowledgedAt','reviewedBy'].every((key) => optionalString(value[key])) && (value.followUpBlocking === undefined || typeof value.followUpBlocking === 'boolean');
-const isTransportDetails = (value: unknown) => isRecord(value) && hasStrings(value, ['pickupAddress','destination','requestedTime','vehicleType']) && ['UNASSIGNED','DISPATCH_IN_PROGRESS','CONFIRMED'].includes(String(value.dispatchStatus)) && typeof value.planVersion === 'number' && value.planVersion >= 1 && typeof value.planFailed === 'boolean' && ['vehicleId','driverName','confirmedPickupTime','plannedArrival','dispatchedBy','returnArrangement','logisticsContact','backupPlan','backupOwner'].every((key) => optionalString(value[key]));
+const isClinicalDetails = (value: unknown) => isRecord(value) && typeof value.verbatimReport === 'string' && ['PENDING_REVIEW','REVIEWED_AND_ACKNOWLEDGED'].includes(String(value.clearanceState)) && ['nurseNotes','ownershipAcknowledgedAt','disposition','dispositionRecordedAt','acknowledgedAt','reviewedBy','reportedAt'].every((key) => optionalString(value[key])) && (value.followUpBlocking === undefined || typeof value.followUpBlocking === 'boolean');
+const isTransportDetails = (value: unknown) => isRecord(value) && hasStrings(value, ['pickupAddress','destination','requestedTime','vehicleType']) && ['UNASSIGNED','DISPATCH_IN_PROGRESS','CONFIRMED'].includes(String(value.dispatchStatus)) && typeof value.planVersion === 'number' && value.planVersion >= 1 && typeof value.planFailed === 'boolean' && ['vehicleId','driverName','confirmedPickupTime','plannedArrival','dispatchedBy','returnArrangement','logisticsContact','backupPlan','backupOwner','patientUpdate','patientUpdateAt'].every((key) => optionalString(value[key]));
 const isTask = (value: unknown) => {
   if (!isRecord(value) || !hasStrings(value, ['id','title','patientId','createdAt','dueTime','nextAction','waitingReason']) || !['CLINICAL_REVIEW','TRANSPORTATION_NAVIGATION'].includes(String(value.type)) || !['DETECTED','ASSIGNED','ACKNOWLEDGED','ACTIONED','CONFIRMED','RESOLVED'].includes(String(value.status)) || !['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority)) || !isOwner(value.owner)) return false;
   return value.type === 'CLINICAL_REVIEW' ? isClinicalDetails(value.clinicalDetails) && value.transportDetails === undefined : isTransportDetails(value.transportDetails) && value.clinicalDetails === undefined;
