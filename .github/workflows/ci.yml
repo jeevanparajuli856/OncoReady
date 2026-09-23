@@ -51,4 +51,6 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps chromium
       - name: Verify repository
-        run: python scripts/agentctl.py verify RAIL-001
+        run: |
+          source backend/.venv/bin/activate
+          python scripts/agentctl.py verify RAIL-001
