@@ -1,5 +1,18 @@
 import { expect, test } from '@playwright/test';
 
+/** Camila reports the cancelled ride, then the Care Navigator opens Transportation with that ride task. */
+async function openNavigatorTransportation(page: import('@playwright/test').Page) {
+  await page.getByRole('button', { name: /Access workspace/i }).first().click();
+  await page.getByLabel('Email').fill('abcp@oncoready.me');
+  await page.getByLabel('Password').fill('1234');
+  await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+  await page.getByRole('button', { name: /Start Readiness Check/i }).click();
+  await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
+  await page.getByRole('button', { name: /Camila Lopez/ }).first().click();
+  await page.getByRole('button', { name: /Care Navigator \(Marcus Vance, MSW\)/ }).click();
+  await page.getByRole('button', { name: 'Transportation', exact: true }).first().click();
+}
+
 test.describe('OncoReady UI-001 product experience', () => {
   test.beforeEach(async ({ page }) => {
     await page.goto('/');
@@ -182,7 +195,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.locator('body')).not.toContainText('Camila Lopez');
   });
 
-  test('transportation login opens the working CareLink dashboard with truthful provider readiness', async ({ page }) => {
+  test('care navigator Transportation opens the working CareLink dashboard with truthful provider readiness', async ({ page }) => {
     const uberRequests: string[] = [];
     const consoleErrors: string[] = [];
     page.on('request', (request) => {
@@ -192,10 +205,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       if (message.type() === 'error') consoleErrors.push(message.text());
     });
 
-    await page.getByRole('button', { name: /Access workspace/i }).first().click();
-    await page.getByLabel('Email').fill('abct@oncoready.me');
-    await page.getByLabel('Password').fill('1234');
-    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await openNavigatorTransportation(page);
 
     await expect(page.getByRole('heading', { name: 'Transportation Workspace' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
@@ -384,16 +394,13 @@ test.describe('OncoReady UI-001 product experience', () => {
       if (new URL(request.url()).hostname.includes('uber')) uberRequests.push(request.url());
     });
 
-    await page.getByRole('button', { name: /Access workspace/i }).first().click();
-    await page.getByLabel('Email').fill('abct@oncoready.me');
-    await page.getByLabel('Password').fill('1234');
-    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await openNavigatorTransportation(page);
     await expect(page.getByRole('heading', { name: 'Transportation Workspace' })).toBeVisible();
 
     const vendor = await context.newPage();
     await vendor.goto('/carelink');
     await expect(vendor).toHaveURL(/\/login$/);
-    await vendor.getByLabel('Email').fill('abcv@oncoready.me');
+    await vendor.getByLabel('Email').fill('abct@oncoready.me');
     await vendor.getByLabel('Password').fill('1234');
     await vendor.getByRole('button', { name: 'Sign in', exact: true }).last().click();
     await expect(vendor).toHaveURL(/\/carelink$/);

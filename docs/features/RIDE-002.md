@@ -9,7 +9,7 @@ A local transport vendor without its own software signs in to CareLink, OncoRead
 ## Approved decisions
 
 1. **Named fictional partners.** Partner A becomes **Crescent Lantern Medical Rides**, the primary provider and the CareLink vendor signed in to the portal. Partner B becomes **Magnolia Wayfare Transport**, the backup provider. Both are invented names; a web search found no transport company using either name.
-2. **CareLink vendor portal.** A new `CARELINK_VENDOR` workspace at `/carelink`, reached through the `abcv@oncoready.me` sign-in and the Switch Workspace menu. It has its own CareLink branding and a "Powered by OncoReady" line.
+2. **CareLink vendor portal.** A new `CARELINK_VENDOR` workspace at `/carelink`, reached through the `abct@oncoready.me` sign-in (since RIDE-003; the short-lived `abcv@` login was removed) and the Switch Workspace menu. It has its own CareLink branding and a "Powered by OncoReady" line.
    - **Trip board:** the vendor sees an offered trip after the navigator assigns it via CareLink. The vendor can **Accept trip** or **Decline**, and after accepting can **Report unavailable** with a reason (vehicle out of service, driver unavailable, outside service window).
    - **Trip-day statuses:** En route, Picked up and Dropped off are shown but disabled until trip day. The scenario ends before treatment day, so no pickup is claimed.
    - **Completed trips:** the previous trip `carelink-prior-001` appears as a completed trip.
@@ -38,7 +38,7 @@ The CareLink portal's teal brand, slate surfaces and `carelink-btn` styles are a
 
 ## Acceptance criteria
 
-1. Signing in as `abcv@oncoready.me` opens `/carelink`. An offered trip appears only after the navigator assigns Crescent Lantern Medical Rides.
+1. Signing in as `abct@oncoready.me` opens `/carelink`. An offered trip appears only after the navigator assigns Crescent Lantern Medical Rides.
 2. Accepting in CareLink adds a timeline event and an "Accepted in CareLink" tag on the navigator's assignment.
 3. Declining or reporting unavailable in CareLink reopens the navigator's blocker with the event "Crescent Lantern Medical Rides reported unavailable via CareLink". The trip moves to Released in the portal.
 4. The vendor cannot trigger navigator or Care Team actions. The vendor projection contains no clinical or Epic fields. Unit tests cover both.

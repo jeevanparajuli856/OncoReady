@@ -15,8 +15,7 @@ const TEST_ACCOUNTS: Array<{ email: string; password: string; perspective: Persp
   { email: 'abcc@oncoready.me', password: '1234', perspective: 'CAREGIVER', label: 'Caregiver' },
   { email: 'abcs@oncoready.me', password: '1234', perspective: 'CARE_TEAM', label: 'Care Team (Readiness Team)' },
   { email: 'abcn@oncoready.me', password: '1234', perspective: 'CARE_NAVIGATOR', label: 'Care Navigator' },
-  { email: 'abct@oncoready.me', password: '1234', perspective: 'TRANSPORTATION', label: 'Transportation' },
-  { email: 'abcv@oncoready.me', password: '1234', perspective: 'CARELINK_VENDOR', label: 'Transport vendor (CareLink)' },
+  { email: 'abct@oncoready.me', password: '1234', perspective: 'CARELINK_VENDOR', label: 'CareLink vendor' },
 ];
 
 export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onBack, onEpicModeChange }) => {
@@ -43,7 +42,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onB
 
   const handleEpicLogin = (event: FormEvent) => {
     event.preventDefault();
-    const account = TEST_ACCOUNTS.find((candidate) => candidate.email === epicEmail.trim().toLowerCase() && candidate.password === epicPassword && ['CARE_TEAM', 'CARE_NAVIGATOR', 'TRANSPORTATION'].includes(candidate.perspective));
+    const account = TEST_ACCOUNTS.find((candidate) => candidate.email === epicEmail.trim().toLowerCase() && candidate.password === epicPassword && ['CARE_TEAM', 'CARE_NAVIGATOR'].includes(candidate.perspective));
     if (!account) {
       setEpicError('You entered an invalid user ID, password, or other type of authentication credential. Contact your administrator.');
       return;
@@ -138,7 +137,7 @@ export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onB
             <img src="/epic-logo.svg" alt="" />
             {redirectingToEpic ? 'Redirecting to Epic...' : 'Sign in with Epic'}
           </button>
-          <p className="text-[11px] text-muted-fg mt-4 text-center">Epic sign in is available for Care Team, Care Navigator, and Transportation.</p>
+          <p className="text-[11px] text-muted-fg mt-4 text-center">Epic sign in is available for Care Team and Care Navigator.</p>
         </section>
       </div>
     </div>

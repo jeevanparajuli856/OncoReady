@@ -5,21 +5,42 @@
   "type": "feature",
   "status": "DONE",
   "priority": "medium",
-  "owners": { "frontend": "claude", "tester": "claude", "review": "human" },
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
   "spec": "docs/features/RIDE-003.md",
   "branch": "feature/RIDE-003-carelink-subbrand",
   "base_branch": "feature/RIDE-002-carelink-vendor-portal",
-  "dependencies": ["RIDE-002"],
+  "dependencies": [
+    "RIDE-002"
+  ],
   "contracts": [],
   "scope": {
-    "frontend": ["frontend/**"],
-    "other": ["docs/features/RIDE-003.md", "docs/design/DESIGN_SYSTEM.md", "docs/architecture/SYSTEM.md", "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md", "AGENTS.md"]
+    "frontend": [
+      "frontend/**"
+    ],
+    "other": [
+      "docs/features/RIDE-003.md",
+      "docs/design/DESIGN_SYSTEM.md",
+      "docs/architecture/SYSTEM.md",
+      "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md",
+      "AGENTS.md"
+    ]
   },
   "human_decisions": [
     "CareLink opens as its own page and is branded 'CareLink by OncoReady'.",
     "New CareLink logo derived from the OncoReady continuity loop.",
-    "CareLink stays reachable from the Switch Workspace menu and can switch back."
+    "CareLink stays reachable from the Switch Workspace menu and can switch back.",
+    "abct@oncoready.me opens the CareLink vendor portal; abcv@ removed; Epic sign-in limited to Care Team and Care Navigator."
   ],
-  "verification": { "build": "pass", "component_tests": "107 passed", "e2e_tests": "13 passed" },
-  "open_items": ["Optional CareLink-branded sign-in page."]
+  "verification": {
+    "build": "pass",
+    "component_tests": "107 passed",
+    "e2e_tests": "13 passed"
+  },
+  "open_items": [
+    "Optional CareLink-branded sign-in page."
+  ]
 }

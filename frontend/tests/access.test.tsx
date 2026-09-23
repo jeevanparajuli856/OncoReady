@@ -10,6 +10,7 @@ describe('ACCESS-001 prepared workspace entry', () => {
 
   beforeEach(() => {
     localStorage.clear();
+    window.history.replaceState({}, '', '/');
   });
 
   it('keeps the public story record-free and renders exactly the approved two plans', () => {
@@ -47,15 +48,15 @@ describe('ACCESS-001 prepared workspace entry', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Transportation' }));
     expect(screen.getByRole('heading', { name: /Transportation Workspace/i })).toBeDefined();
     expect(screen.getByText('OncoReady vendor portal · Active')).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
+    expect(screen.getByText('Adapter built · Awaiting connection')).toBeDefined();
 
     fireEvent.click(screen.getByTitle(/Reset Workspace/i));
     signIn('abct@oncoready.me');
-    expect(screen.getByRole('heading', { name: /Transportation Workspace/i })).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
-    expect(screen.getByText('Adapter built · Awaiting connection')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
-    expect(screen.getByRole('button', { name: /Assign Crescent Lantern Medical Rides · via CareLink/i })).toBeDefined();
+    expect(window.location.pathname).toBe('/carelink');
+    expect(screen.getByRole('heading', { name: "Today's trips" })).toBeDefined();
+    expect(screen.getAllByRole('img', { name: 'CareLink by OncoReady' }).length).toBeGreaterThan(0);
+    expect(screen.queryByRole('heading', { name: /Transportation Workspace/i })).toBeNull();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {
