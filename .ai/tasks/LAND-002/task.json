@@ -1,0 +1,49 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAND-002",
+  "title": "Transport partners on the landing page",
+  "type": "feature",
+  "status": "REVIEW",
+  "priority": "medium",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/LAND-002.md",
+  "branch": "feature/LAND-002-transport-partners",
+  "base_branch": "main",
+  "dependencies": [
+    "LAND-001",
+    "RIDE-002",
+    "RIDE-003"
+  ],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/components/LandingPage.tsx",
+      "frontend/public/brands/lyft-logo.svg",
+      "frontend/tests/access.test.tsx",
+      "frontend/artifacts/LAND-002-*"
+    ],
+    "other": [
+      "docs/features/LAND-002.md",
+      "docs/design/DESIGN_SYSTEM.md",
+      "AGENTS.md"
+    ]
+  },
+  "human_decisions": [
+    "Uber Health and Lyft Healthcare both show Coming soon · Awaiting connection.",
+    "Use the official Lyft logo; trademark use accepted by the owner.",
+    "Landing page only; Transportation Workspace unchanged.",
+    "No navbar link."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "114 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": [
+    "Owner visual review of the section."
+  ]
+}

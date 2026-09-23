@@ -18,6 +18,7 @@ import {
   UserRound,
   Users,
 } from 'lucide-react';
+import { CareLinkMark } from './CareLinkMark';
 import { ContinuityField } from './ContinuityField';
 import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 import { RevealVariant, ScrollReveal } from './ScrollReveal';
@@ -120,6 +121,50 @@ const pricingPlans = [
     href: 'mailto:support@oncoready.me',
   },
 ];
+
+type PartnerStatus = 'ACTIVE' | 'COMING_SOON';
+
+// Uber Health and Lyft Healthcare are not connected yet: their cards say so and nothing here calls either service.
+const transportPartners: { name: string; status: PartnerStatus; copy: string; note: string }[] = [
+  {
+    name: 'CareLink by OncoReady',
+    status: 'ACTIVE',
+    copy: 'Local transport vendors accept, update or release trips in the CareLink portal, and navigation sees each change in the workspace.',
+    note: 'Live in the OncoReady workspace',
+  },
+  {
+    name: 'Uber Health',
+    status: 'COMING_SOON',
+    copy: 'Scheduled and on-demand rides requested on the patient\u2019s behalf, with trip status flowing back into the ride plan.',
+    note: 'Awaiting connection: requires an Uber Health contract and API credentials',
+  },
+  {
+    name: 'Lyft Healthcare',
+    status: 'COMING_SOON',
+    copy: 'Rides booked for the patient through Lyft Healthcare, so no rider needs a smartphone or an account.',
+    note: 'Awaiting connection: requires a Lyft Healthcare agreement and API credentials',
+  },
+];
+
+const PartnerLogo: React.FC<{ name: string }> = ({ name }) => {
+  if (name === 'Uber Health') {
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <img src="/brands/uber-logo.svg" alt="Uber" className="h-5 w-auto" />
+        <span className="font-heading font-bold text-ink">Health</span>
+      </span>
+    );
+  }
+  if (name === 'Lyft Healthcare') {
+    return (
+      <span className="inline-flex items-center gap-1.5">
+        <img src="/brands/lyft-logo.svg" alt="Lyft" className="h-7 w-auto" />
+        <span className="font-heading font-bold text-ink">Healthcare</span>
+      </span>
+    );
+  }
+  return <CareLinkMark size={28} endorsed />;
+};
 
 const faqs = [
   {
@@ -333,6 +378,32 @@ export const LandingPage: React.FC<LandingPageProps> = ({
               height={460}
             />
           </div>
+        </div>
+      </section>
+
+      <section id="transport-partners" className="landing-section landing-shell" aria-labelledby="partners-title">
+        <div className="landing-section-heading landing-section-heading--center">
+          <p className="landing-section-label">Transport partners</p>
+          <h2 id="partners-title">When a ride falls through, the backup is already lined up.</h2>
+          <p>OncoReady coordinates the ride with your transport partners. Uber Health and Lyft Healthcare connections are coming soon.</p>
+        </div>
+
+        <div className="landing-business-grid" data-testid="transport-partners">
+          {transportPartners.map((partner) => (
+            <article key={partner.name} className="landing-business-card flex flex-col" data-partner-status={partner.status}>
+              <div className="flex min-h-10 flex-wrap items-center justify-between gap-3">
+                <PartnerLogo name={partner.name} />
+                {partner.status === 'ACTIVE' ? (
+                  <span className="chip chip-mint"><CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />Active</span>
+                ) : (
+                  <span className="chip chip-sun"><Clock3 className="h-3.5 w-3.5" aria-hidden="true" />Coming soon</span>
+                )}
+              </div>
+              <h3 className="sr-only">{partner.name}</h3>
+              <p>{partner.copy}</p>
+              <div className="mt-auto pt-4 text-xs font-semibold text-muted-fg">{partner.note}</div>
+            </article>
+          ))}
         </div>
       </section>
 
