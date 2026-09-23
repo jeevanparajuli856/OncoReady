@@ -13,6 +13,7 @@ from app.config import Settings
 from app.database import Database
 from app.logging import configure_logging
 from app.middleware import RequestContextMiddleware
+from app.outreach import demo_router as outreach_demo_router
 from app.outreach import router as outreach_router
 from app.repositories import FoundationProofRepository, get_proof_repository
 from app.schemas import (
@@ -73,6 +74,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         logger=logger,
     )
     application.include_router(outreach_router)
+    application.include_router(outreach_demo_router)
 
     @application.exception_handler(ApiError)
     async def api_error_handler(_: Request, error: ApiError) -> JSONResponse:

@@ -1,5 +1,5 @@
 import React, { KeyboardEvent, useRef, useState } from 'react';
-import { AlertTriangle, ArrowLeft, CheckCircle2, CloudDownload, FlaskConical, HeartPulse, Network, Pill, Sparkles, Stethoscope } from 'lucide-react';
+import { AlertTriangle, ArrowLeft, CheckCircle2, CloudDownload, FlaskConical, HeartPulse, Network, Pill, Radio, Sparkles, Stethoscope } from 'lucide-react';
 import { WorkflowState, WorkspaceRole } from '../types';
 import { isClinicalDispositionComplete, isContinuityPlanConfirmed, type WorkflowAction } from '../state/workflowState';
 import { TreatmentReadinessGraph } from './TreatmentReadinessGraph';
@@ -11,6 +11,7 @@ import { scenarioRosterVitals } from '../data/epicRoster';
 import { mergeVitals } from '../data/vitalsMerge';
 import { CareLinkRidePanel } from './CareLinkRidePanel';
 import { ClosingReceipt } from './ClosingReceipt';
+import { OutreachPanel } from './OutreachPanel';
 
 interface Props {
   state: WorkflowState;
@@ -33,10 +34,10 @@ const TaskMeta = ({ owner, next, due, waiting }: { owner: string; next: string; 
 );
 
 export const StaffCaseWorkspace: React.FC<Props> = ({ state, workspaceRole, onBackToQueue, onAcknowledgeClinical, onRecordClinicalDisposition, onRideAction, reducedMotion = false, onLoadCheckpoint, onSwitchPerspective }) => {
-  type CaseTab = 'ACTIONS' | 'REGIMEN' | 'LABS' | 'EPIC' | 'INSIGHTS' | 'GRAPH';
+  type CaseTab = 'ACTIONS' | 'OUTREACH' | 'REGIMEN' | 'LABS' | 'EPIC' | 'INSIGHTS' | 'GRAPH';
   const tabOrder: CaseTab[] = workspaceRole === 'CARE_NAVIGATOR'
-    ? ['ACTIONS', 'GRAPH']
-    : ['ACTIONS', 'REGIMEN', 'LABS', 'EPIC', 'INSIGHTS', 'GRAPH'];
+    ? ['ACTIONS', 'OUTREACH', 'GRAPH']
+    : ['ACTIONS', 'OUTREACH', 'REGIMEN', 'LABS', 'EPIC', 'INSIGHTS', 'GRAPH'];
   const [activeTab, setActiveTab] = useState<CaseTab>('ACTIONS');
   const tabRefs = useRef<Partial<Record<CaseTab, HTMLButtonElement | null>>>({});
   const [disposition, setDisposition] = useState('Human contact completed; no blocking follow-up recorded.');
@@ -102,6 +103,7 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, workspaceRole, onBa
         <div><p className="label-caps text-muted-fg">Attendance pending</p><h1 className="font-display text-xl font-extrabold">{state.patient.name}</h1><p className="text-sm text-muted-fg">{state.appointment.scheduledTime} • Current transport plan v{planVersion}</p></div>
         <div className="filter-bar" role="tablist" aria-label="Case information">
           <button {...tabProps('ACTIONS')} className={`filter-pill ${activeTab === 'ACTIONS' ? 'filter-pill-active' : ''}`}>Actions ({visibleTaskCount})</button>
+          <button {...tabProps('OUTREACH')} className={`filter-pill ${activeTab === 'OUTREACH' ? 'filter-pill-active' : ''}`}><Radio className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Outreach</button>
           {workspaceRole === 'CARE_TEAM' && <>
             <button {...tabProps('REGIMEN')} className={`filter-pill ${activeTab === 'REGIMEN' ? 'filter-pill-active' : ''}`}><Pill className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Regimen</button>
             <button {...tabProps('LABS')} className={`filter-pill ${activeTab === 'LABS' ? 'filter-pill-active' : ''}`}><FlaskConical className="w-3.5 h-3.5 inline mr-1" aria-hidden="true" />Labs ({state.labs.length})</button>
@@ -115,7 +117,7 @@ export const StaffCaseWorkspace: React.FC<Props> = ({ state, workspaceRole, onBa
     </section>
 
     <div role="tabpanel" id={`case-panel-${activeTab.toLowerCase()}`} aria-labelledby={`case-tab-${activeTab.toLowerCase()}`}>
-    {activeTab === 'EPIC' ? <EpicClinicalContextPanel /> : activeTab === 'INSIGHTS' ? <ReadinessInsights /> : activeTab === 'GRAPH' ? <div className="space-y-5"><TreatmentReadinessGraph appointment={state.appointment} tasks={state.tasks} overallReadiness={state.overallReadiness} patientAcknowledged={state.patientAcknowledgedPlanVersion === planVersion} readinessCheckCompleted={state.readinessCheckCompleted} onNavigateToPatient={() => onSwitchPerspective('PATIENT')} />{workspaceRole === 'CARE_TEAM' && <ClosingReceipt state={state} />}<AuditTimeline events={visibleAuditEvents} showFinalReply={state.readinessCheckCompleted} /></div> : activeTab === 'REGIMEN' ? (
+    {activeTab === 'OUTREACH' ? <OutreachPanel role={workspaceRole} patientName={state.patient.name} replyReceived={state.readinessCheckCompleted} /> : activeTab === 'EPIC' ? <EpicClinicalContextPanel /> : activeTab === 'INSIGHTS' ? <ReadinessInsights /> : activeTab === 'GRAPH' ? <div className="space-y-5"><TreatmentReadinessGraph appointment={state.appointment} tasks={state.tasks} overallReadiness={state.overallReadiness} patientAcknowledged={state.patientAcknowledgedPlanVersion === planVersion} readinessCheckCompleted={state.readinessCheckCompleted} onNavigateToPatient={() => onSwitchPerspective('PATIENT')} />{workspaceRole === 'CARE_TEAM' && <ClosingReceipt state={state} />}<AuditTimeline events={visibleAuditEvents} showFinalReply={state.readinessCheckCompleted} /></div> : activeTab === 'REGIMEN' ? (
       <section className="card-sticker p-5 sm:p-6 space-y-4"><div className="pb-4 border-b-2 border-ink/10"><p className="label-caps text-muted-fg mb-1">Care plan</p><h2 className="font-heading font-extrabold text-lg">mFOLFOX6 + Bevacizumab Protocol Order Set</h2><p className="text-sm text-muted-fg">Cycle 4 of 12 • Standard colorectal regimen</p></div><div className="space-y-3">{state.appointment.drugs.map((drug) => <div key={drug.name} className="metric-tile space-y-1"><div className="flex flex-wrap justify-between gap-1"><span className="font-heading font-bold">{drug.name}</span><span className="chip chip-accent font-mono">{drug.dosage}</span></div><p className="text-sm text-muted-fg"><strong className="text-ink">Administration:</strong> {drug.route} ({drug.schedule})</p><p className="text-xs text-muted-fg">Pharmacology: {drug.indication}</p></div>)}</div><div className="metric-tile"><h3 className="font-heading font-bold">Pre-medication protocol</h3><ul className="list-disc list-inside text-sm text-muted-fg mt-2 space-y-1">{state.appointment.premeds.map((item) => <li key={item}>{item}</li>)}</ul></div></section>
     ) : activeTab === 'LABS' ? (
       <div className="space-y-5"><section className="card-sticker p-5 sm:p-6 space-y-4"><div><p className="label-caps text-muted-fg mb-1">Care plan</p><h2 className="font-heading font-bold flex items-center gap-2"><FlaskConical className="w-4 h-4 text-accent" />Pre-infusion diagnostic labs</h2></div><div className="overflow-x-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b-2 border-ink/10">{['Test name','Result','Reference range','Status','Collection'].map((h) => <th key={h} className="py-2.5 label-caps text-muted-fg">{h}</th>)}</tr></thead><tbody className="divide-y divide-ink/10">{state.labs.map((lab) => <tr key={lab.name}><td className="py-3 font-heading font-bold">{lab.name}</td><td className="py-3 font-mono">{lab.value} {lab.unit}</td><td className="py-3 text-muted-fg font-mono text-xs">{lab.referenceRange}</td><td className="py-3"><span className={`chip ${lab.status === 'NORMAL' ? 'chip-mint' : 'chip-sun'}`}>{lab.status}</span></td><td className="py-3 text-xs text-muted-fg">{lab.collectedAt}</td></tr>)}</tbody></table></div></section><section className="card-sticker p-5 sm:p-6 space-y-4"><p className="label-caps text-muted-fg">{hasCapturedVitals ? 'OncoReady care plan \u00b7 Hospital Epic Sandbox' : 'OncoReady care plan'}</p><h2 className="font-heading font-bold flex items-center gap-2"><HeartPulse className="w-4 h-4 text-pop" />Vital signs &amp; clinical monitoring</h2><div className="grid grid-cols-1 sm:grid-cols-3 gap-3">{mergedVitals.map((vital) => <div key={vital.key} className="metric-tile"><div className="label-caps text-muted-fg">{vital.name}</div><div className="font-display text-xl font-extrabold mt-1">{vital.value}</div><div className="text-[11px] text-muted-fg">{vital.collectedAt ? formatEpicSourceDate(vital.collectedAt) ?? vital.collectedAt : 'Collection time not recorded'}</div>{vital.source === 'EPIC_SANDBOX' ? <span className="chip mt-2 inline-block">Epic Sandbox</span> : null}</div>)}</div>{mergedVitals.length === 0 ? <p className="text-sm text-muted-fg">No vital signs recorded.</p> : null}</section></div>

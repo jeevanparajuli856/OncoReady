@@ -47,6 +47,8 @@ SMS delivery, and `completed` is not patient acknowledgment. The ElevenLabs
 agent must have a verified Twilio phone number and a 60-second maximum call
 duration. The presenter verifies audible speech on the consenting phone.
 
+**In-app demo calling (OUTREACH-002).** `GET`/`POST /api/v1/outreach/demo-call` backs the Care Navigator's **Call Camila** button. It needs **no operator token**, so it is off unless `DEMO_CALL_BUTTON=true`. Turn it on only for a presentation day with fresh recipient consent, then turn it off (the button then reads "Calling is paused") and revoke the operator token. While on, every outreach requirement above still applies. Each click opens its own `demo` call window and places one call to the fixed `OUTREACH_RECIPIENT`. A second call is refused until the previous one reaches a final status, and the daily limit still caps attempts. Responses carry call status only.
+
 Install and run locally:
 
 ```bash

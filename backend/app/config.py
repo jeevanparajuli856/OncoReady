@@ -39,6 +39,9 @@ class Settings(BaseSettings):
     outreach_recipient: str | None = None
     outreach_arm_minutes: int = Field(default=30, ge=1, le=60)
     outreach_daily_call_limit: int = Field(default=4, ge=1, le=20)
+    # Demo-day switch: lets the in-app Call patient button place calls without the operator token.
+    # Every other outreach guard still applies. Keep it off outside a presentation.
+    demo_call_button: bool = False
     twilio_account_sid: str | None = None
     twilio_auth_token: SecretStr | None = None
     twilio_from_number: str | None = None

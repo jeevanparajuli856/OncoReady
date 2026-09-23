@@ -1,0 +1,32 @@
+{
+  "schema_version": "1.0",
+  "task_id": "OUTREACH-002",
+  "title": "Outreach history and in-app call button",
+  "type": "feature",
+  "status": "DONE",
+  "priority": "high",
+  "owners": { "backend": "claude", "frontend": "claude", "tester": "claude", "security": "human", "review": "human" },
+  "spec": "docs/features/OUTREACH-002.md",
+  "branch": "feature/OUTREACH-002-in-app-call-and-history",
+  "dependencies": ["OUTREACH-001", "ML-002"],
+  "contracts": [],
+  "scope": {
+    "backend": ["backend/app/outreach.py", "backend/app/config.py", "backend/app/main.py", "backend/README.md", "tests/backend/test_outreach_boundary.py", "tests/backend/test_outreach_sequential_integration.py"],
+    "frontend": ["frontend/src/components/OutreachPanel.tsx", "frontend/src/components/StaffCaseWorkspace.tsx", "frontend/tests/outreach-panel.test.tsx", "frontend/tests/e2e.spec.ts"],
+    "other": ["docs/features/OUTREACH-002.md", "docs/architecture/SYSTEM.md", "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md"]
+  },
+  "human_decisions": [
+    "Past SMS and calls are shown as prepared frontend history; SMS appears active but manual send is disabled until the owner wires it.",
+    "The call button needs no token; a DEMO_CALL_BUTTON switch replaces per-call arming. The owner accepts the capped risk while it is on and will switch it off and revoke the operator token after the demo.",
+    "No transcript parsing for the demo.",
+    "No provider names in the UI."
+  ],
+  "verification": {
+    "backend_unit": "83 passed",
+    "backend_integration": "10 passed",
+    "component_tests": "112 passed",
+    "e2e_tests": "14 passed",
+    "build": "pass"
+  },
+  "open_items": ["Set DEMO_CALL_BUTTON=true on Railway for demo day, then false afterwards.", "Wire live SMS after carrier registration."]
+}

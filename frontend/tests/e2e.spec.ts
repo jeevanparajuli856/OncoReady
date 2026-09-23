@@ -460,6 +460,52 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.locator('.workspace-header')).toBeVisible();
     await expect(page).not.toHaveTitle(/CareLink/);
   });
+
+  test('outreach tab shows engine history and places an in-app call (provider mocked)', async ({ page }) => {
+    let status = { enabled: true, call: 'not_started', in_progress: false, calls_today: 0, daily_limit: 4 };
+    const posts: string[] = [];
+    // The call endpoint is answered here; no request reaches the backend or a phone provider.
+    await page.route('**/api/v1/outreach/demo-call', async (route) => {
+      if (route.request().method() === 'POST') {
+        posts.push(route.request().url());
+        status = { ...status, call: 'ringing', in_progress: true, calls_today: 1 };
+      }
+      await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(status) });
+    });
+
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abcp@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await page.getByRole('button', { name: /Start Readiness Check/i }).click();
+    await page.getByRole('button', { name: /Submit Readiness Report/i }).click();
+    await page.getByRole('button', { name: /View Care Team Workbench/i }).click();
+    await page.getByRole('button', { name: /Review Case/ }).first().click();
+
+    await page.getByRole('tab', { name: 'Outreach' }).click();
+    await expect(page.getByRole('heading', { name: 'Outreach with Camila' })).toBeVisible();
+    await expect(page.getByText(/Symptom mention → routed to Sarah Jenkins, RN/)).toBeVisible();
+    await expect(page.getByRole('button', { name: /Call Camila/ })).toHaveCount(0);
+    await page.screenshot({ path: 'artifacts/OUTREACH-002-care-team.png', fullPage: true });
+
+    await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
+    await page.getByRole('button', { name: /Care Navigator \(Marcus Vance, MSW\)/ }).click();
+    await page.getByRole('tab', { name: 'Outreach' }).click();
+    await expect(page.getByText(/Transportation barrier → ride recovery opened for you/)).toBeVisible();
+    expect((await page.locator('body').innerText()).toLowerCase()).not.toContain('not feeling well');
+
+    await page.getByRole('button', { name: 'Call Camila' }).click();
+    await page.getByRole('button', { name: 'Call now' }).click();
+    await expect(page.getByText('Ringing… · Camila Lopez')).toBeVisible();
+    await page.screenshot({ path: 'artifacts/OUTREACH-002-navigator-ringing.png', fullPage: true });
+
+    status = { ...status, call: 'completed', in_progress: false };
+    await expect(page.getByText('Call completed · Camila Lopez')).toBeVisible({ timeout: 6000 });
+    await expect(page.getByText(/Voice check-in · placed by Marcus Vance, MSW/)).toBeVisible();
+    await page.screenshot({ path: 'artifacts/OUTREACH-002-navigator-completed.png', fullPage: true });
+    expect(posts).toHaveLength(1);
+    expect((await page.locator('body').innerText()).toLowerCase()).not.toMatch(/twilio|elevenlabs/);
+  });
 });
 
 test('presenter rehearsal follows the prepared story without live delivery', async ({ page }) => {

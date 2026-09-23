@@ -85,3 +85,50 @@ def test_browser_payload_cannot_change_sms_recipient_or_content(monkeypatch) -> 
     assert sent["To"] == "+15555550123"
     assert sent["Body"] == outreach.SMS_TEXT
     assert "Unreviewed clinical content" not in sent.values()
+
+
+def _ready_settings(**overrides) -> Settings:
+    values = dict(
+        operator_token="test-operator",
+        database_url="postgresql://test:test@localhost/oncoready_test",
+        outreach_enabled=True,
+        outreach_consent_confirmed=True,
+        outreach_recipient="+15555550123",
+        twilio_account_sid="AC" + "1" * 32,
+        twilio_auth_token="test-secret",
+        twilio_from_number="+15555550124",
+        elevenlabs_api_key="test-key",
+        elevenlabs_agent_id="test-agent",
+        elevenlabs_phone_number_id="test-phone",
+    )
+    values.update(overrides)
+    return Settings(_env_file=None, **values)
+
+
+def test_demo_call_button_is_off_by_default_and_never_calls(monkeypatch) -> None:
+    monkeypatch.setattr(outreach.httpx, "post", lambda *args, **kwargs: (_ for _ in ()).throw(AssertionError("no provider call")))
+    app = create_app(_ready_settings())
+    with TestClient(app) as client:
+        status = client.get("/api/v1/outreach/demo-call")
+        assert status.status_code == 200
+        assert status.json()["enabled"] is False
+        placed = client.post("/api/v1/outreach/demo-call", json={"to": "+15555550999"})
+        assert placed.status_code == 403
+        assert placed.json()["code"] == "demo_call_off"
+
+
+def test_demo_call_button_fails_closed_without_outreach_setup() -> None:
+    app = create_app(Settings(_env_file=None, demo_call_button=True))
+    with TestClient(app) as client:
+        assert client.get("/api/v1/outreach/demo-call").json()["enabled"] is False
+        placed = client.post("/api/v1/outreach/demo-call")
+        assert placed.status_code == 503
+        assert placed.json()["code"] == "outreach_unavailable"
+
+
+def test_demo_call_status_exposes_no_recipient_or_provider_identity() -> None:
+    app = create_app(_ready_settings())
+    with TestClient(app) as client:
+        body = client.get("/api/v1/outreach/demo-call").text
+    assert "+15555550123" not in body
+    assert "elevenlabs" not in body.lower() and "twilio" not in body.lower()

@@ -213,3 +213,39 @@ def test_two_devices_cannot_dispatch_the_same_window_twice(
             second = executor.submit(place_from, second_device)
             assert sorted((first.result(), second.result())) == [200, 403]
     assert len(provider_posts) == 1
+
+
+def test_demo_call_button_places_sequential_calls_within_the_daily_limit(
+    test_database_url: str, monkeypatch
+) -> None:
+    calls = []
+    provider = {"status": "ringing"}
+
+    def fake_post(url: str, **kwargs):
+        calls.append(kwargs["json"]["to_number"])
+        return FakeResponse({"success": True, "callSid": "CA" + str(len(calls)) * 32})
+
+    monkeypatch.setattr(outreach.httpx, "post", fake_post)
+    monkeypatch.setattr(outreach.httpx, "get", lambda *args, **kwargs: FakeResponse(provider))
+    settings = _settings(test_database_url, limit=2).model_copy(update={"demo_call_button": True})
+    app = create_app(settings)
+    with TestClient(app) as client:
+        first = client.post("/api/v1/outreach/demo-call")
+        assert first.status_code == 200
+        assert first.json()["in_progress"] is True
+        # One call at a time: a second click while ringing is refused without a provider request.
+        assert client.post("/api/v1/outreach/demo-call").status_code == 409
+        assert len(calls) == 1
+
+        provider["status"] = "completed"
+        assert client.get("/api/v1/outreach/demo-call").json()["call"] == "completed"
+        # Testing earlier does not block the demo: a new call works once the last one finished.
+        assert client.post("/api/v1/outreach/demo-call").status_code == 200
+        assert len(calls) == 2
+        provider["status"] = "completed"
+        client.get("/api/v1/outreach/demo-call")
+        limited = client.post("/api/v1/outreach/demo-call")
+        assert limited.status_code == 409
+        assert limited.json()["code"] == "call_limit_reached"
+
+    assert calls == ["+15555550123", "+15555550123"]

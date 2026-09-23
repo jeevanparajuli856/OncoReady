@@ -286,6 +286,12 @@ def place_call(request: Request, session: Session = Depends(get_session)) -> dic
     settings = _settings(request)
     _available(settings)
     attempt = _reserve_call(session, settings)
+    _dial(session, settings, attempt)
+    return _summary(session, settings)
+
+
+def _dial(session: Session, settings: Settings, attempt: OutreachCallAttemptRecord) -> None:
+    """Ask the voice agent to call the fixed server-side recipient for a reserved attempt."""
     try:
         response = httpx.post(
             "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",
@@ -312,4 +318,73 @@ def place_call(request: Request, session: Session = Depends(get_session)) -> dic
         attempt.status = "unknown"
     attempt.updated_at = datetime.now(timezone.utc)
     session.commit()
-    return _summary(session, settings)
+
+
+# In-app demo calling. No operator token: the DEMO_CALL_BUTTON switch, the fixed recipient,
+# one unresolved call at a time and the daily limit are the guards. Nothing about the
+# recipient or provider is returned to the browser.
+demo_router = APIRouter(prefix="/api/v1/outreach/demo-call", tags=["Outreach"])
+
+
+def _demo_enabled(settings: Settings) -> bool:
+    return bool(settings.demo_call_button and settings.outreach_ready)
+
+
+def _demo_summary(session: Session | None, settings: Settings) -> dict:
+    if session is None or not _demo_enabled(settings):
+        return {"enabled": False, "call": "not_started", "in_progress": False, "calls_today": 0, "daily_limit": settings.outreach_daily_call_limit}
+    call = _latest_call(session)
+    calls_today = _call_count_today(session)
+    return {
+        "enabled": calls_today < settings.outreach_daily_call_limit,
+        "call": call.status if call else "not_started",
+        "in_progress": bool(call and call.status not in CALL_FINAL_STATUSES),
+        "calls_today": calls_today,
+        "daily_limit": settings.outreach_daily_call_limit,
+    }
+
+
+def _demo_session(request: Request):
+    # Opened only after the switch check, so a disabled button never touches the database.
+    return request.app.state.database.session()
+
+
+@demo_router.get("")
+def demo_call_status(request: Request) -> dict:
+    settings = _settings(request)
+    if not _demo_enabled(settings):
+        return _demo_summary(None, settings)
+    with _demo_session(request) as session:
+        _refresh_call(session, settings)
+        return _demo_summary(session, settings)
+
+
+@demo_router.post("")
+def place_demo_call(request: Request) -> dict:
+    settings = _settings(request)
+    if not settings.demo_call_button:
+        raise ApiError(403, "demo_call_off", "Calling is off.")
+    _available(settings)
+    with _demo_session(request) as session:
+        return _place_demo_call(session, settings)
+
+
+def _place_demo_call(session: Session, settings: Settings) -> dict:
+    _call_lock(session)
+    _refresh_call(session, settings, commit=False)
+    latest = _latest_call(session)
+    if latest is not None and latest.status not in CALL_FINAL_STATUSES:
+        raise ApiError(409, "call_unresolved", "A call is already in progress.")
+    if _call_count_today(session) >= settings.outreach_daily_call_limit:
+        raise ApiError(409, "call_limit_reached", "Today's call limit has been reached.")
+    now = datetime.now(timezone.utc)
+    # Standing consent comes from OUTREACH_CONSENT_CONFIRMED; switching the demo button on is the day's authorization.
+    window = OutreachCallWindowRecord(purpose="demo", consent_confirmed_at=now, expires_at=now + timedelta(minutes=settings.outreach_arm_minutes))
+    session.add(window)
+    session.flush()
+    attempt = OutreachCallAttemptRecord(window_id=window.id, status="initiating")
+    session.add(attempt)
+    session.commit()  # Reserve durably before the provider request.
+    session.refresh(attempt)
+    _dial(session, settings, attempt)
+    return _demo_summary(session, settings)
