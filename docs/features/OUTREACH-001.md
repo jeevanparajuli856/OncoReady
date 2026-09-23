@@ -1,6 +1,6 @@
 # OUTREACH-001 — One real SMS and one short live call
 
-**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
+**Current task record:** PROPOSED. This specification records the approved two-day demo scope; [the closeout](../SPRINT_CLOSEOUT.md) distinguishes shipped behavior from remaining gates. The task JSON and current code determine lifecycle and behavior.
 
 ## User-visible outcome
 
@@ -42,4 +42,4 @@ TARGETED; HIGH risk with dedicated security review because real outbound actions
 9. The chosen communication control and timeline states preserve the locked UI. Full phone-to-workflow synchronization is not required: the presenter may advance the prepared patient story separately.
 10. Opening an outreach-history row shows scheduled time, sent text/time, received reply/time and the follow-up change from the shared scenario fixture. Historical prepared events are distinguishable in source details from the genuine one-off SMS/call and make no provider requests; verify thread/timeline parity.
 
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

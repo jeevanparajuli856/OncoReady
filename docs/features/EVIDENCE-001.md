@@ -1,6 +1,6 @@
 # EVIDENCE-001 — Coherent demo evidence recording and rehearsal
 
-**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
+**Current task record:** PROPOSED. This specification records the approved two-day demo scope; [the closeout](../SPRINT_CLOSEOUT.md) distinguishes shipped behavior from remaining gates. The task JSON and current code determine lifecycle and behavior.
 
 ## User-visible outcome
 
@@ -47,4 +47,4 @@ TARGETED; LOW risk for reviewed synthetic/captured evidence. Reassess risk if a 
 10. The closing scene includes a compact receipt derived from the current scenario: barriers addressed, backup transportation arranged and patient acknowledgment. Each item opens its supporting timeline event/details; before completion, missing items remain pending. Verify incomplete, completed and reopened states without hard-coded success counts.
 11. The recording demonstrates the graph's at-risk-to-confirmed transformation, Why flagged? detail, named ownership/next action/deadline, patient finish, evidence-linked receipt and the isolated ML what-if comparison. All six use the locked existing surfaces and show matching source data; include them in the two rehearsals without adding separate dashboards.
 
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

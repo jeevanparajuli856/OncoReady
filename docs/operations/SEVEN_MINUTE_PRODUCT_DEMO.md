@@ -70,6 +70,5 @@ The times are wall-clock targets. Part 1 is an edited recording of real product 
 ## Sources for the presenter
 
 - [Product scope](../PROJECT.md)
-- [Recording and live presentation runbook](./DEMO_RUNBOOK.md)
-- [Frontend QA and open presentation prerequisites](./FRONTEND-DEMO-QA-20260922.md)
+- [Sprint closeout and open presentation prerequisites](../SPRINT_CLOSEOUT.md)
 - [Sanitized live-call and SMS test evidence](./OUTREACH-001-LIVE-EVIDENCE.md)

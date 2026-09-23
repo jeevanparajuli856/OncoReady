@@ -1,6 +1,6 @@
 # EPIC-001 — Captured Epic Sandbox JSON in the staff UI
 
-**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
+**Current task record:** DONE. This specification records the approved two-day demo scope; [the closeout](../SPRINT_CLOSEOUT.md) distinguishes shipped behavior from remaining gates. The task JSON and current code determine lifecycle and behavior.
 
 ## User-visible outcome
 
@@ -39,4 +39,4 @@ TARGETED; STANDARD risk with dedicated security review for the credential/captur
 7. The UI works with the reviewed local capture when Epic is offline; malformed/missing capture produces a truthful unavailable state. No synthetic replacement is labeled as Epic; verify both paths.
 8. Only the staff presentation shows clinical context; caregiver and transportation displays contain permitted logistics. UI filtering is not claimed as protection for publicly bundled assets; inspect role views and evidence wording.
 
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

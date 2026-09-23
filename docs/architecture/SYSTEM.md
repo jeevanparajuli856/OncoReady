@@ -1,103 +1,33 @@
-# OncoReady System Architecture
+# OncoReady system architecture
 
-## Active scope
+This is the current architecture for the controlled demo. [PROJECT](../PROJECT.md) defines product scope, [SPRINT_CLOSEOUT](../SPRINT_CLOSEOUT.md) names open gates, and code is authoritative for behavior. The web app is served at `https://app.oncoready.me`; the existing FastAPI service is at `https://api.oncoready.me` on Railway with PostgreSQL.
 
-[ADR-0004](../adr/ADR-0004-two-day-demo-scope.md) supersedes the earlier full-product launch architecture for the two-day demonstration. Retain the completed Railway foundation and approved visual system. Build a shared frontend scenario and the smallest protected server boundary for one real SMS and one short call.
+## Components and trust boundaries
 
-This describes the target of the revised tasks, not a claim that they are implemented. Full workflow persistence, online model inference, automatic outreach scheduling and runtime Epic sync are deferred.
+| Component | Responsibility | Boundary |
+| --- | --- | --- |
+| React/TypeScript frontend | Public story, prepared personas, one versioned Camila scenario, graph, timeline, CareLink replay, read-only evidence and private operator UI | Local persona selection is a presentation mechanism, not production authentication. |
+| Reviewed repository assets | Saved Epic Sandbox JSON and manifests, synthetic-data notebook outputs, prepared outreach history and fictional ride data | A prepared event is never reported as a provider delivery or a live EHR/ride action. |
+| FastAPI outreach adapter | Protected, fixed-recipient manual SMS/call actions and provider-status reads | Operator bearer protection, consent/availability checks, fixed server-side content, no browser-selected recipient or script. |
+| PostgreSQL outreach ledger | Persists one-shot arm and separate reserved attempts before a provider request | Scenario reset, retries or process restart cannot create an uncontrolled duplicate. An ambiguous outcome is not silently retried. |
+| Twilio and ElevenLabs | Twilio delivers and reports call/SMS outcomes; ElevenLabs supplies the short configured voice agent | Credentials and provider identifiers stay server-side. Verified provider status, not browser state, determines the displayed outcome. |
 
-## Existing deployment
+The live call completed in the authorized test, and Twilio later marked the SMS undelivered. The one-shot window is spent. The frontend displays historical completion honestly and never treats it as the cue for a new presentation call. A future stage call requires a newly implemented and separately authorized bounded window. See [sanitized evidence](../operations/OUTREACH-001-LIVE-EVIDENCE.md).
 
-The human confirms web at **https://app.oncoready.me** and API at **https://api.oncoready.me** on Railway. Reuse these origins. Review actual CORS/session behavior and exact callback URLs during OUTREACH implementation; this document does not certify current availability or invent callback endpoints.
+## Prepared scenario
 
-## Components and data flow
+One frontend reducer owns Camila's current scenario and its projections to patient, caregiver, Care Team, Care Navigator, Transportation, graph and timeline. A local prepared reply opens separate nurse and transportation tasks. The nurse records a human disposition. The ride plan records an outbound pickup, arrival, return, contact and backup owner. The caregiver sees permitted logistics; Camila acknowledges the current plan version. A later plan failure invalidates that acknowledgment and reopens the blocker. The final **Continuity plan confirmed** state requires the human disposition, complete current plan and current patient acknowledgment; attendance remains unknown.
 
-| Component | Responsibility | Data/source |
-|---|---|---|
-| Existing React frontend | Polished role views, graph, timeline and chosen interactions | One versioned scenario state |
-| Scenario assets | Initial state, checkpoints, prepared insights, synthetic CareLink records | Reviewed repository assets; never secrets |
-| Epic capture | Retrieve selected authorized Sandbox resources before recording; normalize for display | Actual read-only responses plus capture manifest |
-| Offline ML evidence | Dataset, data dictionary, lightweight training/evaluation notebook and exported outputs | Synthetic data; no model required |
-| Minimal FastAPI adapter | Validate operator action; send one fixed SMS/call; normalize verified outcome | Server-side credentials and one allowed test recipient |
-| Existing PostgreSQL | Persist live-attempt reservation/result and limits across resets/restarts if needed by adapter | Small delivery ledger; reuse existing infrastructure |
-| Recording package | Main walkthrough, call fallback, checkpoint/asset manifest | Local video/audio available without network |
+Historical message/reply rows and the previous CareLink trip are deterministic scenario fixtures with original scenario timestamps. Replay timers can pause, resume, restart and exit without changing the current trip or the real outreach ledger. CareLink providers and drivers in this journey are fictional; no external dispatch or live GPS request occurs. The closing receipt reads current scenario state and links each completed item to its corresponding timeline event. It cannot advance state itself.
 
-Prepared outreach events include planned-at/due-at, original sent text, reply text/time, follow-up changes and scenario provenance. A scheduled-history row is not evidence that a backend scheduler executed.
+## Clinical and model evidence
 
-A separate historical CareLink trip supports timed local replay: requested → accepted → driver assigned → arriving → pickup confirmed/completed. Preserve original event timestamps alongside playback progress. Pause/resume/restart affect only that replay state; cancel timers on exit/reset. Keep historical trip identity, driver/map fixtures, current trip, current acknowledgment and live ledger isolated. No GPS or provider connection is implied.
+The selected Epic FHIR Sandbox resources were captured read-only before presentation, saved with source identifiers, capture time and checksum manifests, then displayed locally. The scenario name and treatment details remain separate from actual captured fields. Missing Sandbox data stays missing; production EHR synchronization and writeback do not occur. Additional roster packages are read-only; the prepared Camila case alone carries interactive readiness workflow state. Care Navigator and caregiver views must not expose roster clinical measurements.
 
-Prepared UI transitions never call a provider. Only an explicitly armed and protected live command crosses the external boundary. No API methods are invented here: OUTREACH defines and validates its small contract during PLANNING before implementation.
+The ML notebook trains/evaluates on synthetic data and exports the saved checkpoint scores, factors and two transportation-comparison outputs. The UI reads those exports. The comparison is local view state and does not mutate tasks, care plan, graph or provider activity. Model outputs never diagnose, clear treatment, downgrade a reported symptom or control the human clinical task.
 
-## Frontend scenario boundary
+## Scope and verification
 
-Reuse existing state machinery before introducing a new abstraction. One store drives patient, caregiver, Care Navigator, Care Team, CareLink, graph, timeline and scenario counts. Commands perform concrete visible transitions; read-only context and prepared insight assets are separate.
+`contracts/openapi.yaml` defines the protected API shape. Feature specifications and task reports in `.ai/tasks/` retain acceptance and review history. The [seven-minute demo script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md) names the actual source disclosures and stage fallback. Browser rehearsal and reset use the prepared state only; a live send requires its own protected command.
 
-The prepared gateway exposes two role-scoped care workspaces plus a reserved Transportation workspace: Care Navigator (Marcus Vance, MSW) for CareLink, transportation, patient coordination, barriers, appointments and follow-ups; Care Team (Readiness Team) for clinical/treatment readiness, labs, vitals, nursing actions, blockers and escalations; and Transportation (CareLink) for future transportation managers and vendors. Until transportation operations are implemented, the Transportation route reuses the Care Navigator's read-only CareLink resource directory and access map, with no dispatch actions enabled. Do not add a combined Staff workspace or a standalone Graph/Audit workspace. Graph and audit are embedded case views in Care Navigator and Care Team, projected from shared state and filtered to each role's allowed data.
-
-The frontend enforces these local role boundaries in route selection and reducer mutation guards as well as navigation rendering. This is a prepared-persona presentation mechanism, not production authentication or backend authorization; multiuser authorization remains deferred.
-
-Authentication is a local prepared-persona flow with explicit browser routes: `/login` is the standard entry route, and Epic handoff uses `/epic/login?redirect_uri=%2Fauth%2Fepic%2Fcallback&client_id=oncoready`. The Epic page is a standalone provider-style surface with a visible pre-handoff and post-login redirect state. It is a visual integration demonstration only: no Epic OAuth exchange, token, callback, or provider session is real, and no credentials may be added to source or product copy.
-
-After login, the profile dropdown is the workspace switcher. Staff sidebars expose a single `Log out` action instead of links to Home, Patient or Caregiver; logout resets local scenario state and routes back to `/login`.
-
-The synthetic demo login matrix is fixed and must not be changed by implementation agents: `abcp@oncoready.me` → Patient, `abcc@oncoready.me` → Caregiver, `abcs@oncoready.me` → Care Team, `abcn@oncoready.me` → Care Navigator, and `abct@oncoready.me` → Transportation. The shared demo password is `1234`. These values are local fixtures only, not secrets or production identity credentials. Epic sign-in is permitted only for Care Team, Care Navigator, and Transportation.
-
-Required states: initial risk → exact reply → distinct clinical/transport tasks → human clinical disposition → primary ride failure → backup plan → current-plan acknowledgment → confirmed continuity. A changed/failed plan invalidates the previous acknowledgment. Open clinical work or absent outbound/return logistics prevents confirmation.
-
-Keep private presenter checkpoints/reset separate from patient-facing actions. In-memory state or small local persistence is sufficient; deterministic reset restores scenario state. Browser refresh behavior and persona switches must be documented and rehearsed. Prefer one browser context for the recording; cross-device collaboration is deferred.
-
-Local persona selection is a presentation mechanism, not authentication. It cannot grant access to live delivery controls, provider credentials, a capture tool, or any protected backend data.
-
-## Approved impact behavior
-
-The graph, owner/next-action/due-time treatment and closing receipt are projections of the shared current scenario. A graph animation or receipt cannot advance state on its own. Use existing motion and equivalent readable reduced-motion states.
-
-RIDE adds a narrow caregiver-seen event for permitted logistics, recording actor, current plan version and scenario time. It cannot assign a driver, expose clinical data, substitute for patient acknowledgment or change the existing confirmation rule. A plan change invalidates both acknowledgments as applicable. The patient finish uses the current plan for pickup, return and contact, never historical replay data.
-
-ML's Why flagged? detail reads exported factors/values. The supportive next action is a documented workflow suggestion unless separately proven model-derived. The what-if toggles two exported rows from the same model, changing transportation availability only; it is isolated local view state. Exiting/resetting the comparison returns to the actual scenario without altering graph, tasks or provider activity.
-
-EVIDENCE derives receipt items from current barrier/plan/acknowledgment state and resolves each item to its supporting event IDs. Reopening a blocker invalidates the corresponding success item. No duplicate metric store or reporting backend is needed.
-
-## Epic capture boundary
-
-The human selected **real Epic Sandbox JSON**, not invented Epic records. Inspect available authorized access and actual resource contents. Capture only what the story displays: patient context and available treatment/appointment, medication or lab details. Do not require all previously listed FHIR resource families.
-
-Preserve actual resource IDs/types, original clinical dates, capture time, source environment and non-secret request metadata. Save a reviewed minimum snapshot and checksum manifest; no OAuth tokens, secrets or unexpected real-person content. The UI must indicate missing fields rather than generate replacements attributed to Epic.
-
-Camila is a presentation alias unless the actual retrieved record establishes that name. If the selected Sandbox record differs, record the alias mapping in evidence and do not rewrite source facts. Generated scenario treatment dates remain visibly separate from captured source dates.
-
-The recording loads captured data locally and labels its connection state as captured Sandbox data. “Live” requires an actual current successful request. No writeback, production record, partnership or customer connection is implied.
-
-Only synthetic and reviewed publishable Sandbox assets may be browser-served; UI role filtering is not confidentiality protection. If terms or data review do not permit distribution, serve the capture through an authorized server boundary or use a restricted recording environment. Do not silently bundle restricted content.
-
-## Prepared ML boundary
-
-A small documented synthetic dataset and executable notebook demonstrate offline training and held-out evaluation of a lightweight model. Export actual scenario predictions and honest explanatory factors into versioned JSON consumed by the UI. Do not hand-edit scores to force the story. Show model capability and limits on synthetic data, not clinical validation; do not label ordinary feature contributions as SHAP.
-
-Record dataset/split seed, feature schema, model identity and export time. Patient-separated evaluation, a simple baseline and leakage checks keep the demonstration credible without a large training platform. No runtime ML inference or training is required for the site to load, for the phone call, or for closure. Explicit patient concerns route through human-owned work regardless of prepared scores.
-
-## Live communication boundary
-
-One consenting test recipient, fixed reviewed message/audio, private operator activation, server-only credentials, bounded attempt/duration/cost limits, duplicate protection and verified provider outcomes are required. Reuse existing server protection where suitable; do not add a full identity platform.
-
-The frontend cannot submit arbitrary recipients or scripts, override limits, or supply trusted success states. A backend reservation/ledger survives scenario reset and server restart. Validate callbacks against current official provider documentation and correlate them to the intended attempt/account. Unknown outcome is not success and does not trigger blind retry.
-
-The live action is manually triggered; no trained model, four-hour cadence, automatic scheduler or outbox campaign is needed. Ordinary tests/replay must make zero paid calls. Live smoke checks are separate and bounded. See [OUTREACH_TEST_DELIVERY](../operations/OUTREACH_TEST_DELIVERY.md).
-
-## CareLink and clinical boundaries
-
-CareLink transitions are synthetic local coordination events. Staff and transportation actions produce consistent views; caregiver receives only allowed logistics. No actual ride, funding authorization, GPS feed or Uber call occurs.
-
-Preserve the patient's original words for staff review. Transportation/caregiver displays omit the clinical concern. Patient may see their own submission. No autonomous diagnosis, triage, clinical clearance or treatment change. The final state means the coordination plan is acknowledged, not that treatment occurred.
-
-## Contracts, tests and review
-
-Use a formal contract for the real frontend/backend delivery boundary and any necessary capture service. Local component props and scenario files need typed schemas, not a new server API. Architecture reports must select actual impacts and controls; proposed task specs are not approval.
-
-Use smoke checks for prepared assets and simple navigation, targeted state tests for closure/recovery, outreach history and dispatch replay isolation, and independent targeted/security review for live side effects. Required repository verification is retained; this scope cut does not disable existing configured checks or alter completed RAIL evidence.
-
-Frontend design work is compatibility/extension inside the locked system. Before/after screenshots, keyboard behavior, readable states, responsive layout and reduced-motion support protect the visible result.
-
-## Deferred architecture
-
-Durable clinical workflow engine, multiuser authorization, full SMART token lifecycle, broad clinical normalization, automatic scheduling, production models, live transport adapters, FHIR validation and enterprise observability remain future tasks. Do not build them merely because earlier launch documents required them.
+Enterprise authentication, multiuser workflow persistence, automatic outreach scheduling, production ML, runtime Epic token lifecycle, real ride adapters and clinical/outcome claims remain outside this demo architecture. The locked [design system](../design/DESIGN_SYSTEM.md) applies to every visible extension.

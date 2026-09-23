@@ -1,68 +1,12 @@
 # Operator quickstart
 
-The repository carries the workflow; the human should not need a giant prompt for every phase.
+The two-day demo build window is closed. Start with [PROJECT](../PROJECT.md) for current scope and [SPRINT_CLOSEOUT](../SPRINT_CLOSEOUT.md) for shipped work and unmet gates. Use the [seven-minute presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md) for the stage sequence. Do not restart the retired hour-by-hour sprint plan.
 
-## Current OncoReady work — two-day demonstration
+## Task work
 
-Start with [PROJECT](../PROJECT.md), [the sprint](../LAUNCH_SPRINT_PLAN.md), [the handoff](../LAUNCH_REVIEW.md) and [the runbook](../operations/DEMO_RUNBOOK.md). The current scope supersedes the previous full-product launch backlog.
+1. Read the relevant `docs/features/<TASK-ID>.md` and `.ai/tasks/<TASK-ID>/task.json`. Read architecture, design or contracts only if the change touches them. Actual behavior lives in code.
+2. Work on a branch, not `main`. Preserve the locked visual system and keep protected provider actions server-side. Ordinary scenario reset or rehearsal must not arm or send a call/SMS.
+3. Run checks relevant to the changed code. Keep failed or unavailable gates visible in reports rather than marking them passed.
+4. The task lifecycle is `PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE`. The control plane is `python3 scripts/agentctl.py`; its `task advance` gates and current-revision evidence take precedence over an informal “shipped” label. Human-authorized merge is required for DONE.
 
-RAIL-001 is already DONE. Existing hosts: `https://app.oncoready.me` and `https://api.oncoready.me` (human-confirmed). Start remaining work with ACCESS/FLOW planning and check Epic capture/provider access early. Do not restart the infrastructure task or require trained production models and automatic outreach before the demo.
-
-Prepared frontend state, actual captured Epic Sandbox JSON, synthetic-data notebook outputs, simulated CareLink and a minimal protected real SMS/call path are the required shape. This planning revision implements none of those future slices and advances no lifecycle state.
-
-The snippets below describe the general repository process. Apply it to the revised scope; completed task specs/reports remain historical.
-
-## Brand-new product
-
-Tell Codex:
-
-```text
-This is a brand-new product. Treat my idea as PROJECT INCEPTION.
-Follow AGENTS.md and the `ship-build-mvp` skill.
-Optimize for a memorable hero journey, real end-to-end functionality, strong technical credibility, exceptional frontend presentation, demo reliability, and rapid delivery.
-Keep architecture and backlog small; prefer vertical slices and avoid unnecessary production hardening.
-Do not implement or create tasks yet.
-Continue automatically unless a material decision genuinely requires me.
-```
-
-## Approve first slice
-
-```text
-Approve <TASK-ID> as the first implementation slice.
-Proceed using AGENTS.md, the task spec, and scripts/agentctl.py. Start with architecture and contracts while the task is PLANNING; do not treat a proposed backlog item as build-ready.
-Keep the slice end-to-end and use only the contract/test/security depth architecture actually requires.
-Continue automatically until human action is genuinely required.
-```
-
-## Lifecycle
-
-```text
-PROPOSED → PLANNING → BUILD_READY → IMPLEMENTATION → INTEGRATION → REVIEW → DONE
-```
-
-Architecture chooses whether contracts, independent testing, and dedicated security review are required.
-
-For this two-day demo, the human approved one shared `feature/two-day-demo` branch for all seven remaining tasks and both days. Follow root `AGENTS.md` section 12: preserve the planning baseline, use sequential scoped specialist handoffs and task-specific commits, pass explicit pre-handoff bases to scope checks, and keep per-task evidence current before the final human-approved merge. The branch/worktree instructions below describe the default workflow; shared-checkout handoffs replace them for this exception.
-
-## Codex frontend work — design-required task
-
-When `frontend_design_required=true`, Codex starts the frontend specialist in the prepared frontend worktree. The specialist follows `AGENTS.md`, `frontend/AGENTS.md`, the locked `docs/design/DESIGN_SYSTEM.md`, and applicable installed frontend skills, then completes the design-only report before production implementation. For OncoReady, this phase designs the feature inside the approved visual system; it does not authorize a rebrand or restyle.
-
-The Codex orchestrator reviews that report for compatibility, binds approval to its exact digest, and returns the approved handoff to the same frontend worktree. The frontend specialist then uses:
-
-```bash
-python scripts/agentctl.py worktree sync <TASK-ID> frontend
-python scripts/agentctl.py frontend design-gate <TASK-ID>
-```
-
-## Codex frontend work — established design
-
-When `frontend_design_required=false`, Codex starts the frontend specialist to implement with the established locked design system and complete all relevant interaction states. No design-only handoff is required, and no global visual change is permitted.
-
-When the frontend specialist finishes or stops, the Codex orchestrator reads `frontend-report.json`, integrates the worker branch when complete, and continues orchestration.
-
-## After final review and merge
-
-```text
-The feature branch/PR for <TASK-ID> is approved and merged. Perform post-merge closure.
-```
+ACCESS-001 and FLOW-001 remain in REVIEW despite historical approved reports and merged code. OUTREACH-001 and EVIDENCE-001 remain open because real SMS delivery, event-call rearming and presentation assets/rehearsal are incomplete. The exact state of every task is its `.ai/tasks/<TASK-ID>/task.json`; [SPRINT_CLOSEOUT](../SPRINT_CLOSEOUT.md) explains the distinction between sprint closure and task completion.

@@ -2,13 +2,13 @@
 
 ## Status
 
-Accepted from explicit human direction — September 21, 2026. Implementation pending in the seven proposed tasks.
+Accepted from explicit human direction — September 21, 2026. The two-day build window closed September 22; [closeout](../SPRINT_CLOSEOUT.md) records implemented behavior and open gates.
 
 ## Context
 
 The previous launch roadmap required durable multiuser workflows, broad Epic integration, evaluated production-style models, automatic outreach and extensive evidence services. The human now requires the remaining sprint scope in two working days, with finished UI, primarily recorded playback, one real SMS and one short live call.
 
-The human also selected actual Epic Sandbox JSON captured ahead of playback, an offline notebook demonstrating ML on synthetic data with exported results in the UI, and the existing Railway hosts app.oncoready.me and api.oncoready.me. This turn is documentation-only.
+The human also selected actual Epic Sandbox JSON captured ahead of playback, an offline notebook demonstrating ML on synthetic data with exported results in the UI, and the existing Railway hosts app.oncoready.me and api.oncoready.me.
 
 ## Decision
 
@@ -24,11 +24,9 @@ The human also selected actual Epic Sandbox JSON captured ahead of playback, an 
 
 ## Supersession
 
-ADR-0001 remains valid for the already completed hosting foundation, but its full backend/persistence scope is no longer a dependency of every demo scene.
+The earlier topology decision remains valid for the completed hosting foundation, but its full backend/persistence scope is no longer a dependency of every demo scene. The earlier integration decision's truthful provenance, read-only source and no-fabricated-provider-success principles remain; live Epic lifecycle and automatic delivery are deferred. Git history retains both superseded records.
 
-ADR-0002's truthful provenance, read-only source and no-fabricated-provider-success principles remain. Its live Epic lifecycle, mandatory learned outreach and automated execution requirements are superseded for this release.
-
-ADR-0003's visual lock remains unchanged. Completed task acceptance/evidence remains historical. Proposed specs and task records carry the revised acceptance; no lifecycle state or implementation approval is invented.
+ADR-0003's visual lock remains unchanged. Task records and the [sprint closeout](../SPRINT_CLOSEOUT.md) distinguish completed work from remaining acceptance gates.
 
 ## Consequences
 

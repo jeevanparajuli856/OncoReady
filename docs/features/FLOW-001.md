@@ -1,6 +1,6 @@
 # FLOW-001 — Shared frontend continuity scenario
 
-**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
+**Current task record:** REVIEW. This specification records the approved two-day demo scope; [the closeout](../SPRINT_CLOSEOUT.md) distinguishes shipped behavior from remaining gates. The task JSON and current code determine lifecycle and behavior.
 
 ## User-visible outcome
 
@@ -43,4 +43,4 @@ TARGETED; LOW risk for synthetic-only local state. Independent tests focus on st
 10. Starting at Treatment at risk, each recorded nurse, transportation and patient action updates its corresponding graph node and status; only the existing closure rules permit Continuity plan confirmed. The transition remains understandable with reduced motion and non-color labels. Verify the before/after scene and the open-blocker case without inventing a score improvement.
 11. Every open work item in the selected journey shows its named owner, next action, due time and waiting/blocked status from shared scenario data. Completing or reopening it updates the graph and timeline consistently; verify the clinical and transportation paths. Deadlines are operational scenario settings, not clinical policy.
 
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

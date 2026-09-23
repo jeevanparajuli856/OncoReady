@@ -41,11 +41,12 @@ Detailed orchestration:
 
 ## Project-specific documentation
 
-- Workspace roles: docs/architecture/WORKSPACES.md
-- Authentication: docs/features/AUTH.md
-- Epic integration: docs/integrations/EPIC.md
+- Workspace roles and trust boundaries: docs/architecture/SYSTEM.md
+- Prepared access: docs/features/ACCESS-001.md
+- Epic Sandbox capture: docs/features/EPIC-001.md
 - Design system: docs/design/DESIGN_SYSTEM.md
-- Current sprint: docs/LAUNCH_SPRINT_PLAN.md
+- Closed demo sprint and open gates: docs/SPRINT_CLOSEOUT.md
+- Presenter script: docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md
 
 Orchestrator progress response:
 
@@ -62,4 +63,3 @@ NEXT_MODE: <AUTOMATIC | HUMAN_ACTION_REQUIRED | COMPLETE>
 NEXT: <next action>
 
 ```
-

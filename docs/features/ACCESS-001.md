@@ -1,6 +1,6 @@
 # ACCESS-001 — Polished demo entry and prepared workspaces
 
-**Scope revision:** September 21, 2026 two-day demonstration. Supersedes this task's prior full-product launch requirements. Status remains PROPOSED; architecture/implementation/review are not certified by this specification.
+**Current task record:** REVIEW. This specification records the approved two-day demo scope; [the closeout](../SPRINT_CLOSEOUT.md) distinguishes shipped behavior from remaining gates. The task JSON and current code determine lifecycle and behavior.
 
 ## User-visible outcome
 
@@ -37,4 +37,4 @@ SMOKE; LOW risk for synthetic-only presentation routing. If real sessions or pro
 5. Off-path sign-up, recovery and provider controls are hidden, disabled with an explanation or implemented as honest previews. No false authentication, save or email success; inspect every visible recording-path link.
 6. Keyboard focus, readable states, selected desktop/mobile layouts and reduced-motion behavior preserve the approved design; compare before/after screenshots without changing global tokens.
 
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md), [scenario settings](../LAUNCH_SCENARIO_SETTINGS.md) and [demo runbook](../operations/DEMO_RUNBOOK.md). Future product work is listed in [the roadmap](../LAUNCH_ROADMAP.md); it is not an additional release gate.
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

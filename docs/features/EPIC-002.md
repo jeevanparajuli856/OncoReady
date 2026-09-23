@@ -58,13 +58,6 @@ Notes on the real data, which the UI must handle and does:
 
 ## Verification status
 
-Passing on the integrated revision: project manifest, OpenAPI contract, agentic framework tests, backend fast tests (103), frontend build, frontend critical-path smoke (82), roster checksum/patient-scope/vital-signs/secret validation, tracked-secret baseline.
+The captured roster and vital-sign merging code are present. Earlier Playwright failures cited in this task's original report were resolved later: the current full frontend suite passed 10 Playwright tests and 94 component tests during the demo closeout. This does **not** advance EPIC-002's formal task record, which remains PROPOSED with an incomplete current-revision review and database integration evidence. See [the closeout](../SPRINT_CLOSEOUT.md).
 
-Two checks fail for reasons that **predate this task**. Do not attribute them to EPIC-002 and do not "fix" them inside it:
-
-- **PostgreSQL migration and integration** — requires `TEST_DATABASE_URL`/`DATABASE_URL`, which are unset locally.
-- **Frontend end-to-end** — 4 Playwright specs assert a mobile workspace dock and a `role="dialog"` auth screen. Both were removed by commit `856e6b2`, which did not update the suite. Verified by running the same suite at `e530fc2`: the identical 4 specs fail there, before any EPIC-002 change. The affected specs are `e2e.spec.ts:87`, `:156`, `:194` and `:260`, and they belong to UI-001/ACCESS-001 scope.
-
-Realigning those specs with the current auth and navigation is separate work against the task that changed them.
-
-See [the two-day sprint](../LAUNCH_SPRINT_PLAN.md) and [the demo runbook](../operations/DEMO_RUNBOOK.md).
+See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).
