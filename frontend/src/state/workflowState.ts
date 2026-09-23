@@ -15,6 +15,9 @@ const STORAGE_KEY = 'oncoready_workflow_state_v4';
 const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
+/** Sarah Jenkins, the triage nurse: shared by her task ownership and the patient's care team card. */
+export const NURSE_AVATAR = avatarData('SJ', '#0284c7');
+
 /** Fictional CareLink vendors. The primary provider is the vendor signed in to the CareLink portal. */
 export const PRIMARY_PROVIDER = 'Crescent Lantern Medical Rides';
 export const BACKUP_PROVIDER = 'Magnolia Wayfare Transport';
@@ -459,7 +462,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       const tasks: Task[] = [
         {
           id: 'TSK-CLN-CAMILA-01', type: 'CLINICAL_REVIEW', title: 'Clinical contact and human disposition', patientId: state.patient.id,
-          status: 'ASSIGNED', priority: 'HIGH', owner: { id: 'STAFF-RN-01', name: 'Sarah Jenkins, RN', role: 'Oncology Triage Nurse', department: 'Benson Cancer Center Triage', badge: 'RN-8841', avatarUrl: avatarData('SJ', '#0284c7') },
+          status: 'ASSIGNED', priority: 'HIGH', owner: { id: 'STAFF-RN-01', name: 'Sarah Jenkins, RN', role: 'Oncology Triage Nurse', department: 'Benson Cancer Center Triage', badge: 'RN-8841', avatarUrl: NURSE_AVATAR },
           createdAt: now, dueTime: 'Sep 24, 10:42 AM CT', nextAction: 'Contact Camila and record a human disposition', waitingReason: 'Patient contact',
           clinicalDetails: { verbatimReport: clinicalText, clearanceState: 'PENDING_REVIEW' },
         },

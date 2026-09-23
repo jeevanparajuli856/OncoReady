@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "task_id": "UI-002",
+  "title": "Triage nurse avatar in the patient care team",
+  "type": "fix",
+  "status": "DONE",
+  "priority": "low",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/UI-002.md",
+  "branch": "fix/UI-002-nurse-avatar-initials",
+  "base_branch": "main",
+  "dependencies": [],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/state/workflowState.ts",
+      "frontend/src/components/PatientTreatmentHome.tsx",
+      "frontend/tests/access.test.tsx",
+      "frontend/artifacts/UI-002-*"
+    ],
+    "other": [
+      "docs/features/UI-002.md"
+    ]
+  },
+  "human_decisions": [
+    "Sarah Jenkins shows her SJ avatar in the patient care team card."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "114 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": []
+}
