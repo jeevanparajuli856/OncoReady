@@ -25,10 +25,10 @@ Use the deployed app at `https://app.oncoready.me`. The call is placed from **Ca
 
 ### Pre-stage the live CareLink windows (before doors open)
 
-Both windows must be in the **same browser profile**, not incognito, because they share the scenario through local storage.
+Both windows must be in the **same browser profile**, not incognito, because they share the scenario through local storage. Every prepared account signs in with the password `1234`: patient `abcp@`, caregiver `abcc@`, care team `abcs@`, care navigator `abcn@` and CareLink vendor `abct@`, all at `oncoready.me`. These are synthetic demo personas, not real credentials.
 
-1. **Window L (left half of the screen):** sign in as Camila (`abcp@oncoready.me`), tap **Start Readiness Check** and **Submit Readiness Report**. Switch Workspace → **Care Navigator (Marcus Vance, MSW)** → sidebar **Transportation**. Tap **Request ride**, then **Assign Crescent Lantern Medical Rides · via CareLink**. The panel reads "Waiting for Crescent Lantern Medical Rides to accept in CareLink". Then open **Command Center → Review Case → Outreach** so Window L starts on Camila's outreach history, with **Call Camila** enabled.
-2. **Window R (right half):** open `https://app.oncoready.me/carelink`, sign in as the vendor (`abct@oncoready.me`). The **CareLink by OncoReady** trip board shows **New trip offer** for Camila L. with the street route.
+1. **Window L (left half of the screen):** sign in as Camila (`abcp@oncoready.me` / `1234`), tap **Start Readiness Check** and **Submit Readiness Report**. Switch Workspace → **Care Navigator (Marcus Vance, MSW)** → sidebar **Transportation**. Tap **Request ride**, then **Assign Crescent Lantern Medical Rides · via CareLink**. The panel reads "Waiting for Crescent Lantern Medical Rides to accept in CareLink". Then open **Command Center → Review Case → Outreach** so Window L starts on Camila's outreach history, with **Call Camila** enabled.
+2. **Window R (right half):** open `https://app.oncoready.me/carelink`, sign in as the vendor (`abct@oncoready.me` / `1234`). The **CareLink by OncoReady** trip board shows **New trip offer** for Camila L. with the street route.
 3. Zoom both windows so the status chips are readable from the back row. Don't touch either window again until the cue.
 
 ## Seven-minute cue sheet
