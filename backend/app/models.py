@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Integer, String, func
+from sqlalchemy import CheckConstraint, DateTime, ForeignKey, Integer, String, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
 
@@ -38,6 +38,30 @@ class OutreachArmRecord(Base):
 class OutreachAttemptRecord(Base):
     __tablename__ = "outreach_attempts"
     kind: Mapped[str] = mapped_column(String(8), primary_key=True)
+    status: Mapped[str] = mapped_column(String(24), nullable=False)
+    provider_sid: Mapped[str | None] = mapped_column(String(64))
+    conversation_id: Mapped[str | None] = mapped_column(String(64))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class OutreachCallWindowRecord(Base):
+    __tablename__ = "outreach_call_windows"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    purpose: Mapped[str] = mapped_column(String(8), nullable=False)
+    consent_confirmed_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+
+class OutreachCallAttemptRecord(Base):
+    __tablename__ = "outreach_call_attempts"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    window_id: Mapped[int | None] = mapped_column(
+        ForeignKey("outreach_call_windows.id"), unique=True
+    )
     status: Mapped[str] = mapped_column(String(24), nullable=False)
     provider_sid: Mapped[str | None] = mapped_column(String(64))
     conversation_id: Mapped[str | None] = mapped_column(String(64))

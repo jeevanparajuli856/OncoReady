@@ -38,6 +38,7 @@ class Settings(BaseSettings):
     outreach_consent_confirmed: bool = False
     outreach_recipient: str | None = None
     outreach_arm_minutes: int = Field(default=30, ge=1, le=60)
+    outreach_daily_call_limit: int = Field(default=4, ge=1, le=20)
     twilio_account_sid: str | None = None
     twilio_auth_token: SecretStr | None = None
     twilio_from_number: str | None = None

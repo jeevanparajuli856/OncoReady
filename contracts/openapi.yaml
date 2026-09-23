@@ -4,7 +4,7 @@ info:
   title: OncoReady API
   version: 0.1.0
   description: >-
-    Railway foundation and private one-shot outreach contract. Protected
+    Railway foundation and protected outreach contract. Protected
     workspace, runtime Epic, broad workflow, transportation, and evidence APIs
     are introduced by later slices.
 
@@ -164,13 +164,13 @@ paths:
   /api/v1/operator/outreach/status:
     get:
       operationId: getOutreachStatus
-      summary: Read sanitized provider-polled one-shot delivery status
+      summary: Read sanitized provider-polled delivery status and call-window eligibility
       tags: [Operator]
       security:
         - operatorBearer: []
       responses:
         "200":
-          description: Current arm and separate SMS/call states.
+          description: Current SMS arm, latest call, and next-call eligibility.
           content:
             application/json:
               schema:
@@ -181,7 +181,7 @@ paths:
   /api/v1/operator/outreach/arm:
     post:
       operationId: armOutreachOnce
-      summary: Open the single finite live delivery window
+      summary: Open the one-shot SMS window
       tags: [Operator]
       security:
         - operatorBearer: []
@@ -195,7 +195,7 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
         "409":
-          description: The one-time arm has already been used.
+          description: The SMS arm has already been used.
         "503":
           description: Consent, credentials, persistence, or kill switch is unavailable.
 
@@ -224,14 +224,14 @@ paths:
 
   /api/v1/operator/outreach/call:
     post:
-      operationId: placeOutreachCallOnce
-      summary: Reserve and initiate the short ElevenLabs agent call via Twilio
+      operationId: placeOutreachCall
+      summary: Reserve one call in the current call window and initiate the ElevenLabs agent via Twilio
       tags: [Operator]
       security:
         - operatorBearer: []
       responses:
         "200":
-          description: The one-shot attempt state, which may be unknown or failed.
+          description: The latest attempt state, which may be unknown or failed.
           content:
             application/json:
               schema:
@@ -239,9 +239,45 @@ paths:
         "401":
           $ref: "#/components/responses/Unauthorized"
         "403":
-          description: The arm is absent or expired.
+          description: The call window is absent, expired, or already used.
         "409":
-          description: A call attempt was already reserved.
+          description: The previous call is unresolved or the daily call limit is reached.
+        "503":
+          description: Live outreach is unavailable.
+
+  /api/v1/operator/outreach/call/arm:
+    post:
+      operationId: armOutreachCall
+      summary: Open one finite call window after the last call has a confirmed final status
+      tags: [Operator]
+      security:
+        - operatorBearer: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: false
+              required: [purpose, consent_confirmed]
+              properties:
+                purpose:
+                  type: string
+                  enum: [test, demo]
+                consent_confirmed:
+                  type: boolean
+                  const: true
+      responses:
+        "200":
+          description: A new call window is open for one deliberate call.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OutreachStatus"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: A window is already open, the previous call is unresolved, or the daily limit is reached.
         "503":
           description: Live outreach is unavailable.
 
@@ -303,7 +339,7 @@ components:
     OutreachStatus:
       type: object
       additionalProperties: false
-      required: [available, armed, expires_at, sms, call, call_completed]
+      required: [available, armed, expires_at, sms, call, call_completed, call_purpose, call_armed, call_can_arm, call_expires_at, call_attempts_today, call_daily_limit]
       properties:
         available:
           type: boolean
@@ -322,6 +358,26 @@ components:
           enum: [not_started, initiating, initiated, queued, ringing, in_progress, completed, busy, failed, no_answer, canceled, unknown]
         call_completed:
           type: boolean
+        call_purpose:
+          oneOf:
+            - type: string
+              enum: [test, demo]
+            - type: "null"
+        call_armed:
+          type: boolean
+        call_can_arm:
+          type: boolean
+        call_expires_at:
+          oneOf:
+            - type: string
+              format: date-time
+            - type: "null"
+        call_attempts_today:
+          type: integer
+          minimum: 0
+        call_daily_limit:
+          type: integer
+          minimum: 1
 
     HealthResponse:
       type: object

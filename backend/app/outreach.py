@@ -3,16 +3,23 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from typing import Literal
 
 import httpx
 from fastapi import APIRouter, Depends, Request
-from sqlalchemy import select
+from pydantic import BaseModel, ConfigDict
+from sqlalchemy import func, select, text
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm import Session
 
 from app.config import Settings
 from app.database import get_session
-from app.models import OutreachArmRecord, OutreachAttemptRecord
+from app.models import (
+    OutreachArmRecord,
+    OutreachAttemptRecord,
+    OutreachCallAttemptRecord,
+    OutreachCallWindowRecord,
+)
 from app.security import require_operator
 from app.web import ApiError
 
@@ -28,6 +35,21 @@ router = APIRouter(
     dependencies=[Depends(require_operator)],
 )
 
+CALL_FINAL_STATUSES = frozenset({"completed", "busy", "failed", "no_answer", "canceled"})
+CALL_PROVIDER_STATUSES = frozenset({
+    "queued", "initiated", "ringing", "in-progress", "completed", "busy",
+    "failed", "no-answer", "canceled",
+})
+# Serialize authorization across API instances and operator devices.
+CALL_LOCK_ID = 2026092301
+
+
+class CallArmRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    purpose: Literal["test", "demo"]
+    consent_confirmed: Literal[True]
+
 
 def _settings(request: Request) -> Settings:
     return request.app.state.settings
@@ -42,27 +64,84 @@ def _arm(session: Session) -> OutreachArmRecord | None:
     return session.get(OutreachArmRecord, "demo")
 
 
+def _latest_call(session: Session) -> OutreachCallAttemptRecord | None:
+    return session.execute(
+        select(OutreachCallAttemptRecord).order_by(OutreachCallAttemptRecord.id.desc()).limit(1)
+    ).scalar_one_or_none()
+
+
+def _latest_call_window(session: Session) -> OutreachCallWindowRecord | None:
+    return session.execute(
+        select(OutreachCallWindowRecord).order_by(OutreachCallWindowRecord.id.desc()).limit(1)
+    ).scalar_one_or_none()
+
+
+def _call_count_today(session: Session) -> int:
+    now = datetime.now(timezone.utc)
+    midnight = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    return session.scalar(
+        select(func.count()).select_from(OutreachCallAttemptRecord).where(
+            OutreachCallAttemptRecord.created_at >= midnight
+        )
+    ) or 0
+
+
+def _call_lock(session: Session) -> None:
+    session.execute(text("SELECT pg_advisory_xact_lock(:key)"), {"key": CALL_LOCK_ID})
+
+
+def _call_window_ready(
+    session: Session, window: OutreachCallWindowRecord | None, now: datetime
+) -> bool:
+    if window is None or window.expires_at <= now:
+        return False
+    used = session.scalar(
+        select(OutreachCallAttemptRecord.id).where(
+            OutreachCallAttemptRecord.window_id == window.id
+        ).limit(1)
+    )
+    return used is None
+
+
 def _summary(session: Session, settings: Settings) -> dict:
     arm = _arm(session)
-    attempts = {a.kind: a for a in session.execute(select(OutreachAttemptRecord)).scalars()}
+    sms = session.get(OutreachAttemptRecord, "sms")
+    call = _latest_call(session)
+    call_window = _latest_call_window(session)
+    call_purpose = (
+        session.get(OutreachCallWindowRecord, call.window_id).purpose
+        if call is not None and call.window_id is not None else None
+    )
     now = datetime.now(timezone.utc)
+    call_armed = _call_window_ready(session, call_window, now)
+    call_finished = call is None or call.status in CALL_FINAL_STATUSES
+    call_limit_reached = _call_count_today(session) >= settings.outreach_daily_call_limit
     return {
         "available": settings.outreach_ready,
         "armed": bool(arm and arm.expires_at > now),
         "expires_at": arm.expires_at.isoformat() if arm else None,
-        "sms": attempts.get("sms").status if "sms" in attempts else "not_started",
-        "call": attempts.get("call").status if "call" in attempts else "not_started",
-        "call_completed": attempts.get("call").status == "completed" if "call" in attempts else False,
+        "sms": sms.status if sms else "not_started",
+        "call": call.status if call else "not_started",
+        "call_completed": call.status == "completed" if call else False,
+        "call_purpose": call_purpose,
+        "call_armed": call_armed,
+        "call_can_arm": bool(
+            settings.outreach_ready and not call_armed and call_finished and not call_limit_reached
+        ),
+        "call_expires_at": call_window.expires_at.isoformat() if call_armed else None,
+        "call_attempts_today": _call_count_today(session),
+        "call_daily_limit": settings.outreach_daily_call_limit,
     }
 
 
 def _refresh(session: Session, settings: Settings) -> None:
-    attempts = session.execute(select(OutreachAttemptRecord)).scalars().all()
+    attempts = session.execute(
+        select(OutreachAttemptRecord).where(OutreachAttemptRecord.kind == "sms")
+    ).scalars().all()
     for attempt in attempts:
         if not attempt.provider_sid or attempt.status in {"delivered", "completed", "failed", "undelivered"}:
             continue
-        path = "Messages" if attempt.kind == "sms" else "Calls"
-        url = f"https://api.twilio.com/2010-04-01/Accounts/{settings.twilio_account_sid}/{path}/{attempt.provider_sid}.json"
+        url = f"https://api.twilio.com/2010-04-01/Accounts/{settings.twilio_account_sid}/Messages/{attempt.provider_sid}.json"
         try:
             response = httpx.get(
                 url,
@@ -73,15 +152,31 @@ def _refresh(session: Session, settings: Settings) -> None:
             raw_status = response.json().get("status", "")
         except (httpx.HTTPError, ValueError):
             continue
-        allowed = (
-            {"queued", "sending", "sent", "delivered", "undelivered", "failed"}
-            if attempt.kind == "sms"
-            else {"queued", "initiated", "ringing", "in-progress", "completed", "busy", "failed", "no-answer", "canceled"}
-        )
-        if raw_status in allowed:
-            attempt.status = "in_progress" if raw_status == "in-progress" else raw_status.replace("-", "_")
+        if raw_status in {"queued", "sending", "sent", "delivered", "undelivered", "failed"}:
+            attempt.status = raw_status
             attempt.updated_at = datetime.now(timezone.utc)
     session.commit()
+
+
+def _refresh_call(session: Session, settings: Settings, *, commit: bool = True) -> None:
+    call = _latest_call(session)
+    if call is None or call.status in CALL_FINAL_STATUSES or not call.provider_sid:
+        return
+    try:
+        response = httpx.get(
+            f"https://api.twilio.com/2010-04-01/Accounts/{settings.twilio_account_sid}/Calls/{call.provider_sid}.json",
+            auth=(settings.twilio_account_sid or "", settings.twilio_auth_token.get_secret_value()),
+            timeout=7,
+        )
+        response.raise_for_status()
+        raw_status = response.json().get("status", "")
+    except (httpx.HTTPError, ValueError):
+        return
+    if raw_status in CALL_PROVIDER_STATUSES:
+        call.status = raw_status.replace("-", "_")
+        call.updated_at = datetime.now(timezone.utc)
+        if commit:
+            session.commit()
 
 
 @router.get("/status")
@@ -89,7 +184,49 @@ def status(request: Request, session: Session = Depends(get_session)) -> dict:
     settings = _settings(request)
     if settings.outreach_ready:
         _refresh(session, settings)
+        _refresh_call(session, settings)
     return _summary(session, settings)
+
+
+@router.post("/call/arm")
+def arm_call(request: Request, body: CallArmRequest, session: Session = Depends(get_session)) -> dict:
+    settings = _settings(request)
+    _available(settings)
+    _call_lock(session)
+    _refresh_call(session, settings, commit=False)
+    now = datetime.now(timezone.utc)
+    if _call_window_ready(session, _latest_call_window(session), now):
+        raise ApiError(409, "already_armed", "A call window is already open.")
+    latest = _latest_call(session)
+    if latest is not None and latest.status not in CALL_FINAL_STATUSES:
+        raise ApiError(409, "call_unresolved", "The previous call has not reached a confirmed final status.")
+    if _call_count_today(session) >= settings.outreach_daily_call_limit:
+        raise ApiError(409, "call_limit_reached", "Today's call limit has been reached.")
+    session.add(OutreachCallWindowRecord(
+        purpose=body.purpose,
+        consent_confirmed_at=now,
+        expires_at=now + timedelta(minutes=settings.outreach_arm_minutes),
+    ))
+    session.commit()
+    return _summary(session, settings)
+
+
+def _reserve_call(session: Session, settings: Settings) -> OutreachCallAttemptRecord:
+    _call_lock(session)
+    _refresh_call(session, settings, commit=False)
+    window = _latest_call_window(session)
+    if not _call_window_ready(session, window, datetime.now(timezone.utc)):
+        raise ApiError(403, "not_armed", "No unused call window is open.")
+    latest = _latest_call(session)
+    if latest is not None and latest.status not in CALL_FINAL_STATUSES:
+        raise ApiError(409, "call_unresolved", "The previous call has not reached a confirmed final status.")
+    if _call_count_today(session) >= settings.outreach_daily_call_limit:
+        raise ApiError(409, "call_limit_reached", "Today's call limit has been reached.")
+    attempt = OutreachCallAttemptRecord(window_id=window.id, status="initiating")
+    session.add(attempt)
+    session.commit()  # Reserve durably before the ElevenLabs request.
+    session.refresh(attempt)
+    return attempt
 
 
 @router.post("/arm")
@@ -148,7 +285,7 @@ def send_sms(request: Request, session: Session = Depends(get_session)) -> dict:
 def place_call(request: Request, session: Session = Depends(get_session)) -> dict:
     settings = _settings(request)
     _available(settings)
-    attempt = _reserve(session, "call")
+    attempt = _reserve_call(session, settings)
     try:
         response = httpx.post(
             "https://api.elevenlabs.io/v1/convai/twilio/outbound-call",

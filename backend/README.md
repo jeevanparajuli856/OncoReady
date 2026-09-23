@@ -25,7 +25,7 @@ DATABASE_URL='postgresql+psycopg://...' \
   backend/.venv/bin/alembic -c backend/alembic/alembic.ini upgrade head
 ```
 
-## One-shot live outreach
+## Protected live outreach
 
 The private page at `/operator/live` requires the existing `OPERATOR_TOKEN`.
 The server must also have `DATABASE_URL`, `OUTREACH_ENABLED=true`,
@@ -34,11 +34,15 @@ The server must also have `DATABASE_URL`, `OUTREACH_ENABLED=true`,
 `ELEVENLABS_API_KEY`, `ELEVENLABS_AGENT_ID`, and
 `ELEVENLABS_PHONE_NUMBER_ID`. Keep these values server-side only.
 
-Run the Alembic migration before enabling outreach. The operator checks status,
-arms once for `OUTREACH_ARM_MINUTES` (default 30), then can submit one SMS and
-one call. The ledger reserves each action before provider submission and is not
-cleared by scenario reset. An ambiguous submission stays `unknown` and cannot
-be retried. Status reads poll Twilio for actual message/call state; `sent` is not
+Run the Alembic migration before enabling outreach. SMS keeps its one-shot arm.
+Calls use separate windows: open one call window for `OUTREACH_ARM_MINUTES`
+(default 30), place one call, wait for Twilio to report a final status, then
+deliberately open another window if needed. Each window records an explicit
+test/demo purpose and current recipient consent confirmation. At most `OUTREACH_DAILY_CALL_LIMIT`
+calls (default 4) can be attempted per UTC day. Every attempt is reserved before
+provider submission and survives scenario reset. An ambiguous submission stays
+`unknown` and blocks another call until resolved. Status reads poll Twilio for
+actual message/call state; `sent` is not
 SMS delivery, and `completed` is not patient acknowledgment. The ElevenLabs
 agent must have a verified Twilio phone number and a 60-second maximum call
 duration. The presenter verifies audible speech on the consenting phone.
