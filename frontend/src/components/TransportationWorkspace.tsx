@@ -3,6 +3,8 @@ import { Car, CheckCircle2, PlugZap } from 'lucide-react';
 import type { WorkflowState } from '../types';
 import type { WorkflowAction } from '../state/workflowState';
 import { CareLinkRidePanel } from './CareLinkRidePanel';
+import { CareLinkMark } from './CareLinkMark';
+import { careLinkProvider, uberHealthProvider } from '../lib/transportProviders';
 
 interface TransportationWorkspaceProps {
   state: WorkflowState;
@@ -42,7 +44,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
                 <p className="label-caps text-muted-fg">Transportation operations</p>
                 <Title id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">Transportation Workspace</Title>
                 <p className="text-sm text-muted-fg mt-2 max-w-2xl">
-                  Every ride update, whether from local partners via CareLink or from Uber Health, lands here so you can recover rides and confirm the plan before treatment day.
+                  Every ride update from local partners in CareLink lands here so you can recover rides and confirm the plan before treatment day. API partners plug into the same adapter layer.
                 </p>
               </div>
             </div>
@@ -65,24 +67,30 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
           </div>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
-          <article className="card-sticker p-4 space-y-2">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="font-heading font-bold">CareLink</h3>
-              <CheckCircle2 className="w-4 h-4 text-mint" aria-hidden="true" />
-            </div>
-            <p className="text-sm font-semibold">OncoReady vendor portal · Active</p>
-            <p className="text-xs text-muted-fg">Local transport partners without their own software receive trips and post status updates here.</p>
-          </article>
-          <article className="card-sticker p-4 space-y-2 border-black">
+          <article className="card-sticker p-4 space-y-2" aria-labelledby="provider-carelink-title">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div role="img" aria-label="Uber Health wordmark" className="font-sans text-xs font-black tracking-[0.16em] text-black">UBER HEALTH</div>
-                <h3 className="font-heading font-bold mt-1">Uber Health</h3>
+                <CareLinkMark size={22} />
+                <h3 id="provider-carelink-title" className="sr-only">{careLinkProvider.name}</h3>
+              </div>
+              <CheckCircle2 className="w-4 h-4 text-mint" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-semibold">{careLinkProvider.statusLabel}</p>
+            <p className="text-xs text-muted-fg">Local transport partners without their own software receive trips and post status updates here.</p>
+            <p className="text-[11px] text-muted-fg">{careLinkProvider.vendors(state).join(' · ')}</p>
+          </article>
+          <article className="card-sticker p-4 space-y-2" aria-labelledby="provider-uber-title">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <img src="/brands/uber-logo.svg" alt="Uber" className="h-4 w-auto" />
+                <span className="font-sans text-sm font-semibold text-black">Health</span>
+                <h3 id="provider-uber-title" className="sr-only">{uberHealthProvider.name}</h3>
               </div>
               <PlugZap className="w-4 h-4 text-accent" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold">API integration · Planned</p>
-            <p className="text-xs text-muted-fg">Trip status will sync automatically through the Uber Health API. Not yet connected.</p>
+            <p className="text-sm font-semibold">{uberHealthProvider.statusLabel}</p>
+            <p className="text-xs text-muted-fg">Trip acceptance, driver assignment, and pickup and drop-off events map into this workspace through the same adapter layer as CareLink.</p>
+            <p className="text-[11px] text-muted-fg">Awaiting: {uberHealthProvider.requirements.join(' and ')}.</p>
           </article>
         </div>
       </section>

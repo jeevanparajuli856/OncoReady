@@ -22,15 +22,15 @@ const TransportationHarness = () => {
 };
 
 describe('RIDE-001 provider extensibility labels', () => {
-  it('shows CareLink and a truthful non-connected Uber Health preview', () => {
+  it('shows CareLink and an Uber Health adapter that is not yet connected', () => {
     render(<TransportationHarness />);
 
     expect(screen.getByRole('heading', { name: 'Transportation Workspace' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
     expect(screen.getByText('OncoReady vendor portal · Active')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
-    expect(screen.getByRole('img', { name: 'Uber Health wordmark' })).toBeDefined();
-    expect(screen.getByText('API integration · Planned')).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Uber' })).toBeDefined();
+    expect(screen.getByText('Adapter built · Awaiting connection')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Request ride' })).toBeDefined();
   });
 
@@ -38,13 +38,13 @@ describe('RIDE-001 provider extensibility labels', () => {
     render(<RideHarness />);
 
     fireEvent.click(screen.getByRole('button', { name: 'Request ride' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Assign Partner A · via CareLink' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Assign Crescent Lantern Medical Rides · via CareLink' }));
     fireEvent.click(screen.getByRole('button', { name: 'Record primary unavailable' }));
 
-    expect(screen.getByText('Partner A')).toBeDefined();
+    expect(screen.getByText('Crescent Lantern Medical Rides')).toBeDefined();
     expect(screen.getByText('Failed')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select Partner B · via CareLink' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Select Magnolia Wayfare Transport · via CareLink' }));
     const contact = screen.getByLabelText('Logistics contact');
     fireEvent.change(contact, { target: { value: '' } });
 
@@ -56,7 +56,7 @@ describe('RIDE-001 provider extensibility labels', () => {
     fireEvent.click(save);
 
     expect(screen.getByText('Current plan complete')).toBeDefined();
-    expect(screen.getAllByText(/Partner B/)[0]).toBeDefined();
+    expect(screen.getAllByText(/Magnolia Wayfare Transport/)[0]).toBeDefined();
     expect(screen.getByText(/Sep 25, 8:15–8:30 AM CT/)).toBeDefined();
     expect(screen.getByText(/Return coordination 1:00–4:00 PM CT/)).toBeDefined();
   });

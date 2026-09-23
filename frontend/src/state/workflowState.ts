@@ -6,6 +6,7 @@ import {
   CaregiverProjection,
   RideAssignment,
   ActorRole,
+  VendorTripView,
 } from '../types';
 import { PREPARED_OUTREACH_EVENTS, PREPARED_REPLY } from '../data/preparedOutreach';
 export { PREPARED_REPLY } from '../data/preparedOutreach';
@@ -13,6 +14,11 @@ export { PREPARED_REPLY } from '../data/preparedOutreach';
 const STORAGE_KEY = 'oncoready_workflow_state_v4';
 const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
+
+/** Fictional CareLink vendors. The primary provider is the vendor signed in to the CareLink portal. */
+export const PRIMARY_PROVIDER = 'Crescent Lantern Medical Rides';
+export const BACKUP_PROVIDER = 'Magnolia Wayfare Transport';
+const CARELINK_VENDOR_ACTOR = `CareLink · ${PRIMARY_PROVIDER}`;
 
 export const HISTORICAL_RIDE_EVENTS = [
   { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Previous ride requested.' },
@@ -284,7 +290,8 @@ export type WorkflowAction =
   | { type: 'FAIL_TRANSPORTATION'; payload?: { commandId?: string } }
   | { type: 'REQUEST_CURRENT_RIDE' }
   | { type: 'ASSIGN_PRIMARY_RIDE' }
-  | { type: 'FAIL_PRIMARY_RIDE' }
+  | { type: 'FAIL_PRIMARY_RIDE'; payload?: { reason?: string; declined?: boolean } }
+  | { type: 'VENDOR_ACCEPT_TRIP' }
   | { type: 'ASSIGN_BACKUP_RIDE' }
   | { type: 'SAVE_RECOVERED_RIDE'; payload: { pickupTime: string; plannedArrival: string; returnArrangement: string; logisticsContact: string; backupOwner: string } }
   | { type: 'MARK_NO_RIDE_OPTION' }
@@ -299,7 +306,8 @@ export type WorkflowAction =
   | { type: 'LOAD_CHECKPOINT'; payload: WorkflowState['currentCheckpoint'] }
   | { type: 'SET_PERSPECTIVE'; payload: Perspective }
   | { type: 'RESET_WORKFLOW' }
-  | { type: 'SET_STAFF_ROUTE'; payload: WorkflowState['staffRoute'] };
+  | { type: 'SET_STAFF_ROUTE'; payload: WorkflowState['staffRoute'] }
+  | { type: 'SYNC_SHARED_STATE'; payload: WorkflowState };
 
 const commandApplied = (state: WorkflowState, commandId: string) => state.appliedCommandIds.includes(commandId);
 const withCommand = (state: WorkflowState, commandId: string) => [...state.appliedCommandIds, commandId];
@@ -345,6 +353,8 @@ const isRoleMutationAllowed = (state: WorkflowState, role: 'CARE_NAVIGATOR' | 'C
   state.currentPerspective === 'LANDING' ||
   (role === 'CARE_NAVIGATOR' && state.currentPerspective === 'TRANSPORTATION');
 
+const isCareLinkVendor = (state: WorkflowState) => state.currentPerspective === 'CARELINK_VENDOR';
+
 const normalizePerspective = (perspective: Perspective): Perspective =>
   perspective === 'STAFF' || perspective === 'SYSTEM' ? 'CARE_TEAM' : perspective;
 
@@ -369,6 +379,7 @@ const failCurrentRidePlan = (
   action: string,
   actor = 'Marcus Vance, MSW',
   actorRole: ActorRole = 'NAVIGATOR',
+  reason?: string,
 ): WorkflowState => {
   const currentVersion = getCurrentPlanVersion(state);
   const nextVersion = currentVersion + 1;
@@ -420,7 +431,7 @@ const failCurrentRidePlan = (
       actor,
       actorRole,
       action,
-      description: `Current plan v${nextVersion} is open; earlier assignment and acknowledgment evidence remain in history.`,
+      description: `${reason ? `Reason: ${reason}. ` : ''}Current plan v${nextVersion} is open; earlier assignment and acknowledgment evidence remain in history.`,
       stateDiff: { field: 'transport.planVersion', from: String(currentVersion), to: String(nextVersion) },
     }),
   };
@@ -511,7 +522,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'REQUESTED' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Assign Partner A via CareLink', waitingReason: 'Provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
+          ? { ...item, nextAction: `Assign ${PRIMARY_PROVIDER} via CareLink`, waitingReason: 'Provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
           : item),
       };
       next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Ride requested', description: 'Current trip carelink-current-2026-09-25 opened.' }) };
@@ -521,7 +532,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'REQUESTED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-PRIMARY-001',
-        providerName: 'Partner A',
+        providerName: PRIMARY_PROVIDER,
         providerKind: 'FICTIONAL',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:34 AM CT',
@@ -532,20 +543,48 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'PRIMARY_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'Partner A via CareLink', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: `${PRIMARY_PROVIDER} via CareLink`, transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Trip sent to Partner A via CareLink', description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Trip sent to ${PRIMARY_PROVIDER} via CareLink`, description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
       return next;
     }
-    case 'FAIL_PRIMARY_RIDE':
-      if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
-      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Partner A reported unavailable via CareLink', 'CareLink · Partner A', 'SYSTEM');
+    case 'VENDOR_ACCEPT_TRIP': {
+      if (!isCareLinkVendor(state) || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
+      const current = state.ride.assignments.find((assignment) => assignment.status === 'CURRENT');
+      if (!current || current.providerName !== PRIMARY_PROVIDER || current.vendorAcceptedAt) return state;
+      const acceptedAt = 'Sep 24, 2026 • 10:38 AM CT';
+      let next: WorkflowState = {
+        ...state,
+        ride: {
+          ...state.ride,
+          assignments: state.ride.assignments.map((assignment) =>
+            assignment.id === current.id ? { ...assignment, vendorAcceptedAt: acceptedAt } : assignment),
+        },
+        tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
+          ? { ...item, waitingReason: `Accepted by ${PRIMARY_PROVIDER} in CareLink` }
+          : item),
+      };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ACCEPTED', timestamp: acceptedAt, actor: CARELINK_VENDOR_ACTOR, actorRole: 'SYSTEM', action: `${PRIMARY_PROVIDER} accepted the trip via CareLink`, description: `Driver ${current.driverName} and vehicle ${current.vehicleId} confirmed for the planned pickup window.` }) };
+      return next;
+    }
+    case 'FAIL_PRIMARY_RIDE': {
+      if (state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
+      // The navigator can record the vendor's report; the vendor can release only its own current trip.
+      const vendorActing = isCareLinkVendor(state);
+      if (!vendorActing && !isRoleMutationAllowed(state, 'CARE_NAVIGATOR')) return state;
+      const current = state.ride.assignments.find((assignment) => assignment.status === 'CURRENT');
+      if (vendorActing && current?.providerName !== PRIMARY_PROVIDER) return state;
+      const failure = action.payload?.declined
+        ? `${PRIMARY_PROVIDER} declined the trip via CareLink`
+        : `${PRIMARY_PROVIDER} reported unavailable via CareLink`;
+      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', failure, CARELINK_VENDOR_ACTOR, 'SYSTEM', action.payload?.reason?.trim() || undefined);
+    }
     case 'ASSIGN_BACKUP_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
       const assignment: RideAssignment = {
         id: 'RIDE-ASG-BACKUP-002',
-        providerName: 'Partner B',
+        providerName: BACKUP_PROVIDER,
         providerKind: 'FICTIONAL',
         status: 'CURRENT',
         assignedAt: 'Sep 24, 2026 • 10:49 AM CT',
@@ -559,7 +598,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
           ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Trip sent to backup Partner B via CareLink', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: `Trip sent to backup ${BACKUP_PROVIDER} via CareLink`, description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
       return next;
     }
     case 'SAVE_RECOVERED_RIDE': {
@@ -660,6 +699,14 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
     case 'SET_STAFF_ROUTE':
       if (!canOpenRoute(state.currentPerspective, action.payload)) return state;
       return { ...state, staffRoute: action.payload };
+    case 'SYNC_SHARED_STATE':
+      // Another tab changed the shared scenario. Keep this tab's own workspace, route and replay position.
+      return {
+        ...action.payload,
+        currentPerspective: state.currentPerspective,
+        staffRoute: state.staffRoute,
+        ride: { ...action.payload.ride, replay: state.ride.replay },
+      };
     case 'RESET_WORKFLOW':
       if (typeof localStorage !== 'undefined') localStorage.removeItem(STORAGE_KEY);
       return { ...INITIAL_STATE };
@@ -717,17 +764,52 @@ export function deriveCaregiverProjection(state: WorkflowState): CaregiverProjec
   };
 }
 
+export function deriveVendorTripView(state: WorkflowState): VendorTripView {
+  const details = state.tasks.find((item) => item.type === 'TRANSPORTATION_NAVIGATION')?.transportDetails;
+  const assignment = state.ride.assignments.find((item) => item.providerName === PRIMARY_PROVIDER);
+  const [firstName, ...rest] = state.patient.name.split(' ');
+  const lastInitial = rest.length ? ` ${rest[rest.length - 1][0]}.` : '';
+  const status = !assignment
+    ? 'NONE'
+    : assignment.status === 'FAILED'
+      ? 'RELEASED'
+      : assignment.vendorAcceptedAt ? 'ACCEPTED' : 'OFFERED';
+  return {
+    vendorName: PRIMARY_PROVIDER,
+    tripId: state.ride.currentTripId,
+    status,
+    riderName: `${firstName}${lastInitial}`,
+    riderPhone: state.patient.phone,
+    pickupAddress: details?.pickupAddress ?? state.patient.address,
+    destination: 'Benson Cancer Center · 1514 Jefferson Hwy, Jefferson, LA',
+    pickupWindow: 'Sep 25, 8:15–8:30 AM CT · arrive by 9:15 AM CT',
+    vehicleType: details?.vehicleType ?? 'Assisted medical transport',
+    offeredAt: assignment?.assignedAt,
+    acceptedAt: assignment?.vendorAcceptedAt,
+    releasedAt: assignment?.failedAt,
+    driverName: assignment?.driverName,
+    vehicleId: assignment?.vehicleId,
+  };
+}
+
+export const WORKFLOW_STORAGE_KEY = STORAGE_KEY;
+
+/** Parses a saved scenario; returns null when the value is missing or fails validation. */
+export function parseSavedWorkflowState(raw: string | null): WorkflowState | null {
+  if (!raw) return null;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (!isSavedWorkflowState(parsed)) return null;
+    const currentPerspective = normalizePerspective(parsed.currentPerspective);
+    return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective, staffRoute: availableStaffRoute(currentPerspective, parsed.staffRoute) };
+  } catch {
+    return null;
+  }
+}
+
 export function loadSavedWorkflowState(): WorkflowState {
   try {
-    if (typeof localStorage !== 'undefined') {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return INITIAL_STATE;
-      const parsed: unknown = JSON.parse(raw);
-      if (isSavedWorkflowState(parsed)) {
-        const currentPerspective = normalizePerspective(parsed.currentPerspective);
-        return { ...parsed, overallReadiness: readinessFor(parsed), currentPerspective, staffRoute: availableStaffRoute(currentPerspective, parsed.staffRoute) };
-      }
-    }
+    if (typeof localStorage !== 'undefined') return parseSavedWorkflowState(localStorage.getItem(STORAGE_KEY)) ?? INITIAL_STATE;
   } catch { /* fall through to canonical fixture */ }
   return INITIAL_STATE;
 }
@@ -756,7 +838,7 @@ const isTask = (value: unknown) => {
 };
 const isAuditEvent = (value: unknown) => isRecord(value) && hasStrings(value, ['id','timestamp','actor','action','description']) && ['PATIENT','SYSTEM','TRIAGE_NURSE','NAVIGATOR','CAREGIVER'].includes(String(value.actorRole)) && (value.stateDiff === undefined || (isRecord(value.stateDiff) && hasStrings(value.stateDiff, ['field','from','to'])));
 const isContextualCase = (value: unknown) => isRecord(value) && hasStrings(value, ['id','patientName','mrn','diagnosis','protocol','appointmentTime','blockerType','ownerName','ownerRole','avatarUrl']) && ['PENDING','IN_REVIEW'].includes(String(value.status)) && ['CRITICAL','HIGH','MEDIUM','ROUTINE'].includes(String(value.priority));
-const isRideAssignment = (value: unknown) => isRecord(value) && hasStrings(value, ['id','providerName','assignedAt']) && value.providerKind === 'FICTIONAL' && ['CURRENT','FAILED'].includes(String(value.status)) && ['failedAt','driverName','vehicleId'].every((key) => optionalString(value[key]));
+const isRideAssignment = (value: unknown) => isRecord(value) && hasStrings(value, ['id','providerName','assignedAt']) && value.providerKind === 'FICTIONAL' && ['CURRENT','FAILED'].includes(String(value.status)) && ['failedAt','driverName','vehicleId','vendorAcceptedAt'].every((key) => optionalString(value[key]));
 const isCaregiverSeen = (value: unknown) => value === null || (isRecord(value) && hasStrings(value, ['eventId','actor','actorRole','timestamp']) && value.actor === 'Ana Hernandez' && value.actorRole === 'CAREGIVER' && typeof value.planVersion === 'number' && value.planVersion >= 1);
 const isRideState = (value: unknown) => {
   if (!isRecord(value) || value.currentTripId !== 'carelink-current-2026-09-25' || !['OPEN','REQUESTED','PRIMARY_ASSIGNED','PRIMARY_FAILED','BACKUP_ASSIGNED','RECOVERED','NO_OPTION'].includes(String(value.currentStatus))) return false;
@@ -771,7 +853,7 @@ const isRideState = (value: unknown) => {
 
 function isSavedWorkflowState(value: unknown): value is WorkflowState {
   if (!isRecord(value) || value.version !== 6 || value.scenarioId !== 'camila-demo-v2' || value.isSimulated !== true || value.attendanceStatus !== 'UNKNOWN') return false;
-  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','TRANSPORTATION','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
+  if (!['LANDING','TRUST','SIGN_IN','PATIENT','CAREGIVER','CARE_NAVIGATOR','CARE_TEAM','TRANSPORTATION','CARELINK_VENDOR','STAFF','SYSTEM'].includes(String(value.currentPerspective)) || !['COMMAND_CENTER','EXCEPTIONS','PATIENTS','CASE_WORKSPACE','RESOURCES','INSIGHTS','INTEGRATIONS','ADMIN'].includes(String(value.staffRoute)) || !['ACTION_REQUIRED','AT_RISK','IN_PROGRESS','PLAN_CONFIRMED'].includes(String(value.overallReadiness)) || !['START','CONTEXT_INSIGHTS','SPLIT_WORK','FAILED_RIDE','RECOVERED_PLAN','FINAL_CONFIRMATION'].includes(String(value.currentCheckpoint))) return false;
   if (typeof value.readinessCheckCompleted !== 'boolean' || typeof value.patientAcknowledged !== 'boolean' || (value.patientAcknowledgedPlanVersion !== null && typeof value.patientAcknowledgedPlanVersion !== 'number')) return false;
   if (!isPatient(value.patient) || !isCaregiver(value.caregiver) || !isAppointment(value.appointment) || !isSubmission(value.readinessSubmission) || !isRideState(value.ride)) return false;
   if (!Array.isArray(value.labs) || !value.labs.every(isLab) || !Array.isArray(value.vitals) || !value.vitals.every(isVital) || !Array.isArray(value.contextualCases) || !value.contextualCases.every(isContextualCase)) return false;

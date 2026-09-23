@@ -1,9 +1,13 @@
-import React, { useState, useReducer, useEffect } from 'react';
+import React, { useState, useReducer, useEffect, useRef } from 'react';
 import { 
   workflowReducer, 
   loadSavedWorkflowState, 
   saveWorkflowState,
   deriveCaregiverProjection,
+  deriveVendorTripView,
+  parseSavedWorkflowState,
+  INITIAL_STATE,
+  WORKFLOW_STORAGE_KEY,
 } from './state/workflowState';
 import { Header } from './components/Header';
 import { LandingPage } from './components/LandingPage';
@@ -27,6 +31,7 @@ import { LegalPage } from './components/LegalPage';
 import { FoundationStatus } from './components/FoundationStatus';
 import { TransportationWorkspace } from './components/TransportationWorkspace';
 import { LiveOutreachControl } from './components/LiveOutreachControl';
+import { CareLinkVendorPortal } from './components/CareLinkVendorPortal';
 
 const WORKSPACE_PATHS: Partial<Record<Perspective, string>> = {
   PATIENT: '/patient',
@@ -34,6 +39,7 @@ const WORKSPACE_PATHS: Partial<Record<Perspective, string>> = {
   CARE_TEAM: '/care-team',
   CARE_NAVIGATOR: '/care-navigator',
   TRANSPORTATION: '/transportation',
+  CARELINK_VENDOR: '/carelink',
 };
 
 export const App: React.FC = () => {
@@ -66,6 +72,25 @@ export const App: React.FC = () => {
     if (window.location.pathname === '/login' || window.location.pathname === '/epic/login') {
       if (state.currentPerspective !== 'SIGN_IN') dispatch({ type: 'SET_PERSPECTIVE', payload: 'SIGN_IN' });
     }
+    // The vendor portal opens only for a signed-in CareLink vendor.
+    if (window.location.pathname === '/carelink' && state.currentPerspective !== 'CARELINK_VENDOR') {
+      window.history.replaceState({}, '', '/login');
+      dispatch({ type: 'SET_PERSPECTIVE', payload: 'SIGN_IN' });
+    }
+  }, []);
+
+  // Another tab (for example CareLink beside the Care Navigator) changed the shared scenario.
+  const syncedFromStorage = useRef(false);
+  useEffect(() => {
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== WORKFLOW_STORAGE_KEY) return;
+      const shared = event.newValue === null ? INITIAL_STATE : parseSavedWorkflowState(event.newValue);
+      if (!shared) return;
+      syncedFromStorage.current = true;
+      dispatch({ type: 'SYNC_SHARED_STATE', payload: shared });
+    };
+    window.addEventListener('storage', handleStorage);
+    return () => window.removeEventListener('storage', handleStorage);
   }, []);
 
   useEffect(() => {
@@ -81,6 +106,11 @@ export const App: React.FC = () => {
 
   // Sync state to localStorage on every transition
   useEffect(() => {
+    // Skip echoing a synced change back, or two tabs with different workspaces would trade writes forever.
+    if (syncedFromStorage.current) {
+      syncedFromStorage.current = false;
+      return;
+    }
     saveWorkflowState(state);
   }, [state]);
 
@@ -192,7 +222,7 @@ export const App: React.FC = () => {
           ? 'max-w-none px-0 py-0'
           : state.currentPerspective === 'CARE_NAVIGATOR' || state.currentPerspective === 'CARE_TEAM'
           ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-0'
-          : isStandaloneEpicLogin
+          : isStandaloneEpicLogin || state.currentPerspective === 'CARELINK_VENDOR'
           ? 'max-w-none px-0 py-0'
           : 'max-w-none px-3 sm:px-6 lg:px-10 py-3 sm:py-4 pb-28 md:pb-6'
       }`}>
@@ -304,6 +334,10 @@ export const App: React.FC = () => {
             projection={deriveCaregiverProjection(state)}
             onMarkSeen={() => dispatch({ type: 'MARK_CURRENT_LOGISTICS_SEEN' })}
           />
+        )}
+
+        {state.currentPerspective === 'CARELINK_VENDOR' && (
+          <CareLinkVendorPortal trip={deriveVendorTripView(state)} onAction={dispatch} />
         )}
 
         {state.currentPerspective === 'TRANSPORTATION' && (

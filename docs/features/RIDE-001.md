@@ -45,4 +45,6 @@ TARGETED; LOW risk for synthetic-only actions. Independent tests cover failed-pl
 
 12. The provider/integration area labels both CareLink and Uber Health. CareLink remains the playable scenario provider, presented since POLISH-001 as `OncoReady vendor portal · Active` for local partners without their own software; Uber Health is presented only as `API integration · Planned` and not yet connected, with no Uber booking, success, contract or API claim and no effect on scenario state. Verify the label and zero Uber network activity.
 
+    *Superseded by [RIDE-002](RIDE-002.md):* Partner A and Partner B are now **Crescent Lantern Medical Rides** and **Magnolia Wayfare Transport**. The Uber Health card shows the Uber logo and reads `Adapter built · Awaiting connection`. It still makes no booking, success, contract or API claim, and it has no network activity.
+
 See [current product scope](../PROJECT.md), [sprint closeout](../SPRINT_CLOSEOUT.md) and [the presenter script](../operations/SEVEN_MINUTE_PRODUCT_DEMO.md).

@@ -2161,3 +2161,72 @@ select:focus-visible {
     scroll-behavior: auto !important;
   }
 }
+
+.leaflet-tooltip.ride-map-label {
+  padding: 2px 8px;
+  border: 1px solid rgba(148, 163, 184, 0.6);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #0f172a;
+  font-size: 11px;
+  font-weight: 700;
+  box-shadow: 0 4px 10px -6px rgba(15, 23, 42, 0.35);
+}
+
+.leaflet-tooltip.ride-map-label::before {
+  display: none;
+}
+
+/* CareLink vendor portal: its own brand inside OncoReady */
+.carelink-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 2.75rem;
+  padding: 0.5rem 1.25rem;
+  border-radius: 0.75rem;
+  font-family: 'Poppins', system-ui, sans-serif;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background-color 150ms ease, border-color 150ms ease;
+}
+
+.carelink-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.carelink-btn-primary {
+  background: #0e7c66;
+  color: #ffffff;
+}
+
+.carelink-btn-primary:hover {
+  background: #0b6654;
+}
+
+.carelink-btn-warn {
+  background: #b45309;
+  color: #ffffff;
+}
+
+.carelink-btn-warn:hover {
+  background: #92400e;
+}
+
+.carelink-btn-ghost {
+  background: #ffffff;
+  color: #0f172a;
+  border: 1px solid #cbd5e1;
+}
+
+.carelink-btn-ghost:hover:not(:disabled) {
+  border-color: #0e7c66;
+  color: #0e7c66;
+}
+
+/* Quiet the street tiles so the route and stops lead */
+.ride-map-tiles {
+  filter: saturate(0.55) brightness(1.04);
+}

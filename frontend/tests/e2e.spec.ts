@@ -186,7 +186,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     const uberRequests: string[] = [];
     const consoleErrors: string[] = [];
     page.on('request', (request) => {
-      if (request.url().toLowerCase().includes('uber')) uberRequests.push(request.url());
+      if (new URL(request.url()).hostname.toLowerCase().includes('uber')) uberRequests.push(request.url());
     });
     page.on('console', (message) => {
       if (message.type() === 'error') consoleErrors.push(message.text());
@@ -200,17 +200,17 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.getByRole('heading', { name: 'Transportation Workspace' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
-    await expect(page.getByText('API integration · Planned')).toBeVisible();
-    await expect(page.getByRole('img', { name: 'Uber Health wordmark' })).toBeVisible();
+    await expect(page.getByText('Adapter built · Awaiting connection')).toBeVisible();
+    await expect(page.getByRole('img', { name: 'Uber' })).toBeVisible();
 
     await page.getByRole('button', { name: /Request ride/i }).click();
-    await page.getByRole('button', { name: /Assign Partner A · via CareLink/i }).click();
+    await page.getByRole('button', { name: /Assign Crescent Lantern Medical Rides · via CareLink/i }).click();
     await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select Partner B · via CareLink/i }).click();
+    await page.getByRole('button', { name: /Select Magnolia Wayfare Transport · via CareLink/i }).click();
     await page.getByRole('button', { name: /Save recovered logistics/i }).click();
 
-    await expect(page.getByText('Partner A', { exact: true })).toBeVisible();
-    await expect(page.getByText('Partner B', { exact: true })).toBeVisible();
+    await expect(page.getByText('Crescent Lantern Medical Rides', { exact: true })).toBeVisible();
+    await expect(page.getByText('Magnolia Wayfare Transport', { exact: true })).toBeVisible();
     await expect(page.getByText(/Current ride · plan v2/i)).toBeVisible();
     await expect(page.getByText(/Return coordination 1:00–4:00 PM CT/i)).toBeVisible();
     expect((await page.locator('body').innerText()).toLowerCase()).not.toContain('not feeling well');
@@ -260,9 +260,9 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
     await page.getByRole('button', { name: /Request ride/i }).click();
-    await page.getByRole('button', { name: /Assign Partner A · via CareLink/i }).click();
+    await page.getByRole('button', { name: /Assign Crescent Lantern Medical Rides · via CareLink/i }).click();
     await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select Partner B · via CareLink/i }).click();
+    await page.getByRole('button', { name: /Select Magnolia Wayfare Transport · via CareLink/i }).click();
     await page.getByRole('button', { name: /Save recovered logistics/i }).click();
 
     await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
@@ -377,6 +377,57 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.locator('body')).not.toContainText('Epic capture unavailable');
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(390);
   });
+
+  test('CareLink vendor tab and Transportation tab stay in sync', async ({ page, context }) => {
+    const uberRequests: string[] = [];
+    context.on('request', (request) => {
+      if (new URL(request.url()).hostname.includes('uber')) uberRequests.push(request.url());
+    });
+
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abct@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Transportation Workspace' })).toBeVisible();
+
+    const vendor = await context.newPage();
+    await vendor.goto('/carelink');
+    await expect(vendor).toHaveURL(/\/login$/);
+    await vendor.getByLabel('Email').fill('abcv@oncoready.me');
+    await vendor.getByLabel('Password').fill('1234');
+    await vendor.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await expect(vendor).toHaveURL(/\/carelink$/);
+    await expect(vendor.getByRole('heading', { name: 'No open trips' })).toBeVisible();
+    await expect(vendor.getByText('Colorectal')).toHaveCount(0);
+
+    await page.getByRole('button', { name: /Request ride/i }).click();
+    await page.getByRole('button', { name: /Assign Crescent Lantern Medical Rides · via CareLink/i }).click();
+    await expect(page.getByText('Waiting for Crescent Lantern Medical Rides to accept in CareLink')).toBeVisible();
+
+    await expect(vendor.getByText('New trip offer')).toBeVisible();
+    await vendor.getByRole('button', { name: 'Accept trip' }).click();
+    await expect(page.getByText('Accepted in CareLink', { exact: true })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Transportation Workspace' })).toBeVisible();
+
+    await vendor.screenshot({ path: 'artifacts/RIDE-002-carelink-desktop.png', fullPage: true });
+    await vendor.setViewportSize({ width: 375, height: 812 });
+    expect(await vendor.evaluate(() => document.documentElement.scrollWidth <= document.documentElement.clientWidth + 1)).toBe(true);
+    await vendor.screenshot({ path: 'artifacts/RIDE-002-carelink-mobile.png', fullPage: true });
+    await vendor.setViewportSize({ width: 1280, height: 900 });
+
+    await vendor.getByRole('button', { name: 'Report unavailable' }).click();
+    await vendor.getByLabel('What changed?').selectOption('Vehicle out of service');
+    await vendor.getByRole('button', { name: 'Report unavailable' }).click();
+    await expect(vendor.getByText('Released', { exact: true })).toBeVisible();
+
+    await expect(page.getByText('Ride status: Primary unavailable')).toBeVisible();
+    await expect(page.getByRole('button', { name: /Select Magnolia Wayfare Transport · via CareLink/i })).toBeVisible();
+    await page.getByRole('button', { name: 'Play previous trip' }).click();
+    await expect(page.getByText('Replay complete · Completed')).toBeVisible({ timeout: 15000 });
+    await page.getByRole('heading', { name: 'Previous trip' }).scrollIntoViewIfNeeded();
+    await page.screenshot({ path: 'artifacts/RIDE-002-transport-route.png', fullPage: true });
+    expect(uberRequests).toHaveLength(0);
+  });
 });
 
 test('presenter rehearsal follows the prepared story without live delivery', async ({ page }) => {
@@ -429,9 +480,9 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
   await page.getByRole('button', { name: 'Exit previous trip' }).click();
 
   await page.getByRole('button', { name: /Request ride/i }).click();
-  await page.getByRole('button', { name: /Assign Partner A · via CareLink/i }).click();
+  await page.getByRole('button', { name: /Assign Crescent Lantern Medical Rides · via CareLink/i }).click();
   await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-  await page.getByRole('button', { name: /Select Partner B · via CareLink/i }).click();
+  await page.getByRole('button', { name: /Select Magnolia Wayfare Transport · via CareLink/i }).click();
   await page.getByRole('button', { name: /Save recovered logistics/i }).click();
   await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
   await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();

@@ -1,0 +1,53 @@
+{
+  "schema_version": "1.0",
+  "task_id": "RIDE-002",
+  "title": "CareLink vendor portal, provider adapters and street route map",
+  "type": "feature",
+  "status": "DONE",
+  "priority": "high",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/RIDE-002.md",
+  "branch": "feature/RIDE-002-carelink-vendor-portal",
+  "base_branch": "feature/NAV-001-staff-navigation",
+  "dependencies": ["RIDE-001", "POLISH-001", "NAV-001"],
+  "contracts": [],
+  "scope": {
+    "frontend": ["frontend/**"],
+    "other": [
+      "docs/features/RIDE-002.md",
+      "docs/features/RIDE-001.md",
+      "docs/features/POLISH-001.md",
+      "docs/architecture/SYSTEM.md",
+      "docs/design/DESIGN_SYSTEM.md",
+      "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md",
+      "AGENTS.md"
+    ]
+  },
+  "human_decisions": [
+    "Uber Health card uses the Uber logo and reads 'Adapter built · Awaiting connection'; no connection or contract is claimed.",
+    "Partner A and B renamed to fictional Crescent Lantern Medical Rides and Magnolia Wayfare Transport.",
+    "CareLink vendor portal gets its own teal brand inside /carelink only.",
+    "Vendor actions share state with the Care Navigator, including across browser tabs.",
+    "Street map needs internet; the SVG fallback covers offline."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "107 passed",
+    "e2e_tests": "12 passed",
+    "screenshots": [
+      "frontend/artifacts/RIDE-002-carelink-desktop.png",
+      "frontend/artifacts/RIDE-002-carelink-mobile.png",
+      "frontend/artifacts/RIDE-002-transport-route.png",
+      "frontend/artifacts/RIDE-001-transport-desktop.png",
+      "frontend/artifacts/RIDE-001-transport-mobile.png"
+    ]
+  },
+  "open_items": [
+    "Re-record Part 2 video if the presenter wants the new provider names and CareLink moment on tape.",
+    "OSM standard tiles suit light demo use; move to a hosted tile provider before production traffic."
+  ]
+}

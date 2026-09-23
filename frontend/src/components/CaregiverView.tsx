@@ -8,6 +8,7 @@ import {
 } from 'lucide-react';
 import { CaregiverProjection } from '../types';
 import { BENSON_CENTER, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
+import { ST_CHARLES_TO_BENSON, ST_CHARLES_TO_BENSON_SUMMARY } from '../data/routes';
 
 interface CaregiverViewProps {
   projection: CaregiverProjection;
@@ -156,11 +157,12 @@ export const CaregiverView: React.FC<CaregiverViewProps> = ({ projection, onMark
 
       {projection.transportConfirmed && (
         <RideMap
-          staticOnly
-          title="Ride corridor"
+          title="Ride route"
           subtitle="Pickup to Benson Suite B. Caregiver-safe route only."
+          summary={`${ST_CHARLES_TO_BENSON_SUMMARY.distanceMiles} mi · about ${ST_CHARLES_TO_BENSON_SUMMARY.driveMinutes} min drive`}
           pickup={NEW_ORLEANS_PICKUP}
           destination={BENSON_CENTER}
+          route={ST_CHARLES_TO_BENSON}
           confirmed
           height={360}
         />

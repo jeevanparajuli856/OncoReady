@@ -67,6 +67,8 @@ export interface RideAssignment {
   failedAt?: string;
   driverName?: string;
   vehicleId?: string;
+  /** Set when the vendor accepts the trip in the CareLink portal. */
+  vendorAcceptedAt?: string;
 }
 
 export interface CaregiverSeenRecord {
@@ -233,7 +235,27 @@ export interface CaregiverProjection {
   privacyBoundaryNotice: string;
 }
 
-export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'CARE_NAVIGATOR' | 'CARE_TEAM' | 'TRANSPORTATION' | 'STAFF' | 'SYSTEM';
+export type VendorTripStatus = 'NONE' | 'OFFERED' | 'ACCEPTED' | 'RELEASED';
+
+/** What a CareLink vendor may see: trip logistics only, never clinical or Epic context. */
+export interface VendorTripView {
+  vendorName: string;
+  tripId: string;
+  status: VendorTripStatus;
+  riderName: string;
+  riderPhone: string;
+  pickupAddress: string;
+  destination: string;
+  pickupWindow: string;
+  vehicleType: string;
+  offeredAt?: string;
+  acceptedAt?: string;
+  releasedAt?: string;
+  driverName?: string;
+  vehicleId?: string;
+}
+
+export type Perspective = 'LANDING' | 'TRUST' | 'SIGN_IN' | 'PATIENT' | 'CAREGIVER' | 'CARE_NAVIGATOR' | 'CARE_TEAM' | 'TRANSPORTATION' | 'CARELINK_VENDOR' | 'STAFF' | 'SYSTEM';
 export type PreparedWorkspace = 'CARE_NAVIGATOR' | 'CARE_TEAM' | 'TRANSPORTATION' | 'PATIENT' | 'CAREGIVER';
 export type WorkspaceRole = 'CARE_NAVIGATOR' | 'CARE_TEAM';
 export type StaffRoute = 'COMMAND_CENTER' | 'EXCEPTIONS' | 'PATIENTS' | 'CASE_WORKSPACE' | 'RESOURCES' | 'INSIGHTS' | 'INTEGRATIONS' | 'ADMIN';

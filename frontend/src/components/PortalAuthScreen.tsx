@@ -16,6 +16,7 @@ const TEST_ACCOUNTS: Array<{ email: string; password: string; perspective: Persp
   { email: 'abcs@oncoready.me', password: '1234', perspective: 'CARE_TEAM', label: 'Care Team (Readiness Team)' },
   { email: 'abcn@oncoready.me', password: '1234', perspective: 'CARE_NAVIGATOR', label: 'Care Navigator' },
   { email: 'abct@oncoready.me', password: '1234', perspective: 'TRANSPORTATION', label: 'Transportation' },
+  { email: 'abcv@oncoready.me', password: '1234', perspective: 'CARELINK_VENDOR', label: 'Transport vendor (CareLink)' },
 ];
 
 export const PortalAuthScreen: React.FC<PortalAuthScreenProps> = ({ onLogin, onBack, onEpicModeChange }) => {

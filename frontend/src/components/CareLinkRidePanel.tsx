@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { AlertTriangle, Car, CheckCircle2, CirclePause, History, Play, RotateCcw, X } from 'lucide-react';
 import type { WorkflowState } from '../types';
-import { HISTORICAL_RIDE_EVENTS, type WorkflowAction } from '../state/workflowState';
+import { BACKUP_PROVIDER, HISTORICAL_RIDE_EVENTS, PRIMARY_PROVIDER, type WorkflowAction } from '../state/workflowState';
+import { ST_CHARLES_TO_BENSON, ST_CHARLES_TO_BENSON_SUMMARY } from '../data/routes';
 import { BENSON_CENTER, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 
 interface CareLinkRidePanelProps {
@@ -28,6 +29,46 @@ const statusLabel: Record<WorkflowState['ride']['currentStatus'], string> = {
   NO_OPTION: 'No option · treatment at risk',
 };
 
+const ROUTE_SUMMARY = `${ST_CHARLES_TO_BENSON_SUMMARY.distanceMiles} mi · about ${ST_CHARLES_TO_BENSON_SUMMARY.driveMinutes} min drive`;
+
+/** Where the previous-trip vehicle sits after each replay event: at pickup when arriving, en route after pickup, at the clinic when complete. */
+const replayVehicleTarget = (visibleEventCount: number): number | null => {
+  if (visibleEventCount >= HISTORICAL_RIDE_EVENTS.length) return 1;
+  if (visibleEventCount >= 5) return 0.55;
+  if (visibleEventCount >= 4) return 0;
+  return null;
+};
+
+/** Glides the vehicle toward its replay target instead of jumping between events. */
+const useVehicleProgress = (target: number | null, reducedMotion: boolean) => {
+  const [progress, setProgress] = useState<number | null>(target);
+  const progressRef = useRef<number | null>(target);
+
+  useEffect(() => {
+    const from = progressRef.current;
+    if (target === null || from === null || reducedMotion || typeof window.requestAnimationFrame !== 'function') {
+      progressRef.current = target;
+      setProgress(target);
+      return undefined;
+    }
+    const startedAt = performance.now();
+    const duration = 850;
+    let frame = 0;
+    const step = (now: number) => {
+      const t = Math.min(1, (now - startedAt) / duration);
+      const eased = 1 - (1 - t) ** 3;
+      const next = from + (target - from) * eased;
+      progressRef.current = next;
+      setProgress(next);
+      if (t < 1) frame = window.requestAnimationFrame(step);
+    };
+    frame = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(frame);
+  }, [target, reducedMotion]);
+
+  return progress;
+};
+
 export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
   state,
   reducedMotion = false,
@@ -40,6 +81,8 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
   const details = transport?.transportDetails;
   const visibleReplayEvents = HISTORICAL_RIDE_EVENTS.slice(0, replay.visibleEventCount);
   const logisticsComplete = Object.values(logistics).every((value) => value.trim().length > 0);
+  const vehicleProgress = useVehicleProgress(replayVehicleTarget(replay.visibleEventCount), reducedMotion);
+  const primaryAssignment = state.ride.assignments.find((assignment) => assignment.providerName === PRIMARY_PROVIDER && assignment.status === 'CURRENT');
 
   useEffect(() => {
     if (replay.status !== 'PLAYING') return undefined;
@@ -79,8 +122,8 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
 
           <ol className="space-y-2 text-sm" aria-label="Ride recovery steps">
             <li className="metric-tile">1. Request the current ride</li>
-            <li className="metric-tile">2. Assign and evaluate Partner A</li>
-            <li className="metric-tile">3. Select Partner B and save required logistics</li>
+            <li className="metric-tile">2. Assign and evaluate {PRIMARY_PROVIDER}</li>
+            <li className="metric-tile">3. Select {BACKUP_PROVIDER} and save required logistics</li>
           </ol>
 
           <div role="status" aria-live="polite" aria-atomic="true" className="text-sm font-semibold">
@@ -88,11 +131,20 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           </div>
 
           {current === 'OPEN' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'REQUEST_CURRENT_RIDE' })}>Request ride</button>}
-          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign Partner A · via CareLink</button>}
-          {current === 'PRIMARY_ASSIGNED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'FAIL_PRIMARY_RIDE' })}>Record primary unavailable</button>}
+          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign {PRIMARY_PROVIDER} · via CareLink</button>}
+          {current === 'PRIMARY_ASSIGNED' && (
+            <>
+              <p className="text-xs text-muted-fg">
+                {primaryAssignment?.vendorAcceptedAt
+                  ? `${PRIMARY_PROVIDER} accepted in CareLink · ${primaryAssignment.vendorAcceptedAt}`
+                  : `Waiting for ${PRIMARY_PROVIDER} to accept in CareLink`}
+              </p>
+              <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'FAIL_PRIMARY_RIDE' })}>Record primary unavailable</button>
+            </>
+          )}
           {current === 'PRIMARY_FAILED' && (
             <div className="grid sm:grid-cols-2 gap-2">
-              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select Partner B · via CareLink</button>
+              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select {BACKUP_PROVIDER} · via CareLink</button>
               <button type="button" className="btn-ghost" onClick={() => onAction({ type: 'MARK_NO_RIDE_OPTION' })}>No option available</button>
             </div>
           )}
@@ -148,6 +200,7 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
                     <div><div className="font-semibold">{assignment.providerName}</div><div className="font-mono text-xs text-muted-fg">{assignment.id}</div></div>
                     <div className="flex flex-wrap gap-1.5">
                       <span className="chip">via CareLink portal</span>
+                      {assignment.vendorAcceptedAt && <span className="chip chip-mint">Accepted in CareLink</span>}
                       <span className={`chip ${assignment.status === 'CURRENT' ? 'chip-accent' : 'chip-sun'}`}>{assignment.status === 'CURRENT' ? 'Current' : 'Failed'}</span>
                     </div>
                   </li>
@@ -204,13 +257,16 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           ) : <p className="metric-tile text-sm text-muted-fg">Play to reveal the saved dispatch sequence.</p>}
 
           <RideMap
-            staticOnly
             title="Route"
-            subtitle="Previous trip corridor"
+            subtitle="Previous trip route"
+            summary={ROUTE_SUMMARY}
             pickup={NEW_ORLEANS_PICKUP}
             destination={BENSON_CENTER}
+            route={ST_CHARLES_TO_BENSON}
+            vehicleProgress={vehicleProgress}
+            vehicleLabel="CL-218"
             confirmed={replay.status === 'COMPLETE'}
-            height={190}
+            height={240}
           />
         </article>
       </div>

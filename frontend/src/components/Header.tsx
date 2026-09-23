@@ -11,6 +11,7 @@ import {
   ArrowRight,
 } from 'lucide-react';
 import { Perspective, ReadinessStatus, WorkflowState } from '../types';
+import { PRIMARY_PROVIDER } from '../state/workflowState';
 import { Avatar } from './Avatar';
 import { Logo } from './Logo';
 
@@ -54,6 +55,8 @@ export const Header: React.FC<HeaderProps> = ({
         return { name: state.caregiver.name, role: 'Caregiver Proxy', avatar: state.caregiver.avatarUrl, roleType: 'CAREGIVER' as const };
       case 'TRANSPORTATION':
         return { name: 'Transportation', role: 'Transportation coordination', avatar: '', roleType: 'NAVIGATOR' as const };
+      case 'CARELINK_VENDOR':
+        return { name: 'Dispatch desk', role: `CareLink · ${PRIMARY_PROVIDER}`, avatar: '', roleType: 'SYSTEM' as const };
       default:
         return null;
     }
@@ -161,7 +164,7 @@ export const Header: React.FC<HeaderProps> = ({
           <Logo size={30} compact />
         </button>
 
-        {currentPerspective !== 'SIGN_IN' && <div className="hidden lg:flex items-center gap-2">
+        {currentPerspective !== 'SIGN_IN' && currentPerspective !== 'CARELINK_VENDOR' && <div className="hidden lg:flex items-center gap-2">
           {getStatusPill()}
         </div>}
 
@@ -211,6 +214,13 @@ export const Header: React.FC<HeaderProps> = ({
                       <div>
                         <div>Care Team (Readiness Team)</div>
                         <div className="text-[10px] text-muted-fg font-normal">Clinical & Treatment Readiness</div>
+                      </div>
+                    </button>
+                    <button onClick={() => { onSetPerspective('CARELINK_VENDOR'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CARELINK_VENDOR' ? 'bg-mint/10 font-semibold' : ''}`}>
+                      <Avatar alt="CareLink vendor" size="xs" roleType="SYSTEM" />
+                      <div>
+                        <div>CareLink Vendor ({PRIMARY_PROVIDER})</div>
+                        <div className="text-[10px] text-muted-fg font-normal">Trip Offers & Status Only</div>
                       </div>
                     </button>
                     <button onClick={() => { onSetPerspective('CAREGIVER'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CAREGIVER' ? 'bg-mint/10 font-semibold' : ''}`}>
