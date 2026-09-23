@@ -4,7 +4,7 @@ import { Logo } from './Logo';
 
 type LegalDocument = 'terms' | 'privacy';
 
-const SUPPORT_EMAIL = 'support@oncoready.com';
+const SUPPORT_EMAIL = 'support@oncoready.me';
 
 const documentContent: Record<LegalDocument, { eyebrow: string; title: string; intro: string }> = {
   terms: {
