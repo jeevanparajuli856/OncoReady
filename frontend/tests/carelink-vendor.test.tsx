@@ -117,7 +117,8 @@ const PortalHarness = () => {
 describe('RIDE-002 CareLink vendor portal', () => {
   it('accepts, then reports unavailable with a reason', () => {
     render(<PortalHarness />);
-    expect(screen.getByRole('img', { name: 'CareLink' })).toBeDefined();
+    expect(screen.getAllByRole('img', { name: 'CareLink by OncoReady' }).length).toBeGreaterThan(0);
+    expect(document.title).toBe('CareLink by OncoReady · Trip board');
     expect(screen.getByText(PRIMARY_PROVIDER)).toBeDefined();
     expect(screen.getByRole('status').textContent).toBe('New trip offer');
 

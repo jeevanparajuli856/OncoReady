@@ -398,6 +398,10 @@ test.describe('OncoReady UI-001 product experience', () => {
     await vendor.getByRole('button', { name: 'Sign in', exact: true }).last().click();
     await expect(vendor).toHaveURL(/\/carelink$/);
     await expect(vendor.getByRole('heading', { name: 'No open trips' })).toBeVisible();
+    await expect(vendor).toHaveTitle('CareLink by OncoReady · Trip board');
+    await expect(vendor.locator('.workspace-header')).toHaveCount(0);
+    await expect(vendor.locator('.app-footer')).toHaveCount(0);
+    await expect(vendor.getByRole('img', { name: 'CareLink by OncoReady' }).first()).toBeVisible();
     await expect(vendor.getByText('Colorectal')).toHaveCount(0);
 
     await page.getByRole('button', { name: /Request ride/i }).click();
@@ -427,6 +431,27 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByRole('heading', { name: 'Previous trip' }).scrollIntoViewIfNeeded();
     await page.screenshot({ path: 'artifacts/RIDE-002-transport-route.png', fullPage: true });
     expect(uberRequests).toHaveLength(0);
+  });
+
+  test('CareLink launches from the workspace menu as its own sub-brand page and switches back', async ({ page }) => {
+    await page.getByRole('button', { name: /Access workspace/i }).first().click();
+    await page.getByLabel('Email').fill('abcn@oncoready.me');
+    await page.getByLabel('Password').fill('1234');
+    await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await expect(page.locator('.workspace-header')).toBeVisible();
+
+    await page.getByRole('button', { name: /Marcus Vance, MSW/ }).click();
+    await page.getByRole('button', { name: /CareLink by OncoReady \(Crescent Lantern Medical Rides\)/ }).click();
+    await expect(page).toHaveURL(/\/carelink$/);
+    await expect(page).toHaveTitle('CareLink by OncoReady · Trip board');
+    await expect(page.locator('.workspace-header')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: "Today's trips" })).toBeVisible();
+
+    await page.getByRole('button', { name: /Switch workspace/ }).click();
+    await page.getByRole('button', { name: /Care Navigator \(Marcus Vance, MSW\)/ }).click();
+    await expect(page).toHaveURL(/\/care-navigator$/);
+    await expect(page.locator('.workspace-header')).toBeVisible();
+    await expect(page).not.toHaveTitle(/CareLink/);
   });
 });
 

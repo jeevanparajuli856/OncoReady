@@ -5,13 +5,13 @@ import {
   CheckCircle2,
   AlertTriangle,
   Clock,
-  Home,
   Menu,
   X,
   ArrowRight,
 } from 'lucide-react';
 import { Perspective, ReadinessStatus, WorkflowState } from '../types';
 import { PRIMARY_PROVIDER } from '../state/workflowState';
+import { WorkspaceSwitchMenu } from './WorkspaceSwitchMenu';
 import { Avatar } from './Avatar';
 import { Logo } from './Logo';
 
@@ -189,54 +189,12 @@ export const Header: React.FC<HeaderProps> = ({
 
               {isDropdownOpen && (
                 <div className="absolute right-0 mt-2 w-72 bg-white rounded-2xl border border-line shadow-glass-lg py-2 z-50 animate-fade-in" onMouseLeave={() => setIsDropdownOpen(false)}>
-                  <div className="px-3.5 py-2 border-b border-line">
-                    <div className="text-[11px] font-heading font-semibold uppercase tracking-wider text-muted-fg">
-                      SWITCH WORKSPACE
-                    </div>
-                  </div>
-                  <div className="py-1">
-                    <button onClick={() => { onSetPerspective('PATIENT'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'PATIENT' ? 'bg-accent/8 font-semibold' : ''}`}>
-                      <Avatar src={state.patient.avatarUrl} alt="Camila" size="xs" roleType="PATIENT" />
-                      <div>
-                        <div>Patient Portal (Camila Lopez)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Patient Readiness View</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { onSetPerspective('CARE_NAVIGATOR'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CARE_NAVIGATOR' ? 'bg-mint/10 font-semibold' : ''}`}>
-                      <Avatar alt="Marcus Vance" size="xs" roleType="NAVIGATOR" />
-                      <div>
-                        <div>Care Navigator (Marcus Vance, MSW)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Transportation & Patient Coordination</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { onSetPerspective('CARE_TEAM'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-muted ${currentPerspective === 'CARE_TEAM' ? 'bg-accent/8 font-semibold' : ''}`}>
-                      <Avatar alt="Nurse Sarah" size="xs" roleType="NURSE" />
-                      <div>
-                        <div>Care Team (Readiness Team)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Clinical & Treatment Readiness</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { onSetPerspective('CARELINK_VENDOR'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CARELINK_VENDOR' ? 'bg-mint/10 font-semibold' : ''}`}>
-                      <Avatar alt="CareLink vendor" size="xs" roleType="SYSTEM" />
-                      <div>
-                        <div>CareLink Vendor ({PRIMARY_PROVIDER})</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Trip Offers & Status Only</div>
-                      </div>
-                    </button>
-                    <button onClick={() => { onSetPerspective('CAREGIVER'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-mint/8 ${currentPerspective === 'CAREGIVER' ? 'bg-mint/10 font-semibold' : ''}`}>
-                      <Avatar src={state.caregiver.avatarUrl} alt="Ana" size="xs" roleType="CAREGIVER" />
-                      <div>
-                        <div>Caregiver Portal (Ana Hernandez)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Transit Status Only</div>
-                      </div>
-                    </button>
-                  </div>
-                  <div className="pt-1 mt-1 border-t border-line">
-                    <button onClick={() => { onSetPerspective('LANDING'); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-accent hover:bg-accent/8">
-                      <Home className="w-3.5 h-3.5" />
-                      <span>Return to Product Website</span>
-                    </button>
-                  </div>
+                  <WorkspaceSwitchMenu
+                    currentPerspective={currentPerspective}
+                    patientAvatarUrl={state.patient.avatarUrl}
+                    caregiverAvatarUrl={state.caregiver.avatarUrl}
+                    onSelect={(perspective) => { onSetPerspective(perspective); setIsDropdownOpen(false); }}
+                  />
                 </div>
               )}
             </div>

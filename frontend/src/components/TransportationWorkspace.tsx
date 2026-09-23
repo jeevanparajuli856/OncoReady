@@ -70,7 +70,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
           <article className="card-sticker p-4 space-y-2" aria-labelledby="provider-carelink-title">
             <div className="flex items-center justify-between gap-2">
               <div>
-                <CareLinkMark size={22} />
+                <CareLinkMark size={26} endorsed />
                 <h3 id="provider-carelink-title" className="sr-only">{careLinkProvider.name}</h3>
               </div>
               <CheckCircle2 className="w-4 h-4 text-mint" aria-hidden="true" />

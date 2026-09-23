@@ -45,6 +45,7 @@ Detailed orchestration:
 - Prepared access: docs/features/ACCESS-001.md
 - Epic Sandbox capture: docs/features/EPIC-001.md
 - CareLink vendor portal and provider adapters: docs/features/RIDE-002.md
+- CareLink sub-brand page and logo: docs/features/RIDE-003.md
 - Design system: docs/design/DESIGN_SYSTEM.md
 - Closed demo sprint and open gates: docs/SPRINT_CLOSEOUT.md
 - Presenter script: docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md

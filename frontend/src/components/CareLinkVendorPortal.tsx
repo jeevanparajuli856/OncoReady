@@ -1,15 +1,37 @@
-import React, { useState } from 'react';
-import { AlertTriangle, CalendarClock, CheckCircle2, Clock, Flag, MapPin, Phone, ShieldCheck, Truck, UserRound } from 'lucide-react';
-import type { VendorTripView } from '../types';
+import React, { useEffect, useState } from 'react';
+import { AlertTriangle, CalendarClock, CheckCircle2, ChevronDown, Clock, Flag, MapPin, Phone, ShieldCheck, Truck, UserRound } from 'lucide-react';
+import type { Perspective, VendorTripView } from '../types';
 import { HISTORICAL_RIDE_EVENTS, type WorkflowAction } from '../state/workflowState';
 import { ST_CHARLES_TO_BENSON, ST_CHARLES_TO_BENSON_SUMMARY } from '../data/routes';
 import { CareLinkMark } from './CareLinkMark';
+import { WorkspaceSwitchMenu } from './WorkspaceSwitchMenu';
 import { BENSON_CENTER, NEW_ORLEANS_PICKUP, RideMap } from './RideMap';
 
 interface CareLinkVendorPortalProps {
   trip: VendorTripView;
   onAction: React.Dispatch<WorkflowAction>;
+  /** Presenter workspace switcher; only avatar images are passed, never patient records. */
+  switcher?: {
+    patientAvatarUrl: string;
+    caregiverAvatarUrl: string;
+    onSelect: (perspective: Perspective) => void;
+  };
 }
+
+/** Gives the standalone portal its own tab title and icon while it is open. */
+const useCareLinkDocumentBrand = () => {
+  useEffect(() => {
+    const previousTitle = document.title;
+    const icon = document.querySelector<HTMLLinkElement>('link[rel~="icon"]');
+    const previousIcon = icon?.getAttribute('href') ?? null;
+    document.title = 'CareLink by OncoReady · Trip board';
+    icon?.setAttribute('href', '/carelink-mark.svg');
+    return () => {
+      document.title = previousTitle;
+      if (icon && previousIcon) icon.setAttribute('href', previousIcon);
+    };
+  }, []);
+};
 
 const DECLINE_REASONS = ['Outside service window', 'No vehicle available', 'Driver unavailable'];
 const UNAVAILABLE_REASONS = ['Vehicle out of service', 'Driver unavailable', 'Outside service window'];
@@ -60,8 +82,10 @@ const ReasonForm: React.FC<{
   );
 };
 
-export const CareLinkVendorPortal: React.FC<CareLinkVendorPortalProps> = ({ trip, onAction }) => {
+export const CareLinkVendorPortal: React.FC<CareLinkVendorPortalProps> = ({ trip, onAction, switcher }) => {
   const [releaseMode, setReleaseMode] = useState<null | 'decline' | 'unavailable'>(null);
+  const [isSwitcherOpen, setIsSwitcherOpen] = useState(false);
+  useCareLinkDocumentBrand();
   const badge = STATUS_BADGE[trip.status];
   const hasTrip = trip.status !== 'NONE';
   const openOffers = trip.status === 'OFFERED' ? 1 : 0;
@@ -73,22 +97,51 @@ export const CareLinkVendorPortal: React.FC<CareLinkVendorPortalProps> = ({ trip
   };
 
   return (
-    <div className="carelink-portal min-h-full bg-[#F3F7F5]">
-      <div className="bg-[#0B3B33] text-white">
-        <div className="page-shell px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+    <div className="carelink-portal min-h-screen flex flex-col bg-[#F3F7F5]">
+      <header className="sticky top-0 z-40 bg-[#0B3B33] text-white shadow-[0_8px_24px_-18px_rgba(0,0,0,0.6)]">
+        <div className="page-shell px-4 sm:px-6 h-[4.25rem] flex items-center justify-between gap-3">
           <div className="flex items-center gap-4 min-w-0">
-            <CareLinkMark size={28} inverted />
-            <span className="hidden sm:block h-6 w-px bg-white/25" aria-hidden="true" />
-            <div className="min-w-0">
+            <CareLinkMark size={34} inverted endorsed />
+            <span className="hidden md:block h-8 w-px bg-white/20" aria-hidden="true" />
+            <div className="hidden md:block min-w-0">
               <p className="text-sm font-semibold truncate">{trip.vendorName}</p>
-              <p className="text-[11px] text-emerald-100/80">Dispatch desk · Vendor portal</p>
+              <p className="text-[11px] text-emerald-100/80">Vendor portal · Dispatch desk</p>
             </div>
           </div>
-          <p className="text-[11px] text-emerald-100/80">Powered by <span className="font-semibold text-white">OncoReady</span></p>
+          {switcher && (
+            <div className="relative shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsSwitcherOpen((open) => !open)}
+                aria-expanded={isSwitcherOpen}
+                aria-haspopup="menu"
+                className="flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 hover:bg-white/15 pl-1.5 pr-2.5 py-1.5"
+              >
+                <span className="w-8 h-8 rounded-lg bg-emerald-300 text-[#0B3B33] text-xs font-extrabold flex items-center justify-center" aria-hidden="true">DD</span>
+                <span className="text-left hidden sm:block">
+                  <span className="block text-xs font-semibold leading-tight">Dispatch desk</span>
+                  <span className="block text-[10px] text-emerald-100/80">Switch workspace</span>
+                </span>
+                <ChevronDown className="w-3.5 h-3.5" aria-hidden="true" />
+                <span className="sr-only sm:hidden">Switch workspace</span>
+              </button>
+              {isSwitcherOpen && (
+                <div className="absolute right-0 mt-2 w-72 bg-white text-ink rounded-2xl border border-line shadow-glass-lg py-2 z-50 animate-fade-in" onMouseLeave={() => setIsSwitcherOpen(false)}>
+                  <WorkspaceSwitchMenu
+                    currentPerspective="CARELINK_VENDOR"
+                    patientAvatarUrl={switcher.patientAvatarUrl}
+                    caregiverAvatarUrl={switcher.caregiverAvatarUrl}
+                    onSelect={(perspective) => { setIsSwitcherOpen(false); switcher.onSelect(perspective); }}
+                  />
+                </div>
+              )}
+            </div>
+          )}
         </div>
-      </div>
+      </header>
 
-      <div className="page-shell px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+      <div className="flex-1 w-full page-shell px-4 sm:px-6 py-6 sm:py-8 space-y-6">
+        <p className="md:hidden text-sm font-semibold text-slate-800">{trip.vendorName} · Dispatch desk</p>
         <header className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.14em] text-[#0E7C66]">Trip board</p>
@@ -256,6 +309,17 @@ export const CareLinkVendorPortal: React.FC<CareLinkVendorPortalProps> = ({ trip
           </aside>
         </div>
       </div>
+
+      <footer className="border-t border-slate-200 bg-white">
+        <div className="page-shell px-4 sm:px-6 py-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-500">
+          <CareLinkMark size={22} endorsed />
+          <div className="flex items-center gap-4">
+            <span>For local transport partners</span>
+            <a href="/privacy" className="hover:text-[#0E7C66] hover:underline">Privacy</a>
+            <a href="/terms" className="hover:text-[#0E7C66] hover:underline">Terms</a>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

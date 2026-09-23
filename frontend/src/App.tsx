@@ -66,6 +66,9 @@ export const App: React.FC = () => {
   );
   const reducedMotion = userReducedMotion || systemReducedMotion;
   const isStandaloneEpicLogin = state.currentPerspective === 'SIGN_IN' && isEpicLoginOpen;
+  // CareLink is an OncoReady sub-brand with its own full-page shell: no OncoReady header or footer.
+  const isStandaloneCareLink = state.currentPerspective === 'CARELINK_VENDOR';
+  const showOncoReadyChrome = !isStandaloneEpicLogin && !isStandaloneCareLink;
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
@@ -205,7 +208,7 @@ export const App: React.FC = () => {
     <div className={`oncoready-app min-h-screen min-w-0 w-full overflow-x-clip flex flex-col bg-cream text-ink ${reducedMotion ? 'motion-reduce' : ''}`}>
       
       {/* Universal Clinical & Commercial Header */}
-      {!isStandaloneEpicLogin && <Header
+      {showOncoReadyChrome && <Header
         currentPerspective={state.currentPerspective}
         onSetPerspective={handleSetPerspective}
         overallReadiness={state.overallReadiness}
@@ -222,7 +225,7 @@ export const App: React.FC = () => {
           ? 'max-w-none px-0 py-0'
           : state.currentPerspective === 'CARE_NAVIGATOR' || state.currentPerspective === 'CARE_TEAM'
           ? 'max-w-none px-0 py-0 flex flex-col pb-24 md:pb-0'
-          : isStandaloneEpicLogin || state.currentPerspective === 'CARELINK_VENDOR'
+          : isStandaloneEpicLogin || isStandaloneCareLink
           ? 'max-w-none px-0 py-0'
           : 'max-w-none px-3 sm:px-6 lg:px-10 py-3 sm:py-4 pb-28 md:pb-6'
       }`}>
@@ -337,7 +340,15 @@ export const App: React.FC = () => {
         )}
 
         {state.currentPerspective === 'CARELINK_VENDOR' && (
-          <CareLinkVendorPortal trip={deriveVendorTripView(state)} onAction={dispatch} />
+          <CareLinkVendorPortal
+            trip={deriveVendorTripView(state)}
+            onAction={dispatch}
+            switcher={{
+              patientAvatarUrl: state.patient.avatarUrl,
+              caregiverAvatarUrl: state.caregiver.avatarUrl,
+              onSelect: handleSetPerspective,
+            }}
+          />
         )}
 
         {state.currentPerspective === 'TRANSPORTATION' && (
@@ -350,7 +361,7 @@ export const App: React.FC = () => {
 
       </main>
 
-      {!isStandaloneEpicLogin && <footer className="app-footer py-6 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
+      {showOncoReadyChrome && <footer className="app-footer py-6 px-5 sm:px-8 lg:px-12 text-xs text-muted-fg">
           <div className="w-full max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
             <button
               onClick={() => handleSetPerspective('LANDING')}
