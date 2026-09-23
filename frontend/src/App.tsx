@@ -21,7 +21,6 @@ import {
   StaffInsights,
   StaffIntegrations,
   StaffPatientDirectory,
-  StaffResources,
 } from './components/staff/StaffPages';
 import { Logo } from './components/Logo';
 import { Perspective, WorkspaceRole } from './types';
@@ -283,7 +282,9 @@ export const App: React.FC = () => {
                 />
               )}
               
-              {state.staffRoute === 'RESOURCES' && <StaffResources />}
+              {state.staffRoute === 'RESOURCES' && (
+                <TransportationWorkspace embedded state={state} reducedMotion={reducedMotion} onRideAction={dispatch} />
+              )}
               {state.staffRoute === 'INSIGHTS' && <StaffInsights />}
               {state.staffRoute === 'INTEGRATIONS' && <StaffIntegrations />}
               {state.staffRoute === 'ADMIN' && (

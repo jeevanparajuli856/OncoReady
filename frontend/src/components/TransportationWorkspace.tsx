@@ -8,13 +8,17 @@ interface TransportationWorkspaceProps {
   state: WorkflowState;
   reducedMotion?: boolean;
   onRideAction: React.Dispatch<WorkflowAction>;
+  /** Rendered inside the staff shell, which already owns the page heading and padding. */
+  embedded?: boolean;
 }
 
 export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = ({
   state,
   reducedMotion = false,
   onRideAction,
+  embedded = false,
 }) => {
+  const Title = embedded ? 'h2' : 'h1';
   const transport = state.tasks.find((task) => task.type === 'TRANSPORTATION_NAVIGATION');
   const planVersion = transport?.transportDetails?.planVersion ?? 1;
   const rideStatus = state.ride.currentStatus === 'RECOVERED'
@@ -26,7 +30,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
         : 'Recovery in progress';
 
   return (
-    <div className="page-shell py-6 sm:py-8 space-y-6">
+    <div className={embedded ? 'space-y-6' : 'page-shell py-6 sm:py-8 space-y-6'}>
       <section className="card-sticker overflow-hidden" aria-labelledby="transport-dashboard-title">
         <div className="p-5 sm:p-7 bg-gradient-to-br from-white via-white to-sun/15 border-b-2 border-ink/10">
           <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-5">
@@ -36,7 +40,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               </span>
               <div>
                 <p className="label-caps text-muted-fg">Transportation operations</p>
-                <h1 id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">CareLink Transportation Workspace</h1>
+                <Title id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">CareLink Transportation Workspace</Title>
                 <p className="text-sm text-muted-fg mt-2 max-w-2xl">
                   Coordinate Camila Lopez's ride recovery, preserve assignment history, and verify the current logistics plan before treatment day.
                 </p>
@@ -56,10 +60,9 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
       <section className="space-y-3" aria-labelledby="provider-readiness-title">
         <div className="flex flex-wrap items-end justify-between gap-2">
           <div>
-            <p className="label-caps text-muted-fg">Provider adapters</p>
-            <h2 id="provider-readiness-title" className="font-heading font-bold text-lg">Connection readiness</h2>
+            <p className="label-caps text-muted-fg">Provider network</p>
+            <h2 id="provider-readiness-title" className="font-heading font-bold text-lg">How partners connect</h2>
           </div>
-          <p className="text-xs text-muted-fg">Capabilities are labeled separately from live connectivity.</p>
         </div>
         <div className="grid sm:grid-cols-2 gap-3">
           <article className="card-sticker p-4 space-y-2">
@@ -67,8 +70,8 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               <h3 className="font-heading font-bold">CareLink</h3>
               <CheckCircle2 className="w-4 h-4 text-mint" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold">Active provider</p>
-            <p className="text-xs text-muted-fg">Ride recovery, failure handling, plan versioning and previous-trip history.</p>
+            <p className="text-sm font-semibold">OncoReady vendor portal · Active</p>
+            <p className="text-xs text-muted-fg">Local transport partners without their own software receive trips and post status updates here.</p>
           </article>
           <article className="card-sticker p-4 space-y-2 border-black">
             <div className="flex items-center justify-between gap-2">
@@ -78,8 +81,8 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               </div>
               <PlugZap className="w-4 h-4 text-accent" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold">Planned integration</p>
-            <p className="text-xs text-muted-fg">Not yet connected.</p>
+            <p className="text-sm font-semibold">API integration · Planned</p>
+            <p className="text-xs text-muted-fg">Trip status will sync automatically through the Uber Health API. Not yet connected.</p>
           </article>
         </div>
       </section>

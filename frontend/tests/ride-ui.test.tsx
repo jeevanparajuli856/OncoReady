@@ -27,10 +27,10 @@ describe('RIDE-001 provider extensibility labels', () => {
 
     expect(screen.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
-    expect(screen.getByText('Active provider')).toBeDefined();
+    expect(screen.getByText('OncoReady vendor portal · Active')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
     expect(screen.getByRole('img', { name: 'Uber Health wordmark' })).toBeDefined();
-    expect(screen.getByText('Planned integration')).toBeDefined();
+    expect(screen.getByText('API integration · Planned')).toBeDefined();
     expect(screen.getByRole('button', { name: 'Request ride' })).toBeDefined();
   });
 

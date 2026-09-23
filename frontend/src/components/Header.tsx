@@ -220,13 +220,6 @@ export const Header: React.FC<HeaderProps> = ({
                         <div className="text-[10px] text-muted-fg font-normal">Transit Status Only</div>
                       </div>
                     </button>
-                    <button onClick={() => { onSetPerspective('TRANSPORTATION'); setIsDropdownOpen(false); }} className={`w-full px-3.5 py-2 flex items-center gap-3 text-left text-xs hover:bg-sun/10 ${currentPerspective === 'TRANSPORTATION' ? 'bg-sun/15 font-semibold' : ''}`}>
-                      <Avatar alt="CareLink Transportation" size="xs" roleType="NAVIGATOR" />
-                      <div>
-                        <div>Transportation (CareLink)</div>
-                        <div className="text-[10px] text-muted-fg font-normal">Manager & vendor workspace</div>
-                      </div>
-                    </button>
                   </div>
                   <div className="pt-1 mt-1 border-t border-line">
                     <button onClick={() => { onSetPerspective('LANDING'); setIsDropdownOpen(false); }} className="w-full px-3.5 py-2 flex items-center gap-2 text-left text-xs font-heading font-semibold text-accent hover:bg-accent/8">

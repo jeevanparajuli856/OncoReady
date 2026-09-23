@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
 import { WorkflowState } from '../../types';
-import { BENSON_CENTER, LOUISIANA_SITES, NEW_ORLEANS_PICKUP, RideMap } from '../RideMap';
-import { StickerCard } from '../ui';
 import { EpicCaptureSummary } from '../EpicClinicalContext';
 import { formatEpicCaptureTime, formatEpicSourceDate } from '../../data/epicCapture';
 import { EPIC_RECORD_STATUS, type DirectoryRecord } from '../../data/rosterDirectory';
@@ -169,35 +167,6 @@ const EpicRosterDetail: React.FC<{ record: DirectoryRecord }> = ({ record }) => 
     {record.capturedAt && (
       <p className="text-[11px] text-muted-fg">Retrieved {formatEpicCaptureTime(record.capturedAt)} &middot; record {record.captureId}</p>
     )}
-  </div>
-);
-
-export const StaffResources: React.FC = () => (
-  <div className="space-y-5">
-    <div className="card-sticker p-5 sm:p-6">
-      <h2 className="font-display text-2xl font-extrabold mb-1">Resource Directory</h2>
-      <p className="text-sm text-muted-fg mb-5">Transportation and community access nodes for tomorrow's infusion corridor.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">CareLink</h3>
-          <p className="text-sm text-muted-fg mt-1">Ride recovery, failure handling and previous-trip history.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-mint/30 border-2 border-ink">Active provider</div>
-        </StickerCard>
-        <StickerCard hover={false} className="p-4">
-          <h3 className="font-heading font-bold">Uber Health</h3>
-          <p className="text-sm text-muted-fg mt-1">Provider adapter preview only. No booking, API call, contract, or dispatch success is represented.</p>
-          <div className="mt-3 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-heading font-bold bg-sun/40 border-2 border-ink">Integration-ready preview · not connected</div>
-        </StickerCard>
-      </div>
-    </div>
-    <RideMap
-      title="Louisiana access network"
-      subtitle="Parish-to-hub routing"
-      pickup={NEW_ORLEANS_PICKUP}
-      destination={BENSON_CENTER}
-      extras={LOUISIANA_SITES}
-      height={420}
-    />
   </div>
 );
 

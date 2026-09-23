@@ -5,6 +5,7 @@ import {
   Perspective, 
   CaregiverProjection,
   RideAssignment,
+  ActorRole,
 } from '../types';
 import { PREPARED_OUTREACH_EVENTS, PREPARED_REPLY } from '../data/preparedOutreach';
 export { PREPARED_REPLY } from '../data/preparedOutreach';
@@ -358,6 +359,8 @@ const failCurrentRidePlan = (
   eventId: string,
   timestamp: string,
   action: string,
+  actor = 'Marcus Vance, MSW',
+  actorRole: ActorRole = 'NAVIGATOR',
 ): WorkflowState => {
   const currentVersion = getCurrentPlanVersion(state);
   const nextVersion = currentVersion + 1;
@@ -406,8 +409,8 @@ const failCurrentRidePlan = (
     auditEvents: addEvent(next, {
       id: eventId,
       timestamp,
-      actor: 'Marcus Vance, MSW',
-      actorRole: 'NAVIGATOR',
+      actor,
+      actorRole,
       action,
       description: `Current plan v${nextVersion} is open; earlier assignment and acknowledgment evidence remain in history.`,
       stateDiff: { field: 'transport.planVersion', from: String(currentVersion), to: String(nextVersion) },
@@ -524,12 +527,12 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
           ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'CareLink Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'CareLink Partner A assigned', description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Trip sent to Partner A via CareLink', description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
       return next;
     }
     case 'FAIL_PRIMARY_RIDE':
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
-      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'CareLink Partner A unavailable');
+      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Partner A reported unavailable via CareLink', 'CareLink · Partner A', 'SYSTEM');
     case 'ASSIGN_BACKUP_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
       const assignment: RideAssignment = {
@@ -548,7 +551,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
           ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'CareLink Partner B selected', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Trip sent to backup Partner B via CareLink', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
       return next;
     }
     case 'SAVE_RECOVERED_RIDE': {

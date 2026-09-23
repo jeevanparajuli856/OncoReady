@@ -32,7 +32,7 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
     { id: 'PATIENTS', label: 'Patients', short: 'Patients', icon: Users },
   ];
   const navItems = workspaceRole === 'CARE_NAVIGATOR'
-    ? [...sharedNavItems, { id: 'RESOURCES', label: 'CareLink', short: 'CareLink', icon: Car }, { id: 'INTEGRATIONS', label: 'Appointments', short: 'Appts', icon: LinkIcon }]
+    ? [...sharedNavItems, { id: 'RESOURCES', label: 'Transportation', short: 'Transport', icon: Car }, { id: 'INTEGRATIONS', label: 'Appointments', short: 'Appts', icon: LinkIcon }]
     : [...sharedNavItems, { id: 'INSIGHTS', label: 'Insights', short: 'Insights', icon: LineChart }, { id: 'INTEGRATIONS', label: 'Epic context', short: 'Epic', icon: LinkIcon }, { id: 'ADMIN', label: 'Admin', short: 'Admin', icon: Settings }];
 
   const currentRoute = state.staffRoute;
@@ -87,9 +87,6 @@ export const StaffAppShell: React.FC<StaffAppShellProps> = ({
               <p className="text-[11px] font-heading font-bold uppercase tracking-wider text-muted-fg">{workspaceRole === 'CARE_NAVIGATOR' ? 'Care Navigator Workspace' : 'Care Team (Readiness Team) Workspace'}</p>
             <h1 className="font-display text-lg font-extrabold">{pageTitle}</h1>
           </div>
-          <p className="hidden sm:block text-xs text-muted-fg text-right max-w-xs">
-            Graph and audit context are embedded in the case workspace for this role.
-          </p>
         </div>
         <div className="flex-1">
           <div className="p-3 sm:p-5 lg:p-6">
