@@ -8,7 +8,7 @@ The two-day implementation sprint is closed. Its [closeout](./SPRINT_CLOSEOUT.md
 
 The deployed product at `https://app.oncoready.me` uses a polished React/TypeScript frontend and an existing FastAPI/PostgreSQL foundation. The selected patient story is a controlled, synthetic scenario. It uses actual **captured Epic FHIR Sandbox JSON** for read-only clinical context, saved outputs from a model demonstrated on **synthetic data**, and fictional CareLink ride activity. None of those prepared views synchronizes with a production EHR or dispatches a real ride.
 
-One authorized real test call to a consenting participant completed with an audible ElevenLabs agent exchange. The one SMS attempt was **undelivered**. Real provider results are separate from prepared scenario events. The current one-shot call window was consumed; the app cannot rearm it through reset. A stage call needs a new, separately authorized bounded window.
+One September 22 test call completed with an audible ElevenLabs agent exchange. The one SMS attempt was **undelivered**. On September 23, the new sequential-call path placed one test call that rang, but the recipient rejected it while occupied; Twilio reported `completed`, and no audible exchange was confirmed for that attempt. The deployed backend now permits a new bounded call window after a confirmed final status. No next window is armed. A stage call still needs fresh authorization and current recipient consent.
 
 ## Selected journey
 
@@ -22,13 +22,13 @@ One authorized real test call to a consenting participant completed with an audi
 
 ## Product and safety boundaries
 
-- Prepared local persona selection is not enterprise authentication. The live call/SMS API has a separate server-side operator boundary, fixed consenting recipient, one-shot ledger and server-held credentials.
+- Prepared local persona selection is not enterprise authentication. The live call/SMS API has a separate server-side operator boundary, fixed consenting recipient, one-shot SMS ledger, sequential call history and server-held credentials.
 - The model illustrates practical readiness on synthetic data; it is not a calibrated clinical probability, treatment decision or evidence of improved outcomes. Clinical concerns go to a human nurse.
 - CareLink's visible providers, driver and replay are fictional. No live GPS, vendor dispatch or funded trip is claimed.
 - Caregiver and transportation views receive only the scenario logistics they need. Patient acknowledgment is separate from caregiver visibility.
 - Epic Sandbox capture is read-only and saved with provenance. Do not claim a hospital deployment, Epic partnership, production Epic access, writeback, HIPAA compliance, real patients, customers or clinical validation.
 - A completed telephone call is not patient care-plan acknowledgment. Provider submission is not SMS delivery. The September 22 SMS was not received.
-- Scenario reset and playback never arm or send a provider action. A second real call or SMS requires new bounded authorization and a reviewed implementation path.
+- Scenario reset and playback never arm or send a provider action. Each further real call requires its own finite window, purpose and current-consent confirmation; SMS remains one-shot. A final provider call status does not prove an audible exchange.
 
 ### Product copy
 

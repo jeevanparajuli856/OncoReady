@@ -24,3 +24,7 @@ The documented frontend check passed 94 component tests, 10 Playwright tests, a 
 4. **Lifecycle closure:** ACCESS-001 and FLOW-001 have historical approved reviews but their task records are still REVIEW. Advance them only through the repository's current-revision gates. EPIC-002, OUTREACH-001 and EVIDENCE-001 need their remaining evidence before DONE.
 
 No other two-day sprint is active. New work should use the relevant feature spec and task record; the old hour-by-hour plan, scope review, roadmap and duplicate runbooks were retired to reduce context. Git history retains them if a past decision must be audited.
+
+## September 23 follow-up
+
+The sequential-call change shipped after this sprint closeout. The API and web deployments are healthy, and an isolated PostgreSQL test verified that a completed test call can be followed by a separately armed demo call without erasing history. The new live test rang, but the recipient rejected it while on another call; Twilio reported `completed`, so an audible exchange was not established for that attempt. No retry or presentation window was opened. The remaining stage gate is fresh recipient consent and an authorized presentation call at the event, plus the presentation-media and rehearsal checks above. See the [sanitized follow-up evidence](./operations/OUTREACH-001-SEQUENTIAL-CALL-EVIDENCE.md).

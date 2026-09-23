@@ -52,7 +52,7 @@ The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md
 
 1. Video Part 1, Video Part 2 and their local backups exist, play with readable text and audible sound, and match the current UI. The closing receipt and original source time must be legible at the projector resolution.
 2. The consenting participant and phone are present; speaker volume and microphone pickup are tested. Keep the operator token off the projected surface until it is masked in the private field.
-3. A **new, separately authorized, bounded event call window** has been implemented and verified. The September 22 one-shot test consumed the existing window; resetting the prepared story does not restore it. Confirm the private screen says the event call can be placed before promising a live call.
+3. The deployed sequential-call control permits a **new, separately authorized, bounded presentation window** after the last call has a final provider status. The September 23 test rang but was rejected by the recipient; no presentation window is currently armed. Confirm fresh participant consent and availability, select **Live presentation**, open one window, and verify the private screen says the call can be placed before promising a live exchange. Resetting the prepared story never arms it.
 4. `https://app.oncoready.me` and the API health endpoint respond, and the private control can read status. Do not press a live action during ordinary rehearsal.
 5. Two human-paced rehearsals complete the full seven-minute sequence, including a timed switch into and out of the private control, without a provider send. The automated browser passes verify the product click path, not the stage's video and audio timing.
 
