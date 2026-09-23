@@ -1,0 +1,44 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LAND-004",
+  "title": "Remove the footer database status badge",
+  "type": "fix",
+  "status": "DONE",
+  "priority": "low",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/LAND-004.md",
+  "branch": "fix/LAND-004-remove-foundation-badge",
+  "base_branch": "main",
+  "dependencies": [
+    "RAIL-001"
+  ],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/App.tsx",
+      "frontend/src/index.css",
+      "frontend/src/components/FoundationStatus.tsx",
+      "frontend/src/api/foundation.ts",
+      "frontend/tests/foundation-status.test.tsx",
+      "frontend/tests/e2e.spec.ts",
+      "frontend/artifacts/LAND-004-*"
+    ],
+    "other": [
+      "docs/features/LAND-004.md",
+      "docs/features/RAIL-001.md"
+    ]
+  },
+  "human_decisions": [
+    "Remove the footer foundation status badge entirely; keep the backend endpoint."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "111 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": []
+}

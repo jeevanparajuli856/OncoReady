@@ -28,7 +28,6 @@ import { Logo } from './components/Logo';
 import { Perspective, WorkspaceRole } from './types';
 import { buildDirectoryRecords, filterDirectoryRecords } from './data/rosterDirectory';
 import { LegalPage } from './components/LegalPage';
-import { FoundationStatus } from './components/FoundationStatus';
 import { TransportationWorkspace } from './components/TransportationWorkspace';
 import { LiveOutreachControl } from './components/LiveOutreachControl';
 import { CareLinkVendorPortal } from './components/CareLinkVendorPortal';
@@ -378,7 +377,6 @@ export const App: React.FC = () => {
               {reducedMotion ? 'Motion off' : 'Reduce motion'}
             </button>
             <div className="flex flex-wrap items-center justify-center sm:justify-end gap-3 text-[11px]">
-              <FoundationStatus />
               <a href="/privacy" className="hover:text-accent hover:underline">Privacy Policy</a>
               <a href="/terms" className="hover:text-accent hover:underline">Terms of Service</a>
               <span>FHIR R4 mapping</span>

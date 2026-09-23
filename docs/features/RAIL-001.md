@@ -38,6 +38,7 @@ This slice proves the product is no longer a frontend-only state machine. It sup
 - `/version` exposes only non-secret release/build evidence. The foundation proof read exposes one synthetic, non-patient record so the current frontend can demonstrate server-backed persistence.
 - Proof writes and reset are operator/test operations protected by a server-held bearer token and an explicit reset-enabled setting. The browser bundle must never contain that token, database credentials, or another server secret.
 - The frontend reads `VITE_API_ORIGIN` as a public build-time origin, uses the contracted read endpoint, and presents loading, connected, and unavailable states by composing the existing runtime components and tokens. This is a compatibility-only functional extension: no global token, established component, navigation, layout, or workflow-state restyling is authorized.
+- **Update (LAND-004, September 23, 2026):** the footer status badge that displayed this proof was removed from the web app at the owner's request. The API endpoint, table and backend tests are unchanged; `GET https://api.oncoready.me/api/v1/foundation/proof` still demonstrates persistence directly.
 
 ### Persistence, migration, and reset
 
