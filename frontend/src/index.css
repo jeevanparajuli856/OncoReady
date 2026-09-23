@@ -1770,8 +1770,27 @@ select:focus-visible {
     display: none;
   }
 
+  /* Fit the headline, CTAs and full ribbon inside the first desktop viewport. */
   .landing-hero__grid {
     grid-template-columns: minmax(0, 1.05fr) minmax(25rem, 0.95fr);
+    padding-block: clamp(1.25rem, 3.5svh, 3rem);
+  }
+
+  .landing-hero .continuity-field {
+    min-height: min(clamp(30rem, 57vw, 39rem), calc(100svh - 8.5rem));
+  }
+
+  /* Short laptop screens: ease the headline and rhythm so both CTAs stay above the fold. */
+  .landing-hero .landing-title {
+    font-size: clamp(3rem, min(7.25vw, 11.5svh), 7.2rem);
+  }
+
+  .landing-hero .landing-lede {
+    margin-top: clamp(1rem, 2.4svh, 1.6rem);
+  }
+
+  .landing-hero .landing-actions {
+    margin-top: clamp(1.1rem, 2.6svh, 1.7rem);
   }
 
   .landing-trust-grid {
