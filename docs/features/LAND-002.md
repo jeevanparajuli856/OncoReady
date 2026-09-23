@@ -1,6 +1,6 @@
 # LAND-002: Transport partners on the landing page
 
-**Status:** Implemented on `feature/LAND-002-transport-partners`, awaiting owner review.
+**Status:** Done. Merged into `main` after owner review. The presenter script covers Uber Health and Lyft Healthcare wording.
 
 ## User-visible outcome
 

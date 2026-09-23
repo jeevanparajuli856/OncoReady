@@ -3,7 +3,7 @@
   "task_id": "LAND-002",
   "title": "Transport partners on the landing page",
   "type": "feature",
-  "status": "REVIEW",
+  "status": "DONE",
   "priority": "medium",
   "owners": {
     "frontend": "claude",
@@ -29,7 +29,8 @@
     "other": [
       "docs/features/LAND-002.md",
       "docs/design/DESIGN_SYSTEM.md",
-      "AGENTS.md"
+      "AGENTS.md",
+      "docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md"
     ]
   },
   "human_decisions": [
@@ -43,7 +44,5 @@
     "component_tests": "114 passed",
     "e2e_tests": "14 passed"
   },
-  "open_items": [
-    "Owner visual review of the section."
-  ]
+  "open_items": []
 }

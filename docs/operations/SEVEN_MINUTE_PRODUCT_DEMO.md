@@ -60,7 +60,8 @@ The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md
 - **ReadySignal:** present it as OncoReady's working readiness model. The demo disclosure at the start covers its training data, so there's no need to mention it on stage. Don't call the score a clinical risk probability, and don't claim measured patient outcomes or clinical validation.
 - **Prepared history:** the scheduled messages and the previous-trip replay are **prepared scenario activity**.
 - **CareLink:** the vendor, the drivers and the backup provider are fictional. The CareLink portal and the live sync are real software. No real ride is booked, and there is no live GPS or ETA.
-- **Uber Health:** say "the adapter is built and awaiting connection" or "plugs in once a contract and credentials are in place". **Never** say Uber Health is connected, integrated, a partner or a customer. The logo is on screen; if asked about a partnership, answer honestly that there isn't one yet.
+- **Uber Health:** say "the adapter is built and awaiting connection" or "plugs in once a contract and credentials are in place". **Never** say Uber Health is connected, integrated, a partner or a customer. The logo is on screen in the Transportation Workspace and in the landing page's **Transport partners** section, where it reads **Coming soon**; if asked about a partnership, answer honestly that there isn't one yet.
+- **Lyft Healthcare:** the landing page shows its logo with a **Coming soon** badge ([LAND-002](../features/LAND-002.md)). Say "coming soon". No Lyft adapter is built and nothing in the product talks to Lyft, so **never** say Lyft is connected, integrated or live, and don't call it a signed partner until an agreement exists.
 - **SMS:** the September 22 SMS test was **undelivered**. Don't show a received-SMS shot or send an SMS on stage.
 - **The call:** it's the only live provider action. Its completion proves a completed call, not a care-plan acknowledgment or an automatic workflow change.
 - **Outreach history:** the earlier engine calls and texts, their replies and decisions are prepared history. The opening demo disclosure covers them; present the manual call as the live part.
@@ -99,6 +100,7 @@ The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md
 | Likely question | Honest answer |
 | --- | --- |
 | Is Uber Health integrated? | “Not yet. Our adapter for it is built; it needs a contract and API credentials. CareLink runs on the same adapter layer today.” |
+| Is Lyft Healthcare integrated? | “It's coming soon. It isn't connected today; when the agreement and API access are in place, it plugs into the same ride plan CareLink uses now.” |
 | Is this connected to a real hospital's Epic? | “It's real data from Epic's FHIR Sandbox, read-only. A production connection would go through a hospital's own Epic onboarding.” |
 | Are these real patients or vendors? | “No. Camila's record is Epic sandbox test data, and the vendors and drivers are fictional. The software and the call are real.” |
 | How accurate is ReadySignal? | “In this demo it runs on simulated patient data; it's built for explainability. Training and validating it on a hospital's real history comes with the real rollout.” |
@@ -110,4 +112,4 @@ The product screens carry no demo labels ([POLISH-001](../features/POLISH-001.md
 - [Product scope](../PROJECT.md)
 - [Sprint closeout and open presentation prerequisites](../SPRINT_CLOSEOUT.md)
 - [Sanitized live-call and SMS test evidence](./OUTREACH-001-LIVE-EVIDENCE.md)
-- [CareLink vendor portal and adapters](../features/RIDE-002.md) · [CareLink sub-brand](../features/RIDE-003.md)
+- [CareLink vendor portal and adapters](../features/RIDE-002.md) · [CareLink sub-brand](../features/RIDE-003.md) · [Landing transport partners](../features/LAND-002.md)
