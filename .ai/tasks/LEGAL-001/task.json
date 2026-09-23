@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "task_id": "LEGAL-001",
+  "title": "Support email on the legal pages",
+  "type": "fix",
+  "status": "DONE",
+  "priority": "low",
+  "owners": {
+    "frontend": "claude",
+    "tester": "claude",
+    "review": "human"
+  },
+  "spec": "docs/features/LEGAL-001.md",
+  "branch": "fix/LEGAL-001-support-email",
+  "base_branch": "main",
+  "dependencies": [],
+  "contracts": [],
+  "scope": {
+    "frontend": [
+      "frontend/src/components/LegalPage.tsx",
+      "frontend/tests/legal.test.tsx"
+    ],
+    "other": [
+      "docs/features/LEGAL-001.md"
+    ]
+  },
+  "human_decisions": [
+    "Terms and Privacy use support@oncoready.me."
+  ],
+  "verification": {
+    "build": "pass",
+    "component_tests": "113 passed",
+    "e2e_tests": "14 passed"
+  },
+  "open_items": [
+    "Update the support email in the Twilio A2P campaign registration if it lists one."
+  ]
+}
