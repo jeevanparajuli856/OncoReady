@@ -125,10 +125,10 @@ describe('OncoReady React UI & DOM Integration Tests', () => {
     // 8. Switch to Marcus's workspace for transportation dispatch
     fireEvent.click(screen.getByRole('button', { name: /Sarah Jenkins, RN/i }));
     fireEvent.click(screen.getByText(/Care Navigator \(Marcus Vance, MSW\)/i));
-    fireEvent.click(screen.getByRole('button', { name: /Request synthetic ride/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Assign fictional CareLink Partner A/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Assign CareLink Partner A/i }));
     fireEvent.click(screen.getByRole('button', { name: /Record primary unavailable/i }));
-    fireEvent.click(screen.getByRole('button', { name: /Select fictional CareLink Partner B/i }));
+    fireEvent.click(screen.getByRole('button', { name: /Select CareLink Partner B/i }));
     fireEvent.click(screen.getByRole('button', { name: /Save recovered logistics/i }));
     expect(screen.getAllByText(/Current plan complete/i).length).toBeGreaterThan(0);
 

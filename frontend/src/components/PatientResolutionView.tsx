@@ -143,7 +143,7 @@ export const PatientResolutionView: React.FC<PatientResolutionViewProps> = ({
             </div>
             <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-heading font-bold border-2 border-ink ${canAcknowledge ? 'bg-mint/30' : 'bg-sun/30'}`}>
               <CheckCircle2 className="w-3.5 h-3.5" strokeWidth={2.5} />
-              {canAcknowledge ? 'Synthetic plan complete' : 'Plan incomplete'}
+              {canAcknowledge ? 'Plan complete' : 'Plan incomplete'}
             </span>
           </div>
           {canAcknowledge && transportDetails ? (

@@ -129,7 +129,7 @@ Never rely on color alone. Pair status with icon + label.
 - **Staff**: the same tokens and component family at compact density; ownership, deadline, state, and next action remain immediately scannable.
 - **Caregiver**: mint-tinted logistics and privacy emphasis. Transportation-only projection remains the hard content boundary.
 - **System**: ink/indigo structure for graph, audit, and architecture surfaces, with icons and labels carrying every state in addition to color.
-- Public positioning uses buyer-oriented SaaS language. Illustrative, simulated, or not-connected labels belong only at the specific in-product record/integration boundary that requires them; the product is never globally branded as a demo or training environment.
+- Public positioning uses buyer-oriented SaaS language. In-product copy uses the same product voice: no demo, synthetic, fictional, prepared, scenario, illustrative or replay labels on any surface ([POLISH-001](../features/POLISH-001.md)). Keep clinical-safety boundaries (not medical clearance, human nurse review, planned time rather than live ETA, read-only Epic, no writeback) and never add capabilities the product lacks. A genuinely unavailable integration may say `Planned integration · Not yet connected`.
 
 ### Continuity field
 

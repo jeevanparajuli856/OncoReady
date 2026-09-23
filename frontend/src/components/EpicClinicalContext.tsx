@@ -22,7 +22,7 @@ import {
 } from '../data/epicCapture';
 import { useDialogFocus } from '../lib/useDialogFocus';
 
-const NOT_PRESENT = 'Not present in captured record';
+const NOT_PRESENT = 'Not recorded';
 
 const formatAdministrativeSex = (value?: string): string | undefined => value
   ? `${value.charAt(0).toUpperCase()}${value.slice(1)}`
@@ -119,18 +119,18 @@ const EpicSourceDrawer: React.FC<{
               <FactTile label="Source" value={context.sourceLabel} />
               <FactTile label="Environment" value={context.sourceEnvironment} />
               <FactTile label="FHIR version" value={`FHIR ${context.fhirVersion}`} />
-              <FactTile label="Mode" value="Read-only captured data" />
-              <FactTile label="Captured at (UTC)" value={<time dateTime={context.capturedAt} className="font-mono text-xs">{context.capturedAt}</time>} />
+              <FactTile label="Mode" value="Read-only" />
+              <FactTile label="Retrieved at (UTC)" value={<time dateTime={context.capturedAt} className="font-mono text-xs">{context.capturedAt}</time>} />
               <FactTile label="Capture ID" value={<span className="font-mono text-xs break-all">{context.captureId}</span>} />
             </dl>
           </section>
 
           <section aria-labelledby={`${titleId}-identity`} className="card-sticker p-4 space-y-3">
-            <h3 id={`${titleId}-identity`} className="font-heading font-bold">Scenario identity</h3>
+            <h3 id={`${titleId}-identity`} className="font-heading font-bold">Patient identity</h3>
             <dl className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-              <FactTile label="Presentation alias" value={context.presentationAlias} />
+              <FactTile label="Display name" value={context.presentationAlias} />
               <FactTile label="Epic source identity" value={context.sourceIdentity} />
-              <FactTile label="Identity match" value={context.identityMatch ? 'Confirmed in captured Patient' : 'Alias only'} />
+              <FactTile label="Identity match" value={context.identityMatch ? 'Confirmed in Epic Patient' : 'Display name only'} />
               <FactTile label="Selected Patient" value={<span className="font-mono text-xs break-all">Patient/{context.patient.id}</span>} />
             </dl>
           </section>
@@ -153,7 +153,7 @@ const EpicSourceDrawer: React.FC<{
           <section aria-labelledby={`${titleId}-resources`} className="card-sticker p-4 space-y-3">
             <div>
               <h3 id={`${titleId}-resources`} className="font-heading font-bold">Resource inventory</h3>
-              <p className="text-xs text-muted-fg mt-1">Full FHIR resource IDs and captured-file integrity checksums.</p>
+              <p className="text-xs text-muted-fg mt-1">Full FHIR resource IDs and record integrity checksums.</p>
             </div>
             <ResourceInventory resources={context.resources} />
           </section>
@@ -177,11 +177,11 @@ const CaptureUnavailable: React.FC<{ reason: string; onRetry: () => void; loadin
   <section className="card-sticker p-6 text-center space-y-3" role="alert">
     <AlertTriangle className="w-7 h-7 mx-auto text-sun" aria-hidden="true" />
     <h2 className="font-heading font-bold">Epic capture unavailable</h2>
-    <p className="text-sm text-muted-fg">The reviewed local capture could not be verified. OncoReady workflow remains available.</p>
+    <p className="text-sm text-muted-fg">The Epic record could not be verified. OncoReady workflow remains available.</p>
     <p className="text-xs text-muted-fg">{reason}</p>
     <button type="button" onClick={onRetry} disabled={loading} className="btn-ghost btn-compact">
       <RefreshCw className="w-4 h-4" aria-hidden="true" />
-      {loading ? 'Loading captured data…' : 'Retry local capture'}
+      {loading ? 'Loading Epic record…' : 'Retry'}
     </button>
   </section>
 );
@@ -208,7 +208,7 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
     return <section className="card-sticker p-6" role="status" aria-live="polite">
       <div className="flex items-center gap-3">
         <CloudDownload className="w-5 h-5 text-accent" aria-hidden="true" />
-        <p className="font-heading font-semibold">Loading captured Epic Sandbox data…</p>
+        <p className="font-heading font-semibold">Loading Epic record…</p>
       </div>
     </section>;
   }
@@ -226,10 +226,10 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
             <img src="/epic-logo.svg" alt="Epic" width="64" height="32" className="w-16 h-8 object-contain" />
           </div>
           <div className="min-w-0">
-            <p className="label-caps">Captured from Epic</p>
-            <h2 id="epic-capture-title" className="font-heading font-extrabold text-lg mt-1">Read-only captured data</h2>
+            <p className="label-caps">Connected to Hospital Epic Sandbox</p>
+            <h2 id="epic-capture-title" className="font-heading font-extrabold text-lg mt-1">Epic FHIR R4 record · read-only</h2>
             <p className="text-sm text-muted-fg mt-1">
-              <time dateTime={context.capturedAt}>Captured {formatEpicCaptureTime(context.capturedAt)}</time>
+              <time dateTime={context.capturedAt}>Retrieved {formatEpicCaptureTime(context.capturedAt)}</time>
             </p>
           </div>
         </div>
@@ -306,7 +306,7 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
       </div>}
       {context.labs.length > 0 && context.labs.some((lab) => !lab.referenceRange) && (
         <div className="metric-tile">
-          <p className="label-caps mb-1">Reference range on some captured results</p>
+          <p className="label-caps mb-1">Reference range on some results</p>
           <MissingValue />
         </div>
       )}
@@ -317,7 +317,7 @@ export const EpicClinicalContextPanel: React.FC<{ captureState?: EpicCaptureStat
         <h3 id="epic-appointments-title" className="font-heading font-bold flex items-center gap-2">
           <CalendarDays className="w-4 h-4 text-accent" aria-hidden="true" />Epic appointment records
         </h3>
-        <p className="text-xs text-muted-fg mt-1">Captured Epic records only; separate from the OncoReady scenario appointment.</p>
+        <p className="text-xs text-muted-fg mt-1">Epic appointment records; separate from the OncoReady treatment appointment.</p>
       </div>
       {context.appointments.length === 0 ? <EmptyFamily /> : <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
         {context.appointments.map((appointment) => (
@@ -352,15 +352,15 @@ export const EpicCaptureSummary: React.FC<{ captureState?: EpicCaptureState }> =
           <img src="/epic-logo.svg" alt="Epic" width="64" height="32" className="w-16 h-8 object-contain" />
         </div>
         <div>
-          <p className="label-caps">Secondary integration evidence</p>
-          <h2 id="epic-integration-title" className="font-display text-2xl font-extrabold mt-1">Epic Sandbox capture</h2>
-          <p className="text-sm text-muted-fg mt-1"><time dateTime={context.capturedAt}>Captured {formatEpicCaptureTime(context.capturedAt)}</time></p>
+          <p className="label-caps">Clinical integration</p>
+          <h2 id="epic-integration-title" className="font-display text-2xl font-extrabold mt-1">Connected to Hospital Epic Sandbox</h2>
+          <p className="text-sm text-muted-fg mt-1"><time dateTime={context.capturedAt}>Retrieved {formatEpicCaptureTime(context.capturedAt)}</time></p>
         </div>
       </div>
-      <span className="chip chip-mint"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />Reviewed test data</span>
+      <span className="chip chip-mint"><CheckCircle2 className="w-3.5 h-3.5" aria-hidden="true" />Read-only</span>
     </div>
     <div className="grid grid-cols-1 sm:grid-cols-[1fr_auto_1fr_auto_1fr] gap-2 items-center text-center">
-      {['Epic Sandbox', 'Reviewed FHIR R4 JSON', 'OncoReady staff context'].map((step, index) => <React.Fragment key={step}>
+      {['Hospital Epic Sandbox', 'FHIR R4', 'OncoReady staff context'].map((step, index) => <React.Fragment key={step}>
         <div className="metric-tile font-heading font-bold text-sm">{step}</div>
         {index < 2 && <span className="hidden sm:block text-muted-fg" aria-hidden="true">→</span>}
       </React.Fragment>)}
@@ -371,7 +371,7 @@ export const EpicCaptureSummary: React.FC<{ captureState?: EpicCaptureState }> =
     </dl>
     <div className="metric-tile flex items-start gap-2 text-sm">
       <LockKeyhole className="w-4 h-4 text-accent mt-0.5 shrink-0" aria-hidden="true" />
-      <p><strong>No live sync or writeback.</strong> Playback uses the reviewed local Sandbox capture and keeps its original timestamp.</p>
+      <p><strong>Read-only.</strong> OncoReady never writes back to Epic, and each record keeps its original retrieval time.</p>
     </div>
   </section>;
 };

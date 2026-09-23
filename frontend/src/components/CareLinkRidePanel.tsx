@@ -61,7 +61,7 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="label-caps text-muted-fg">CareLink coordination</p>
-          <h2 id="carelink-recovery-title" className="font-heading font-bold text-lg">Synthetic current-ride recovery</h2>
+          <h2 id="carelink-recovery-title" className="font-heading font-bold text-lg">Current-ride recovery</h2>
           <p className="text-xs text-muted-fg font-mono mt-1">{state.ride.currentTripId}</p>
         </div>
         <span className={`chip ${current === 'RECOVERED' ? 'chip-mint' : 'chip-sun'}`}>{statusLabel[current]}</span>
@@ -73,26 +73,26 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
             <span className="icon-bubble w-10 h-10 bg-sun text-ink shrink-0"><Car className="w-4 h-4" aria-hidden="true" /></span>
             <div>
               <h3 id="current-ride-title" className="font-heading font-bold">Current ride · plan v{details?.planVersion ?? 1}</h3>
-              <p className="text-xs text-muted-fg">Fictional providers · planned times · no external dispatch</p>
+              <p className="text-xs text-muted-fg">Planned times</p>
             </div>
           </div>
 
           <ol className="space-y-2 text-sm" aria-label="Ride recovery steps">
-            <li className="metric-tile">1. Request the synthetic current ride</li>
-            <li className="metric-tile">2. Assign and evaluate fictional Partner A</li>
-            <li className="metric-tile">3. Select fictional Partner B and save required logistics</li>
+            <li className="metric-tile">1. Request the current ride</li>
+            <li className="metric-tile">2. Assign and evaluate Partner A</li>
+            <li className="metric-tile">3. Select Partner B and save required logistics</li>
           </ol>
 
           <div role="status" aria-live="polite" aria-atomic="true" className="text-sm font-semibold">
             Ride status: {statusLabel[current]}
           </div>
 
-          {current === 'OPEN' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'REQUEST_CURRENT_RIDE' })}>Request synthetic ride</button>}
-          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign fictional CareLink Partner A</button>}
+          {current === 'OPEN' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'REQUEST_CURRENT_RIDE' })}>Request ride</button>}
+          {current === 'REQUESTED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'ASSIGN_PRIMARY_RIDE' })}>Assign CareLink Partner A</button>}
           {current === 'PRIMARY_ASSIGNED' && <button type="button" className="btn-candy w-full" onClick={() => onAction({ type: 'FAIL_PRIMARY_RIDE' })}>Record primary unavailable</button>}
           {current === 'PRIMARY_FAILED' && (
             <div className="grid sm:grid-cols-2 gap-2">
-              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select fictional CareLink Partner B</button>
+              <button type="button" className="btn-candy" onClick={() => onAction({ type: 'ASSIGN_BACKUP_RIDE' })}>Select CareLink Partner B</button>
               <button type="button" className="btn-ghost" onClick={() => onAction({ type: 'MARK_NO_RIDE_OPTION' })}>No option available</button>
             </div>
           )}
@@ -135,7 +135,7 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           {current === 'NO_OPTION' && (
             <div className="p-3 rounded-xl bg-sun/25 border-2 border-ink/10 flex items-start gap-2 text-sm" role="alert">
               <AlertTriangle className="w-4 h-4 mt-0.5 shrink-0" aria-hidden="true" />
-              <p>No synthetic option is available. Transportation remains open and treatment stays at risk.</p>
+              <p>No ride option is available. Transportation remains open and treatment stays at risk.</p>
             </div>
           )}
 
@@ -171,19 +171,19 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
           <div className="flex items-start gap-3">
             <span className="icon-bubble w-10 h-10 bg-accent/15 text-accent shrink-0"><History className="w-4 h-4" aria-hidden="true" /></span>
             <div>
-              <h3 id="historical-replay-title" className="font-heading font-bold">Previous CareLink trip replay</h3>
+              <h3 id="historical-replay-title" className="font-heading font-bold">Previous CareLink trip</h3>
               <p className="font-mono text-xs text-muted-fg"><span>carelink-prior-001</span><span aria-hidden="true"> · </span><span>Sep 11, 2026</span></p>
             </div>
           </div>
 
           <div className="flex flex-wrap gap-2">
-            {replay.status !== 'PLAYING' && <button type="button" className="btn-candy btn-compact" onClick={() => onAction({ type: 'PLAY_HISTORICAL_RIDE' })}><Play className="w-4 h-4" aria-hidden="true" />{replay.status === 'PAUSED' ? 'Resume previous trip replay' : 'Play previous trip replay'}</button>}
-            {replay.status === 'PLAYING' && <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'PAUSE_HISTORICAL_RIDE' })}><CirclePause className="w-4 h-4" aria-hidden="true" />Pause previous trip replay</button>}
-            <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'RESTART_HISTORICAL_RIDE' })}><RotateCcw className="w-4 h-4" aria-hidden="true" />Restart previous trip replay</button>
-            <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'EXIT_HISTORICAL_RIDE' })}><X className="w-4 h-4" aria-hidden="true" />Exit previous trip replay</button>
+            {replay.status !== 'PLAYING' && <button type="button" className="btn-candy btn-compact" onClick={() => onAction({ type: 'PLAY_HISTORICAL_RIDE' })}><Play className="w-4 h-4" aria-hidden="true" />{replay.status === 'PAUSED' ? 'Resume previous trip' : 'Play previous trip'}</button>}
+            {replay.status === 'PLAYING' && <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'PAUSE_HISTORICAL_RIDE' })}><CirclePause className="w-4 h-4" aria-hidden="true" />Pause previous trip</button>}
+            <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'RESTART_HISTORICAL_RIDE' })}><RotateCcw className="w-4 h-4" aria-hidden="true" />Restart previous trip</button>
+            <button type="button" className="btn-ghost btn-compact" onClick={() => onAction({ type: 'EXIT_HISTORICAL_RIDE' })}><X className="w-4 h-4" aria-hidden="true" />Exit previous trip</button>
           </div>
 
-          <p className="text-xs text-muted-fg"><span>Previous scenario replay · original scenario times</span><span aria-hidden="true"> · </span><span>No live GPS or provider connection</span></p>
+          <p className="text-xs text-muted-fg"><span>Previous trip · original trip times</span></p>
           <div role="status" aria-live="polite" aria-atomic="true" className="text-sm font-semibold">
             Replay {replay.status.toLowerCase()}{visibleReplayEvents.at(-1) ? ` · ${visibleReplayEvents.at(-1)?.status}` : ''}
           </div>
@@ -202,8 +202,8 @@ export const CareLinkRidePanel: React.FC<CareLinkRidePanelProps> = ({
 
           <RideMap
             staticOnly
-            title="Illustrative static route"
-            subtitle="Previous scenario corridor · no live location"
+            title="Route"
+            subtitle="Previous trip corridor"
             pickup={NEW_ORLEANS_PICKUP}
             destination={BENSON_CENTER}
             confirmed={replay.status === 'COMPLETE'}

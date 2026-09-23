@@ -115,7 +115,7 @@ describe('buildDirectoryRecords', () => {
     if (entry.status === 'available') entry.patient.appointments = [];
     const [, epicRecord] = buildDirectoryRecords(INITIAL_STATE, 'CARE_TEAM', [entry]);
 
-    expect(epicRecord.detail).toBe('No appointment present in captured record');
+    expect(epicRecord.detail).toBe('No appointment recorded');
   });
 });
 

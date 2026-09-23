@@ -45,10 +45,10 @@ export const TreatmentReadinessGraph: React.FC<TreatmentReadinessGraphProps> = (
         <div>
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-lg font-display font-extrabold tracking-tight">Treatment Readiness Graph</h2>
-            <span className="chip chip-accent">Shared Scenario State</span>
+            <span className="chip chip-accent">Shared care state</span>
           </div>
           <p className="text-sm text-muted-fg mt-1">
-            Deterministic dependencies from the prepared September 2026 scenario. Attendance remains unknown.
+            Dependencies that must close before treatment. Attendance is confirmed separately.
           </p>
         </div>
 

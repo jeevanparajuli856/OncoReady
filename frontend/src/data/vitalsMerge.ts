@@ -100,8 +100,8 @@ export const epicMeasurementKey = (vital: EpicVitalFact): MeasurementKey | undef
   return fromCode ?? measurementFromText(vital.name);
 };
 
-export const SCENARIO_SOURCE_LABEL = 'OncoReady scenario';
-export const EPIC_SOURCE_LABEL = 'Epic Sandbox capture';
+export const SCENARIO_SOURCE_LABEL = 'OncoReady';
+export const EPIC_SOURCE_LABEL = 'Hospital Epic Sandbox';
 
 const epicTime = (vital: EpicVitalFact): number =>
   vital.effectiveAt ? Date.parse(vital.effectiveAt) : Number.NEGATIVE_INFINITY;

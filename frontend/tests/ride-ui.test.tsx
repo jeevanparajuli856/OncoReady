@@ -27,24 +27,24 @@ describe('RIDE-001 provider extensibility labels', () => {
 
     expect(screen.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
-    expect(screen.getByText('Synthetic scenario provider')).toBeDefined();
+    expect(screen.getByText('Active provider')).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
     expect(screen.getByRole('img', { name: 'Uber Health wordmark' })).toBeDefined();
-    expect(screen.getByText('Integration-ready preview · not connected')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Request synthetic ride' })).toBeDefined();
+    expect(screen.getByText('Planned integration')).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Request ride' })).toBeDefined();
   });
 
   it('walks the staged recovery and keeps incomplete logistics disabled', () => {
     render(<RideHarness />);
 
-    fireEvent.click(screen.getByRole('button', { name: 'Request synthetic ride' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Assign fictional CareLink Partner A' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Request ride' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Assign CareLink Partner A' }));
     fireEvent.click(screen.getByRole('button', { name: 'Record primary unavailable' }));
 
     expect(screen.getByText('CareLink Partner A')).toBeDefined();
     expect(screen.getByText('Failed')).toBeDefined();
 
-    fireEvent.click(screen.getByRole('button', { name: 'Select fictional CareLink Partner B' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Select CareLink Partner B' }));
     const contact = screen.getByLabelText('Logistics contact');
     fireEvent.change(contact, { target: { value: '' } });
 
@@ -65,11 +65,11 @@ describe('RIDE-001 provider extensibility labels', () => {
     render(<RideHarness />);
 
     expect(screen.getByText('carelink-prior-001')).toBeDefined();
-    expect(screen.getByText('No live GPS or provider connection')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: 'Play previous trip replay' }));
+    expect(screen.getByText('Previous trip · original trip times')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: 'Play previous trip' }));
     expect(screen.getByText('Requested')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Pause previous trip replay' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Restart previous trip replay' })).toBeDefined();
-    expect(screen.getByRole('button', { name: 'Exit previous trip replay' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Pause previous trip' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Restart previous trip' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'Exit previous trip' })).toBeDefined();
   });
 });

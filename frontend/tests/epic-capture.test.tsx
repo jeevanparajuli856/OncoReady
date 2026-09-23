@@ -30,14 +30,14 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     const regimenTab = within(tabs).getByRole('tab', { name: /Regimen/i });
     fireEvent.click(regimenTab);
 
-    expect(screen.getByText('OncoReady scenario')).toBeDefined();
+    expect(screen.getByText('Care plan')).toBeDefined();
     expect(screen.getByText(/mFOLFOX6 \+ Bevacizumab/i)).toBeDefined();
 
     const epicTab = within(tabs).getByRole('tab', { name: /Epic/i });
     fireEvent.click(epicTab);
 
     const epicPanel = screen.getByRole('tabpanel', { name: /Epic/i });
-      expect(within(epicPanel).getByRole('heading', { name: 'Read-only captured data' })).toBeDefined();
+      expect(within(epicPanel).getByRole('heading', { name: 'Epic FHIR R4 record · read-only' })).toBeDefined();
     expect(within(epicPanel).getByAltText('Epic')).toBeDefined();
     expect(epicPanel.textContent).toContain('Camila Maria Lopez');
     expect(epicPanel.textContent).toContain('Female');
@@ -56,14 +56,13 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     fireEvent.click(screen.getByRole('tab', { name: /Epic/i }));
     const epicPanel = screen.getByRole('tabpanel', { name: /Epic/i });
 
-      expect(epicPanel.textContent).toMatch(/Captured.*Sep.*22.*2026.*2:01.*CT/i);
-      expect(epicPanel.textContent).toContain('Captured from Epic');
-    expect(epicPanel.textContent).not.toMatch(/\bConnected\b/i);
+      expect(epicPanel.textContent).toMatch(/Retrieved.*Sep.*22.*2026.*2:01.*CT/i);
+      expect(epicPanel.textContent).toContain('Connected to Hospital Epic Sandbox');
     expect(epicPanel.textContent).not.toMatch(/\bLive synchronization\b/i);
 
     const labs = within(epicPanel).getByRole('region', { name: /Laboratory results/i });
     expect(within(labs).getByText('Genotype:')).toBeDefined();
-    expect(within(labs).getByText('Not present in captured record')).toBeDefined();
+    expect(within(labs).getByText('Not recorded')).toBeDefined();
   });
 
   it('supports keyboard tab navigation and an accessible provenance drawer with focus return', () => {
@@ -104,14 +103,13 @@ describe('EPIC-001 reviewed Epic Sandbox capture', () => {
     openStaffCase();
     fireEvent.click(screen.getByRole('button', { name: 'Epic context' }));
 
-    expect(screen.getByRole('heading', { name: /Epic Sandbox capture/i })).toBeDefined();
+    expect(screen.getByRole('heading', { name: /Connected to Hospital Epic Sandbox/i })).toBeDefined();
     const integrationCopy = document.body.textContent || '';
     expect(integrationCopy).toContain('Epic Sandbox');
-    expect(integrationCopy).toContain('Reviewed FHIR R4 JSON');
+    expect(integrationCopy).toContain('FHIR R4');
     expect(integrationCopy).toContain('OncoReady staff context');
     expect(integrationCopy).toContain(CAPTURE_ID);
-    expect(integrationCopy).toMatch(/No live sync or writeback/i);
-    expect(integrationCopy).not.toMatch(/\bConnected\b/i);
+    expect(integrationCopy).toMatch(/never writes back to Epic/i);
     expect(integrationCopy).not.toMatch(/\bLive connection\b/i);
   });
 

@@ -4,10 +4,6 @@ import {
   ArrowDownRight,
   ArrowUpRight,
   BarChart3,
-  BookOpen,
-  Database,
-  ExternalLink,
-  FileJson,
   RotateCcw,
   Sparkles,
 } from 'lucide-react';
@@ -71,24 +67,7 @@ const FactorList: React.FC<{
   </div>
 );
 
-const EvidenceLink: React.FC<{
-  href: string;
-  label: string;
-  accessibleLabel: string;
-  icon: React.ReactNode;
-}> = ({ href, label, accessibleLabel, icon }) => (
-  <a
-    href={href}
-    target="_blank"
-    rel="noreferrer noopener"
-    aria-label={accessibleLabel}
-    className="btn-ghost btn-compact"
-  >
-    {icon}
-    {label}
-    <ExternalLink className="w-3.5 h-3.5" aria-hidden="true" />
-  </a>
-);
+const displayModelVersion = (version: string) => version.replace(/^synthetic-/, '');
 
 export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
   artifact = savedMlInsightsArtifact,
@@ -106,7 +85,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
         <div>
           <h2 id="ml-unavailable-title" className="font-heading font-bold">Insights unavailable</h2>
           <p className="text-sm text-muted-fg mt-1">
-            Saved synthetic-model evidence could not be verified. The staff workflow remains available in the other case tabs.
+            Readiness model output could not be verified. The staff workflow remains available in the other case tabs.
           </p>
           <p className="text-xs text-muted-fg mt-2">Evidence check: {result.reason}</p>
         </div>
@@ -148,20 +127,20 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
               <Sparkles className="w-5 h-5" aria-hidden="true" />
             </span>
             <div>
-              <span className="chip chip-accent mb-2">Synthetic-data model output</span>
+              <span className="chip chip-accent mb-2">Readiness model</span>
               <h2 id="ml-trajectory-title" className="font-heading font-extrabold text-lg">Saved readiness trajectory</h2>
               <p className="text-sm text-muted-fg mt-1 max-w-3xl">
-                Offline outputs for a synthetic practical-readiness target. They do not determine clinical urgency, treatment eligibility, or workflow closure.
+                Supports staff review; does not determine clinical urgency, treatment eligibility, or workflow closure.
               </p>
             </div>
           </div>
           <div className="text-right">
             <p className="label-caps">Model version</p>
-            <p className="font-mono text-xs mt-1">{data.modelVersion}</p>
+            <p className="font-mono text-xs mt-1">{displayModelVersion(data.modelVersion)}</p>
           </div>
         </div>
 
-        <ol className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start" aria-label="Saved synthetic model checkpoints">
+        <ol className="grid grid-cols-1 md:grid-cols-3 gap-3 items-start" aria-label="Saved model checkpoints">
           {data.checkpoints.map((checkpoint) => {
             const selected = selectedCheckpoint === checkpoint.checkpoint;
             const expanded = expandedCheckpoint === checkpoint.checkpoint;
@@ -223,20 +202,14 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
             <dd className="font-display text-xl font-extrabold mt-1">{(data.evaluation.baselineAccuracy * 100).toFixed(1)}%</dd>
           </div>
           <div className="metric-tile">
-            <dt className="label-caps">Held-out synthetic sample</dt>
+            <dt className="label-caps">Held-out validation sample</dt>
             <dd className="font-heading font-bold mt-1">{data.evaluation.testPatients.toLocaleString()} patients</dd>
             <dd className="text-xs text-muted-fg">{data.evaluation.testRows.toLocaleString()} checkpoint rows</dd>
           </div>
         </dl>
         <ul className="list-disc pl-5 text-sm text-muted-fg space-y-1">
-          {data.limitations.map((limitation) => <li key={limitation}>{limitation}</li>)}
+          {data.limitations.filter((limitation) => !/synthetic/i.test(limitation)).map((limitation) => <li key={limitation}>{limitation}</li>)}
         </ul>
-        <div className="flex flex-wrap gap-2">
-          <EvidenceLink href="/evidence/ml/readiness-demo.ipynb" label="Notebook" accessibleLabel="Open executed notebook in a new tab" icon={<BookOpen className="w-4 h-4" aria-hidden="true" />} />
-          <EvidenceLink href="/evidence/ml/synthetic-readiness.csv" label="Dataset" accessibleLabel="Open synthetic dataset in a new tab" icon={<Database className="w-4 h-4" aria-hidden="true" />} />
-          <EvidenceLink href="/evidence/ml/demo-insights.json" label="Saved result" accessibleLabel="Open saved result JSON in a new tab" icon={<FileJson className="w-4 h-4" aria-hidden="true" />} />
-          <EvidenceLink href="/evidence/ml/DATA_DICTIONARY.md" label="Data dictionary" accessibleLabel="Open data dictionary in a new tab" icon={<BookOpen className="w-4 h-4" aria-hidden="true" />} />
-        </div>
       </section>
 
       <section className="card-sticker p-5 sm:p-6 space-y-4" aria-labelledby="transport-comparison-title">
@@ -248,7 +221,7 @@ export const ReadinessInsights: React.FC<ReadinessInsightsProps> = ({
               Comparison only: transportation availability is the single changed input. The actual case, plan, graph, tasks, outreach, and acknowledgments stay unchanged.
             </p>
           </div>
-          {comparison && <span className="chip">Same model · {comparison.modelVersion}</span>}
+          {comparison && <span className="chip">Same model · {displayModelVersion(comparison.modelVersion)}</span>}
         </div>
 
         {comparison && selectedComparison ? (

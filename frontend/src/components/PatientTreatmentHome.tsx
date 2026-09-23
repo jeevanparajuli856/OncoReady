@@ -157,7 +157,7 @@ export const PatientTreatmentHome: React.FC<PatientTreatmentHomeProps> = ({
               23<span className="text-sm font-heading font-bold text-cream/70 ml-0.5 mr-2">h</span>
               45<span className="text-sm font-heading font-bold text-cream/70 ml-0.5">m</span>
             </div>
-            <div className="text-xs text-cream/70 mt-1">Prepared scenario clock • arrival 9:30 AM</div>
+            <div className="text-xs text-cream/70 mt-1">Arrival 9:30 AM</div>
           </div>
         </div>
       </div>

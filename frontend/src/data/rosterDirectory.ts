@@ -43,7 +43,7 @@ const RECENT_VITALS_SHOWN = 9;
 const UNREADABLE_STATUS = 'CAPTURE_UNAVAILABLE';
 
 const appointmentLabel = (service?: string, location?: string): string =>
-  [service, location].filter(Boolean).join(' · ') || 'Appointment details not present in captured record';
+  [service, location].filter(Boolean).join(' · ') || 'Appointment details not recorded';
 
 export const buildDirectoryRecords = (
   state: WorkflowState,
@@ -74,10 +74,10 @@ export const buildDirectoryRecords = (
       if (entry.status === 'unavailable') {
         return {
           key: `epic:${entry.patientId}`,
-          name: 'Epic Sandbox record',
+          name: 'Epic record',
           identifierLabel: 'Epic ID',
           identifier: entry.patientId,
-          detail: 'Captured record could not be read',
+          detail: 'Epic record could not be read',
           status: UNREADABLE_STATUS,
           statusLabel: 'Capture unavailable',
           source: 'EPIC_SANDBOX',
@@ -95,7 +95,7 @@ export const buildDirectoryRecords = (
         identifier: patient.mrn ?? patient.patientId,
         detail: next
           ? appointmentLabel(next.service, next.location)
-          : 'No appointment present in captured record',
+          : 'No appointment recorded',
         status: EPIC_RECORD_STATUS,
         statusLabel: 'Epic record',
         source: 'EPIC_SANDBOX',
@@ -108,7 +108,7 @@ export const buildDirectoryRecords = (
           label: appointmentLabel(appointment.service, appointment.location),
           when: appointment.start
             ? formatEpicSourceDate(appointment.start) ?? appointment.start
-            : 'Time not present in captured record',
+            : 'Time not recorded',
         })),
         bounded: patient.bounded,
         // Clinical measurements are Care Team only. Charts can hold dozens of

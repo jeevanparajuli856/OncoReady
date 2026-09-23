@@ -55,7 +55,7 @@ export function LiveOutreachControl() {
       <div className="mx-auto max-w-3xl space-y-6">
         <div className="flex items-center gap-3"><Logo size={40} /><div><p className="label-caps text-accent">Private operator control</p><h1 className="font-display text-2xl font-semibold">Live outreach</h1></div></div>
         <section className="rounded-2xl border border-line bg-white/80 p-5 shadow-sm backdrop-blur-md sm:p-7" aria-labelledby="live-heading">
-          <h2 id="live-heading" className="font-display text-xl font-semibold">One protected demonstration call</h2>
+          <h2 id="live-heading" className="font-display text-xl font-semibold">Protected outreach call</h2>
           <p className="mt-2 text-sm text-muted-fg">The recipient and script are fixed on the server. A one-time arm allows one SMS and one call during a short window.</p>
           <label htmlFor="operator-token" className="mt-6 block text-sm font-semibold">Operator token</label>
           <input id="operator-token" type="password" autoComplete="off" value={token} onChange={(event) => { setToken(event.target.value); setState(null); setCallPlacedThisSession(false); }} className="mt-2 w-full rounded-xl border border-line bg-white px-4 py-3 outline-none focus-visible:ring-2 focus-visible:ring-accent" aria-describedby="token-help" />
@@ -80,7 +80,7 @@ export function LiveOutreachControl() {
           {state?.expires_at && <p className="mt-4 text-xs text-muted-fg">Arm expires: {new Date(state.expires_at).toLocaleString()}</p>}
           {state?.call_completed && (callPlacedThisSession
             ? <p className="mt-5 rounded-xl border border-mint bg-white p-4 font-semibold text-mint" role="status">Twilio reports the call completed. After confirming the exchange was audible, continue with Video Part 2.</p>
-            : <p className="mt-5 rounded-xl border border-line bg-white p-4 text-sm text-muted-fg" role="status">A previous call completed. This one-shot call has been used; a new authorized live window is needed before the stage call.</p>)}
+            : <p className="mt-5 rounded-xl border border-line bg-white p-4 text-sm text-muted-fg" role="status">A previous call completed. This one-shot call has been used; a new authorized window is needed before another call.</p>)}
           {state?.sms === 'undelivered' && <p className="mt-4 rounded-xl border border-line bg-white p-4 text-sm text-muted-fg" role="status">The SMS was not delivered. Do not present it as a received message.</p>}
           {state && !state.available && <p className="mt-4 text-sm text-muted-fg">Live delivery is unavailable until operator, consent, provider, and persistence settings are complete.</p>}
         </section>

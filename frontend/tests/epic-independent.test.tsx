@@ -147,8 +147,8 @@ describe('EPIC-001 independent acceptance evidence', () => {
       },
     }} />);
 
-    await screen.findByRole('heading', { name: 'Read-only captured data' });
-    expect(screen.getAllByText('Not present in captured record').length).toBeGreaterThanOrEqual(8);
+    await screen.findByRole('heading', { name: 'Epic FHIR R4 record · read-only' });
+    expect(screen.getAllByText('Not recorded').length).toBeGreaterThanOrEqual(8);
     expect(document.body.textContent).not.toContain('mFOLFOX6');
   });
 

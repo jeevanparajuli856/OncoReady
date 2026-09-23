@@ -175,7 +175,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByLabel('Password').fill('1234');
     await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
     await expect(page.getByText(/Care Navigator Workspace/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Prepared reply has not opened work yet/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Patient reply has not opened work yet/i })).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
@@ -200,13 +200,13 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(page.getByRole('heading', { name: 'CareLink Transportation Workspace' })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'CareLink', exact: true })).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Uber Health', exact: true })).toBeVisible();
-    await expect(page.getByText('Integration-ready preview · not connected')).toBeVisible();
+    await expect(page.getByText('Planned integration')).toBeVisible();
     await expect(page.getByRole('img', { name: 'Uber Health wordmark' })).toBeVisible();
 
-    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Request ride/i }).click();
+    await page.getByRole('button', { name: /Assign CareLink Partner A/i }).click();
     await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Select CareLink Partner B/i }).click();
     await page.getByRole('button', { name: /Save recovered logistics/i }).click();
 
     await expect(page.getByText('CareLink Partner A')).toBeVisible();
@@ -240,7 +240,7 @@ test.describe('OncoReady UI-001 product experience', () => {
       ['Exceptions', /Pre-Treatment Exception Queue/i],
       ['Patients', /Patient Directory/i],
       ['Insights', /Operational Insights/i],
-      ['Epic context', /Epic Sandbox capture/i],
+      ['Epic context', /Connected to Hospital Epic Sandbox/i],
       ['Admin', /Local Configuration/i],
     ] as const;
 
@@ -261,10 +261,10 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
     await page.getByRole('button', { name: 'Exceptions', exact: true }).click();
     await page.getByRole('button', { name: /Open Case Workspace/i }).click();
-    await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-    await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+    await page.getByRole('button', { name: /Request ride/i }).click();
+    await page.getByRole('button', { name: /Assign CareLink Partner A/i }).click();
     await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-    await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+    await page.getByRole('button', { name: /Select CareLink Partner B/i }).click();
     await page.getByRole('button', { name: /Save recovered logistics/i }).click();
 
     await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
@@ -296,7 +296,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await expect(receipt.getByText('EVT-RIDE-RECOVERED-V2', { exact: false })).toBeVisible();
     await receipt.getByRole('link', { name: 'Jump to timeline' }).click();
     await expect(page.locator('#timeline-EVT-RIDE-RECOVERED-V2')).toBeInViewport();
-    await expect(page.getByRole('heading', { name: 'Prepared Scenario Timeline' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Care timeline' })).toBeVisible();
     await expect(page.getByText('Current transport plan v2 acknowledged')).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
@@ -317,11 +317,11 @@ test.describe('OncoReady UI-001 product experience', () => {
     const epicTab = page.getByRole('tab', { name: /Epic/i });
     await epicTab.click();
     const epicPanel = page.getByRole('tabpanel', { name: /Epic/i });
-    await expect(epicPanel.getByRole('heading', { name: 'Read-only captured data' })).toBeVisible();
+    await expect(epicPanel.getByRole('heading', { name: 'Epic FHIR R4 record · read-only' })).toBeVisible();
     await expect(epicPanel.getByAltText('Epic')).toBeVisible();
     await expect(epicPanel).toContainText('Camila Maria Lopez');
     await expect(epicPanel).toContainText('drospirenone-ethinyl estradiol');
-    await expect(epicPanel).toContainText('Captured from Epic');
+    await expect(epicPanel).toContainText('Connected to Hospital Epic Sandbox');
     await expect(epicPanel).not.toContainText('mFOLFOX6');
     const originalCapturedAt = await epicPanel.locator('time').first().getAttribute('datetime');
     expect(originalCapturedAt).toBe('2026-09-22T07:01:25Z');
@@ -366,8 +366,8 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
 
   await page.getByRole('tab', { name: 'Graph' }).click();
   await expect(page.getByText('Treatment at risk').first()).toBeVisible();
-  await page.getByRole('button', { name: 'Open prepared message thread' }).first().click();
-  await expect(page.getByText('Prepared scenario history · no provider request')).toBeVisible();
+  await page.getByRole('button', { name: 'Open message thread' }).first().click();
+  await expect(page.getByText('Message history')).toBeVisible();
   await expect(page.getByRole('region', { name: 'Continuity plan receipt' }).getByText('0 of 3 recorded')).toBeVisible();
 
   await page.getByRole('tab', { name: 'Epic' }).click();
@@ -389,17 +389,17 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
 
   await page.getByRole('button', { name: /Sarah Jenkins, RN/i }).click();
   await page.getByText(/Care Navigator \(Marcus Vance, MSW\)/i).click();
-  await page.getByRole('button', { name: 'Play previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Play previous trip' }).click();
   await expect(page.getByText('Requested', { exact: true })).toBeVisible();
-  await page.getByRole('button', { name: 'Pause previous trip replay' }).click();
-  await page.getByRole('button', { name: 'Restart previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Pause previous trip' }).click();
+  await page.getByRole('button', { name: 'Restart previous trip' }).click();
   await expect(page.getByText('Completed', { exact: true })).toBeVisible({ timeout: 8000 });
-  await page.getByRole('button', { name: 'Exit previous trip replay' }).click();
+  await page.getByRole('button', { name: 'Exit previous trip' }).click();
 
-  await page.getByRole('button', { name: /Request synthetic ride/i }).click();
-  await page.getByRole('button', { name: /Assign fictional CareLink Partner A/i }).click();
+  await page.getByRole('button', { name: /Request ride/i }).click();
+  await page.getByRole('button', { name: /Assign CareLink Partner A/i }).click();
   await page.getByRole('button', { name: /Record primary unavailable/i }).click();
-  await page.getByRole('button', { name: /Select fictional CareLink Partner B/i }).click();
+  await page.getByRole('button', { name: /Select CareLink Partner B/i }).click();
   await page.getByRole('button', { name: /Save recovered logistics/i }).click();
   await page.getByRole('button', { name: /Marcus Vance, MSW/i }).click();
   await page.getByText(/Caregiver Portal \(Ana Hernandez\)/i).click();

@@ -35,7 +35,7 @@ TARGETED; LOW risk for reviewed synthetic/captured evidence. Reassess risk if a 
 ## Acceptance criteria
 
 1. The closing graph, workspaces, timeline and scenario counts reconcile to the same current scenario. Reset changes those counts consistently without rewriting captured Epic or real provider evidence.
-2. The source/evidence view identifies actual Epic Sandbox capture time and source, notebook/dataset/model export identity and synthetic-data limitations; links open and show the matching artifacts.
+2. The source/evidence view identifies actual Epic Sandbox capture time and source, notebook/dataset/model export identity and synthetic-data limitations; links open and show the matching artifacts. Since [POLISH-001](./POLISH-001.md) the product UI no longer links the notebook, dataset or result files; present that evidence from the repository artifacts instead.
 3. Real SMS/call evidence and synthetic workflow/CareLink events retain distinct provenance. Show only sanitized live evidence; no real phone number, secret or fabricated delivery outcome enters the recording or export.
 4. Continuity plan confirmed is never labeled medical clearance or proof of attendance. Scenario counts are not production KPIs, efficacy, customers or ROI; inspect product and presenter wording.
 5. The local main recording, backup call clip, required JSON/audio assets and version/checksum manifest exist and play on the presentation device. Missing files/audio fail readiness.

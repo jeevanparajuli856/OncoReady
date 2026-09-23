@@ -98,7 +98,7 @@ const pricingPlans = [
     price: '$1,500/month',
     billing: 'Program subscription',
     copy: 'A focused readiness program for one care team and one site.',
-    features: ['5 staff seats', '1 site', 'Prepared workspace access'],
+    features: ['5 staff seats', '1 site', 'Workspace access'],
     tone: 'indigo',
     featured: true,
     Icon: Building2,
@@ -132,7 +132,7 @@ const faqs = [
   },
   {
     question: 'What can an authorized caregiver see?',
-    answer: 'The illustrated caregiver view is deliberately narrow: pickup time, vehicle, driver, and transportation status. Clinical concern text and nurse details are excluded from that view.',
+    answer: 'The caregiver view is deliberately narrow: pickup time, vehicle, driver, and transportation status. Clinical concern text and nurse details are excluded from that view.',
   },
   {
     question: 'How could it fit an existing health-system environment?',
@@ -221,7 +221,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             <h2 id="workspaces-title">One concern becomes owned work and a confirmed plan.</h2>
           </div>
           <p>
-            The public story explains the workflow without displaying a patient record. Prepared identities appear only after workspace access opens.
+            The public story explains the workflow without displaying a patient record. Patient records appear only after sign-in.
           </p>
         </div>
 
@@ -315,7 +315,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
             </p>
             <ul>
               {[
-                'Illustrative corridor from St. Charles Avenue to Benson Cancer Center',
+                'Care corridor from St. Charles Avenue to Benson Cancer Center',
                 'Named navigation ownership and a visible fallback path',
                 'Transportation detail for the caregiver; clinical detail stays private',
               ].map((item) => (
@@ -326,7 +326,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
           <div className="landing-map-frame">
             <RideMap
               title="Treatment-day corridor"
-              subtitle="Illustrative Louisiana routing • not a live dispatch feed"
+              subtitle="Louisiana care corridor"
               pickup={NEW_ORLEANS_PICKUP}
               destination={BENSON_CENTER}
               extras={LOUISIANA_SITES}
@@ -435,7 +435,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({
         <div className="landing-closing-cta__copy">
           <p className="landing-section-label">Keep tomorrow on the calendar</p>
           <h2 id="closing-cta-title">One concern. One owner. One confirmed continuity plan.</h2>
-          <p>Follow the prepared journey from an early signal to visible, role-specific closure inside the workspace.</p>
+          <p>Follow one patient from an early signal to visible, role-specific closure inside the workspace.</p>
         </div>
       </section>
     </div>

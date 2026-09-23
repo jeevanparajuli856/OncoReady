@@ -34,9 +34,9 @@ export function ClosingReceipt({ state }: { state: WorkflowState }) {
     <section className="card-sticker p-5 sm:p-6 space-y-4" aria-labelledby="closing-receipt-title">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="label-caps text-muted-fg">Current scenario evidence</p>
+          <p className="label-caps text-muted-fg">Plan evidence</p>
           <h2 id="closing-receipt-title" className="font-display text-lg font-extrabold">Continuity plan receipt</h2>
-          <p className="mt-1 text-sm text-muted-fg">Each completed item links to its event in the prepared scenario timeline. This is coordination status, not medical clearance or treatment attendance.</p>
+          <p className="mt-1 text-sm text-muted-fg">Each completed item links to its event in the care timeline. This is coordination status, not medical clearance or treatment attendance.</p>
         </div>
         <span className={`chip ${completeCount === items.length ? 'chip-mint' : 'chip-sun'}`}>{completeCount} of {items.length} recorded</span>
       </div>
@@ -49,7 +49,7 @@ export function ClosingReceipt({ state }: { state: WorkflowState }) {
             <div key={item.id} className="metric-tile min-w-0 space-y-2">
               <div className="flex items-start gap-2">
                 {complete ? <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0 text-mint" aria-hidden="true" /> : <Clock3 className="mt-0.5 h-4 w-4 shrink-0 text-sun" aria-hidden="true" />}
-                <div><h3 className="font-heading text-sm font-bold">{item.label}</h3><p className="text-xs text-muted-fg">{complete ? item.detail : 'Pending current-scenario action'}</p></div>
+                <div><h3 className="font-heading text-sm font-bold">{item.label}</h3><p className="text-xs text-muted-fg">{complete ? item.detail : 'Pending action'}</p></div>
               </div>
               {event && <>
                 <button

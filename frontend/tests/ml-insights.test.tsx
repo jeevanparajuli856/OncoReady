@@ -77,7 +77,7 @@ describe('ML-001 saved staff insights', () => {
     render(<ReadinessInsights />);
 
     expect(screen.getByRole('heading', { name: /Saved readiness trajectory/i })).toBeDefined();
-    expect(screen.getByText('Synthetic-data model output')).toBeDefined();
+    expect(screen.getByText('Readiness model')).toBeDefined();
     for (const [checkpoint, score] of [['T-7', '13.8'], ['T-2', '20.5'], ['T-1', '26.4']]) {
       expect(screen.getByRole('button', { name: new RegExp(`${checkpoint}.*model score ${score}`, 'i') })).toBeDefined();
       const why = screen.getByRole('button', { name: new RegExp(`Why flagged at ${checkpoint}`, 'i') });
@@ -90,15 +90,8 @@ describe('ML-001 saved staff insights', () => {
 
     expect(screen.getByText('64.2%')).toBeDefined();
     expect(screen.getByText('60.3%')).toBeDefined();
-    const links = [
-      ['Open executed notebook in a new tab', '/evidence/ml/readiness-demo.ipynb'],
-      ['Open synthetic dataset in a new tab', '/evidence/ml/synthetic-readiness.csv'],
-      ['Open saved result JSON in a new tab', '/evidence/ml/demo-insights.json'],
-      ['Open data dictionary in a new tab', '/evidence/ml/DATA_DICTIONARY.md'],
-    ];
-    for (const [name, href] of links) {
-      expect(screen.getByRole('link', { name }).getAttribute('href')).toBe(href);
-    }
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(document.body.textContent).not.toMatch(/synthetic/i);
 
     const available = screen.getByRole('button', { name: /Transportation available.*26.4/i });
     fireEvent.click(available);

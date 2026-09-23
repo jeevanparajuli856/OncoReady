@@ -14,12 +14,12 @@ const avatarData = (initials: string, color: string) =>
   `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" rx="24" fill="${color}"/><text x="64" y="74" text-anchor="middle" font-family="Arial,sans-serif" font-size="42" font-weight="700" fill="white">${initials}</text></svg>`)}`;
 
 export const HISTORICAL_RIDE_EVENTS = [
-  { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Previous scenario ride requested.' },
-  { id: 'RIDE-HIST-ACCEPTED', status: 'Accepted', timestamp: 'Sep 11, 2026 • 7:43 AM CT', detail: 'Fictional CareLink provider accepted the scenario trip.' },
-  { id: 'RIDE-HIST-DRIVER', status: 'Driver assigned', timestamp: 'Sep 11, 2026 • 7:47 AM CT', detail: 'Scenario driver Ellis Morgan assigned to vehicle CL-218.' },
-  { id: 'RIDE-HIST-ARRIVING', status: 'Arriving', timestamp: 'Sep 11, 2026 • 8:02 AM CT', detail: 'Planned arrival advanced in the saved scenario.' },
-  { id: 'RIDE-HIST-PICKUP', status: 'Pickup confirmed', timestamp: 'Sep 11, 2026 • 8:18 AM CT', detail: 'Pickup was confirmed in the previous scenario.' },
-  { id: 'RIDE-HIST-COMPLETE', status: 'Completed', timestamp: 'Sep 11, 2026 • 9:06 AM CT', detail: 'Previous scenario replay completed.' },
+  { id: 'RIDE-HIST-REQUESTED', status: 'Requested', timestamp: 'Sep 11, 2026 • 7:42 AM CT', detail: 'Previous ride requested.' },
+  { id: 'RIDE-HIST-ACCEPTED', status: 'Accepted', timestamp: 'Sep 11, 2026 • 7:43 AM CT', detail: 'CareLink provider accepted the trip.' },
+  { id: 'RIDE-HIST-DRIVER', status: 'Driver assigned', timestamp: 'Sep 11, 2026 • 7:47 AM CT', detail: 'Driver Ellis Morgan assigned to vehicle CL-218.' },
+  { id: 'RIDE-HIST-ARRIVING', status: 'Arriving', timestamp: 'Sep 11, 2026 • 8:02 AM CT', detail: 'Driver arriving at pickup.' },
+  { id: 'RIDE-HIST-PICKUP', status: 'Pickup confirmed', timestamp: 'Sep 11, 2026 • 8:18 AM CT', detail: 'Pickup confirmed.' },
+  { id: 'RIDE-HIST-COMPLETE', status: 'Completed', timestamp: 'Sep 11, 2026 • 9:06 AM CT', detail: 'Trip completed.' },
 ] as const;
 
 export const INITIAL_STATE: WorkflowState = {
@@ -453,8 +453,8 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         processedSourceEventIds: [...state.processedSourceEventIds, sourceEventId], appliedCommandIds: withCommand(state, commandId),
         readinessSubmission: { hasTransportIssue: true, transportNotes: transportText, hasClinicalConcern: true, clinicalConcernText: clinicalText, submittedAt: now },
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-REPLY', timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Prepared reply received', description: `Verbatim reply preserved for staff: “${clinicalText}”`, stateDiff: { field: 'splitWork', from: 'closed', to: 'opened' } }) };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same prepared reply.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-REPLY', timestamp: now, actor: state.patient.name, actorRole: 'PATIENT', action: 'Patient reply received', description: `Verbatim reply preserved for staff: “${clinicalText}”`, stateDiff: { field: 'splitWork', from: 'closed', to: 'opened' } }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-FLOW-SPLIT', timestamp: now, actor: 'OncoReady Continuity Engine', actorRole: 'SYSTEM', action: 'Clinical and transportation work opened', description: 'One nurse contact task and one transportation recovery task were assigned from the same patient reply.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ACKNOWLEDGE_CLINICAL_TASK': {
@@ -500,10 +500,10 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'REQUESTED' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Assign fictional CareLink Partner A', waitingReason: 'Synthetic provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
+          ? { ...item, nextAction: 'Assign CareLink Partner A', waitingReason: 'Provider assignment', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS' } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Synthetic ride requested', description: 'Current trip carelink-current-2026-09-25 opened locally; no provider request was sent.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-REQUESTED', timestamp: 'Sep 24, 2026 • 10:32 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Ride requested', description: 'Current trip carelink-current-2026-09-25 opened.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'ASSIGN_PRIMARY_RIDE': {
@@ -521,15 +521,15 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'PRIMARY_ASSIGNED', assignments: [...state.ride.assignments, assignment] },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'Fictional Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
+          ? { ...item, nextAction: 'Monitor primary assignment', waitingReason: 'CareLink Partner A', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner A assigned', description: 'Synthetic primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-PRIMARY-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'CareLink Partner A assigned', description: 'Primary assignment RIDE-ASG-PRIMARY-001 is current.' }) };
       return next;
     }
     case 'FAIL_PRIMARY_RIDE':
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_ASSIGNED') return state;
-      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'Fictional Partner A unavailable');
+      return failCurrentRidePlan(state, 'EVT-RIDE-PRIMARY-FAILED', 'Sep 24, 2026 • 10:46 AM CT', 'CareLink Partner A unavailable');
     case 'ASSIGN_BACKUP_RIDE': {
       if (!isRoleMutationAllowed(state, 'CARE_NAVIGATOR') || state.ride.currentStatus !== 'PRIMARY_FAILED') return state;
       const assignment: RideAssignment = {
@@ -548,7 +548,7 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
           ? { ...item, nextAction: 'Save required recovered logistics', waitingReason: 'Outbound, return, contact, and backup details', transportDetails: { ...item.transportDetails!, dispatchStatus: 'DISPATCH_IN_PROGRESS', vehicleId: assignment.vehicleId, driverName: assignment.driverName } }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'Fictional Partner B selected', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: 'EVT-RIDE-BACKUP-ASSIGNED', timestamp: assignment.assignedAt, actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'CareLink Partner B selected', description: 'Backup assignment RIDE-ASG-BACKUP-002 is current; the failed primary remains in history.' }) };
       return next;
     }
     case 'SAVE_RECOVERED_RIDE': {
@@ -589,10 +589,10 @@ export function workflowReducer(state: WorkflowState, action: WorkflowAction): W
         ...state,
         ride: { ...state.ride, currentStatus: 'NO_OPTION' },
         tasks: state.tasks.map((item) => item.type === 'TRANSPORTATION_NAVIGATION'
-          ? { ...item, status: 'ASSIGNED', nextAction: 'Escalate transportation recovery', waitingReason: 'No synthetic provider option available' }
+          ? { ...item, status: 'ASSIGNED', nextAction: 'Escalate transportation recovery', waitingReason: 'No provider option available' }
           : item),
       };
-      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-NO-OPTION-V${getCurrentPlanVersion(state)}`, timestamp: 'Sep 24, 2026 • 10:49 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'No synthetic ride option available', description: 'The transportation blocker remains open and treatment stays at risk.' }) };
+      next = { ...next, auditEvents: addEvent(next, { id: `EVT-RIDE-NO-OPTION-V${getCurrentPlanVersion(state)}`, timestamp: 'Sep 24, 2026 • 10:49 AM CT', actor: 'Marcus Vance, MSW', actorRole: 'NAVIGATOR', action: 'No ride option available', description: 'The transportation blocker remains open and treatment stays at risk.' }) };
       return { ...next, overallReadiness: readinessFor(next) };
     }
     case 'MARK_CURRENT_LOGISTICS_SEEN': {

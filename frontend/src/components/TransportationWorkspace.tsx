@@ -38,17 +38,16 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
                 <p className="label-caps text-muted-fg">Transportation operations</p>
                 <h1 id="transport-dashboard-title" className="font-display text-3xl font-extrabold mt-1">CareLink Transportation Workspace</h1>
                 <p className="text-sm text-muted-fg mt-2 max-w-2xl">
-                  Coordinate Camila Lopez's synthetic ride recovery, preserve assignment history, and verify the current logistics plan before treatment day.
+                  Coordinate Camila Lopez's ride recovery, preserve assignment history, and verify the current logistics plan before treatment day.
                 </p>
               </div>
             </div>
-            <div className="chip chip-sun shrink-0">Demo mode · no live dispatch</div>
           </div>
         </div>
 
         <div className="p-5 sm:p-6 grid grid-cols-2 lg:grid-cols-4 gap-3" aria-label="Transportation case summary">
           <div className="metric-tile"><div className="label-caps text-muted-fg">Active cases</div><div className="font-display text-2xl font-extrabold mt-1">1</div><div className="text-xs text-muted-fg">Camila Lopez</div></div>
-          <div className="metric-tile"><div className="label-caps text-muted-fg">Ride status</div><div className="font-heading font-bold mt-1">{rideStatus}</div><div className="text-xs text-muted-fg">Synthetic current trip</div></div>
+          <div className="metric-tile"><div className="label-caps text-muted-fg">Ride status</div><div className="font-heading font-bold mt-1">{rideStatus}</div><div className="text-xs text-muted-fg">Current trip</div></div>
           <div className="metric-tile"><div className="label-caps text-muted-fg">Appointment</div><div className="font-heading font-bold mt-1">{state.appointment.scheduledTime}</div><div className="text-xs text-muted-fg">Benson Cancer Center</div></div>
           <div className="metric-tile"><div className="label-caps text-muted-fg">Current plan</div><div className="font-display text-2xl font-extrabold mt-1">v{planVersion}</div><div className="text-xs text-muted-fg">Versioned after changes</div></div>
         </div>
@@ -68,8 +67,8 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               <h3 className="font-heading font-bold">CareLink</h3>
               <CheckCircle2 className="w-4 h-4 text-mint" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold">Synthetic scenario provider</p>
-            <p className="text-xs text-muted-fg">Playable local recovery, failure handling, plan versioning, and previous-trip replay.</p>
+            <p className="text-sm font-semibold">Active provider</p>
+            <p className="text-xs text-muted-fg">Ride recovery, failure handling, plan versioning and previous-trip history.</p>
           </article>
           <article className="card-sticker p-4 space-y-2 border-black">
             <div className="flex items-center justify-between gap-2">
@@ -79,8 +78,8 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
               </div>
               <PlugZap className="w-4 h-4 text-accent" aria-hidden="true" />
             </div>
-            <p className="text-sm font-semibold">Integration-ready preview · not connected</p>
-            <p className="text-xs text-muted-fg">Provider adapter presentation only. No Uber API call, booking, contract, or dispatch success is represented.</p>
+            <p className="text-sm font-semibold">Planned integration</p>
+            <p className="text-xs text-muted-fg">Not yet connected.</p>
           </article>
         </div>
       </section>

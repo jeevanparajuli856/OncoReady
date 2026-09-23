@@ -30,6 +30,10 @@ One authorized real test call to a consenting participant completed with an audi
 - A completed telephone call is not patient care-plan acknowledgment. Provider submission is not SMS delivery. The September 22 SMS was not received.
 - Scenario reset and playback never arm or send a provider action. A second real call or SMS requires new bounded authorization and a reviewed implementation path.
 
+### Product copy
+
+The user interface speaks as a finished product ([POLISH-001](./features/POLISH-001.md)). It carries no demo, synthetic, fictional, prepared, scenario or illustrative labels; the presenter discloses the controlled nature of the story verbally before the walkthrough. The boundaries above remain true: new copy may remove qualifiers but must not add claims such as live sync, GPS, real dispatch, HIPAA compliance or clinical validation. The Epic surface reads **Connected to Hospital Epic Sandbox**, meaning read-only FHIR R4 data retrieved from the Epic Sandbox with its original retrieval time and no writeback.
+
 ## Source map
 
 Read only what the task needs:

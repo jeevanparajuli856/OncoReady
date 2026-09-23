@@ -50,9 +50,9 @@ describe('ACCESS-001 prepared workspace entry', () => {
     expect(screen.getByRole('heading', { name: /CareLink Transportation Workspace/i })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'CareLink' })).toBeDefined();
     expect(screen.getByRole('heading', { name: 'Uber Health' })).toBeDefined();
-    expect(screen.getByText('Integration-ready preview · not connected')).toBeDefined();
-    fireEvent.click(screen.getByRole('button', { name: /Request synthetic ride/i }));
-    expect(screen.getByRole('button', { name: /Assign fictional CareLink Partner A/i })).toBeDefined();
+    expect(screen.getByText('Planned integration')).toBeDefined();
+    fireEvent.click(screen.getByRole('button', { name: /Request ride/i }));
+    expect(screen.getByRole('button', { name: /Assign CareLink Partner A/i })).toBeDefined();
   });
 
   it('preserves scenario progress across personas and reset restores the public start', () => {
