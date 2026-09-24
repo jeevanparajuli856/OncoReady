@@ -19,6 +19,7 @@ Camila's case has an **Outreach** tab. It shows what the outreach engine did (vo
 4. **In-app call (real):**
    - **Call Camila → Call now** posts to `POST /api/v1/outreach/demo-call`.
    - The status follows the real call (Dialing… → Ringing… → Connected → Call completed / No answer / Line busy) by polling every 2 seconds, then the call joins the history as "Voice check-in · placed by Marcus Vance, MSW".
+   - A reload during a call keeps following it: the button stays disabled until the call reaches a final status, then re-enables without another reload. A call placed before the reload does not join the history.
    - Only the Navigator sees the button.
    - When the switch is off, the button is disabled with "Calling is paused for this workspace."
 5. **Backend switch instead of a token:** `DEMO_CALL_BUTTON` (default off) enables the no-token endpoint. It keeps the fixed server-side recipient, full outreach readiness, one unresolved call at a time and the daily limit. Each call gets its own `demo` window, so earlier test calls don't block the demo. Responses expose status only, never the recipient or provider. The human product owner turns it on for demo day and off afterwards, and revokes the operator token.

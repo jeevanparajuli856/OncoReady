@@ -144,12 +144,13 @@ export const OutreachPanel: React.FC<OutreachPanelProps> = ({ role, patientName,
     if (isNavigator) void readStatus();
   }, [isNavigator, readStatus]);
 
-  // Follow the live call until it reaches a final status, then log it in the history.
+  // Follow any live call until it reaches a final status, including one placed before a reload,
+  // so the button re-enables on its own. Only calls placed here are logged in the history.
   useEffect(() => {
-    if (!placedAt || !callStatus?.in_progress) return undefined;
+    if (!callStatus?.in_progress) return undefined;
     const timer = window.setInterval(() => { void readStatus(); }, 2000);
     return () => window.clearInterval(timer);
-  }, [placedAt, callStatus?.in_progress, readStatus]);
+  }, [callStatus?.in_progress, readStatus]);
 
   useEffect(() => {
     if (!placedAt || !trackingCall.current || !callStatus || callStatus.in_progress) return;
