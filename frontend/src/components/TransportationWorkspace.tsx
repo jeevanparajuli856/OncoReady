@@ -1,10 +1,10 @@
 import React from 'react';
-import { Car, CheckCircle2, PlugZap } from 'lucide-react';
+import { Car, CheckCircle2, Clock3, PlugZap } from 'lucide-react';
 import type { WorkflowState } from '../types';
 import type { WorkflowAction } from '../state/workflowState';
 import { CareLinkRidePanel } from './CareLinkRidePanel';
 import { CareLinkMark } from './CareLinkMark';
-import { careLinkProvider, uberHealthProvider } from '../lib/transportProviders';
+import { careLinkProvider, lyftHealthcareProvider, uberHealthProvider } from '../lib/transportProviders';
 
 interface TransportationWorkspaceProps {
   state: WorkflowState;
@@ -66,7 +66,7 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
             <h2 id="provider-readiness-title" className="font-heading font-bold text-lg">Update sources</h2>
           </div>
         </div>
-        <div className="grid sm:grid-cols-2 gap-3">
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
           <article className="card-sticker p-4 space-y-2" aria-labelledby="provider-carelink-title">
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -91,6 +91,19 @@ export const TransportationWorkspace: React.FC<TransportationWorkspaceProps> = (
             <p className="text-sm font-semibold">{uberHealthProvider.statusLabel}</p>
             <p className="text-xs text-muted-fg">Trip acceptance, driver assignment, and pickup and drop-off events map into this workspace through the same adapter layer as CareLink.</p>
             <p className="text-[11px] text-muted-fg">Awaiting: {uberHealthProvider.requirements.join(' and ')}.</p>
+          </article>
+          <article className="card-sticker p-4 space-y-2" aria-labelledby="provider-lyft-title">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <img src="/brands/lyft-logo.svg" alt="Lyft" className="h-6 w-auto" />
+                <span className="font-sans text-sm font-semibold text-black">Healthcare</span>
+                <h3 id="provider-lyft-title" className="sr-only">{lyftHealthcareProvider.name}</h3>
+              </div>
+              <Clock3 className="w-4 h-4 text-muted-fg" aria-hidden="true" />
+            </div>
+            <p className="text-sm font-semibold">{lyftHealthcareProvider.statusLabel}</p>
+            <p className="text-xs text-muted-fg">Rides booked through Lyft Healthcare will flow into the same ride plan once the connection is in place.</p>
+            <p className="text-[11px] text-muted-fg">Needs: {lyftHealthcareProvider.requirements.join(' and ')}.</p>
           </article>
         </div>
       </section>

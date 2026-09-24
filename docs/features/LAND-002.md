@@ -18,7 +18,7 @@ Heading: "When a ride falls through, the backup is already lined up." The lede s
 
 1. Uber Health and Lyft Healthcare both show only a **Coming soon** badge, with no requirements footer. The owner reports a Lyft relationship is in progress.
 2. The official Lyft logo is used. `frontend/public/brands/lyft-logo.svg` comes from Wikimedia Commons `File:Lyft_logo.svg` (Lyft press kit, listed as public domain). The owner accepted the trademark use.
-3. The section appears only on the landing page. The Transportation Workspace provider list is unchanged, so Lyft is not added there.
+3. The section appears on the landing page. *Update (September 23, 2026):* at the owner's request, the Transportation Workspace's **Update sources** now shows a third card, Lyft Healthcare, with a **Coming soon** status and "Needs: Lyft Healthcare agreement and API access". No Lyft adapter is built: `lyftHealthcareProvider` in `frontend/src/lib/transportProviders.ts` lists no capabilities and makes no network request.
 4. No navbar link was added; the header is unchanged.
 
 ## Boundaries kept

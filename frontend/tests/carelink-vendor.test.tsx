@@ -12,7 +12,7 @@ import {
 } from '../src/state/workflowState';
 import { CareLinkVendorPortal } from '../src/components/CareLinkVendorPortal';
 import { TransportationWorkspace } from '../src/components/TransportationWorkspace';
-import { uberHealthProvider } from '../src/lib/transportProviders';
+import { uberHealthProvider, lyftHealthcareProvider } from '../src/lib/transportProviders';
 import type { WorkflowState } from '../src/types';
 
 const asNavigator = (state: WorkflowState) => workflowReducer(state, { type: 'SET_PERSPECTIVE', payload: 'CARE_NAVIGATOR' });
@@ -147,6 +147,25 @@ describe('RIDE-002 Uber Health adapter', () => {
     expect(screen.getByRole('img', { name: 'Uber' })).toBeDefined();
     expect(screen.getByText('Adapter built · Awaiting connection')).toBeDefined();
     expect(screen.queryByText(/Uber Health.*connected\b(?! yet)/i)).toBeNull();
+    expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('RIDE-002 Lyft Healthcare card', () => {
+  it('shows Lyft Healthcare as coming soon with no adapter and no network request', () => {
+    const fetchSpy = vi.spyOn(globalThis, 'fetch');
+    const Harness = () => {
+      const [state, dispatch] = useReducer(workflowReducer, buildCheckpoint('SPLIT_WORK', 'TRANSPORTATION'));
+      return <TransportationWorkspace state={state} reducedMotion onRideAction={dispatch} />;
+    };
+    render(<Harness />);
+
+    expect(lyftHealthcareProvider.status).toBe('COMING_SOON');
+    expect(lyftHealthcareProvider.capabilities).toEqual([]);
+    expect(screen.getByRole('heading', { name: 'Lyft Healthcare' })).toBeDefined();
+    expect(screen.getByRole('img', { name: 'Lyft' })).toBeDefined();
+    expect(screen.getByText('Coming soon')).toBeDefined();
+    expect(screen.queryByText(/Lyft.*(connected|integrated|active)/i)).toBeNull();
     expect(fetchSpy).not.toHaveBeenCalled();
   });
 });
