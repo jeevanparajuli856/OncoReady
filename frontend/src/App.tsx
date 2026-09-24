@@ -152,7 +152,7 @@ export const App: React.FC = () => {
     setIsEpicLoginOpen(false);
     dispatch({ type: 'SET_PERSPECTIVE', payload: perspective });
     if (perspective === 'CARE_NAVIGATOR' || perspective === 'CARE_TEAM') {
-      dispatch({ type: 'SET_STAFF_ROUTE', payload: 'CASE_WORKSPACE' });
+      dispatch({ type: 'SET_STAFF_ROUTE', payload: 'COMMAND_CENTER' });
     }
     if (perspective === 'TRANSPORTATION' && !state.tasks.some((task) => task.type === 'TRANSPORTATION_NAVIGATION')) {
       dispatch({ type: 'LOAD_CHECKPOINT', payload: 'SPLIT_WORK' });

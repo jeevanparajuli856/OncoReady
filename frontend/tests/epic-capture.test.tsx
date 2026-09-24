@@ -11,6 +11,7 @@ const openStaffCase = () => {
   fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'abcs@oncoready.me' } });
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: '1234' } });
   fireEvent.click(screen.getAllByRole('button', { name: /^Sign in$/i }).at(-1)!);
+  fireEvent.click(screen.getByRole('button', { name: /Review Case/i }));
 };
 
 describe('EPIC-001 reviewed Epic Sandbox capture', () => {
