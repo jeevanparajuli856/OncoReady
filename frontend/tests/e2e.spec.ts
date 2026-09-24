@@ -178,7 +178,7 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByLabel('Password').fill('1234');
     await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
     await expect(page.getByText(/Care Navigator Workspace/i)).toBeVisible();
-    await expect(page.getByRole('heading', { name: /Patient reply has not opened work yet/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Command Center' }).first()).toBeVisible();
 
     await page.getByTitle(/Reset Workspace/i).click();
     await expect(page.getByRole('heading', { name: /Tomorrow’s treatment.*Every blocker owned/i })).toBeVisible();
@@ -346,6 +346,8 @@ test.describe('OncoReady UI-001 product experience', () => {
     await page.getByLabel('Email').fill('abcs@oncoready.me');
     await page.getByLabel('Password').fill('1234');
     await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+    await expect(page.getByRole('heading', { name: 'Command Center' }).first()).toBeVisible();
+    await page.getByRole('button', { name: /Review Case/i }).click();
 
     const epicTab = page.getByRole('tab', { name: /Epic/i });
     await epicTab.click();
@@ -515,6 +517,8 @@ test('presenter rehearsal follows the prepared story without live delivery', asy
   await page.getByLabel('Email').fill('abcs@oncoready.me');
   await page.getByLabel('Password').fill('1234');
   await page.getByRole('button', { name: 'Sign in', exact: true }).last().click();
+  await expect(page.getByRole('heading', { name: 'Command Center' }).first()).toBeVisible();
+  await page.getByRole('button', { name: /Review Case/i }).click();
 
   await page.getByRole('tab', { name: 'Graph' }).click();
   await expect(page.getByText('Treatment at risk').first()).toBeVisible();
