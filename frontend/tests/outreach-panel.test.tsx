@@ -55,6 +55,21 @@ describe('OUTREACH-002 in-app call', () => {
     expect(screen.getByText(/Voice check-in · placed by Marcus Vance, MSW/)).toBeDefined();
   });
 
+  it('re-enables the button after a reload once an earlier call ends', async () => {
+    // The page reloads mid-call: it did not place this call, so nothing joins the history.
+    let status = { ...idle, call: 'in_progress', in_progress: true };
+    vi.spyOn(globalThis, 'fetch').mockImplementation(() => jsonResponse(status));
+    render(<OutreachPanel role="CARE_NAVIGATOR" patientName="Camila Lopez" replyReceived={false} />);
+
+    const button = await screen.findByRole('button', { name: 'Call Camila' });
+    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(true));
+
+    status = { ...status, call: 'completed', in_progress: false };
+    await waitFor(() => expect(button.hasAttribute('disabled')).toBe(false), { timeout: 4000 });
+    expect(screen.queryByText(/placed by Marcus Vance/)).toBeNull();
+    expect(screen.queryByText('Calling is paused for this workspace.')).toBeNull();
+  });
+
   it('shows a paused button when calling is off', async () => {
     vi.spyOn(globalThis, 'fetch').mockImplementation(() => jsonResponse({ ...idle, enabled: false }));
     render(<OutreachPanel role="CARE_NAVIGATOR" patientName="Camila Lopez" replyReceived={false} />);
