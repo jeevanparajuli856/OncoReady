@@ -1,7 +1,7 @@
 import type { WorkflowState } from '../types';
 import { PRIMARY_PROVIDER, BACKUP_PROVIDER } from '../state/workflowState';
 
-export type ProviderConnectionStatus = 'ACTIVE' | 'AWAITING_CONNECTION';
+export type ProviderConnectionStatus = 'ACTIVE' | 'AWAITING_CONNECTION' | 'COMING_SOON';
 
 /** Kinds of ride update a provider source can deliver to the Transportation Workspace. */
 export type ProviderCapability = 'TRIP_OFFER' | 'TRIP_ACCEPTANCE' | 'DRIVER_ASSIGNMENT' | 'UNAVAILABLE_REPORT' | 'PICKUP_DROPOFF_EVENTS';
@@ -11,7 +11,7 @@ export type ProviderCapability = 'TRIP_OFFER' | 'TRIP_ACCEPTANCE' | 'DRIVER_ASSI
  * workspace can show CareLink and API partners side by side without knowing how each one connects.
  */
 export interface TransportProvider {
-  id: 'carelink' | 'uber-health';
+  id: 'carelink' | 'uber-health' | 'lyft-healthcare';
   name: string;
   channel: string;
   status: ProviderConnectionStatus;
@@ -53,4 +53,19 @@ export const uberHealthProvider: TransportProvider = {
   vendors: () => [],
 };
 
-export const TRANSPORT_PROVIDERS: TransportProvider[] = [careLinkProvider, uberHealthProvider];
+/**
+ * Lyft Healthcare: planned, with no adapter built. It lists no capabilities, makes no network
+ * request and never enters the dispatch path.
+ */
+export const lyftHealthcareProvider: TransportProvider = {
+  id: 'lyft-healthcare',
+  name: 'Lyft Healthcare',
+  channel: 'Lyft Healthcare API',
+  status: 'COMING_SOON',
+  statusLabel: 'Coming soon',
+  capabilities: [],
+  requirements: ['Lyft Healthcare agreement', 'API access'],
+  vendors: () => [],
+};
+
+export const TRANSPORT_PROVIDERS: TransportProvider[] = [careLinkProvider, uberHealthProvider, lyftHealthcareProvider];
