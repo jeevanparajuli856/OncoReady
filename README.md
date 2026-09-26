@@ -1,5 +1,9 @@
 # OncoReady
 
+> 🏆 **Second place, Health Tech, Nexus DevDay 2026**
+
+![OncoReady landing page: "Tomorrow's treatment. Every blocker owned."](docs/assets/landing-page.png)
+
 **The chart describes the treatment. OncoReady shows what could keep the patient from receiving it, and coordinates the response.**
 
 OncoReady is a treatment-readiness and continuity product for cancer care. It combines hospital clinical context (Epic), a readiness model (ReadySignal), patient check-ins, automated outreach and transport coordination (CareLink) so that practical barriers before an infusion, like a cancelled ride or a new symptom, reach the right person in time and end in a plan the patient confirms herself.
@@ -73,6 +77,19 @@ Staff sign in through an **Epic-styled sign-in page** and land on the Command Ce
 - A roster of additional Epic Sandbox patients with vital signs appears in the patient directory.
 - Read-only: nothing is written back to Epic.
 
+#### How Epic access works (OAuth 2.0)
+
+- **Grant:** SMART Backend Services, OAuth 2.0 `client_credentials` with an **RS384-signed JWT client assertion** (no shared client secret). The operator exchanges the signed assertion for a short-lived access token against Epic's Non-Production Sandbox.
+- **Token handling:** the capture tool reads the token only from the `EPIC_SANDBOX_ACCESS_TOKEN` environment variable, never from a command argument, and sends it as a `Bearer` header. Error messages never echo the token or response bodies, and captured files are checked to contain no credentials.
+- **Endpoint lock:** the capture refuses any base URL other than `https://fhir.epic.com/interconnect-fhir-oauth/api/FHIR/R4`.
+- **Read-only by construction:** the HTTP transport permits `GET` only, refuses redirects and caps each response at 5 MB.
+- **Minimum necessary data:** `Patient` read, then bounded searches for an allowlist of `Appointment`, `MedicationRequest` and `Observation` (category-scoped to `laboratory` or `vital-signs`), with page and resource ceilings. A capture that hits a ceiling is marked `bounded: true` so a partial chart is never shown as complete.
+- **Provenance:** every package gets a manifest with resource types and ids, capture time, source environment, a **SHA-256 checksum per file** and explicit review metadata (who approved it, when). Manifests validate against [`contracts/schemas/epic-capture-manifest.v2.schema.json`](contracts/schemas/epic-capture-manifest.v2.schema.json).
+- **Review before use:** captures are staged outside the repository and promoted into `frontend/src/data/` only after review. The app then renders them offline, so the demo never depends on a live Epic connection.
+- Code: [`backend/app/epic_capture.py`](backend/app/epic_capture.py), [`backend/scripts/capture_epic_sandbox.py`](backend/scripts/capture_epic_sandbox.py), [`scripts/capture-epic-roster.sh`](scripts/capture-epic-roster.sh).
+
+> **Staff sign-in is not Epic OAuth.** The "Sign in with Epic" page is an Epic-styled preview that accepts only the prepared demo accounts and sends nothing to Epic. Real Epic sign-in (SMART on FHIR user launch) comes with a hospital's Epic onboarding.
+
 ### ReadySignal (readiness model)
 - Scores readiness risk at **T-7, T-2 and T-1** days before treatment. Camila's signal climbs **13.8 → 20.5 → 26.4**.
 - **Why flagged?** shows the factors behind each score.
@@ -80,6 +97,16 @@ Staff sign in through an **Epic-styled sign-in page** and land on the Command Ce
 - Model: logistic regression (`synthetic-logistic-1.0`) on 4 features: transport available, callback requested, unresolved barriers, hours to treatment.
 - Trained on **synthetic** data: 1,600 patients / 4,800 rows for training, 400 patients / 1,200 rows held out (split by patient). Held-out accuracy **64.2%** vs **60.3%** majority baseline.
 - The score is a model score, **not** a calibrated clinical probability. Notebook and data are in [`ml/`](ml/README.md).
+#### ReadySignal 2.0: BERT-style transformer, self-supervised (in development)
+
+> **Status: in development.** The design is below; the code and results are not in the repository yet. The model running in the app today is the logistic regression above. Replace this note with real held-out metrics once the model is trained.
+
+- **Architecture:** a small BERT-style transformer encoder (the Med-BERT approach for health records). Each patient's history before treatment is a sequence of event tokens: checkpoint (T-7, T-2, T-1), transport status, callback requests, unresolved barriers and time to treatment, with a `[CLS]` token for the patient summary.
+- **Self-supervised pretraining:** masked event modeling. About 15% of the event tokens are hidden, and the model learns to predict them from the rest of the sequence. It needs no labels, so it can learn from a hospital's full unlabeled history.
+- **Fine-tuning:** a classification head on `[CLS]` predicts the readiness target at each checkpoint. It sees only events up to that checkpoint, so later information can't leak into earlier scores.
+- **Evaluation plan:** the same patient-separated split as today (1,600 train, 400 held out). It is compared against the majority baseline, the logistic regression and the same transformer without pretraining. It replaces the current model only if it wins on held-out data.
+- **Explainability:** "Why flagged?" stays. Factors will come from attention and token-masking attribution rather than regression weights.
+- **Data:** synthetic first, then a pilot hospital's real history.
 
 ### Outreach engine and live call
 - The **Outreach** tab shows the week's history: a T-7 voice check-in, T-2 and T-1 texts, each tagged with its ReadySignal score and the decision it triggered (symptoms routed to the nurse, ride problems to the navigator).
@@ -87,9 +114,20 @@ Staff sign in through an **Epic-styled sign-in page** and land on the Command Ce
 - Guardrails: the number called is fixed on the server (never chosen in the browser), one call at a time, a daily call limit, and an on/off switch (`DEMO_CALL_BUTTON`).
 - The outreach history (earlier calls and texts) is prepared scenario activity; the button call is the live part.
 
+#### How the automated call works
+
+1. **Click:** the browser sends `POST /api/v1/outreach/demo-call` with no phone number and no message. It has nothing to choose.
+2. **Guard checks:** the API takes a PostgreSQL advisory lock (`pg_advisory_xact_lock`) so two devices or API instances can't place calls at the same time. It then confirms the `DEMO_CALL_BUTTON` switch is on, outreach is fully configured, patient consent is recorded (`OUTREACH_CONSENT_CONFIRMED`), no earlier call is still unresolved and today's limit (default 4) isn't reached.
+3. **Reserve first:** a call attempt row is written and committed **before** any provider request, so every attempt is on record even if the provider times out.
+4. **Dial:** the API asks the **ElevenLabs Conversational AI** agent to place an outbound call over **Twilio** to the fixed recipient stored in server settings (E.164 format). Call recording is turned off. The Twilio call SID and conversation id are saved on the attempt.
+5. **Live status:** the Outreach tab polls `GET /api/v1/outreach/demo-call` every 2 seconds. On each poll the API reads the call's status from Twilio's Calls API and maps it: queued, initiated, ringing, in progress, then a final `completed`, `busy`, `no_answer`, `failed` or `canceled`.
+6. **Done:** once the call is final, it joins the outreach history and the button is ready for the next authorized call.
+
+The browser never receives the recipient number, provider keys or agent ids. Separate operator endpoints (`/api/v1/operator/outreach/*`) need a bearer operator token (constant-time comparison) and a time-limited, consent-stamped call window. Code: [`backend/app/outreach.py`](backend/app/outreach.py).
+
 ### CareLink (transport vendor portal)
 - Built for local medical transport vendors who run on phone calls, not software. They need only a browser.
-- Vendor accepts or releases a trip; the navigator sees it instantly (two browser tabs stay in sync).
+- Vendor accepts or releases a trip; the navigator sees it instantly (two browser tabs stay in sync). The shared scenario state lives in browser storage, and the other tab picks up each change through the `storage` event, so the sync works between tabs in the same browser.
 - **Recovery flow:** the primary vendor (Crescent Lantern Medical Rides) reports "Vehicle out of service", the plan is marked failed, and the navigator reassigns the backup (Magnolia Wayfare Transport).
 - The route map shows the real street route (1420 St. Charles Ave to Benson Cancer Center, 5.2 mi, about 13 min).
 - A provider adapter layer is ready for more sources: **Uber Health** adapter built and awaiting a contract and API credentials; **Lyft Healthcare** coming soon.
@@ -141,7 +179,7 @@ Details: [system architecture](docs/architecture/SYSTEM.md) · [design system](d
 - Live SMS once carrier (A2P) registration is approved.
 - Uber Health and Lyft Healthcare connections once agreements and API access exist.
 - Production Epic connection and real Epic sign-in through a hospital's Epic onboarding.
-- Training and validating ReadySignal on a hospital's real history.
+- Training and validating ReadySignal on a hospital's real history, moving to a **BERT-style transformer (Med-BERT approach)** pretrained **self-supervised** on patient event sequences (appointments, check-ins, outreach replies), then fine-tuned on attendance outcomes. The current explainable model stays as the baseline it has to beat.
 - Enterprise authentication and multi-user workflow persistence.
 
 ## 10. What we can and cannot claim
