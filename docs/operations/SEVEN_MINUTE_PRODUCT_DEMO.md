@@ -2,6 +2,8 @@
 
 **Use:** This segment starts right after another presenter has spent about three minutes on the problem and OncoReady's approach. It covers the following **7:00**. It is a presenter script and stage cue sheet, not proof that the media or a live call is ready. Check the go / no-go list first.
 
+**Scenario dates are fixed:** the app shows the day before treatment as Sep 24 and the infusion as **Sep 25, 10:00 AM CT**, with a fixed 23h 45m countdown. They don't follow the real date, so on stage say "the next morning" or "the day before", never "tomorrow" or "today".
+
 **Story in one line:** Camila Lopez has chemotherapy tomorrow. Her ride falls through and she doesn't feel well. In seven minutes the audience watches OncoReady turn one message into owned work, a recovered ride and a plan Camila confirms herself.
 
 **The three things that make this demo land.** Deliver each one:
@@ -47,7 +49,7 @@ Times are wall-clock targets. ★ marks a moment to slow down and let the room s
 
 | Clock | Screen and action | Presenter words / cue |
 | --- | --- | --- |
-| **0:00–0:20** | Hand-over. Start **Video Part 1** on the landing page. | “Tomorrow at ten, Camila Lopez has her fourth chemotherapy infusion. Today, two things go wrong: her ride falls through, and she doesn't feel well. The question is whether her care team finds out in time.” |
+| **0:00–0:20** | Hand-over. Start **Video Part 1** on the landing page. | “Camila Lopez has her fourth chemotherapy infusion the next morning at ten. The day before, two things go wrong: her ride falls through, and she doesn't feel well. Neither problem shows up in her chart. The question is whether her care team finds out in time. Let's go through this journey together.” |
 | **0:20–0:45** ★ | **Access workspace** → **Sign in with Epic** → the Epic sign-in page. Sign in as the Care Team (`abcs@oncoready.me` / `1234`) → **Redirecting securely…** → the Care Team **Command Center**. | “Let's start where her care team starts their day: signing in. They don't learn a new login. They sign in through their hospital's Epic, the way they already work. And here we have integrated the hospital Epic system, which is a sandbox provided to us by Epic.” |
 | **0:45–1:15** ★ | **Review Case** on Camila's row → **Epic** tab. Scroll slowly through her demographics, medications and lab observations. Don't open **View source details**. | “Everything you see here about Camila, her details, her medications and her labs, is pulled from the Epic Sandbox, which mirrors a real hospital record. We read it; we never write back.” |
 | **1:15–1:45** | **Insights:** T−7 → T−2 → T−1. Open **Why flagged?**, toggle the transportation what-if, return to baseline. | “This is ReadySignal, our readiness model, trained on patient data. From a week out to the day before, Camila's signal climbs, and **Why flagged?** shows exactly why. Flip transportation in the what-if and you see how much that one fix moves her signal. ReadySignal explains the risk.” |
