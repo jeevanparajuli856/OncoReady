@@ -10,7 +10,6 @@ OncoReady is a treatment-readiness and continuity product for cancer care. It co
 
 - **Live app:** https://oncoready.me (also https://app.oncoready.me)
 - **API:** https://api.oncoready.me (FastAPI on Railway with PostgreSQL)
-- **Demo script:** [seven-minute product demo](docs/operations/SEVEN_MINUTE_PRODUCT_DEMO.md)
 
 > This README is written so a teammate can build the presentation from it. Each numbered section below maps to one or two slides. The [claims guide](#10-what-we-can-and-cannot-claim) at the end says what is safe to put on a slide.
 
